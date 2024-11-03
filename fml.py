@@ -1,0 +1,94 @@
+#!/usr/bin/env python3
+
+"""
+Uploads a file to Fastmail's file storage using WebDAV.
+"""
+
+import argparse
+import os
+import sys
+
+import requests
+from dotenv import load_dotenv
+from requests.auth import HTTPBasicAuth
+from termcolor import colored
+
+# Load environment variables
+script_directory = os.path.dirname(os.path.abspath(__file__))
+env_path = os.path.join(script_directory, ".env")
+load_dotenv(dotenv_path=env_path)
+
+# Set WebDAV URL and user agent
+WEBDAV_URL = "https://myfiles.fastmail.com/Storage/"
+USER_AGENT = "FastmailUploader/1.0"
+
+
+def parse_arguments():
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description="Upload a file to Fastmail's file storage.")
+    parser.add_argument("file_path", help="Path to the file to upload.")
+    parser.add_argument(
+        "-f", "--force", help="Force upload and overwrite the file if it exists", action="store_true"
+    )
+    return parser.parse_args()
+
+
+def file_exists(session, webdav_url, username, password, file_path):
+    """Check if the file already exists in WebDAV."""
+    response = session.head(
+        webdav_url + os.path.basename(file_path),
+        auth=HTTPBasicAuth(username, password),
+    )
+    return response.status_code == 200
+
+
+def upload_file(session, webdav_url, username, password, file_path):
+    """Upload the file to WebDAV."""
+    with open(file_path, "rb") as file:
+        response = session.put(
+            webdav_url + os.path.basename(file_path),
+            data=file,
+            auth=HTTPBasicAuth(username, password),
+        )
+    return response.status_code in [200, 201, 204]
+
+
+def main():
+    """Main function."""
+    args = parse_arguments()
+    username = os.environ.get("FASTMAIL_USERNAME")
+    password = os.environ.get("FASTMAIL_PASSWORD")
+
+    if not username or not password:
+        print(
+            colored(
+                "Error: The FASTMAIL_USERNAME and FASTMAIL_PASSWORD environment variables must be set.", "red"
+            )
+        )
+        sys.exit(1)
+
+    file_path = args.file_path
+    force_upload = args.force
+
+    try:
+        with requests.Session() as session:
+            session.headers.update({"User-Agent": USER_AGENT})
+
+            if not force_upload and file_exists(session, WEBDAV_URL, username, password, file_path):
+                print(colored(f"File already exists: {file_path}", "yellow"))
+                return
+
+            if upload_file(session, WEBDAV_URL, username, password, file_path):
+                print(colored(f"Upload completed: {file_path}", "green"))
+            else:
+                print(colored(f"Upload failed: {file_path}", "red"))
+    except requests.RequestException as e:
+        print(colored(f"HTTP request error: {e}", "red"))
+    except IOError as e:
+        print(colored(f"Cannot open file: {e}", "red"))
+    except Exception as e:
+        print(colored(f"An unexpected error occurred: {e}", "red"))
+
+
+if __name__ == "__main__":
+    main()

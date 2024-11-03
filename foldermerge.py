@@ -1,0 +1,75 @@
+#!/usr/bin/env python3
+
+"""
+Tries to merge two folders, accounting for duplicates and name conflicts.
+"""
+
+import os
+import shutil
+from pathlib import Path
+
+from dsutil.files import sha256_checksum
+from dsutil.shell import confirm_action
+from termcolor import colored
+
+
+def merge_folders(first_folder, second_folder, dry_run=False):
+    """
+    Merges two folders, accounting for duplicates and name conflicts.
+
+    Args:
+        first_folder (str): The path to the first folder.
+        second_folder (str): The path to the second folder.
+        dry_run (bool): Whether to perform a dry run. Defaults to False.
+    """
+    first_folder_path = Path(first_folder)
+    second_folder_path = Path(second_folder)
+
+    for second_file_path in second_folder_path.iterdir():
+        if second_file_path.is_file():
+            first_file_path = first_folder_path / second_file_path.name
+
+            if first_file_path.exists():
+                if sha256_checksum(first_file_path) == sha256_checksum(second_file_path):
+                    print(f"Trashing duplicate: {second_file_path.name}")
+                    if not dry_run:
+                        second_file_path.unlink()
+                else:
+                    suffix = 1
+                    new_name = f"{second_file_path.stem}_{suffix}{second_file_path.suffix}"
+                    new_first_file_path = first_folder_path / new_name
+
+                    while new_first_file_path.exists():
+                        suffix += 1
+                        new_name = f"{second_file_path.stem}_{suffix}{second_file_path.suffix}"
+                        new_first_file_path = first_folder_path / new_name
+
+                    print(f"Renaming and moving: {second_file_path.name} to {new_name}")
+                    if not dry_run:
+                        shutil.move(str(second_file_path), str(new_first_file_path))
+            else:
+                print(f"Moving: {second_file_path.name}")
+                if not dry_run:
+                    shutil.move(str(second_file_path), str(first_folder_path))
+
+
+def main():
+    """Main function."""
+    first_folder = input("Enter the path to the first folder: ")
+    second_folder = input("Enter the path to the second folder: ")
+
+    if not os.path.isdir(first_folder) or not os.path.isdir(second_folder):
+        print("One of the provided paths is not a directory!")
+    else:
+        print("Performing a dry run...")
+        merge_folders(first_folder, second_folder, dry_run=True)
+
+        if confirm_action("Do you want to proceed with the merge?"):
+            merge_folders(first_folder, second_folder, dry_run=False)
+            print(colored("Operation complete!", "green"))
+        else:
+            print(colored("Operation aborted.", "red"))
+
+
+if __name__ == "__main__":
+    main()

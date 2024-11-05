@@ -382,6 +382,27 @@ test = ["certifi", "cryptography-vectors (==43.0.3)", "pretend", "pytest (>=6.2.
 test-randomorder = ["pytest-randomly"]
 
 [[package]]
+name = "dsupdater"
+version = "1.0.2"
+description = "Danny's system update script"
+optional = false
+python-versions = "^3.11"
+files = []
+develop = false
+
+[package.dependencies]
+argparse = "^1.4.0"
+dsutil = {git = "https://gitlab.dannystewart.com/danny/dsutil.git"}
+"path.py" = "^12.5.0"
+pexpect = "^4.9.0"
+
+[package.source]
+type = "git"
+url = "https://gitlab.dannystewart.com/danny/dsupdater.git"
+reference = "HEAD"
+resolved_reference = "47b4fae9fe990b95a0ae50d30a6c6a91965c02b4"
+
+[[package]]
 name = "dsutil"
 version = "1.0.5"
 description = "Danny's Python utility scripts"
@@ -733,6 +754,20 @@ files = [
 ]
 
 [[package]]
+name = "pexpect"
+version = "4.9.0"
+description = "Pexpect allows easy control of interactive console applications."
+optional = false
+python-versions = "*"
+files = [
+    {file = "pexpect-4.9.0-py2.py3-none-any.whl", hash = "sha256:7236d1e080e4936be2dc3e326cec0af72acf9212a7e1d060210e70a47e253523"},
+    {file = "pexpect-4.9.0.tar.gz", hash = "sha256:ee7d41123f3c9911050ea2c2dac107568dc43b2d3b0c7557a33212c398ead30f"},
+]
+
+[package.dependencies]
+ptyprocess = ">=0.5"
+
+[[package]]
 name = "pillow"
 version = "11.0.0"
 description = "Python Imaging Library (Fork)"
@@ -823,6 +858,17 @@ mic = ["olefile"]
 tests = ["check-manifest", "coverage", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout"]
 typing = ["typing-extensions"]
 xmp = ["defusedxml"]
+
+[[package]]
+name = "ptyprocess"
+version = "0.7.0"
+description = "Run a subprocess in a pseudo terminal"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ptyprocess-0.7.0-py2.py3-none-any.whl", hash = "sha256:4b41f3967fce3af57cc7e94b888626c18bf37a083e3651ca8feeb66d492fef35"},
+    {file = "ptyprocess-0.7.0.tar.gz", hash = "sha256:5c5d0a3b48ceee0b48485e0c26037c0acd7d29765ca3fbb5cb3831d347423220"},
+]
 
 [[package]]
 name = "pycparser"
@@ -1236,4 +1282,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.12,<3.13"
-content-hash = "25686157f0cf5a263cbd14115c6e905edc84c0b2ed6b86c4b48e68f307a85082"
+content-hash = "ad2044ea91b69aa4e6364abb19793653e55e5a5885d0274148aaf743bb862301"

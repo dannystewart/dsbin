@@ -12,11 +12,18 @@ from __future__ import annotations
 import argparse
 import difflib
 import sys
+import warnings
 from dataclasses import dataclass
-from typing import Callable
+from typing import TYPE_CHECKING
 
-from dsmusiclib import alacrity, awa, azmusic, bipclean, bounceprune, calc, filer, hpfilter, wpmusic
+from dsmusic import alacrity, awa, azmusic, bipclean, bounceprune, calc, filer, hpfilter, wpmusic
+
 from dsutil.text import ColorName, color, print_colored
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+warnings.filterwarnings("ignore", category=SyntaxWarning)
 
 
 @dataclass
@@ -194,6 +201,11 @@ class DSMusic:
             self.show_help_and_exit()
 
 
-if __name__ == "__main__":
+def main() -> None:
+    """Entry point for the command."""
     dsmusic = DSMusic()
     dsmusic.main()
+
+
+if __name__ == "__main__":
+    main()

@@ -80,6 +80,28 @@ w11renamer = "dsbin.w11renamer:main"
 watchtower = "dsbin.watchtower:main"
 ytdl = "dsbin.ytdl:main"
 
+# Music scripts
+dsmusic = "dsbin.dsmusic.main:main"
+dsm = "dsbin.dsmusic.main:main"
+
+# Direct commands
+aif2wav = "dsbin.dsmusic.awa:aif2wav_main"
+wav2aif = "dsbin.dsmusic.awa:wav2aif_main"
+alacrity = "dsbin.dsmusic.alacrity:main"
+bounceprune = "dsbin.dsmusic.bounceprune:main"
+azmusic = "dsbin.dsmusic.azmusic:main"
+bipclean = "dsbin.dsmusic.bipclean:main"
+calc = "dsbin.dsmusic.calc:main"
+filer = "dsbin.dsmusic.filer:main"
+hpfilter = "dsbin.dsmusic.hpfilter:main"
+wpmusic = "dsbin.dsmusic.wpmusic:main"
+
+# Aliases
+bp = "dsbin.dsmusic.bounceprune:main"
+prune = "dsbin.dsmusic.bounceprune:main"
+alac = "dsbin.dsmusic.alacrity:main"
+wp = "dsbin.dsmusic.wpmusic:main"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

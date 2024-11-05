@@ -74,9 +74,10 @@ def perform_health_check(verbose: bool = False) -> None:
         _check_failed("Some checks failed - see details above")
 
 
-def _check_venv_python() -> bool:
+def _check_venv_python(verbose: bool = False) -> bool:
     """Check Python version and key dependencies in the venv."""
     checks_passed = True
+    additional_checks_passed = True
 
     _print_header("Virtual Environment Python")
 
@@ -102,36 +103,43 @@ def _check_venv_python() -> bool:
             _print_header("Script is running from system Python (expected behavior)")
             _check_passed(f"System Python: {current_python}")
 
-            # Check dependencies in both environments
-            _print_header("System Python Dependencies")
-            try:
-                result = subprocess.run(
-                    [current_python, "-m", "pip", "list"],
-                    capture_output=True,
-                    text=True,
-                    check=True,
-                )
-                sys_packages = {
-                    line.split()[0].lower(): line.split()[1]
-                    for line in result.stdout.splitlines()[2:]
-                }
-
-                if "termcolor" in sys_packages:
-                    _check_passed(
-                        f"Found termcolor {sys_packages['termcolor']} (used by this script)"
-                    )
-                else:
-                    _check_failed("Missing termcolor (needed for this script's output)")
-                    checks_passed = False
-            except subprocess.CalledProcessError:
-                _check_failed("Failed to check system Python packages")
-                checks_passed = False
+            if verbose:
+                additional_checks_passed = _check_system_level_dependencies(current_python)
 
     except subprocess.CalledProcessError:
         checks_passed = False
         _check_failed("Failed to get Python version from venv")
 
-    # Check venv dependencies (for managed scripts)
+    if verbose:
+        additional_checks_passed = _check_venv_level_dependencies(python_path)
+
+    return checks_passed and additional_checks_passed
+
+
+def _check_system_level_dependencies(current_python: str) -> bool:
+    _print_header("System Python Dependencies")
+    try:
+        result = subprocess.run(
+            [current_python, "-m", "pip", "list"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        sys_packages = {
+            line.split()[0].lower(): line.split()[1] for line in result.stdout.splitlines()[2:]
+        }
+
+        if "termcolor" in sys_packages:
+            _check_passed(f"Found termcolor {sys_packages['termcolor']} (used by this script)")
+            return True
+        _check_failed("Missing termcolor (needed for this script's output)")
+    except subprocess.CalledProcessError:
+        _check_failed("Failed to check system Python packages")
+    return False
+
+
+def _check_venv_level_dependencies(python_path: str) -> bool:
+    checks_passed = False
     _print_header("Venv Dependencies (used by managed scripts)")
     try:
         result = subprocess.run(
@@ -252,50 +260,52 @@ def _check_pyenv_python() -> None:
         print("No pyenv Python installations found")
 
 
-def _check_dsutil_versions() -> bool:
+def _get_pyenv_python_path() -> str:
+    return subprocess.run(
+        ["pyenv", "which", "python"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+
+
+def _check_dsutil_versions(verbose: bool = True) -> bool:
     """Check dsutil versions across different installations."""
     checks_passed = True
 
-    _print_header("dsutil Versions")
+    if verbose:
+        _print_header("dsutil Versions")
 
-    # Check system-level dsutil
-    try:
-        result = subprocess.run(
-            [sys.executable, "-m", "pip", "show", "dsutil"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        system_version = next(
-            line.split(": ")[1]
-            for line in result.stdout.splitlines()
-            if line.startswith("Version: ")
-        )
-        _check_passed(f"System installation: {system_version}")
+    try:  # Check pyenv Python dsutil
+        if verbose:
+            _get_dsutil_version_for_env(_get_pyenv_python_path(), "pyenv Python installation: ")
     except (subprocess.CalledProcessError, StopIteration):
-        _check_failed("dsutil not installed at system level")
+        _check_failed("dsutil not installed in pyenv Python")
         checks_passed = False
 
     if venv_path := get_poetry_venv_path(verbose=False):
         python_path = os.path.join(venv_path, "bin", "python")
         try:
-            result = subprocess.run(
-                [python_path, "-m", "pip", "show", "dsutil"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-            venv_version = next(
-                line.split(": ")[1]
-                for line in result.stdout.splitlines()
-                if line.startswith("Version: ")
-            )
-            _check_passed(f"Poetry venv installation: {venv_version}")
+            if verbose:
+                _get_dsutil_version_for_env(python_path, "Poetry venv installation: ")
         except (subprocess.CalledProcessError, StopIteration):
             _check_failed("dsutil not installed in Poetry venv")
             checks_passed = False
 
     return checks_passed
+
+
+def _get_dsutil_version_for_env(python_path: str, message_text: str):
+    result = subprocess.run(
+        [python_path, "-m", "pip", "show", "dsutil"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    env_version = next(
+        line.split(": ")[1] for line in result.stdout.splitlines() if line.startswith("Version: ")
+    )
+    _check_passed(f"{message_text}{env_version}")
 
 
 def _check_source_and_target() -> bool:
@@ -383,7 +393,7 @@ def _install_critical_deps() -> bool:
     """Install critical dependencies in the system Python environment."""
     _print_header("Installing Critical Dependencies")
 
-    current_python = sys.executable
+    current_python = _get_pyenv_python_path()
     success = True
 
     # Get current packages in system Python
@@ -434,16 +444,24 @@ def _install_critical_deps() -> bool:
 
 
 def update_dsutil(verbose: bool = True) -> bool:
-    """Update dsutil in both system and Poetry environments."""
+    """Update dsutil in the pyenv Python environment and Poetry venv."""
     success = True
 
     if verbose:
-        _print_header("Updating dsutil")
+        print_colored("\nUpdating dsutil in all environments...", "cyan")
 
-    try:  # Update system-level installation
+    try:  # Update in pyenv Python environment
+        # Get the pyenv Python path
+        pyenv_python = subprocess.run(
+            ["pyenv", "which", "python"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+
         subprocess.run(
             [
-                sys.executable,
+                pyenv_python,
                 "-m",
                 "pip",
                 "install",
@@ -455,9 +473,9 @@ def update_dsutil(verbose: bool = True) -> bool:
             text=True,
         )
         if verbose:
-            _check_passed("System-level dsutil updated")
+            _check_passed("pyenv Python dsutil updated")
     except subprocess.CalledProcessError as e:
-        _check_failed(f"Failed to update system-level dsutil: {e.stderr}")
+        _check_failed(f"Failed to update pyenv Python dsutil: {e.stderr}")
         success = False
 
     try:  # Update Poetry venv installation
@@ -621,7 +639,8 @@ def main() -> None:
     # Update dsutil if requested
     if args.update:
         if update_dsutil():
-            _check_passed("dsutil updated successfully")
+            print()
+            _check_passed("dsutil updated successfully!")
         else:
             _check_failed("Some dsutil updates failed")
         return
@@ -656,6 +675,8 @@ def main() -> None:
 
     # Create the aliases file
     create_aliases_file(exec_files, venv_path, verbose)
+
+    update_dsutil(verbose)  # Update dsutil on every run
 
     if not args.auto:  # Print reminder if not in auto mode, shorten path for display purposes
         display_path = os.path.relpath(ALIASES_FILE, os.path.expanduser("~"))

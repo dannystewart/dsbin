@@ -1,13 +1,14 @@
 [tool.poetry]
-name = "bin-scripts"
+name = "bin_scripts"
 version = "1.0.0"
 description = "Personal Python scripts"
 authors = ["Danny Stewart <danny@stewart.cc>"]
 readme = "README.md"
-package-mode = false
+packages = [{include = "bin_scripts", from = "src"}]
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
+dsmusic = { git = "https://gitlab.dannystewart.com/danny/dsmusic.git" }
 dsutil = { git = "https://gitlab.dannystewart.com/danny/dsutil.git" }
 "path.py" = "^12.5.0"
 argparse = "^1.4.0"
@@ -37,6 +38,46 @@ types-paramiko = "^3.5.0.20240928"
 types-pillow = "^10.2.0.20240822"
 types-requests = "^2.32.0.20241016"
 types-send2trash = "^1.8.2.7"
+
+[tool.poetry.scripts]
+backupsort = "bin_scripts.backupsort:main"
+bigfiles = "bin_scripts.bigfiles:main"
+changehostname = "bin_scripts.changehostname:main"
+distro = "bin_scripts.distro:main"
+dmgify = "bin_scripts.dmgify:main"
+dockermounter = "bin_scripts.dockermounter:main"
+dupefinder = "bin_scripts.dupefinder:main"
+envscripts = "bin_scripts.envscripts:main"
+envsync = "bin_scripts.envsync:main"
+evtelegram = "bin_scripts.evtelegram:main"
+ffgif = "bin_scripts.ffgif:main"
+fftrim = "bin_scripts.fftrim:main"
+fml = "bin_scripts.fml:main"
+foldermerge = "bin_scripts.foldermerge:main"
+iplookup = "bin_scripts.iplookup:main"
+lsbin = "bin_scripts.lsbin:main"
+metacopy = "bin_scripts.metacopy:main"
+mp3ify = "bin_scripts.mp3ify:main"
+mshare = "bin_scripts.mshare:main"
+mvdmg = "bin_scripts.mvdmg:main"
+netreset = "bin_scripts.netreset:main"
+oldprojects = "bin_scripts.oldprojects:main"
+pipmigrator = "bin_scripts.pipmigrator:main"
+pkginst = "bin_scripts.pkginst:main"
+pybounce = "bin_scripts.pybounce:main"
+pycompare = "bin_scripts.pycompare:main"
+pyenversioner = "bin_scripts.pyenversioner:main"
+rmp3 = "bin_scripts.rmp3:main"
+rsyncer = "bin_scripts.rsyncer:main"
+scriptdep = "bin_scripts.scriptdep:main"
+setmag = "bin_scripts.setmag:main"
+spacepurger = "bin_scripts.spacepurger:main"
+ssh-tunnel = "bin_scripts.ssh_tunnel:main"
+timestamps = "bin_scripts.timestamps:main"
+uvmigrate = "bin_scripts.uvmigrate:main"
+w11renamer = "bin_scripts.w11renamer:main"
+watchtower = "bin_scripts.watchtower:main"
+ytdl = "bin_scripts.ytdl:main"
 
 [build-system]
 requires = ["poetry-core"]

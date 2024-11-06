@@ -1,6 +1,11 @@
 #!/usr/bin/env python3
 
-"""Uploads audio files to a Telegram channel."""
+"""
+Uploads audio files to a Telegram channel.
+
+To have this run automatically via Hazel, call it as an embedded script like this:
+    ❯ source ~/.zshrc && $(pyenv which python) -m dsbin.pybounce "$1"
+"""
 
 from __future__ import annotations
 
@@ -50,11 +55,9 @@ def parse_arguments() -> argparse.Namespace:
 # Parse command-line arguments
 args = parse_arguments()
 
-# Set up logger based on debug flag
+# Set up logger based on debug flag and set log level
 log_level = "debug" if args and args.debug else "info"
 logger = LocalLogger.setup_logger(level=log_level)
-
-# Log errors only
 logging.basicConfig(level=logging.WARNING)
 
 
@@ -324,5 +327,4 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    # Run the main function with asyncio
     main()

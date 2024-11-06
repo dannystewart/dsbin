@@ -33,7 +33,7 @@ from dsutil.async_utils import retry_on_exc
 from dsutil.log import LocalLogger
 from dsutil.macos import get_timestamps
 from dsutil.text import color
-from dsutil.time_utils import TZ
+from dsutil.tz import TZ
 
 # Get the directory where the script is located
 script_directory = os.path.dirname(os.path.abspath(__file__))

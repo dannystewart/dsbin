@@ -404,7 +404,7 @@ resolved_reference = "47b4fae9fe990b95a0ae50d30a6c6a91965c02b4"
 
 [[package]]
 name = "dsutil"
-version = "1.0.5"
+version = "1.0.7"
 description = "Danny's Python utility scripts"
 optional = false
 python-versions = "^3.11"
@@ -428,7 +428,7 @@ tzdata = "^2024.2"
 type = "git"
 url = "https://gitlab.dannystewart.com/danny/dsutil.git"
 reference = "HEAD"
-resolved_reference = "4a807c0ff8c8c1c17ee3baa584a30ed602e4ba57"
+resolved_reference = "5d13284faf809bf04ce47956c6d584c90fc7631f"
 
 [[package]]
 name = "editor"

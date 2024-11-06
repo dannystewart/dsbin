@@ -19,7 +19,7 @@ import argparse
 import os
 import re
 
-from dsutil.text import ColorName, color, print_colored
+from dsutil.text import color, print_colored
 
 # Define script directories
 BIN_DIR = os.path.join(os.path.expanduser("~"), ".local/bin")
@@ -456,7 +456,7 @@ def print_description(
     if script_type == "Bash" and filename.endswith(".sh"):
         filename = filename[:-3]
 
-    name_color: ColorName = SCRIPT_COLORS.get(script_type, SCRIPT_COLORS["default"])["name"]
+    name_color = SCRIPT_COLORS.get(script_type, SCRIPT_COLORS["default"])["name"]
     description_color = "white" if description_type == "docstring" else "light_grey"
     print(color(f"{filename:<{script_width}} ", name_color) + color(description, description_color))
 

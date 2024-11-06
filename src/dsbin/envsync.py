@@ -2,6 +2,8 @@
 
 """Synchronize two .env files by merging their content."""
 
+from __future__ import annotations
+
 import filecmp
 import os
 from collections import OrderedDict
@@ -64,7 +66,7 @@ def sync_env_files(chezmoi_env: OrderedDict[str, str], home_env: OrderedDict[str
     """
     if filecmp.cmp(chezmoi_env, home_env):
         print_colored("Files are already in sync. No changes made.", "green")
-        return
+        return False
 
     env1 = read_env_file(chezmoi_env)
     env2 = read_env_file(home_env)

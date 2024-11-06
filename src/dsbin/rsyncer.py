@@ -20,7 +20,7 @@ def get_full_path(path: str, filename: str) -> str:
     return os.path.join(path, filename)
 
 
-def get_first_item(path: str) -> str:
+def get_first_item(path: str) -> str | None:
     """Return the first item in a directory."""
     try:
         for root, dirs, files in os.walk(path):
@@ -156,7 +156,8 @@ def main() -> None:
 
     command = check_exclusions(command)
 
-    final_command = f"{command} '{paths['source']}' '{paths['destination']}'"
+    if paths:
+        final_command = f"{command} '{paths['source']}' '{paths['destination']}'"
 
     print_colored("\nYour rsync command:", "green")
     print_colored(final_command, "cyan")

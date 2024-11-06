@@ -11,6 +11,8 @@ this script moves the project files up a level and deletes the empty folders so 
 keep the project files, like the old behavior used to do.
 """
 
+from __future__ import annotations
+
 import os
 import shutil
 import subprocess

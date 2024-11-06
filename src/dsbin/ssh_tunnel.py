@@ -2,6 +2,8 @@
 
 """Create or kill an SSH tunnel on the specified port."""
 
+from __future__ import annotations
+
 import argparse
 import getpass
 import os
@@ -98,7 +100,9 @@ def ensure_ssh_tunnel(
             run(f"kill -9 {ssh_tunnel_pid}")
             progress("Existing SSH tunnel killed.")
         else:
-            warning(f"SSH tunnel is already running on port {local_port}. Use --kill to terminate it.")
+            warning(
+                f"SSH tunnel is already running on port {local_port}. Use --kill to terminate it."
+            )
     elif kill:
         info(f"No existing SSH tunnel to kill on port {local_port}.")
     else:
@@ -113,7 +117,9 @@ def ensure_ssh_tunnel(
 def kill_all_ssh_tunnels() -> None:
     """Kill all active SSH tunnels."""
     info("Killing all active SSH tunnels...")
-    success, _ = run("ps aux | grep ssh | grep -v grep | awk '{print $2}' | xargs kill -9", show_output=True)
+    success, _ = run(
+        "ps aux | grep ssh | grep -v grep | awk '{print $2}' | xargs kill -9", show_output=True
+    )
     if success:
         progress("All SSH tunnels killed.")
     else:
@@ -160,7 +166,9 @@ def parse_arguments() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Manage an SSH tunnel on a specified port.")
     parser.add_argument("port", type=int, help="The port number for the SSH tunnel.", nargs="?")
-    parser.add_argument("--local-port", type=int, help="Optional local port number for the SSH tunnel.")
+    parser.add_argument(
+        "--local-port", type=int, help="Optional local port number for the SSH tunnel."
+    )
     parser.add_argument(
         "--user",
         type=str,
@@ -169,10 +177,16 @@ def parse_arguments() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     )
     parser.add_argument("host", type=str, help="The host for the SSH tunnel.", nargs="?")
     parser.add_argument("--list", action="store_true", help="List all active SSH tunnels.")
-    parser.add_argument("--kill", action="store_true", help="Kill the SSH tunnel on the specified port.")
+    parser.add_argument(
+        "--kill", action="store_true", help="Kill the SSH tunnel on the specified port."
+    )
     parser.add_argument("--kill-all", action="store_true", help="Kill all active SSH tunnels.")
-    parser.add_argument("--sqlite-web", action="store_true", help="Start SQLite Web with an SSH tunnel")
-    parser.add_argument("--db-path", type=str, help="Path to the SQLite database on the remote machine")
+    parser.add_argument(
+        "--sqlite-web", action="store_true", help="Start SQLite Web with an SSH tunnel"
+    )
+    parser.add_argument(
+        "--db-path", type=str, help="Path to the SQLite database on the remote machine"
+    )
     parser.add_argument(
         "--sqlite-web-path",
         type=str,

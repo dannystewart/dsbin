@@ -2,6 +2,8 @@
 
 """Analyze dependencies and imports across dsutil and scripts to help separate concerns."""
 
+from __future__ import annotations
+
 import ast
 import shutil
 import subprocess

@@ -6,11 +6,12 @@ Find duplicate files in a directory.
 This script will find duplicate files in a directory and print them to the console.
 """
 
+from __future__ import annotations
+
 import os
 import sys
 
 from dsutil.files import find_duplicate_files_by_hash
-
 
 if __name__ == "__main__":
     input_files = sys.argv[1:]

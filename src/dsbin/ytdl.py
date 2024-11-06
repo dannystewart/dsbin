@@ -9,6 +9,8 @@ default MP4 option gave me but I still wanted it in H.264 for native playback, s
 script strikes the best middle ground on average.
 """
 
+from __future__ import annotations
+
 import re
 import subprocess
 import sys
@@ -24,7 +26,7 @@ def get_default_filename(url: str) -> str:
     default_filename = subprocess.run(
         ["yt-dlp", "--get-filename", "-o", "%(title)s.%(ext)s", url],
         stdout=subprocess.PIPE,
-        universal_newlines=True,
+        text=True,
     )
     return default_filename.stdout.strip()
 
@@ -37,8 +39,7 @@ def download_video(url: str) -> None:
 def sanitize_filename(filename: str) -> str:
     """Remove annoying characters yt-dlp uses to replace colons and apostrophes."""
     filename = re.sub("：", " - ", filename)
-    filename = re.sub("´", "'", filename)
-    return filename
+    return re.sub("´", "'", filename)
 
 
 def main() -> None:

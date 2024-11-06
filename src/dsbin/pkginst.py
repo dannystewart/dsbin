@@ -2,6 +2,8 @@
 
 """Wrapper for the macOS Installer command-line utility."""
 
+from __future__ import annotations
+
 import argparse
 import os
 import subprocess
@@ -104,11 +106,10 @@ def find_pkg_in_dmg(mount_point: str, pkg_name: str | None = None) -> str | None
             return pkg_path
         logger.error("Error: File '%s' does not exist.", pkg_path)
         return None
-    else:
-        for root, _, files in os.walk(mount_point):
-            for file in files:
-                if file.endswith(".pkg"):
-                    return os.path.join(root, file)
+    for root, _, files in os.walk(mount_point):
+        for file in files:
+            if file.endswith(".pkg"):
+                return os.path.join(root, file)
     return None
 
 
@@ -123,7 +124,9 @@ def mount_dmg(dmg_path: str) -> str | None:
         The mount point path, or None if there was an error.
     """
     try:
-        hdiutil_output = subprocess.check_output(["hdiutil", "attach", dmg_path, "-nobrowse", "-noverify"])
+        hdiutil_output = subprocess.check_output(
+            ["hdiutil", "attach", dmg_path, "-nobrowse", "-noverify"]
+        )
         if mount_point := next(
             (
                 line.split(b"\t")[-1].decode("utf-8")
@@ -134,9 +137,8 @@ def mount_dmg(dmg_path: str) -> str | None:
         ):
             logger.info("Mounted %s at %s", dmg_path, mount_point)
             return mount_point
-        else:
-            logger.error("Could not determine mount point for %s", dmg_path)
-            return None
+        logger.error("Could not determine mount point for %s", dmg_path)
+        return None
     except subprocess.CalledProcessError as e:
         logger.error("Error mounting dmg: %s", str(e))
         return None
@@ -156,13 +158,17 @@ def unmount_dmg(mount_point: str) -> None:
         logger.error("Error unmounting %s: %s", mount_point, str(e))
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     paths_str = "Path(s) to .pkg/.dmg file(s) to install. Supports wildcards like *.pkg."
     target_str = "The target volume of the installation. Default is the root volume."
-    dmg_pkg_str = "Name of the .pkg file within the .dmg. If not provided, installs the first .pkg found."
+    dmg_pkg_str = (
+        "Name of the .pkg file within the .dmg. If not provided, installs the first .pkg found."
+    )
 
-    parser = argparse.ArgumentParser(description="Wrapper for macOS Installer command-line utility.")
+    parser = argparse.ArgumentParser(
+        description="Wrapper for macOS Installer command-line utility."
+    )
     parser.add_argument("paths", type=str, nargs="+", help=paths_str)
     parser.add_argument("-t", "--target", type=str, default="/", help=target_str)
     parser.add_argument("--dmg-pkg-name", type=str, default=None, help=dmg_pkg_str)

@@ -2,6 +2,8 @@
 
 """Script to help with running Watchtower for Docker."""
 
+from __future__ import annotations
+
 import subprocess
 
 import inquirer
@@ -53,8 +55,14 @@ def main():
                 ("Run Watchtower once, do NOT restart containers", (True, False, None)),
                 ("Run Watchtower always, restart containers now", (False, True, None)),
                 ("Run Watchtower always, do NOT restart containers", (False, False, None)),
-                ("Run Watchtower daily at 4am, restart containers now", (False, True, "0 0 4 * * *")),
-                ("Run Watchtower daily at 4am, do NOT restart containers", (False, False, "0 0 4 * * *")),
+                (
+                    "Run Watchtower daily at 4am, restart containers now",
+                    (False, True, "0 0 4 * * *"),
+                ),
+                (
+                    "Run Watchtower daily at 4am, do NOT restart containers",
+                    (False, False, "0 0 4 * * *"),
+                ),
             ],
         ),
     ]

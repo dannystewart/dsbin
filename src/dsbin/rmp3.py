@@ -8,9 +8,12 @@ cleaning up old Logic bounces, because MP3 sucks and if I still have the origina
 can get rid of the MP3 to save space (and people's ears).
 """
 
+from __future__ import annotations
+
 import argparse
 import os
-from dsutil.files import list_files, delete_files
+
+from dsutil.files import delete_files, list_files
 
 
 def delete_mp3(directory: str, dry_run: bool = False) -> None:
@@ -40,7 +43,9 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Remove MP3 files if there is an AIFF or WAV file with the same name."
     )
-    parser.add_argument("directory", nargs="?", default=".", help="Directory to search for MP3 files.")
+    parser.add_argument(
+        "directory", nargs="?", default=".", help="Directory to search for MP3 files."
+    )
     parser.add_argument(
         "--dry-run",
         action="store_true",

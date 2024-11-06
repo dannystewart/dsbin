@@ -8,6 +8,8 @@ This was originally created for dealing with a large number of SQL dumps and bac
 downloaded with the same filename, but it can be used for any type of file.
 """
 
+from __future__ import annotations
+
 import argparse
 import glob
 import os
@@ -64,7 +66,7 @@ def get_files_to_process(args: argparse.Namespace) -> list:
     return natsorted(expanded_files)
 
 
-def process_file(filename: str) -> tuple:
+def process_file(filename: str) -> tuple | None:
     """Process a single file and return planned changes if any."""
     if filename.startswith(".") or not os.path.isfile(filename):
         return None

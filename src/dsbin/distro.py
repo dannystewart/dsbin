@@ -8,6 +8,8 @@ determine which package manager to use for installing packages, or for other
 distribution-specific tasks.
 """
 
+from __future__ import annotations
+
 import re
 import sys
 

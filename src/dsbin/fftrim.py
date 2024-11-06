@@ -2,12 +2,14 @@
 
 """Use ffmpeg to trim a video file without re-encoding."""
 
+from __future__ import annotations
+
 import argparse
 import os
 import subprocess
 
 
-def convert_to_hhmmss(time_str):
+def convert_to_hhmmss(time_str: str) -> str:
     """Convert MM:SS or HH:MM:SS format to HH:MM:SS."""
     if time_str == "0":  # '0' should begin at the beginning
         return "00:00:00"
@@ -17,13 +19,13 @@ def convert_to_hhmmss(time_str):
         return f"00:00:{time_str}"
     if len(parts) == 2:  # MM:SS format
         return f"00:{time_str}"
-    elif len(parts) == 3:  # HH:MM:SS format
+    if len(parts) == 3:  # HH:MM:SS format
         return time_str
-    else:
-        raise ValueError("Invalid time format. Must be MM:SS or HH:MM:SS.")
+    msg = "Invalid time format. Must be MM:SS or HH:MM:SS."
+    raise ValueError(msg)
 
 
-def determine_output_file(input_file, output_file):
+def determine_output_file(input_file: str, output_file: str) -> tuple[str, str, str, list[str]]:
     """Determine the correct output file extension and codec."""
     input_ext = os.path.splitext(input_file)[1].lower()
     output_ext = os.path.splitext(output_file)[1].lower()
@@ -52,7 +54,9 @@ def main():
     try:
         start_time = input("Enter the start time (as HH:MM:SS, MM:SS, SS, or '0' for 00:00:00): ")
         end_time = input("Enter the end time (as HH:MM:SS, MM:SS, or SS): ")
-        output_file = input("Enter the output filename either without extension or with .mp4 extension: ")
+        output_file = input(
+            "Enter the output filename either without extension or with .mp4 extension: "
+        )
 
         start_time = convert_to_hhmmss(start_time)
         end_time = convert_to_hhmmss(end_time)

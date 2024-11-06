@@ -16,7 +16,7 @@ Features:
 - Supports the `--backup` flag, combining LZMA compression and date appending in one option.
 - Excludes specified directories from DMG creation with the `--exclude` flag, taking a comma-separated list.
 - Overwrites existing DMG files if the `--force` option is specified, otherwise skips existing files.
-- Performs a dry run with the `--dry-run` flag, which will output the expected DMG filenames without generating them.
+- Performs a dry run with the `--dry-run` flag, which will output expected filenames without generating them.
 
 The script ensures a clean state by creating a temporary folder to store interim files
 during the creation process and performs cleanup of these resources on completion or failure.
@@ -38,7 +38,6 @@ import subprocess
 import sys
 from datetime import datetime
 from typing import TYPE_CHECKING
-
 from zoneinfo import ZoneInfo
 
 if TYPE_CHECKING:

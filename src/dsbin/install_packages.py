@@ -1,5 +1,7 @@
 """Perform initial package installation based on the package manager(s) available."""
 
+from __future__ import annotations
+
 import platform
 import shutil
 import subprocess
@@ -30,7 +32,7 @@ packages = [
 ]
 
 
-def run_command(cmd: str) -> str:
+def run_command(cmd: str) -> str | None:
     """Run a command and return the output."""
     try:
         result = subprocess.run(cmd, shell=True, check=True, capture_output=True)

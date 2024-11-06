@@ -169,7 +169,8 @@ def main() -> None:
             ),
         ]
         answers = inquirer.prompt(case_sensitivity_question)
-        ignore_case = answers["case_mode"] == case_ins_str
+        if answers:
+            ignore_case = answers["case_mode"] == case_ins_str
 
     skip_titles = False
     if not args.no_titles:

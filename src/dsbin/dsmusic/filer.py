@@ -12,7 +12,8 @@ from pathlib import Path
 
 import inquirer
 
-from dsmusiclib.bounce_parser import Bounce, BounceParser
+from .bounce_parser import Bounce, BounceParser
+
 from dsutil.animation import walking_animation
 from dsutil.files import move_file
 from dsutil.log import LocalLogger

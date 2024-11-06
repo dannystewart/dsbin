@@ -7,6 +7,8 @@ This script exports the packages from a source pyenv environment and installs th
 target pyenv environment.
 """
 
+from __future__ import annotations
+
 import argparse
 import os
 import subprocess
@@ -25,7 +27,7 @@ def export_and_install_packages(source_env: str, target_env: str) -> None:
 
 
 def get_packages(env: str, command: str) -> None:
-    # Set PYENV_VERSION to source environment and export packages
+    """Set PYENV_VERSION to source environment and export packages."""
     env_source = os.environ.copy()
     env_source["PYENV_VERSION"] = env
     run_command(command, env_source)
@@ -33,7 +35,9 @@ def get_packages(env: str, command: str) -> None:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Transfer Python packages between pyenv environments.")
+    parser = argparse.ArgumentParser(
+        description="Transfer Python packages between pyenv environments."
+    )
     parser.add_argument("--source", required=True, help="Source pyenv environment name.")
     parser.add_argument("--target", required=True, help="Target pyenv environment name.")
     return parser.parse_args()

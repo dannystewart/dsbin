@@ -9,12 +9,14 @@ free space again. macOS is kind of stupid about freeing up large amounts of spac
 script is a workaround to force it to clean up without having to reboot.
 """
 
+from __future__ import annotations
+
 import os
 import shutil
 
-from dsutil.progress import halo_progress
 from termcolor import colored
 
+from dsutil.progress import halo_progress
 
 # Sizes (in GB)
 FILE_SIZE_IN_GB = 1  # Size of each file to be written (in GB)
@@ -31,13 +33,13 @@ MINIMUM_FREE_SPACE = (
 )  # Minimum threshold converted from bytes to GB
 
 
-def check_disk_usage(folder):
+def check_disk_usage(folder: str) -> int:
     """Return folder/drive free space (in bytes)."""
     _, _, free = shutil.disk_usage(folder)
     return free
 
 
-def format_space(amount):
+def format_space(amount: int) -> str:
     """Helper function to convert bytes to GB and format the output."""
     factor = 1024 * 1024 * 1024
     return f"{amount / factor:.2f} GB"

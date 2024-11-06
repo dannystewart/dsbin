@@ -36,7 +36,6 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-
 from zoneinfo import ZoneInfo
 
 from dsutil.log import LocalLogger
@@ -191,8 +190,9 @@ class BounceParser:
 
         Note:
             - This method will not return files that don't match the bounce filename pattern.
-            - By default, it only searches the specified directory. Set recursive=True to include subdirectories.
-            - Be cautious when using recursive search in directories with many subdirectories, as it may be slower and include unwanted files.
+            - By default, only searches the specified directory. Set recursive=True to include subdirectories.
+            - Be cautious when using recursive search in directories with many subdirectories, as it may be
+                slower and include unwanted files.
         """
         path = Path(directory)
         glob_pattern = "**/*" if recursive else "*"

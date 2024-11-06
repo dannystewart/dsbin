@@ -28,7 +28,7 @@ HOME_DIR = os.path.expanduser("~")
 OUTPUT_PATH = os.path.join(HOME_DIR, "Downloads")
 
 
-def show_format_options() -> dict[str, list[str]]:
+def show_format_options() -> dict[str, list[str]] | None:
     """Prompt the user for conversion options from an inquirer menu."""
     questions = [
         inquirer.Checkbox(

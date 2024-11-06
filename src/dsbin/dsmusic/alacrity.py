@@ -146,7 +146,7 @@ class ALACrity:
 
         return converted_files, original_files, skipped_files
 
-    def convert_file(self, input_path: str) -> tuple[bool, str | None, str]:
+    def convert_file(self, input_path: str) -> tuple[str, str]:
         """
         Convert a single file to the specified format using ffmpeg_audio, including checking for
         existing files and preserving bit depth if specified.
@@ -188,7 +188,7 @@ class ALACrity:
                 return output_path, "converted"
             except Exception as e:
                 print_colored(f"\nFailed to convert {input_filename}: {e}", "red")
-                return None, "failed"
+                return input_path, "failed"
 
     def _handle_existing_file(self, output_path: str) -> bool:
         """

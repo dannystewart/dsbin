@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-"""
-macOS network reset script.
-"""
+"""macOS network reset script."""
+
+from __future__ import annotations
 
 import os
 import subprocess
@@ -28,7 +28,10 @@ def get_troubleshooting_steps(wifi_interface: str) -> list[dict[str, Any]]:
         List of troubleshooting steps.
     """
     return [
-        {"action": "renewing the DHCP lease", "command": ["sudo", "ipconfig", "set", wifi_interface, "DHCP"]},
+        {
+            "action": "renewing the DHCP lease",
+            "command": ["sudo", "ipconfig", "set", wifi_interface, "DHCP"],
+        },
         {
             "action": "toggling Wi-Fi",
             "command": ["networksetup", "-setairportpower", wifi_interface, "off"],
@@ -36,7 +39,10 @@ def get_troubleshooting_steps(wifi_interface: str) -> list[dict[str, Any]]:
         },
         {
             "action": "flushing the DNS cache",
-            "command": [["sudo", "dscacheutil", "-flushcache"], ["sudo", "killall", "-HUP", "mDNSResponder"]],
+            "command": [
+                ["sudo", "dscacheutil", "-flushcache"],
+                ["sudo", "killall", "-HUP", "mDNSResponder"],
+            ],
         },
         {
             "action": "removing temporary network files",
@@ -47,7 +53,12 @@ def get_troubleshooting_steps(wifi_interface: str) -> list[dict[str, Any]]:
                     "-f",
                     "/Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist",
                 ],
-                ["sudo", "rm", "-f", "/Library/Preferences/SystemConfiguration/NetworkInterfaces.plist"],
+                [
+                    "sudo",
+                    "rm",
+                    "-f",
+                    "/Library/Preferences/SystemConfiguration/NetworkInterfaces.plist",
+                ],
                 ["sudo", "rm", "-f", "/Library/Preferences/SystemConfiguration/preferences.plist"],
             ],
         },
@@ -67,7 +78,9 @@ def check_connection() -> bool:
 
 def identify_wifi_interface() -> str:
     """Identify the Wi-Fi interface."""
-    return subprocess.getoutput("networksetup -listallhardwareports | awk '/Wi-Fi/{getline; print $2}'")
+    return subprocess.getoutput(
+        "networksetup -listallhardwareports | awk '/Wi-Fi/{getline; print $2}'"
+    )
 
 
 def main() -> None:

@@ -10,10 +10,12 @@ this turns that into `Win11_22631.3007_Pro_x64.iso` because it's not stupid.
 You can enter it with or without `.iso`. It'll output without it for easier copying.
 """
 
+from __future__ import annotations
+
 import re
 import sys
 
-from dsutil.text import colored
+from dsutil.text import color
 
 
 def destupify_filename(filename: str) -> str:
@@ -41,17 +43,20 @@ def destupify_filename(filename: str) -> str:
 def main() -> None:
     """Main function."""
     if len(sys.argv) < 2:
-        print(colored("w11renamer: ", "green") + "turns stupid Windows 11 ISO names into non-stupid ones")
         print(
-            colored("NOTE: ", "yellow")
+            color("w11renamer: ", "green")
+            + "turns stupid Windows 11 ISO names into non-stupid ones"
+        )
+        print(
+            color("NOTE: ", "yellow")
             + "Doesn't actually rename, just outputs the name. Works with or without '.iso'."
         )
         print()
         print(
-            colored("Usage: ", "blue")
+            color("Usage: ", "blue")
             + 'w11renamer "22631.3007.240102-1451.23H2_NI_RELEASE_SVC_PROD1_CLIENTPRO_OEMRET_X64FRE_EN-US.ISO"'
         )
-        print(colored("Outputs: ", "green") + "Win11_22631.3007_Pro_x64")
+        print(color("Outputs: ", "green") + "Win11_22631.3007_Pro_x64")
         return
     input_text = sys.argv[1]
     output_text = destupify_filename(input_text)

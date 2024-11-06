@@ -1,34 +1,42 @@
 #!/usr/bin/env python3
 
-"""
-Recursively moves nested DMG files to a desired location.
-"""
+"""Recursively moves nested DMG files to a desired location."""
+
+from __future__ import annotations
 
 import argparse
 import os
 import shutil
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Recursively moves nested DMG files to a desired location.")
-    parser.add_argument(
-        "final_path", metavar="final_path", type=str, help="The directory where DMG files will be moved."
+    parser = argparse.ArgumentParser(
+        description="Recursively moves nested DMG files to a desired location."
     )
     parser.add_argument(
-        "-r", "--remove", action="store_true", help="Remove source files after moving (default is copy)"
+        "final_path",
+        metavar="final_path",
+        type=str,
+        help="The directory where DMG files will be moved.",
+    )
+    parser.add_argument(
+        "-r",
+        "--remove",
+        action="store_true",
+        help="Remove source files after moving (default is copy)",
     )
     return parser.parse_args()
 
 
-def move_dmg_files(source_dir, dest_dir, remove_source_files=False):
+def move_dmg_files(source_dir: str, dest_dir: str, remove_source_files: bool = False) -> None:
     """
     Recursively moves nested DMG files to a desired location.
 
     Args:
-        source_dir (str): The source directory.
-        dest_dir (str): The destination directory.
-        remove_source_files (bool): If True, remove the source files after moving.
+        source_dir: The source directory.
+        dest_dir: The destination directory.
+        remove_source_files: If True, remove the source files after moving.
     """
     for root, _, files in os.walk(source_dir):
         for file in files:

@@ -6,6 +6,8 @@ Finds the top N file types in a directory by cumulative size.
 This script analyzes a directory recursively to find the top N file types by cumulative size.
 """
 
+from __future__ import annotations
+
 import argparse
 import os
 from collections import defaultdict
@@ -78,7 +80,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--exclude", nargs="*", default=[], help="File types to exclude (e.g., --exclude .log .tmp)"
     )
-    parser.add_argument("--exclude-no-ext", action="store_true", help="Exclude files with no extension")
+    parser.add_argument(
+        "--exclude-no-ext", action="store_true", help="Exclude files with no extension"
+    )
 
     return parser.parse_args()
 

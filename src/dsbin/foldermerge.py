@@ -1,26 +1,27 @@
 #!/usr/bin/env python3
 
-"""
-Tries to merge two folders, accounting for duplicates and name conflicts.
-"""
+"""Tries to merge two folders, accounting for duplicates and name conflicts."""
+
+from __future__ import annotations
 
 import os
 import shutil
 from pathlib import Path
 
-from dsutil.files import sha256_checksum
-from dsutil.shell import confirm_action
 from termcolor import colored
 
+from dsutil.files import sha256_checksum
+from dsutil.shell import confirm_action
 
-def merge_folders(first_folder, second_folder, dry_run=False):
+
+def merge_folders(first_folder: str, second_folder: str, dry_run: bool = False) -> None:
     """
     Merges two folders, accounting for duplicates and name conflicts.
 
     Args:
-        first_folder (str): The path to the first folder.
-        second_folder (str): The path to the second folder.
-        dry_run (bool): Whether to perform a dry run. Defaults to False.
+        first_folder: The path to the first folder.
+        second_folder: The path to the second folder.
+        dry_run: Whether to perform a dry run. Defaults to False.
     """
     first_folder_path = Path(first_folder)
     second_folder_path = Path(second_folder)
@@ -53,7 +54,7 @@ def merge_folders(first_folder, second_folder, dry_run=False):
                     shutil.move(str(second_file_path), str(first_folder_path))
 
 
-def main():
+def main() -> None:
     """Main function."""
     first_folder = input("Enter the path to the first folder: ")
     second_folder = input("Enter the path to the second folder: ")

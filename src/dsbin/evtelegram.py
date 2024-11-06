@@ -7,6 +7,8 @@ This script is designed to upload my Evanescence remixes to a Telegram channel. 
 slight modification) to upload any audio files to any Telegram channel.
 """
 
+from __future__ import annotations
+
 import argparse
 import json
 import logging
@@ -43,19 +45,19 @@ CHANNEL_ID = os.getenv("EV_TELEGRAM_CHANNEL_ID")
 logger = logging.getLogger(__name__)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Upload audio tracks to Telegram channel.")
     parser.add_argument("--comment", action="store_true", help="Include comments on uploads")
     return parser.parse_args()
 
 
-def prepare_track_details():
+def prepare_track_details() -> requests.Response:
     """Download and return the JSON file with track details."""
     return requests.get(TRACK_URL, timeout=5)
 
 
-def get_track_details():
+def get_track_details() -> tuple[dict, dict, bytes]:
     """Download track and album metadata, plus cover art."""
     with halo_progress(
         start_message="Downloading track details...", end_message="Downloaded track details."
@@ -79,15 +81,15 @@ def get_track_details():
     return track_data, metadata, cover_data
 
 
-def get_selected_tracks(track_data):
+def get_selected_tracks(track_data: dict) -> list[dict]:
     """
     Sort tracks and display menu for track selection.
 
     Args:
-        track_data (dict): The track data.
+        track_data: The track data.
 
     Returns:
-        list: The selected tracks sorted by start date.
+        The selected tracks sorted by start date.
     """
     sorted_tracks = sorted(track_data["tracks"], key=lambda x: x["start_date"], reverse=True)
     questions = [
@@ -98,20 +100,23 @@ def get_selected_tracks(track_data):
         ),
     ]
     answers = inquirer.prompt(questions)
-    selected_tracks = [track for track in sorted_tracks if track["track_name"] in answers["tracks"]]
+    if answers:
+        selected_tracks = [
+            track for track in sorted_tracks if track["track_name"] in answers["tracks"]
+        ]
 
     return sorted(selected_tracks, key=lambda x: x["start_date"])
 
 
-def collect_track_comments(selected_tracks):
+def collect_track_comments(selected_tracks: list[dict]) -> dict:
     """
     Collect any comments for the selected tracks.
 
     Args:
-        selected_tracks (list): The selected tracks.
+        selected_tracks: The selected tracks.
 
     Returns:
-        dict: The track comments.
+        The track comments.
     """
     track_comments = {}
     for track in selected_tracks:
@@ -121,16 +126,22 @@ def collect_track_comments(selected_tracks):
     return track_comments
 
 
-def upload_all_tracks(telegram_sender, selected_tracks, metadata, cover_data, track_comments=None):
+def upload_all_tracks(
+    telegram_sender: TelegramSender,
+    selected_tracks: list,
+    metadata: dict,
+    cover_data: bytes,
+    track_comments: bool = None,
+) -> None:
     """
     Upload all selected tracks to Telegram.
 
     Args:
-        telegram_sender (TelegramSender): The Telegram sender instance to use.
-        selected_tracks (list): The selected tracks.
-        metadata (dict): The metadata for the album.
-        cover_data (bytes): The cover art data.
-        track_comments (dict, optional): The track comments. Defaults to None.
+        telegram_sender: The Telegram sender instance to use.
+        selected_tracks: The selected tracks.
+        metadata: The metadata for the album.
+        cover_data: The cover art data.
+        track_comments: The track comments. Defaults to None.
     """
     with tempfile.TemporaryDirectory() as temp_dir:
         output_folder = temp_dir
@@ -141,17 +152,24 @@ def upload_all_tracks(telegram_sender, selected_tracks, metadata, cover_data, tr
             )
 
 
-def upload_track(track, metadata, cover_data, output_folder, telegram_sender, track_comments=None):
+def upload_track(
+    track: dict,
+    metadata: dict,
+    cover_data: bytes,
+    output_folder: str,
+    telegram_sender: TelegramSender,
+    track_comments: dict | None = None,
+) -> None:
     """
     Upload a single track to Telegram.
 
     Args:
-        track (dict): The track data.
-        metadata (dict): The metadata for the album.
-        cover_data (bytes): The cover art data.
-        output_folder (str): The output folder for the audio files.
-        telegram_sender (TelegramSender): The Telegram sender instance to use.
-        track_comments (dict, optional): The track comments. Defaults to None.
+        track: The track data.
+        metadata: The metadata for the album.
+        cover_data: The cover art data.
+        output_folder: The output folder for the audio files.
+        telegram_sender: The Telegram sender instance to use.
+        track_comments: The track comments. Defaults to None.
     """
     track_name = track["track_name"]
     file_url = track["file_url"]
@@ -186,18 +204,20 @@ def upload_track(track, metadata, cover_data, output_folder, telegram_sender, tr
             spinner.fail(f"Failed to upload {track_name}.")
 
 
-def _download_flac_file(track_name, original_filename, file_url, output_folder):
+def _download_flac_file(
+    track_name: str, original_filename: str, file_url: str, output_folder: str
+) -> str:
     """
     Download the FLAC file.
 
     Args:
-        track_name (str): The track name.
-        original_filename (str): The original filename.
-        file_url (str): The file URL.
-        output_folder (str): The output folder for the audio files.
+        track_name: The track name.
+        original_filename: The original filename.
+        file_url: The file URL.
+        output_folder: The output folder for the audio files.
 
     Returns:
-        str: The path to the downloaded FLAC file.
+        The path to the downloaded FLAC file.
     """
     with halo_progress(
         start_message=f"Downloading {track_name}...",
@@ -212,14 +232,14 @@ def _download_flac_file(track_name, original_filename, file_url, output_folder):
         return flac_file_path
 
 
-def _convert_flac_to_alac(track_name, flac_file, output_folder):
+def _convert_flac_to_alac(track_name: str, flac_file: str, output_folder: str) -> str:
     """
     Convert FLAC to ALAC (Apple Lossless) M4A file.
 
     Args:
-        track_name (str): The track name.
-        flac_file (str): The path to the renamed FLAC file.
-        output_folder (str): The output folder for the audio files.
+        track_name: The track name.
+        flac_file: The path to the renamed FLAC file.
+        output_folder: The output folder for the audio files.
 
     Returns:
         str: The path to the converted M4A file.
@@ -236,16 +256,18 @@ def _convert_flac_to_alac(track_name, flac_file, output_folder):
         return m4a_file_path
 
 
-def _add_metadata_and_get_duration(track, metadata, cover_data, m4a_file, track_name):
+def _add_metadata_and_get_duration(
+    track: dict, metadata: dict, cover_data: bytes, m4a_file: str, track_name: str
+) -> int:
     """
     Add metadata and cover art using Mutagen.
 
     Args:
-        track (dict): The track data.
-        metadata (dict): The metadata for the album.
-        cover_data (bytes): The cover art data.
-        m4a_file (str): The path to the M4A file.
-        track_name (str): The track name.
+        track: The track data.
+        metadata: The metadata for the album.
+        cover_data: The cover art data.
+        m4a_file: The path to the M4A file.
+        track_name: The track name.
 
     Returns:
         int: The duration of the audio in seconds.
@@ -273,7 +295,7 @@ def _add_metadata_and_get_duration(track, metadata, cover_data, m4a_file, track_
         return duration
 
 
-def main():
+def main() -> None:
     """Main function."""
     track_comments = {}
     if BOT_TOKEN is None or CHANNEL_ID is None:

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-"""
-Uploads a file to Fastmail's file storage using WebDAV.
-"""
+"""Uploads a file to Fastmail's file storage using WebDAV."""
+
+from __future__ import annotations
 
 import argparse
 import os
@@ -10,6 +10,7 @@ import sys
 
 import requests
 from dotenv import load_dotenv
+from requests import Session
 from requests.auth import HTTPBasicAuth
 from termcolor import colored
 
@@ -23,17 +24,22 @@ WEBDAV_URL = "https://myfiles.fastmail.com/Storage/"
 USER_AGENT = "FastmailUploader/1.0"
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Upload a file to Fastmail's file storage.")
     parser.add_argument("file_path", help="Path to the file to upload.")
     parser.add_argument(
-        "-f", "--force", help="Force upload and overwrite the file if it exists", action="store_true"
+        "-f",
+        "--force",
+        help="Force upload and overwrite the file if it exists",
+        action="store_true",
     )
     return parser.parse_args()
 
 
-def file_exists(session, webdav_url, username, password, file_path):
+def file_exists(
+    session: Session, webdav_url: str, username: str, password: str, file_path: str
+) -> bool:
     """Check if the file already exists in WebDAV."""
     response = session.head(
         webdav_url + os.path.basename(file_path),
@@ -42,7 +48,9 @@ def file_exists(session, webdav_url, username, password, file_path):
     return response.status_code == 200
 
 
-def upload_file(session, webdav_url, username, password, file_path):
+def upload_file(
+    session: Session, webdav_url: str, username: str, password: str, file_path: str
+) -> bool:
     """Upload the file to WebDAV."""
     with open(file_path, "rb") as file:
         response = session.put(
@@ -62,7 +70,8 @@ def main():
     if not username or not password:
         print(
             colored(
-                "Error: The FASTMAIL_USERNAME and FASTMAIL_PASSWORD environment variables must be set.", "red"
+                "Error: The FASTMAIL_USERNAME and FASTMAIL_PASSWORD environment variables must be set.",
+                "red",
             )
         )
         sys.exit(1)
@@ -84,7 +93,7 @@ def main():
                 print(colored(f"Upload failed: {file_path}", "red"))
     except requests.RequestException as e:
         print(colored(f"HTTP request error: {e}", "red"))
-    except IOError as e:
+    except OSError as e:
         print(colored(f"Cannot open file: {e}", "red"))
     except Exception as e:
         print(colored(f"An unexpected error occurred: {e}", "red"))

@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 
-"""
-Converts a video file to a GIF using ffmpeg.
-"""
+"""Converts a video file to a GIF using ffmpeg."""
+
+from __future__ import annotations
 
 import subprocess
 import sys
+from typing import TYPE_CHECKING
 
 from dsutil.argparser import ArgParser
 
+if TYPE_CHECKING:
+    import argparse
 
-def parse_arguments():
+
+def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = ArgParser(description=__doc__)
-    parser.add_argument("-c", "--compress", action="store_true", help="compress output file to reduce size")
-    parser.add_argument("-f", "--fps", type=int, default=25, help="frame rate of the GIF (frames per second)")
+    parser.add_argument(
+        "-c", "--compress", action="store_true", help="compress output file to reduce size"
+    )
+    parser.add_argument(
+        "-f", "--fps", type=int, default=25, help="frame rate of the GIF (frames per second)"
+    )
     parser.add_argument("--width", type=int, default=480, help="width of the GIF")
     parser.add_argument("input_file", type=str, help="input video file")
 

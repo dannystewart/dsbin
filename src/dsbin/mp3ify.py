@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 
-"""
-Converts files to MP3.
-"""
+"""Converts files to MP3."""
+
+from __future__ import annotations
 
 import argparse
 import os
 import sys
 
+from termcolor import colored
+
 from dsutil.files import list_files
 from dsutil.media import ffmpeg_audio
-from termcolor import colored
 
 allowed_extensions = [".aiff", ".aif", ".wav", ".m4a", ".flac"]
 
 
-def parse_arguments():
+def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Convert audio files to MP3")
     parser.add_argument(
@@ -47,7 +48,9 @@ def main():
         print(colored("No files needing conversion.", "green"))
         sys.exit(0)
 
-    ffmpeg_audio(input_files=files_to_convert, output_format="mp3", audio_bitrate="320k", show_output=True)
+    ffmpeg_audio(
+        input_files=files_to_convert, output_format="mp3", audio_bitrate="320k", show_output=True
+    )
 
 
 if __name__ == "__main__":

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-"""
-Checks to see if mount points are mounted, and act accordingly.
-"""
+"""Checks to see if mount points are mounted, and act accordingly."""
+
+from __future__ import annotations
 
 import logging
 import os
@@ -44,7 +44,7 @@ containers = [
 ]
 
 
-def get_single_char_input(prompt):
+def get_single_char_input(prompt: str) -> str:
     """Reads a single character without requiring the Enter key. Mainly for confirmation prompts."""
     print(prompt, end="", flush=True)
     fd = sys.stdin.fileno()
@@ -57,7 +57,7 @@ def get_single_char_input(prompt):
     return char
 
 
-def confirm_action(prompt, default_to_yes=False, prompt_color="white"):
+def confirm_action(prompt: str, default_to_yes: bool = False, prompt_color: str = "white") -> bool:
     """Asks the user to confirm an action."""
     options = "[Y/n]" if default_to_yes else "[y/N]"
     full_prompt = colored(f"{prompt} {options} ", prompt_color)
@@ -71,23 +71,23 @@ def confirm_action(prompt, default_to_yes=False, prompt_color="white"):
     return char != "n" if default_to_yes else char == "y"
 
 
-def run_subprocess(command):
+def run_subprocess(command: str) -> str:
     """Run a subprocess command and handle errors."""
     try:
         logging.info("Running command: %s", " ".join(command))
-        output = subprocess.run(command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        output = subprocess.run(command, check=True, capture_output=True)
         return output.stdout.decode().strip()
     except subprocess.CalledProcessError as e:
         logging.error("Command '%s' failed with: %s", e.cmd, e.stderr.decode().strip())
         raise
 
 
-def is_mounted(path):
+def is_mounted(path: str) -> bool:
     """Check to see if the folder is mounted."""
     return os.path.ismount(path)
 
 
-def list_directory_contents(mount_point):
+def list_directory_contents(mount_point: str) -> bool:
     """List contents of the directory."""
     if os.path.exists(mount_point):
         if contents := os.listdir(mount_point):
@@ -95,35 +95,35 @@ def list_directory_contents(mount_point):
             for item in contents:
                 print(item)
             return True
-        else:
-            print("Directory is empty.")
-            return False
-    else:
-        print("Directory does not exist.")
+        print("Directory is empty.")
         return False
+    print("Directory does not exist.")
+    return False
 
 
-def clear_mount_point(mount_point):
+def clear_mount_point(mount_point: str) -> None:
     """Clear the mount point."""
     non_empty = list_directory_contents(mount_point)
-    if non_empty and confirm_action(f"Are you sure you want to remove all contents in {mount_point}?"):
+    if non_empty and confirm_action(
+        f"Are you sure you want to remove all contents in {mount_point}?"
+    ):
         run_subprocess(["rm", "-rf", f"{mount_point}/*"])
     else:
         logging.info("User aborted clearing mount point at %s.", mount_point)
 
 
-def remount(mount_point):
+def remount(mount_point: str) -> None:
     """Remount the mount point."""
     subprocess.run(["mount", mount_point], check=True)
 
 
-def restart_docker_containers():
+def restart_docker_containers() -> None:
     """Restart Docker containers."""
     for container in containers:
         subprocess.run(["docker", "restart", container], check=True)
 
 
-def main():
+def main() -> None:
     """Main function."""
     anything_unmounted = False
     for mount_point in mount_points:

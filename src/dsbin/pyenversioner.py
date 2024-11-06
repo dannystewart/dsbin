@@ -3,28 +3,31 @@
 """
 Updates .python-version files recursively.
 
-Finds .python-version files in the specified directory and its subdirectories and
-updates the Python version in them after user confirmation. Allows customization of the directory and version numbers.
+Finds .python-version files in the specified directory and its subdirectories and updates the Python
+version in them after user confirmation. Allows customization of the directory and version numbers.
 """
+
+from __future__ import annotations
 
 import argparse
 import os
 
+from termcolor import colored
+
 from dsutil import animation
 from dsutil.shell import confirm_action, handle_keyboard_interrupt
-from termcolor import colored
 
 
 @handle_keyboard_interrupt()
-def find_python_version_files(start_path):
+def find_python_version_files(start_path: str) -> list[str]:
     """
     Find .python-version files in the directory and its subdirectories.
 
     Args:
-        start_path (str): Directory to start searching from.
+        start_path: Directory to start searching from.
 
     Returns:
-        List[str]: A list of file paths for .python-version files.
+        A list of file paths for .python-version files.
     """
     file_paths = []
     for root, _, files in os.walk(start_path):
@@ -36,16 +39,16 @@ def find_python_version_files(start_path):
 
 
 @handle_keyboard_interrupt()
-def update_python_version_file(file_path, old_version, new_version):
+def update_python_version_file(file_path: str, old_version: str, new_version: str) -> None:
     """
     Updates the Python version in the specified file.
 
     Args:
-        file_path (str): Path to the .python-version file.
-        old_version (str): The version string to be replaced.
-        new_version (str): The version string to replace with.
+        file_path: Path to the .python-version file.
+        old_version: The version string to be replaced.
+        new_version: The version string to replace with.
     """
-    with open(file_path, "r", encoding="utf-8") as file:
+    with open(file_path, encoding="utf-8") as file:
         content = file.read()
 
     if old_version in content:
@@ -56,14 +59,14 @@ def update_python_version_file(file_path, old_version, new_version):
 
 
 @handle_keyboard_interrupt()
-def main(start_path, old_version, new_version):
+def main(start_path: str, old_version: str, new_version: str) -> None:
     """
     Recursively searches for .python-version files, lists them, and updates after confirmation.
 
     Args:
-        start_path (str): Directory to start searching from.
-        old_version (str): Old Python version to look for.
-        new_version (str): New Python version to replace with.
+        start_path: Directory to start searching from.
+        old_version: Old Python version to look for.
+        new_version: New Python version to replace with.
     """
     print(colored("Searching for .python-version files...", "green"))
 
@@ -86,17 +89,16 @@ def main(start_path, old_version, new_version):
         print("Update cancelled.")
 
 
-def parse_arguments():
-    """
-    Parse command-line arguments.
-
-    Returns:
-        argparse.Namespace: The parsed arguments.
-    """
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Update .python-version files recursively.")
-    parser.add_argument("--directory", default=os.getcwd(), help="Directory to start searching from.")
+    parser.add_argument(
+        "--directory", default=os.getcwd(), help="Directory to start searching from."
+    )
     parser.add_argument("--old-version", default="3.11.6", help="Old Python version to look for.")
-    parser.add_argument("--new-version", default="3.11.7", help="New Python version to replace with.")
+    parser.add_argument(
+        "--new-version", default="3.11.7", help="New Python version to replace with."
+    )
 
     return parser.parse_args()
 

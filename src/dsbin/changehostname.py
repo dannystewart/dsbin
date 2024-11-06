@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 
-"""
-Changes the system hostname in all the relevant places.
-"""
+"""Changes the system hostname in all the relevant places."""
+
+from __future__ import annotations
 
 import os
 import re
@@ -12,20 +12,10 @@ import subprocess
 import sys
 
 from dsutil.shell import confirm_action, is_root_user, read_file_content, write_to_file
+from dsutil.text import print_colored
 
 
-def print_colored(text, color):
-    """Print colored text."""
-    try:
-        from termcolor import colored
-    except ImportError:
-        print(text)
-        return
-
-    print(colored(text, color))
-
-
-def get_current_hostname():
+def get_current_hostname() -> str:
     """Get the current hostname."""
     old_hostname = socket.gethostname()
 
@@ -38,7 +28,7 @@ def get_current_hostname():
     return old_hostname
 
 
-def run_hostname_command(new_hostname):
+def run_hostname_command(new_hostname: str) -> None:
     """Run the hostname command."""
     if shutil.which("hostnamectl"):
         subprocess.run(["hostnamectl", "set-hostname", new_hostname], check=True)
@@ -46,13 +36,13 @@ def run_hostname_command(new_hostname):
     subprocess.run(["hostname", new_hostname], check=True)
 
 
-def update_hostname_file(new_hostname):
+def update_hostname_file(new_hostname: str) -> None:
     """Update the /etc/hostname file."""
     if os.path.exists("/etc/hostname"):
         write_to_file("/etc/hostname", new_hostname)
 
 
-def update_hosts_file(old_hostname, new_hostname):
+def update_hosts_file(old_hostname: str, new_hostname: str) -> None:
     """Update the /etc/hosts file."""
     with open("/etc/hosts", "r+", encoding="utf-8") as hosts_file:
         content = hosts_file.read()
@@ -62,18 +52,18 @@ def update_hosts_file(old_hostname, new_hostname):
         hosts_file.truncate()
 
 
-def validate_hostname(old_hostname, new_hostname):
+def validate_hostname(old_hostname: str, new_hostname: str) -> bool:
     """
     Ensure that the new hostname is valid. The hostname must be between 1 and 253 characters long,
     must not contain any invalid characters, and must not start or end with a hyphen. The new
     hostname must also be different from the current hostname.
 
     Args:
-        old_hostname (str): The current hostname.
-        new_hostname (str): The new hostname.
+        old_hostname: The current hostname.
+        new_hostname: The new hostname.
 
     Returns:
-        bool: True if the hostname is valid, False otherwise.
+        True if the hostname is valid, False otherwise.
     """
     if new_hostname == old_hostname:
         print_colored("The new hostname is the same as the current hostname. Exiting.", "red")
@@ -90,7 +80,7 @@ def validate_hostname(old_hostname, new_hostname):
     return True
 
 
-def main():
+def main() -> None:
     """Main function."""
     old_hostname = get_current_hostname()
 

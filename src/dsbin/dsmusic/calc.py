@@ -13,6 +13,7 @@ from dsutil.files import list_files
 from dsutil.log import LocalLogger, TimeAwareLogger
 from dsutil.macos import get_timestamps
 from dsutil.shell import handle_keyboard_interrupt
+from dsutil.tz import TZ
 
 base_logger = LocalLogger.setup_logger("calcbounce", message_only=True)
 logger = TimeAwareLogger(base_logger)
@@ -38,7 +39,8 @@ def parse_timestamp(timestamp: str) -> datetime.datetime:
 
     for fmt in formats:
         try:
-            return datetime.datetime.strptime(timestamp, fmt)
+            dt = datetime.datetime.strptime(timestamp, fmt)  # noqa: DTZ007
+            return dt.replace(tzinfo=TZ)
         except ValueError:
             continue
 
@@ -49,7 +51,7 @@ def parse_timestamp(timestamp: str) -> datetime.datetime:
 def parse_date(date_str: str) -> datetime.date:
     """Parse the date string provided as an argument."""
     try:
-        return datetime.datetime.strptime(date_str, "%m/%d/%Y").date()
+        return datetime.datetime.strptime(date_str, "%m/%d/%Y").date()  # noqa: DTZ007
     except ValueError as e:
         msg = f"Invalid date format: {date_str}. Please use MM/DD/YYYY."
         raise ValueError(msg) from e

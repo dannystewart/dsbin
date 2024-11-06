@@ -13,24 +13,22 @@ import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import Protocol
 
 import inquirer
 from dotenv import load_dotenv
 from halo import Halo
-from mutagen import File as MutagenFile
+from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
 from telethon import TelegramClient
-from telethon.tl.types import DocumentAttributeAudio
+from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
 from dsutil.async_utils import retry_on_exc
 from dsutil.log import LocalLogger
 from dsutil.macos import get_timestamps
 from dsutil.text import color
-
-if TYPE_CHECKING:
-    from telethon.tl.types import InputPeerChannel, InputPeerChat
+from dsutil.time_utils import TZ
 
 # Get the directory where the script is located
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -39,8 +37,33 @@ dotenv_path = os.path.join(script_directory, ".env")
 load_dotenv()
 load_dotenv(dotenv_path)
 
+
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description="Upload audio files to a Telegram channel.")
+    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
+    parser.add_argument("files", nargs="*", help="Files to upload")
+    parser.add_argument("comment", nargs="?", default="", help="Comment to add to the upload")
+    return parser.parse_args()
+
+
+# Parse command-line arguments
+args = parse_arguments()
+
+# Set up logger based on debug flag
+log_level = "debug" if args and args.debug else "info"
+logger = LocalLogger.setup_logger(level=log_level)
+
 # Log errors only
 logging.basicConfig(level=logging.WARNING)
+
+
+class TelegramClientProtocol(Protocol):
+    """Protocol for the Telegram client."""
+
+    async def start(self) -> None: ...  # noqa: D102
+
+    async def disconnect(self) -> None: ...  # noqa: D102
 
 
 class SQLiteManager:
@@ -50,7 +73,7 @@ class SQLiteManager:
     RETRY_TRIES = 5
     RETRY_DELAY = 5
 
-    def __init__(self, client: TelegramClient) -> None:
+    def __init__(self, client: TelegramClientProtocol) -> None:
         self.client = client
 
     @retry_on_exc(sqlite3.OperationalError, tries=RETRY_TRIES, delay=RETRY_DELAY, logger=logging)
@@ -99,7 +122,7 @@ class FileManager:
 
         def get_timestamp() -> str:
             ctime, _ = get_timestamps(file_path)
-            creation_date = datetime.strptime(ctime, "%m/%d/%Y %H:%M:%S")
+            creation_date = datetime.strptime(ctime, "%m/%d/%Y %H:%M:%S").replace(tzinfo=TZ)
             return creation_date.strftime("%a %b %d at %-I:%M:%S %p").replace(" 0", " ")
 
         return await asyncio.get_event_loop().run_in_executor(self.thread_pool, get_timestamp)
@@ -154,10 +177,14 @@ class TelegramUploader:
         # Create Telegram client
         self.client = TelegramClient(str(self.session_file), self.api_id, self.api_hash)
 
-    async def get_channel_entity(self) -> InputPeerChannel | InputPeerChat:
+    async def get_channel_entity(self) -> Channel | Chat:
         """Get the Telegram channel entity for the given URL."""
         try:
-            return await self.client.get_entity(self.channel_url)
+            entity = await self.client.get_entity(self.channel_url)
+            if not isinstance(entity, Channel | Chat):
+                msg = "URL does not point to a channel or chat."
+                raise ValueError(msg)
+            return entity
         except ValueError:
             logger.error("Could not find the channel for the URL: %s", self.channel_url)
             raise
@@ -167,7 +194,7 @@ class TelegramUploader:
         file_path: str,
         comment: str,
         spinner: Halo,
-        channel_entity: InputPeerChannel | InputPeerChat,
+        channel_entity: Channel | Chat,
     ) -> None:
         """
         Upload the given file to the given channel.
@@ -226,7 +253,7 @@ class TelegramUploader:
         files: list[str],
         comment: str,
         spinner: Halo,
-        channel_entity: InputPeerChannel | InputPeerChat,
+        channel_entity: Channel | Chat,
     ) -> None:
         """Upload the given files to the channel."""
         for file in files:
@@ -240,7 +267,7 @@ class TelegramUploader:
         file: str,
         comment: str,
         spinner: Halo,
-        channel_entity: InputPeerChannel | InputPeerChat,
+        channel_entity: Channel | Chat,
     ) -> None:
         """Process a single file (convert if needed) and upload it to Telegram."""
         if not os.path.isfile(file):
@@ -254,17 +281,11 @@ class TelegramUploader:
             logger.warning("Skipping '%s'.", file)
 
 
-def parse_arguments() -> argparse.Namespace:
-    """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Upload audio files to a Telegram channel.")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
-    parser.add_argument("files", nargs="*", help="Files to upload")
-    parser.add_argument("comment", nargs="?", default="", help="Comment to add to the upload")
-    return parser.parse_args()
-
-
-async def main(args: argparse.Namespace) -> None:
+async def run() -> None:
     """Upload files to a Telegram channel."""
+    # Parse command-line arguments
+    args = parse_arguments()
+
     spinner = Halo(text="Initializing...", spinner="dots")
     spinner.start()
 
@@ -297,13 +318,11 @@ async def main(args: argparse.Namespace) -> None:
         files.thread_pool.shutdown()
 
 
+def main() -> None:
+    """Run the main function with asyncio."""
+    asyncio.run(run())
+
+
 if __name__ == "__main__":
-    # Parse command-line arguments
-    args = parse_arguments()
-
-    # Set up logger based on debug flag
-    log_level = "debug" if args and args.debug else "info"
-    logger = LocalLogger.setup_logger(level=log_level)
-
     # Run the main function with asyncio
-    asyncio.run(main(args))
+    main()

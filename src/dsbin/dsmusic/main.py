@@ -16,7 +16,17 @@ import warnings
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from dsmusic import alacrity, awa, azmusic, bipclean, bounceprune, calc, filer, hpfilter, wpmusic
+from dsbin.dsmusic import (
+    alacrity,
+    awa,
+    azmusic,
+    bipclean,
+    bounceprune,
+    calc,
+    filer,
+    hpfilter,
+    wpmusic,
+)
 
 from dsutil.text import ColorName, color, print_colored
 

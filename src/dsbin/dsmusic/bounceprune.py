@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .bounce_parser import Bounce, BounceParser
+from dsbin.dsmusic.bounce_parser import Bounce, BounceParser
 
 from dsutil.files import delete_files
 from dsutil.shell import confirm_action

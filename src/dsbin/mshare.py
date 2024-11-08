@@ -35,7 +35,7 @@ def show_format_options() -> dict[str, list[str]] | None:
             "options",
             message="Select conversion options",
             choices=[
-                "Copy original WAV file",
+                "Copy original as WAV",
                 "Convert to 16-bit WAV",
                 "Convert to 16-bit FLAC",
                 "Convert to 24-bit FLAC",
@@ -117,23 +117,47 @@ def _get_filename(base_name: str, extension: str, suffix: str = "") -> str:
 
 
 def _get_conversion_options(
-    input_file: str, output_path: str, output_filename: str
+    input_file: str,
+    output_path: str,
+    output_filename: str,
+    selected_options: list[str],
+    bit_depth: int,
 ) -> dict[str, dict[str, str]]:
     """Construct the conversion options dictionary."""
     base_name = os.path.join(output_path, output_filename)
+
+    # Determine if we need bit depth suffixes based on selected options
+    needs_wav_suffix = (
+        "Convert to 16-bit WAV" in selected_options and "Copy original as WAV" in selected_options
+    )
+    needs_flac_suffix = (
+        "Convert to 16-bit FLAC" in selected_options
+        and "Convert to 24-bit FLAC" in selected_options
+    )
+
+    # Generate filenames with conditional suffixes
     wav_name = _get_filename(base_name, "wav")
-    flac_name = _get_filename(base_name, "flac")
+    wav_16_bit_name = _get_filename(base_name, "wav", " (16-bit)" if needs_wav_suffix else "")
+    flac_16_bit_name = _get_filename(base_name, "flac", " (16-bit)" if needs_flac_suffix else "")
+    flac_24_bit_name = _get_filename(base_name, "flac", " (24-bit)" if needs_flac_suffix else "")
     mp3_name = _get_filename(base_name, "mp3")
 
-    wav_16_bit_name = _get_filename(base_name, "wav", " (16-bit)")
-    flac_24_bit_name = _get_filename(base_name, "flac", " (24-bit)")
+    # Determine if input is WAV or needs conversion
+    input_ext = os.path.splitext(input_file)[1].lower()
+    wav_command = (
+        f'cp "{input_file}" "{wav_name}"'
+        if input_ext == ".wav"
+        else f'ffmpeg -i "{input_file}" -y -acodec pcm_s{bit_depth}le "{wav_name}"'
+    )
+    wav_message = "Copying" if input_ext == ".wav" else "Converting to WAV"
+    wav_completed = "Copied:" if input_ext == ".wav" else "Converted to WAV:"
 
     return {
-        "Copy original WAV file": {
+        "Copy original as WAV": {
             "filename": wav_name,
-            "message": "Copying",
-            "completed_message": "Copied:",
-            "command": f'cp "{input_file}" "{wav_name}"',
+            "message": wav_message,
+            "completed_message": wav_completed,
+            "command": wav_command,
         },
         "Convert to 16-bit WAV": {
             "filename": wav_16_bit_name,
@@ -142,10 +166,10 @@ def _get_conversion_options(
             "command": f'ffmpeg -i "{input_file}" -y -acodec pcm_s16le "{wav_16_bit_name}"',
         },
         "Convert to 16-bit FLAC": {
-            "filename": flac_name,
+            "filename": flac_16_bit_name,
             "message": "Converting to 16-bit FLAC",
             "completed_message": "Converted to 16-bit FLAC:",
-            "command": f'ffmpeg -i "{input_file}" -y -acodec flac -sample_fmt s16 "{flac_name}"',
+            "command": f'ffmpeg -i "{input_file}" -y -acodec flac -sample_fmt s16 "{flac_16_bit_name}"',
         },
         "Convert to 24-bit FLAC": {
             "filename": flac_24_bit_name,
@@ -175,7 +199,9 @@ def perform_conversions(
         output_filename: The clean base filename for the output file.
         bit_depth: The bit depth of the input file.
     """
-    conversion_options = _get_conversion_options(input_file, output_path, output_filename)
+    conversion_options = _get_conversion_options(
+        input_file, output_path, output_filename, answers["options"], bit_depth
+    )
 
     for option, details in conversion_options.items():
         if option in answers["options"] and isinstance(details["filename"], str):

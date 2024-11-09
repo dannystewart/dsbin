@@ -62,4 +62,4 @@ class Config:
         load_dotenv(dotenv_path)
 
         # Get SSH passphrase from environment
-        self.ssh_passphrase = os.getenv("SSH_PASSPHRASE")
+        self.ssh_passphrase = os.getenv("SSH_PASSPHRASE", "")

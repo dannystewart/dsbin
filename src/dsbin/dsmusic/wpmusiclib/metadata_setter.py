@@ -1,12 +1,18 @@
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
 from mutagen.flac import FLAC, Picture
-from mutagen.id3 import APIC, ID3, TALB, TCON, TDRC, TIT2, TPE1, TRCK
+from mutagen.id3 import ID3
+from mutagen.id3._frames import APIC, TALB, TCON, TDRC, TIT2, TPE1, TRCK
 from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4, MP4Cover
 
 from dsutil.log import LocalLogger
 
-from .audio_track import AudioTrack
-from .wp_config import Config
+if TYPE_CHECKING:
+    from .audio_track import AudioTrack
+    from .wp_config import Config
 
 
 class MetadataSetter:

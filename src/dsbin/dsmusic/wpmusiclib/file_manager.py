@@ -10,11 +10,11 @@ import pyperclip
 from scp import SCPClient
 from termcolor import colored
 
+from .wp_config import Config, spinner
+
 from dsutil.files import delete_files
 from dsutil.log import LocalLogger
 from dsutil.shell import handle_keyboard_interrupt
-
-from .wp_config import Config, spinner
 
 if TYPE_CHECKING:
     from .audio_track import AudioTrack
@@ -60,7 +60,7 @@ class FileManager:
                 self.logger.error("No filename provided. Aborting.", "red")
                 return ""
 
-        return base_filename
+        return base_filename or ""
 
     @handle_keyboard_interrupt()
     def prompt_for_custom_filename(self, default_filename: str) -> str | None:
@@ -73,6 +73,9 @@ class FileManager:
             )
         ]
         answers = inquirer.prompt(questions)
+        if not answers:
+            return None
+
         self.logger.debug("Custom filename: %s", answers["filename"])
         return answers["filename"]
 

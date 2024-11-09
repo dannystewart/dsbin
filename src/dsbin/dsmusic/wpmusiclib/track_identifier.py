@@ -7,9 +7,9 @@ from typing import TYPE_CHECKING, Any
 import inquirer
 from termcolor import colored
 
-from dsutil.log import LocalLogger
-
 from .wp_config import Config, spinner
+
+from dsutil.log import LocalLogger
 
 if TYPE_CHECKING:
     from .audio_track import AudioTrack
@@ -111,6 +111,10 @@ class TrackIdentifier:
         ]
         answers = inquirer.prompt(questions)
         spinner.stop()
+        if not answers:
+            msg = "No track selected."
+            raise TypeError(msg)
+
         self.logger.debug("Selected track: %s", answers["track"])
         return answers["track"]
 
@@ -124,6 +128,10 @@ class TrackIdentifier:
             )
         ]
         filename_answer = inquirer.prompt(filename_question)
+        if not filename_answer:
+            msg = "No filename confirmed."
+            raise TypeError(msg)
+
         confirmed_filename = filename_answer["confirmed_filename"]
 
         self.logger.debug("Confirmed filename: %s", confirmed_filename)

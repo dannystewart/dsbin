@@ -83,10 +83,7 @@ class WPMusic:
     def display_history(self) -> None:
         """Display upload history."""
         track_name = self.args.history if self.args.history != "" else None
-        if track_name:
-            self.upload_tracker.pretty_print_history(track_name=track_name, limit=None)
-        else:
-            self.upload_tracker.pretty_print_history()
+        self.upload_tracker.pretty_print_history(track_name)
 
     def process_file(self, file_path: str) -> None:
         """Process a single audio file."""

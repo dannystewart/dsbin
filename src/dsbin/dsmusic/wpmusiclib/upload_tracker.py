@@ -4,12 +4,11 @@ import sqlite3
 from collections import defaultdict
 from datetime import datetime
 from typing import TYPE_CHECKING
-
 from zoneinfo import ZoneInfo
 
-from dsutil.log import LocalLogger
-
 from .table_formatter import TableFormatter
+
+from dsutil.log import LocalLogger
 
 if TYPE_CHECKING:
     from .wp_config import Config
@@ -120,20 +119,22 @@ class UploadTracker:
                     if current_track is not None:
                         history.append(current_track)
                     current_track = {"track_name": row["track_name"], "uploads": []}
-                current_track["uploads"].append({
-                    "filename": row["filename"],
-                    "instrumental": row["instrumental"],
-                    "uploaded": row["uploaded"],
-                })
+                current_track["uploads"].append(
+                    {
+                        "filename": row["filename"],
+                        "instrumental": row["instrumental"],
+                        "uploaded": row["uploaded"],
+                    }
+                )
             if current_track is not None:
                 history.append(current_track)
 
         return history
 
-    def pretty_print_history(self, track_name: str | None = None, limit: int | None = 10) -> None:
+    def pretty_print_history(self, track_name: str | None = None) -> None:
         """Print the upload history in a neatly organized way with color."""
         history = self.get_upload_history(track_name)
-        table_formatter = TableFormatter()
+        table_formatter = TableFormatter(use_limit=track_name is None)
 
         for entry in history:
-            table_formatter.print_table(entry["uploads"], entry["track_name"], limit)
+            table_formatter.print_table(entry["uploads"], entry["track_name"])

@@ -134,7 +134,7 @@ class UploadTracker:
     def pretty_print_history(self, track_name: str | None = None) -> None:
         """Print the upload history in a neatly organized way with color."""
         history = self.get_upload_history(track_name)
-        table_formatter = TableFormatter(use_limit=track_name is None)
+        table_formatter = TableFormatter(apply_limit=track_name is None)
 
         for entry in history:
             table_formatter.print_table(entry["uploads"], entry["track_name"])

@@ -43,7 +43,6 @@ types-send2trash = "^1.8.2.7"
 [tool.poetry.scripts]
 backupsort = "dsbin.backupsort:main"
 bigfiles = "dsbin.bigfiles:main"
-calevents = "dsbin.calevents:main"
 changehostname = "dsbin.changehostname:main"
 distro = "dsbin.distro:main"
 dmgify = "dsbin.dmgify:main"

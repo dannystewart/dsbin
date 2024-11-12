@@ -55,7 +55,7 @@ class ALACrity:
         self.main()
 
     def main(self) -> None:
-        """Gather specified files, convert them, and prompt for deletion of the orignals."""
+        """Gather specified files, convert them, and prompt for deletion of the originals."""
         converted_files = []
         original_files = []
         skipped_files = []
@@ -271,3 +271,10 @@ class ALACrity:
             ext for ext in self.exts_to_convert if ext.lstrip(".") != self.extension
         ]
         self.codec = self.file_codecs.get(self.extension, "alac")
+
+
+def main():
+    """Main entry point for the script."""
+    import sys
+
+    ALACrity(sys.argv[1:])

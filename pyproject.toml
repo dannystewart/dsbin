@@ -12,7 +12,6 @@ dsmusic = { git = "https://gitlab.dannystewart.com/danny/dsmusic.git" }
 dsupdater = { git = "https://gitlab.dannystewart.com/danny/updater.git" }
 dsutil = { git = "https://gitlab.dannystewart.com/danny/dsutil.git" }
 "path.py" = "^12.5.0"
-argparse = "^1.4.0"
 azure-storage-blob = "^12.23.1"
 halo = "^0.0.31"
 inquirer = "^3.4.0"

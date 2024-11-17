@@ -67,36 +67,26 @@ class DatabaseManager:
 
     @contextmanager
     def get_read_connection(
-        self, check_stale: bool = True
+        self,
     ) -> Generator[
         sqlite3.Connection | MySQLConnectionAbstract | PooledMySQLConnection, None, None
     ]:
-        """
-        Get a connection for reading, using local cache if available and up-to-date.
-
-        Args:
-            check_stale: Whether to check if cache needs updating. Default True.
-        """
-        # If cache is disabled, wrap MySQL connection to match SQLite interface
-        if self.config.no_cache:
+        """Get a connection for reading, using local cache if available."""
+        if self.config.no_cache:  # If cache is disabled, use MySQL
+            self.logger.debug("Cache disabled, using MySQL directly.")
             with self.get_mysql_connection() as conn:
                 yield conn
             return
 
-        try:
-            if os.path.exists(self.config.upload_log_db):
-                if check_stale and self.is_cache_stale():
-                    self.logger.debug("Cache is stale, refreshing from MySQL.")
-                    self.refresh_cache()
-                else:
-                    self.logger.debug("Using local SQLite cache for reading.")
-                with sqlite3.connect(self.config.upload_log_db) as conn:
-                    yield conn
-            else:
+        try:  # Otherwise, use the cache if it exists, or create it if it doesn't
+            if not os.path.exists(self.config.upload_log_db):
                 self.logger.debug("No local cache found, creating from MySQL.")
                 self.refresh_cache()
-                with sqlite3.connect(self.config.upload_log_db) as conn:
-                    yield conn
+            else:
+                self.logger.debug("Using local SQLite cache.")
+
+            with sqlite3.connect(self.config.upload_log_db) as conn:
+                yield conn
         except Exception as e:
             msg = f"Failed to establish database connection: {str(e)}"
             raise DatabaseError(msg) from e

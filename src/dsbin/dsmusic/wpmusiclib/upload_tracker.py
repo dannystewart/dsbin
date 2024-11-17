@@ -9,8 +9,8 @@ from zoneinfo import ZoneInfo
 from mysql.connector.abstracts import MySQLConnectionAbstract
 from mysql.connector.pooling import PooledMySQLConnection
 
-from .db_manager import DatabaseError, DatabaseManager
-from .table_formatter import TableFormatter
+from dsbin.dsmusic.wpmusiclib.db_manager import DatabaseError, DatabaseManager
+from dsbin.dsmusic.wpmusiclib.table_formatter import TableFormatter
 
 from dsutil.log import LocalLogger
 
@@ -25,12 +25,14 @@ class UploadTracker:
 
     def __init__(self, config: Config):
         self.config = config
-        self.logger = LocalLogger.setup_logger(self.__class__.__name__, level=self.config.log_level)
-        self.current_upload_set = defaultdict(dict)
         self.db = DatabaseManager(config)
+        self.logger = LocalLogger.setup_logger(self.__class__.__name__, level=self.config.log_level)
+
+        # Track the current set of uploads before recording them to the upload log
+        self.current_upload_set = defaultdict(dict)
 
     def _init_db(self) -> None:
-        with sqlite3.connect(self.config.upload_log_db) as conn:
+        with sqlite3.connect(self.config.local_sqlite_db) as conn:
             cursor = conn.cursor()
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS tracks (

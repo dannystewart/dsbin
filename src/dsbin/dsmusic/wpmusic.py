@@ -188,7 +188,7 @@ class WPMusic:
             msg = f"Unsupported file format: {format_name}"
             raise ValueError(msg)
 
-        output_file_path = os.path.join(self.config.save_path, f"{base_filename}{format_ext}")
+        output_file_path = os.path.join(self.config.file_save_path, f"{base_filename}{format_ext}")
         self.logger.debug("Output file path for %s: %s", format_name.upper(), output_file_path)
 
         ffmpeg_audio(

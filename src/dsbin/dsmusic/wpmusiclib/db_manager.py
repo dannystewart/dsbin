@@ -79,13 +79,13 @@ class DatabaseManager:
             return
 
         try:  # Otherwise, use the cache if it exists, or create it if it doesn't
-            if not os.path.exists(self.config.upload_log_db):
-                self.logger.debug("No local cache found, creating from MySQL.")
+            if not os.path.exists(self.config.local_sqlite_db):
+                self.logger.info("No local cache found, creating from MySQL.")
                 self.refresh_cache()
             else:
                 self.logger.debug("Using local SQLite cache.")
 
-            with sqlite3.connect(self.config.upload_log_db) as conn:
+            with sqlite3.connect(self.config.local_sqlite_db) as conn:
                 yield conn
         except Exception as e:
             msg = f"Failed to establish database connection: {str(e)}"
@@ -95,7 +95,7 @@ class DatabaseManager:
         """Refresh the local SQLite cache from MySQL."""
         with (
             self.get_mysql_connection() as mysql_conn,
-            sqlite3.connect(self.config.upload_log_db) as sqlite_conn,
+            sqlite3.connect(self.config.local_sqlite_db) as sqlite_conn,
         ):
             # Create tables
             self._init_sqlite_schema(sqlite_conn)
@@ -124,13 +124,13 @@ class DatabaseManager:
     def force_refresh(self) -> None:
         """Force a refresh of the local cache from MySQL."""
         self.logger.debug("Forcing cache refresh from MySQL")
-        if os.path.exists(self.config.upload_log_db):
-            os.remove(self.config.upload_log_db)
+        if os.path.exists(self.config.local_sqlite_db):
+            os.remove(self.config.local_sqlite_db)
         self.refresh_cache()
 
     def is_cache_stale(self) -> bool:
         """Check if local cache needs updating by comparing row counts."""
-        if not os.path.exists(self.config.upload_log_db):
+        if not os.path.exists(self.config.local_sqlite_db):
             self.logger.debug("No cache file exists.")
             return True
 
@@ -141,7 +141,7 @@ class DatabaseManager:
                 result = mysql_cursor.fetchone()
                 mysql_count = result[0] if result else 0
 
-                with sqlite3.connect(self.config.upload_log_db) as sqlite_conn:
+                with sqlite3.connect(self.config.local_sqlite_db) as sqlite_conn:
                     sqlite_cursor = sqlite_conn.cursor()
                     sqlite_cursor.execute("SELECT COUNT(*) FROM uploads")
                     result = sqlite_cursor.fetchone()

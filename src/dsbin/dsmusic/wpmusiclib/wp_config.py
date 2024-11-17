@@ -49,7 +49,7 @@ class Config:
 
     # Paths and URLs
     save_path: str = field(default=LOCAL_SAVE_PATH)
-    upload_log_db: str = field(default=LOCAL_DB_PATH)
+    local_sqlite_db: str = field(default=LOCAL_DB_PATH)
     upload_path_prefix: str = field(default=UPLOAD_PATH_PREFIX)
     upload_url_prefix: str = field(default=UPLOAD_URL_PREFIX)
 

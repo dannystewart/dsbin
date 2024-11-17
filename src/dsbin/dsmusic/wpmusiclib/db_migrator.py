@@ -91,7 +91,7 @@ def test_mysql_credentials(config: Config) -> bool:
 
 def migrate_data(config: Config) -> None:
     """Migrate data from SQLite to MySQL."""
-    sqlite_conn = sqlite3.connect(config.upload_log_db)
+    sqlite_conn = sqlite3.connect(config.local_sqlite_db)
 
     try:
         with create_tunnel():

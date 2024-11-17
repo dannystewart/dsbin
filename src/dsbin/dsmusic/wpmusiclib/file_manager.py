@@ -49,7 +49,7 @@ class FileManager:
             self.logger.debug("Filename for instrumental: %s", base_filename)
 
         # Construct output path
-        output_filename = os.path.join(self.config.save_path, f"{base_filename}.flac")
+        output_filename = os.path.join(self.config.file_save_path, f"{base_filename}.flac")
         self.logger.debug("Output filename: %s", output_filename)
 
         if audio_track.append_text:
@@ -88,7 +88,7 @@ class FileManager:
             output_filename: The base filename for the converted files.
         """
         files_to_process = [  # List of files to process based on requested formats
-            os.path.join(self.config.save_path, f"{output_filename}{self.config.formats[fmt]}")
+            os.path.join(self.config.file_save_path, f"{output_filename}{self.config.formats[fmt]}")
             for fmt in self.config.formats_to_convert
         ]
 
@@ -96,10 +96,10 @@ class FileManager:
             song_name = audio_track.track_title
             for fmt in self.config.formats_to_convert:
                 old_path = os.path.join(
-                    self.config.save_path, f"{output_filename}{self.config.formats[fmt]}"
+                    self.config.file_save_path, f"{output_filename}{self.config.formats[fmt]}"
                 )
                 new_path = os.path.join(
-                    self.config.save_path, f"{song_name}{self.config.formats[fmt]}"
+                    self.config.file_save_path, f"{song_name}{self.config.formats[fmt]}"
                 )
                 if os.path.exists(old_path):
                     os.rename(old_path, new_path)

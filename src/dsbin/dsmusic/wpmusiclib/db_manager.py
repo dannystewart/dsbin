@@ -26,54 +26,30 @@ class DatabaseManager:
         self.config = config
         self.logger = LocalLogger.setup_logger(self.__class__.__name__, level=self.config.log_level)
 
-    def run(self, command: str) -> tuple[bool, str]:
-        """Execute a shell command and return success status and output."""
-        try:
-            with subprocess.Popen(
-                command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-            ) as process:
-                output, _ = process.communicate()
-                decoded_output = output.decode("utf-8").strip()
-                return process.returncode == 0, decoded_output
-        except subprocess.CalledProcessError as e:
-            return False, e.output.decode("utf-8").strip()
+    def _ensure_mysql_tunnel(self) -> None:
+        """Ensure MySQL SSH tunnel exists and is working."""
+        # Check for existing tunnel
+        success, output = subprocess.getstatusoutput("lsof -ti:3306 -sTCP:LISTEN")
+        if success == 0 and output.strip():
+            self.logger.debug("Found existing MySQL tunnel (PID: %s). Killing...", output.strip())
+            subprocess.run(["kill", "-9", output.strip()], check=False)
+            self.logger.debug("Existing tunnel killed.")
 
-    def ensure_ssh_tunnel(self, port: int, service_name: str = "SSH tunnel") -> None:
-        """Check for an SSH tunnel on a specified port and establish one if needed."""
-        self.logger.debug("Checking for existing %s on port %s...", service_name, port)
-        self.kill_existing_ssh_tunnel(service_name, port)
-        self.establish_ssh_tunnel(port, service_name)
-
-    def kill_existing_ssh_tunnel(self, service_name: str, port: int) -> None:
-        """Kill an existing SSH tunnel."""
-        success, output = self.run(f"lsof -ti:{port} -sTCP:LISTEN")
-        if success and output.strip():
-            ssh_tunnel_pid = output.strip()
-            self.logger.debug(
-                "Found existing %s with PID: %s. Killing...", service_name, ssh_tunnel_pid
-            )
-            self.run(f"kill -9 {ssh_tunnel_pid}")
-            self.logger.debug("Existing %s killed.", service_name)
-        else:
-            self.logger.debug("No existing %s found. Starting now...", service_name)
-
-    def establish_ssh_tunnel(self, port: int, service_name: str) -> None:
-        """Establish an SSH tunnel to a remote server."""
-        success, _ = self.run(
-            f"ssh -fNL {port}:localhost:{port} {self.config.ssh_user}@{self.config.ssh_host}"
-        )
-        if success:
-            self.logger.debug("%s established.", service_name)
-        else:
-            msg = "Failed to establish SSH tunnel."
+        # Create new tunnel
+        self.logger.debug("Starting MySQL tunnel...")
+        cmd = f"ssh -fNL 3306:localhost:3306 {self.config.ssh_user}@{self.config.ssh_host}"
+        if subprocess.run(cmd, shell=True, check=False).returncode != 0:
+            msg = "Failed to establish MySQL tunnel"
             raise DatabaseError(msg)
+
+        self.logger.debug("MySQL tunnel established.")
 
     @contextmanager
     def get_mysql_connection(
         self,
     ) -> Generator[MySQLConnectionAbstract | PooledMySQLConnection, None, None]:
         """Get MySQL connection through SSH tunnel."""
-        self.ensure_ssh_tunnel(self.config.db_port, "MySQL SSH tunnel")
+        self._ensure_mysql_tunnel()
 
         try:
             conn = mysql.connector.connect(
@@ -88,7 +64,6 @@ class DatabaseManager:
         finally:
             if "conn" in locals():
                 conn.close()
-            self.kill_existing_ssh_tunnel("MySQL SSH tunnel", self.config.db_port)
 
     @contextmanager
     def get_read_connection(

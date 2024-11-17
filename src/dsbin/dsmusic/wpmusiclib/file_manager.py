@@ -117,10 +117,11 @@ class FileManager:
         try:
             with paramiko.SSHClient() as ssh:
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-                private_key = paramiko.RSAKey.from_private_key_file(
-                    self.config.private_key_path, password=self.config.ssh_passphrase
+                ssh.connect(
+                    self.config.ssh_host,
+                    username=self.config.ssh_user,
+                    pkey=self.config.private_key,
                 )
-                ssh.connect("dannystewart.com", username="danny", pkey=private_key)
 
                 temp_filename = f"tmp-{final_filename}"
                 self.logger.debug("Uploading file '%s' as '%s'...", file_path, temp_filename)

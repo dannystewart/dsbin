@@ -52,6 +52,7 @@ class WPMusic:
             skip_upload=self.skip_upload,
             keep_files=self.keep_files,
             debug=self.debug,
+            no_cache=self.args.no_cache,
         )
         self.logger = LocalLogger.setup_logger(
             self.__class__.__name__,
@@ -68,6 +69,32 @@ class WPMusic:
     @handle_keyboard_interrupt()
     def main(self) -> None:
         """Process and upload multiple audio files or display history."""
+        # Handle database-specific commands first
+        if self.args.check_db:
+            with self.upload_tracker.db.get_mysql_connection() as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT COUNT(*) FROM tracks")
+                result = cursor.fetchone()
+                track_count = result[0] if result else 0
+
+                cursor.execute("SELECT COUNT(*) FROM uploads")
+                result = cursor.fetchone()
+                upload_count = result[0] if result else 0
+
+                self.logger.info(
+                    "Database connection successful! Found %s tracks and %s uploads.",
+                    track_count,
+                    upload_count,
+                )
+            return
+
+        if self.args.force_refresh:
+            self.logger.info("Forcing cache refresh from MySQL server...")
+            self.upload_tracker.db.force_refresh()
+            self.logger.info("Cache refresh complete!")
+            if not (self.args.history is not None or self.args.files):
+                return
+
         if self.args.history is not None:
             self.display_history()
         elif self.args.files:
@@ -209,6 +236,24 @@ class WPMusic:
             nargs="?",
             const="",
             help="display upload history, optionally filtered by track name",
+        )
+
+        # Database-related arguments
+        db_group = parser.add_argument_group("Database options")
+        db_group.add_argument(
+            "--force-refresh",
+            action="store_true",
+            help="force refresh of local cache from MySQL server",
+        )
+        db_group.add_argument(
+            "--no-cache",
+            action="store_true",
+            help="bypass local cache, always use MySQL server directly",
+        )
+        db_group.add_argument(
+            "--check-db",
+            action="store_true",
+            help="test database connection and exit",
         )
 
         # Parse known args first

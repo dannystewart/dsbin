@@ -1,30 +1,18 @@
 from __future__ import annotations
 
-import os
 from dataclasses import dataclass, field
 
 import paramiko
-from dotenv import load_dotenv
 from halo import Halo
 
-spinner = Halo(text="Initializing", spinner="dots")
+from dsutil.env_vars import DSEnv
+from dsutil.paths import DSPaths
 
-# Local paths
-LOCAL_SAVE_PATH: str = os.path.expanduser("~/Downloads")
-LOCAL_DB_PATH: str = os.path.expanduser("~/Logic/Evanescence/.upload_log.db")
-SSH_HOST: str = "dannystewart.com"
-SSH_USER: str = "danny"
-SSH_PRIVATE_KEY_PATH: str = os.path.expanduser("~/.ssh/id_rsa")
+spinner = Halo(text="Initializing", spinner="dots")
 
 # Server paths and URLs
 UPLOAD_PATH_PREFIX: str = "/mnt/docker/web/www/wordpress/wp-content/uploads/sites/2/"
 UPLOAD_URL_PREFIX: str = "https://music.dannystewart.com/wp-content/uploads/sites/2/"
-
-# Database settings
-DB_HOST: str = "127.0.0.1"
-DB_NAME: str = "music_uploads"
-DB_USER: str = "music_uploads"
-DB_PORT: int = 3306
 
 # Default lists of supported and enabled file formats
 SUPPORTED_FORMATS: dict[str, str] = {
@@ -37,7 +25,20 @@ ENABLED_FORMATS: list[str] = ["flac", "alac"]
 
 @dataclass
 class Config:
-    """Establish configuration settings for the script."""
+    """
+    Establish configuration settings for the script.
+
+    Uses DSPaths for path management and DSEnv for environment variables. Initializes all required
+    paths, environment variables, and subsystem configurations (SSH, database, etc.).
+
+    Paths are managed through self.paths (DSPaths instance):
+        self.file_save_path = self.paths.get_downloads_path()
+        self.local_sqlite_db = self.paths.get_data_path("wpmusic_upload_log.db")
+
+    Environment variables are managed through self.env (DSEnv instance):
+        self.ssh_passphrase = self.env.ssh_passphrase
+        self.db_password    = self.env.db_password
+    """
 
     skip_upload: bool
     keep_files: bool
@@ -48,24 +49,12 @@ class Config:
     no_cache: bool = False
 
     # Paths and URLs
-    save_path: str = field(default=LOCAL_SAVE_PATH)
-    local_sqlite_db: str = field(default=LOCAL_DB_PATH)
     upload_path_prefix: str = field(default=UPLOAD_PATH_PREFIX)
     upload_url_prefix: str = field(default=UPLOAD_URL_PREFIX)
 
     # SSH settings
-    private_key_path: str = field(default=SSH_PRIVATE_KEY_PATH)
-    ssh_host: str = field(default=SSH_HOST)
-    ssh_user: str = field(default=SSH_USER)
-    _private_key: paramiko.RSAKey | None = field(default=None, init=False)
     ssh_passphrase: str = field(init=False)
-
-    # Database settings
-    db_host: str = field(default=DB_HOST)
-    db_name: str = field(default=DB_NAME)
-    db_port: int = field(default=DB_PORT)
-    db_user: str = field(default=DB_USER)
-    db_password: str = field(init=False)
+    _private_key: paramiko.RSAKey | None = field(default=None, init=False)
 
     # Supported file formats
     formats: dict[str, str] = field(default_factory=lambda: SUPPORTED_FORMATS.copy())
@@ -78,19 +67,55 @@ class Config:
         # Configure log level based on debug setting
         self.log_level = "debug" if self.debug else "info"
 
-        # Load .env file
-        dotenv_path = os.path.expanduser("~/.env")
-        load_dotenv(dotenv_path)
+        # Initialize core services
+        self.paths = DSPaths("dsmusic")
+        self.initialize_env_vars()
 
-        # Get SSH passphrase from environment
-        self.ssh_passphrase = os.getenv("SSH_PASSPHRASE", "")
+        # Set up paths
+        self.file_save_path = self.paths.get_downloads_path()
+        self.local_sqlite_db = self.paths.get_data_path("wpmusic_upload_log.db")
 
-        # Get database credentials from environment
-        self.db_password = os.getenv("MUSIC_UPLOADS_DB_PASSWORD", "")
+        # Initialize subsystems
+        self.initialize_ssh()
+        self.initialize_database()
 
-        if not all([self.db_user, self.db_password]):
-            msg = "Database credentials not found in environment."
-            raise ValueError(msg)
+    def initialize_env_vars(self) -> None:
+        """Get environment variables."""
+        self.env = DSEnv("dsmusic", env_file="~/.env")
+
+        # Set up required environment variables
+        self.env.add_var(
+            "SSH_PASSPHRASE",
+            description="SSH key passphrase",
+            secret=True,
+        )
+        self.env.add_var(
+            "DSMUSIC_UPLOADS_MYSQL_PASSWORD",
+            attr_name="db_password",
+            description="MySQL password for music_uploads user",
+            secret=True,
+        )
+
+        # Validate environment variables
+        if errors := self.env.validate():
+            for error in errors:
+                raise ValueError(error)
+
+    def initialize_ssh(self) -> None:
+        """Initialize SSH settings."""
+        self.ssh_host = "dannystewart.com"
+        self.ssh_user = "danny"
+        self.ssh_passphrase = self.env.ssh_passphrase
+        self.private_key_path = self.paths.get_ssh_key("id_rsa")
+        self._private_key: paramiko.RSAKey | None = None
+
+    def initialize_database(self) -> None:
+        """Initialize database settings."""
+        self.db_host = "127.0.0.1"
+        self.db_port = 3306
+        self.db_name = "music_uploads"
+        self.db_user = "music_uploads"
+        self.db_password = self.env.db_password
 
     @property
     def private_key(self) -> paramiko.RSAKey:

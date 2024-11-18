@@ -81,7 +81,7 @@ class Config:
 
     def initialize_env_vars(self) -> None:
         """Get environment variables."""
-        self.env = DSEnv("wpmusic", env_file="~/.env")
+        self.env = DSEnv("wpmusic")
 
         # Set up required environment variables
         self.env.add_var(
@@ -95,11 +95,6 @@ class Config:
             description="MySQL password for music_uploads user",
             secret=True,
         )
-
-        # Validate environment variables
-        if errors := self.env.validate():
-            for error in errors:
-                raise ValueError(error)
 
     def initialize_ssh(self) -> None:
         """Initialize SSH settings."""

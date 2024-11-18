@@ -6,6 +6,10 @@ authors = ["Danny Stewart <danny@stewart.cc>"]
 readme = "README.md"
 packages = [{include = "dsbin", from = "src"}]
 
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
 dsmusic = { git = "https://gitlab.dannystewart.com/danny/dsmusic.git" }
@@ -41,60 +45,67 @@ types-requests = "^2.32.0.20241016"
 types-send2trash = "^1.8.2.7"
 
 [tool.poetry.scripts]
-backupsort = "dsbin.backupsort:main"
-bigfiles = "dsbin.bigfiles:main"
-changehostname = "dsbin.changehostname:main"
-distro = "dsbin.distro:main"
-dmgify = "dsbin.dmgify:main"
-dockermounter = "dsbin.dockermounter:main"
-dupefinder = "dsbin.dupefinder:main"
-envscripts = "dsbin.envscripts:main"
-envsync = "dsbin.envsync:main"
-evtelegram = "dsbin.evtelegram:main"
-ffgif = "dsbin.ffgif:main"
-fftrim = "dsbin.fftrim:main"
-fml = "dsbin.fml:main"
-foldermerge = "dsbin.foldermerge:main"
-iplookup = "dsbin.iplookup:main"
+# Script to list all scripts
 lsbin = "dsbin.lsbin:main"
-metacopy = "dsbin.metacopy:main"
-mp3ify = "dsbin.mp3ify:main"
-mshare = "dsbin.mshare:main"
-mvdmg = "dsbin.mvdmg:main"
-netreset = "dsbin.netreset:main"
-oldprojects = "dsbin.oldprojects:main"
-pipmigrator = "dsbin.pipmigrator:main"
-pkginst = "dsbin.pkginst:main"
-pybounce = "dsbin.pybounce:main"
-pycompare = "dsbin.pycompare:main"
-pyenversioner = "dsbin.pyenversioner:main"
-rmp3 = "dsbin.rmp3:main"
-rsyncer = "dsbin.rsyncer:main"
-scriptdep = "dsbin.scriptdep:main"
-setmag = "dsbin.setmag:main"
-spacepurger = "dsbin.spacepurger:main"
-ssh-tunnel = "dsbin.ssh_tunnel:main"
-timestamps = "dsbin.timestamps:main"
-uvmigrate = "dsbin.uvmigrate:main"
-w11renamer = "dsbin.w11renamer:main"
-watchtower = "dsbin.watchtower:main"
-ytdl = "dsbin.ytdl:main"
+
+# File management scripts
+backupsort = "dsbin.files.backupsort:main"
+bigfiles = "dsbin.files.bigfiles:main"
+dupefinder = "dsbin.files.dupefinder:main"
+fml = "dsbin.files.fml:main"
+foldermerge = "dsbin.files.foldermerge:main"
+rsyncer = "dsbin.files.rsyncer:main"
+
+# Media scripts
+ffgif = "dsbin.media.ffgif:main"
+fftrim = "dsbin.media.fftrim:main"
+ytdl = "dsbin.media.ytdl:main"
 
 # Music scripts
 aif2wav = "dsbin.music.awa:aif2wav"
-wav2aif = "dsbin.music.awa:wav2aif"
 alacrity = "dsbin.music.alacrity:main"
 azmusic = "dsbin.music.azmusic:main"
-bipclean = "dsbin.music.bipclean:main"
 bounceprune = "dsbin.music.bounceprune:main"
 calcbounce = "dsbin.music.calcbounce:main"
+evtelegram = "dsbin.music.evtelegram:main"
 hpfilter = "dsbin.music.hpfilter:main"
+metacopy = "dsbin.music.metacopy:main"
+mp3ify = "dsbin.music.mp3ify:main"
+mshare = "dsbin.music.mshare:main"
+pybounce = "dsbin.music.pybounce:main"
 pyfiler = "dsbin.music.filer:main"
+rmp3 = "dsbin.music.rmp3:main"
+wav2aif = "dsbin.music.awa:wav2aif"
 wpmusic = "dsbin.music.wpmusic:main"
 
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+# Logic-specific scripts
+bipclean = "dsbin.logic.bipclean:main"
+oldprojects = "dsbin.logic.oldprojects:main"
 
-[tool.mypy]
-ignore_missing_imports = true
+# Mac-specific scripts
+dmgify = "dsbin.mac.dmgify:main"
+mvdmg = "dsbin.mac.mvdmg:main"
+netreset = "dsbin.mac.netreset:main"
+pkginst = "dsbin.mac.pkginst:main"
+setmag = "dsbin.mac.setmag:main"
+spacepurger = "dsbin.mac.spacepurger:main"
+timestamps = "dsbin.mac.timestamps:main"
+
+# System tools
+changehostname = "dsbin.tools.changehostname:main"
+distro = "dsbin.tools.distro:main"
+dockermounter = "dsbin.tools.dockermounter:main"
+envsync = "dsbin.tools.envsync:main"
+iplookup = "dsbin.tools.iplookup:main"
+ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
+watchtower = "dsbin.tools.watchtower:main"
+
+# Text processing scripts
+pycompare = "dsbin.text.pycompare:main"
+w11renamer = "dsbin.text.w11renamer:main"
+
+# Python-related scripts
+pipmigrator = "dsbin.python.pipmigrator:main"
+pyenversioner = "dsbin.python.pyenversioner:main"
+scriptdep = "dsbin.python.scriptdep:main"
+uvmigrate = "dsbin.python.uvmigrate:main"

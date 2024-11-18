@@ -39,7 +39,7 @@ class WPMusic:
     """Upload and replace Evanescence remixes on WordPress."""
 
     def __init__(self, args: argparse.Namespace):
-        if args.doc or not args.files:
+        if args.doc:
             self.show_help_and_exit()
 
         # Initialize configuration and logger
@@ -54,6 +54,11 @@ class WPMusic:
             level=self.config.log_level,
             message_only=True,
         )
+
+        # Only check for files if we're not doing history or DB operations
+        if not args.files and args.history is None and not args.check_db and not args.force_refresh:
+            self.logger.error("No input files specified and no --history argument. Nothing to do.")
+            sys.exit(1)
 
         # Initialize components
         self.track_identifier = TrackIdentifier(self.config)

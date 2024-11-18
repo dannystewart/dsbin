@@ -81,16 +81,16 @@ watchtower = "dsbin.watchtower:main"
 ytdl = "dsbin.ytdl:main"
 
 # Music scripts
-aif2wav = "dsbin.dsmusic.awa:aif2wav"
-wav2aif = "dsbin.dsmusic.awa:wav2aif"
-alacrity = "dsbin.dsmusic.alacrity:main"
-azmusic = "dsbin.dsmusic.azmusic:main"
-bipclean = "dsbin.dsmusic.bipclean:main"
-bounceprune = "dsbin.dsmusic.bounceprune:main"
-calcbounce = "dsbin.dsmusic.calc:main"
-hpfilter = "dsbin.dsmusic.hpfilter:main"
-pyfiler = "dsbin.dsmusic.filer:main"
-wpmusic = "dsbin.dsmusic.wpmusic:main"
+aif2wav = "dsbin.music.awa:aif2wav"
+wav2aif = "dsbin.music.awa:wav2aif"
+alacrity = "dsbin.music.alacrity:main"
+azmusic = "dsbin.music.azmusic:main"
+bipclean = "dsbin.music.bipclean:main"
+bounceprune = "dsbin.music.bounceprune:main"
+calcbounce = "dsbin.music.calcbounce:main"
+hpfilter = "dsbin.music.hpfilter:main"
+pyfiler = "dsbin.music.filer:main"
+wpmusic = "dsbin.music.wpmusic:main"
 
 [build-system]
 requires = ["poetry-core"]

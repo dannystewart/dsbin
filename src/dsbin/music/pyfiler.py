@@ -12,7 +12,7 @@ from pathlib import Path
 
 import inquirer
 
-from dsbin.dsmusic.bounce_parser import Bounce, BounceParser
+from dsbin.music.bounce_parser import Bounce, BounceParser
 
 from dsutil.animation import walking_animation
 from dsutil.files import move_file

@@ -29,11 +29,11 @@ from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
-from dsutil.async_utils import retry_on_exc
+from dsutil import TZ
 from dsutil.log import LocalLogger
 from dsutil.macos import get_timestamps
 from dsutil.text import color
-from dsutil.tz import TZ
+from dsutil.tools import async_retry_on_exception
 
 # Get the directory where the script is located
 script_directory = os.path.dirname(os.path.abspath(__file__))
@@ -79,12 +79,16 @@ class SQLiteManager:
     def __init__(self, client: TelegramClientProtocol) -> None:
         self.client = client
 
-    @retry_on_exc(sqlite3.OperationalError, tries=RETRY_TRIES, delay=RETRY_DELAY, logger=logging)
+    @async_retry_on_exception(
+        sqlite3.OperationalError, tries=RETRY_TRIES, delay=RETRY_DELAY, logger=logging
+    )
     async def start_client(self) -> None:
         """Start the client safely, retrying if a sqlite3.OperationalError occurs."""
         await self.client.start()
 
-    @retry_on_exc(sqlite3.OperationalError, tries=RETRY_TRIES, delay=RETRY_DELAY, logger=logging)
+    @async_retry_on_exception(
+        sqlite3.OperationalError, tries=RETRY_TRIES, delay=RETRY_DELAY, logger=logging
+    )
     async def disconnect_client(self) -> None:
         """Disconnects the client safely, retrying if a sqlite3.OperationalError occurs."""
         await self.client.disconnect()

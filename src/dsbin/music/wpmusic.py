@@ -22,12 +22,12 @@ import argparse
 import os
 import sys
 
-from dsbin.dsmusic.wpmusiclib.audio_track import AudioTrack
-from dsbin.dsmusic.wpmusiclib.file_manager import FileManager
-from dsbin.dsmusic.wpmusiclib.metadata_setter import MetadataSetter
-from dsbin.dsmusic.wpmusiclib.track_identifier import TrackIdentifier
-from dsbin.dsmusic.wpmusiclib.upload_tracker import UploadTracker
-from dsbin.dsmusic.wpmusiclib.wp_config import Config, spinner
+from dsbin.music.wpmusiclib.audio_track import AudioTrack
+from dsbin.music.wpmusiclib.file_manager import FileManager
+from dsbin.music.wpmusiclib.metadata_setter import MetadataSetter
+from dsbin.music.wpmusiclib.track_identifier import TrackIdentifier
+from dsbin.music.wpmusiclib.upload_tracker import UploadTracker
+from dsbin.music.wpmusiclib.wp_config import Config, spinner
 
 from dsutil.log import LocalLogger
 from dsutil.media import ffmpeg_audio

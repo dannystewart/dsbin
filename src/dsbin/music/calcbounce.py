@@ -8,12 +8,12 @@ import os
 import sys
 from dataclasses import dataclass
 
+from dsutil import TZ
 from dsutil.animation import walking_animation
 from dsutil.files import list_files
 from dsutil.log import LocalLogger, TimeAwareLogger
 from dsutil.macos import get_timestamps
 from dsutil.shell import handle_keyboard_interrupt
-from dsutil.tz import TZ
 
 base_logger = LocalLogger.setup_logger("calcbounce", message_only=True)
 logger = TimeAwareLogger(base_logger)

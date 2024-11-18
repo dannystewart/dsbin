@@ -68,7 +68,7 @@ class Config:
         self.log_level = "debug" if self.debug else "info"
 
         # Initialize core services
-        self.paths = DSPaths("dsmusic")
+        self.paths = DSPaths("wpmusic")
         self.initialize_env_vars()
 
         # Set up paths
@@ -81,7 +81,7 @@ class Config:
 
     def initialize_env_vars(self) -> None:
         """Get environment variables."""
-        self.env = DSEnv("dsmusic", env_file="~/.env")
+        self.env = DSEnv("wpmusic", env_file="~/.env")
 
         # Set up required environment variables
         self.env.add_var(

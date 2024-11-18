@@ -33,7 +33,7 @@ class Config:
 
     Paths are managed through self.paths (DSPaths instance):
         self.file_save_path = self.paths.get_downloads_path()
-        self.local_sqlite_db = self.paths.get_data_path("wpmusic_upload_log.db")
+        self.local_sqlite_db = self.paths.get_cache_path("wpmusic_uploads.db")
 
     Environment variables are managed through self.env (DSEnv instance):
         self.ssh_passphrase = self.env.ssh_passphrase
@@ -73,7 +73,7 @@ class Config:
 
         # Set up paths
         self.file_save_path = self.paths.get_downloads_path()
-        self.local_sqlite_db = self.paths.get_data_path("wpmusic_upload_log.db")
+        self.local_sqlite_db = self.paths.get_cache_path("wpmusic_uploads.db")
 
         # Initialize subsystems
         self.initialize_ssh()

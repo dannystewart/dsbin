@@ -16,12 +16,11 @@ import logging
 import os
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from datetime import datetime
-from pathlib import Path
 from typing import Protocol
 
 import inquirer
-from dotenv import load_dotenv
 from halo import Halo
 from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
@@ -43,6 +42,8 @@ env.add_var("PYBOUNCE_TELEGRAM_API_HASH", attr_name="api_hash", var_type=str, se
 env.add_var("PYBOUNCE_TELEGRAM_PHONE", attr_name="phone", var_type=str)
 env.add_var("PYBOUNCE_TELEGRAM_CHANNEL_URL", attr_name="channel_url", var_type=str)
 
+spinner = Halo(text="Initializing...", spinner="dots")
+
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
@@ -60,6 +61,16 @@ args = parse_arguments()
 log_level = "debug" if args and args.debug else "info"
 logger = LocalLogger.setup_logger(level=log_level)
 logging.basicConfig(level=logging.WARNING)
+
+
+@contextmanager
+def pause_spinner():
+    """Temporarily pause the spinner for interactive prompts."""
+    spinner.stop()
+    try:
+        yield
+    finally:
+        spinner.start()
 
 
 class TelegramClientProtocol(Protocol):
@@ -85,7 +96,8 @@ class SQLiteManager:
     )
     async def start_client(self) -> None:
         """Start the client safely, retrying if a sqlite3.OperationalError occurs."""
-        await self.client.start()
+        with pause_spinner():
+            await self.client.start()
 
     @async_retry_on_exception(
         sqlite3.OperationalError, tries=RETRY_TRIES, delay=RETRY_DELAY, logger=logging
@@ -189,11 +201,7 @@ class TelegramUploader:
             raise
 
     async def post_file_to_channel(
-        self,
-        file_path: str,
-        comment: str,
-        spinner: Halo,
-        channel_entity: Channel | Chat,
+        self, file_path: str, comment: str, channel_entity: Channel | Chat
     ) -> None:
         """
         Upload the given file to the given channel.
@@ -201,7 +209,6 @@ class TelegramUploader:
         Args:
             file_path: The path to the file to upload.
             comment: A comment to include with the file.
-            spinner: The spinner object to stop and start.
             channel_entity: The channel entity to upload the file to.
         """
         filename = os.path.basename(file_path)
@@ -248,32 +255,24 @@ class TelegramUploader:
         logger.info("'%s' uploaded successfully.", file_path)
 
     async def upload_files(
-        self,
-        files: list[str],
-        comment: str,
-        spinner: Halo,
-        channel_entity: Channel | Chat,
+        self, files: list[str], comment: str, channel_entity: Channel | Chat
     ) -> None:
         """Upload the given files to the channel."""
         for file in files:
             if os.path.isfile(file):
-                await self.post_file_to_channel(file, comment, spinner, channel_entity)
+                await self.post_file_to_channel(file, comment, channel_entity)
             else:
                 logger.warning("'%s' is not a valid file. Skipping.", file)
 
     async def process_and_upload_file(
-        self,
-        file: str,
-        comment: str,
-        spinner: Halo,
-        channel_entity: Channel | Chat,
+        self, file: str, comment: str, channel_entity: Channel | Chat
     ) -> None:
         """Process a single file (convert if needed) and upload it to Telegram."""
         if not os.path.isfile(file):
             logger.warning("'%s' is not a valid file. Skipping.", file)
             return
         try:
-            await self.post_file_to_channel(file, comment, spinner, channel_entity)
+            await self.post_file_to_channel(file, comment, channel_entity)
 
         except Exception as e:
             logger.error("Error processing '%s': %s", file, str(e))
@@ -284,8 +283,6 @@ async def run() -> None:
     """Upload files to a Telegram channel."""
     # Parse command-line arguments
     args = parse_arguments()
-
-    spinner = Halo(text="Initializing...", spinner="dots")
     spinner.start()
 
     files = FileManager()
@@ -307,7 +304,7 @@ async def run() -> None:
 
         if files_to_upload:
             for file in files_to_upload:
-                await telegram.process_and_upload_file(file, args.comment, spinner, channel_entity)
+                await telegram.process_and_upload_file(file, args.comment, channel_entity)
         else:
             logger.warning("No files selected for upload.")
 

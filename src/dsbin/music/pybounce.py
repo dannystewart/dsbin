@@ -16,12 +16,10 @@ import logging
 import os
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import contextmanager
 from datetime import datetime
 from typing import Protocol
 
 import inquirer
-from halo import Halo
 from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
 from telethon import TelegramClient
@@ -29,11 +27,11 @@ from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
 from dsutil import TZ
+from dsutil.animation import walking_animation
 from dsutil.env_vars import DSEnv
 from dsutil.log import LocalLogger
 from dsutil.macos import get_timestamps
 from dsutil.paths import DSPaths
-from dsutil.text import color
 from dsutil.tools import async_retry_on_exception
 
 env = DSEnv("pybounce")
@@ -41,8 +39,6 @@ env.add_var("PYBOUNCE_TELEGRAM_API_ID", attr_name="api_id", var_type=str)
 env.add_var("PYBOUNCE_TELEGRAM_API_HASH", attr_name="api_hash", var_type=str, secret=True)
 env.add_var("PYBOUNCE_TELEGRAM_PHONE", attr_name="phone", var_type=str)
 env.add_var("PYBOUNCE_TELEGRAM_CHANNEL_URL", attr_name="channel_url", var_type=str)
-
-spinner = Halo(text="Initializing...", spinner="dots")
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -61,16 +57,6 @@ args = parse_arguments()
 log_level = "debug" if args and args.debug else "info"
 logger = LocalLogger.setup_logger(level=log_level)
 logging.basicConfig(level=logging.WARNING)
-
-
-@contextmanager
-def pause_spinner():
-    """Temporarily pause the spinner for interactive prompts."""
-    spinner.stop()
-    try:
-        yield
-    finally:
-        spinner.start()
 
 
 class TelegramClientProtocol(Protocol):
@@ -96,7 +82,7 @@ class SQLiteManager:
     )
     async def start_client(self) -> None:
         """Start the client safely, retrying if a sqlite3.OperationalError occurs."""
-        with pause_spinner():
+        with walking_animation():
             await self.client.start()
 
     @async_retry_on_exception(
@@ -167,7 +153,7 @@ class FileManager:
                 answers = inquirer.prompt(questions)
                 return answers["selected_files"] if answers else []
             except KeyboardInterrupt:
-                logger.error("Operation cancelled by user.")
+                logger.error("Upload canceled by user.")
                 return []
 
         return await asyncio.get_event_loop().run_in_executor(self.thread_pool, prompt_user)
@@ -225,8 +211,6 @@ class TelegramUploader:
         logger.debug("Upload title: '%s'%s", title, f", with comment: {comment}" if comment else "")
         logger.debug("Uploading to %s (channel ID: %s)", env.channel_url, channel_entity.id)
 
-        spinner.stop()
-
         pbar = async_tqdm(
             total=os.path.getsize(file_path),
             desc="Uploading",
@@ -247,8 +231,7 @@ class TelegramUploader:
         except (KeyboardInterrupt, asyncio.CancelledError):
             pbar.reset()
             pbar.close()
-            spinner.start()
-            spinner.fail(color("Upload aborted.", "red"))
+            logger.error("Upload cancelled by user.")
             return
 
         pbar.close()
@@ -283,7 +266,6 @@ async def run() -> None:
     """Upload files to a Telegram channel."""
     # Parse command-line arguments
     args = parse_arguments()
-    spinner.start()
 
     files = FileManager()
     telegram = TelegramUploader(files)
@@ -292,8 +274,6 @@ async def run() -> None:
     try:
         await sqlite.start_client()
         channel_entity = await telegram.get_channel_entity()
-
-        spinner.stop()
 
         files_to_upload = []
         for file_pattern in args.files:
@@ -309,7 +289,6 @@ async def run() -> None:
             logger.warning("No files selected for upload.")
 
     finally:
-        spinner.stop()
         await sqlite.disconnect_client()
         files.thread_pool.shutdown()
 

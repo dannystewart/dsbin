@@ -242,7 +242,7 @@ def process_and_upload(upload_path: str, input_file: str) -> None:
     print(colored(f"{final_url}", "blue"))
 
 
-def main(args: argparse.Namespace) -> None:
+def main() -> None:
     """Process and upload to Azure."""
     parser = argparse.ArgumentParser(
         description="Upload and convert audio file to Azure Blob Storage."
@@ -254,4 +254,5 @@ def main(args: argparse.Namespace) -> None:
     )
     parser.add_argument("input_file", type=str, help="Local input audio file")
 
+    args = parser.parse_args()
     process_and_upload(args.upload_path, args.input_file)

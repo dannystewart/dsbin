@@ -38,56 +38,49 @@ from dsutil.text import color
 class WPMusic:
     """Upload and replace Evanescence remixes on WordPress."""
 
-    def __init__(self, command_args: list[str]):
-        self.args = self.parse_arguments(command_args)
-
-        if self.args.doc or not command_args:
+    def __init__(self, args: argparse.Namespace):
+        if args.doc or not args.files:
             self.show_help_and_exit()
 
-        self.skip_upload = self.args.skip_upload
-        self.keep_files = self.args.keep_files or self.skip_upload  # Always keep if skipping upload
-        self.debug = self.args.debug
-
+        # Initialize configuration and logger
         self.config = Config(
-            skip_upload=self.skip_upload,
-            keep_files=self.keep_files,
-            debug=self.debug,
-            no_cache=self.args.no_cache,
+            skip_upload=args.skip_upload,
+            keep_files=args.keep_files,
+            debug=args.debug,
+            no_cache=args.no_cache,
         )
         self.logger = LocalLogger.setup_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             message_only=True,
         )
+
+        # Initialize components
         self.track_identifier = TrackIdentifier(self.config)
         self.metadata_setter = MetadataSetter(self.config)
         self.upload_tracker = UploadTracker(self.config)
         self.file_manager = FileManager(self.config, self.upload_tracker)
 
-        self.main()
+        # Store args for processing
+        self.args = args
 
-    @handle_keyboard_interrupt()
-    def main(self) -> None:
-        """Process and upload multiple audio files or display history."""
-        # Handle database-specific commands first
+        # Keep files based on argument or if skipping upload
+        self.should_keep = args.keep_files or args.skip_upload
+
+        # Check database connection if requested
         if self.args.check_db:
-            with self.upload_tracker.db.get_mysql_connection() as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT COUNT(*) FROM tracks")
-                result = cursor.fetchone()
-                track_count = result[0] if result else 0
+            self._check_database()
 
-                cursor.execute("SELECT COUNT(*) FROM uploads")
-                result = cursor.fetchone()
-                upload_count = result[0] if result else 0
-
-                self.logger.info(
-                    "Database connection successful! Found %s tracks and %s uploads.",
-                    track_count,
-                    upload_count,
-                )
+        # Force refresh of local cache if requested
+        if self._force_db_refresh():
             return
 
+        # Process files
+        self.process()
+
+    @handle_keyboard_interrupt()
+    def process(self) -> None:
+        """Process and upload multiple audio files or display history."""
         if self.args.force_refresh:
             self.logger.info("Forcing cache refresh from MySQL server...")
             self.upload_tracker.db.force_refresh()
@@ -122,7 +115,7 @@ class WPMusic:
 
             self.logger.info(
                 "%s %s%s...",
-                "Converting" if self.skip_upload else "Converting and uploading",
+                "Converting" if self.config.skip_upload else "Converting and uploading",
                 audio_track.track_name,
                 " (Instrumental)" if audio_track.is_instrumental else "",
             )
@@ -137,7 +130,7 @@ class WPMusic:
             if not self.config.skip_upload:
                 self.file_manager.print_and_copy_urls(output_filename)
 
-            if not self.keep_files:
+            if not self.config.keep_files:
                 self.file_manager.cleanup_files_after_upload(audio_track, output_filename)
 
         except Exception as e:
@@ -165,7 +158,7 @@ class WPMusic:
             self.logger.debug("Processed file path: %s", processed_file)
 
             # Upload the file if it's in the list of formats to upload
-            if format_name in self.config.formats_to_upload and not self.skip_upload:
+            if format_name in self.config.formats_to_upload and not self.config.skip_upload:
                 self.logger.debug("Uploading %s file...", format_name.upper())
                 spinner.start(color(f"Uploading {format_name.upper()} file...", "cyan"))
                 self.file_manager.upload_file_to_web_server(processed_file, audio_track)
@@ -175,7 +168,7 @@ class WPMusic:
         # After all formats are uploaded
         self.upload_tracker.log_upload_set()
 
-        if not self.skip_upload:
+        if not self.config.skip_upload:
             spinner.succeed(color("Upload complete!", "green"))
         else:
             spinner.succeed(color("Conversion complete! Files kept locally.", "green"))
@@ -201,70 +194,106 @@ class WPMusic:
 
         return output_file_path
 
-    def parse_arguments(self, args_list: list[str]) -> argparse.Namespace:
-        """Parse command-line arguments from a given list."""
-        parser = argparse.ArgumentParser(description="Convert and upload audio files to WordPress.")
-        parser.add_argument(
-            "--skip-upload",
-            action="store_true",
-            help="convert only, skip uploading (implies --keep-files)",
-            default=False,
-        )
-        parser.add_argument(
-            "--keep-files",
-            action="store_true",
-            help="keep converted files after upload",
-            default=False,
-        )
-        parser.add_argument(
-            "--append",
-            help="append text to the song title",
-            default="",
-        )
-        parser.add_argument(
-            "--doc",
-            action="store_true",
-            help="show the full documentation and exit",
-        )
-        parser.add_argument(
-            "--debug",
-            action="store_true",
-            help="show debug logging",
-        )
-        parser.add_argument(
-            "--history",
-            nargs="?",
-            const="",
-            help="display upload history, optionally filtered by track name",
-        )
+    def _check_database(self) -> None:
+        with self.upload_tracker.db.get_mysql_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM tracks")
+            result = cursor.fetchone()
+            track_count = result[0] if result else 0
 
-        # Database-related arguments
-        db_group = parser.add_argument_group("Database options")
-        db_group.add_argument(
-            "--force-refresh",
-            action="store_true",
-            help="force refresh of local cache from MySQL server",
-        )
-        db_group.add_argument(
-            "--no-cache",
-            action="store_true",
-            help="bypass local cache, always use MySQL server directly",
-        )
-        db_group.add_argument(
-            "--check-db",
-            action="store_true",
-            help="test database connection and exit",
-        )
+            cursor.execute("SELECT COUNT(*) FROM uploads")
+            result = cursor.fetchone()
+            upload_count = result[0] if result else 0
 
-        # Parse known args first
-        args, remaining = parser.parse_known_args(args_list)
+            self.logger.info(
+                "Database connection successful! Found %s tracks and %s uploads.",
+                track_count,
+                upload_count,
+            )
+        return
 
-        # Treat all remaining arguments as files
-        args.files = remaining or []
+    def _force_db_refresh(self) -> bool:
+        if self.args.force_refresh:
+            self.logger.info("Forcing cache refresh from MySQL server...")
+            self.upload_tracker.db.force_refresh()
+            self.logger.info("Cache refresh complete!")
+            if not (self.args.history is not None or self.args.files):
+                return True
+        return False
 
-        return args
-
-    def show_help_and_exit(self) -> None:
+    @staticmethod
+    def show_help_and_exit() -> None:
         """Print the script's docstring and exit."""
         print(__doc__)
         sys.exit()
+
+
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description="Convert and upload audio files to WordPress.")
+    parser.add_argument(
+        "--skip-upload",
+        action="store_true",
+        help="convert only, skip uploading (implies --keep-files)",
+        default=False,
+    )
+    parser.add_argument(
+        "--keep-files",
+        action="store_true",
+        help="keep converted files after upload",
+        default=False,
+    )
+    parser.add_argument(
+        "--append",
+        help="append text to the song title",
+        default="",
+    )
+    parser.add_argument(
+        "--doc",
+        action="store_true",
+        help="show the full documentation and exit",
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="show debug logging",
+    )
+    parser.add_argument(
+        "--history",
+        nargs="?",
+        const="",
+        help="display upload history, optionally filtered by track name",
+    )
+
+    # Database-related arguments
+    db_args = parser.add_argument_group("Database options")
+    db_args.add_argument(
+        "--force-refresh",
+        action="store_true",
+        help="force refresh of local cache from MySQL server",
+    )
+    db_args.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="bypass local cache, always use MySQL server directly",
+    )
+    db_args.add_argument(
+        "--check-db",
+        action="store_true",
+        help="test database connection and exit",
+    )
+
+    # Parse known args first, treat all remaining as files
+    args, remaining = parser.parse_known_args()
+    args.files = remaining or []
+    return args
+
+
+def main() -> None:
+    """Process and upload audio files to WordPress."""
+    args = parse_arguments()
+    WPMusic(args)
+
+
+if __name__ == "__main__":
+    main()

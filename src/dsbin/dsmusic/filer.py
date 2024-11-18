@@ -77,7 +77,7 @@ def scan_bounces() -> tuple[list[Bounce], list[str]]:
         return bounces, unique_suffixes
 
 
-def main(args_list: list) -> None:  # noqa: ARG001
+def main() -> None:
     """Sort bounce files into folders based on automatically detected suffixes in their names."""
     bounces, common_suffixes = scan_bounces()
 

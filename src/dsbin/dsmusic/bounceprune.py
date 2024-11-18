@@ -128,7 +128,7 @@ def execute_actions(actions: dict) -> None:
         print_colored("Actions cancelled.", "red")
 
 
-def main(args_list: list[str] | None = None) -> None:  # noqa: ARG001
+def main() -> None:
     """
     Process audio files in the current working directory by finding the bounces, grouping them,
     determining and printing the actions to be taken, and then executing them.

@@ -132,7 +132,7 @@ def calculate_work_time(
 
 
 @handle_keyboard_interrupt()
-def main(args_list: list) -> None:
+def main() -> None:
     """Calculate work time based on audio file timestamps."""
     parser = argparse.ArgumentParser(
         description="Calculate work time based on audio file timestamps."
@@ -165,7 +165,7 @@ def main(args_list: list) -> None:
         help="End date for filtering (format: MM/DD/YYYY)",
     )
 
-    args = parser.parse_args(args_list)
+    args = parser.parse_args()
 
     directory = os.path.abspath(args.directory)
     max_break_time = args.break_time

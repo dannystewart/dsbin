@@ -25,15 +25,14 @@ from dsutil.progress import conversion_list_context
 from dsutil.shell import confirm_action
 from dsutil.text import print_colored
 
+DEFAULT_EXTS = [".aiff", ".aif", ".wav"]
+ALLOWED_EXTS = [".aiff", ".aif", ".wav", ".m4a", ".flac"]
+
 
 class ALACrity:
     """Converts files in a directory to ALAC, with additional formats and options."""
 
-    def __init__(self, command_args: list):
-        # Default and allowed file extensions
-        self.default_exts = [".aiff", ".aif", ".wav"]
-        self.allowed_exts = [".aiff", ".aif", ".wav", ".m4a", ".flac"]
-
+    def __init__(self, args: argparse.Namespace) -> None:
         # Supported file codecs
         self.file_codecs = {
             "flac": "flac",
@@ -48,13 +47,11 @@ class ALACrity:
         self.sample_rate = "44100"
         self.extension = None
 
-        # Parse arguments and set variables
-        self.args = self.parse_arguments(command_args)
-
         # Run the script
-        self.main()
+        self._configure_vars_from_args(args)
+        self.run_conversion()
 
-    def main(self) -> None:
+    def run_conversion(self) -> None:
         """Gather specified files, convert them, and prompt for deletion of the originals."""
         converted_files = []
         original_files = []
@@ -102,7 +99,7 @@ class ALACrity:
         if self.auto_mode:
             list_files_args["include_hidden"] = False
 
-        if os.path.isfile(path) and path.lower().endswith(tuple(self.allowed_exts)):
+        if os.path.isfile(path) and path.lower().endswith(tuple(ALLOWED_EXTS)):
             files_to_process = [path]
         elif os.path.isdir(path):
             files_to_process = list_files(path, **list_files_args)
@@ -133,7 +130,7 @@ class ALACrity:
         skipped_files = []
 
         for input_path in files_to_process:
-            output_path, status = self.convert_file(input_path)
+            output_path, status = self.handle_file_conversion(input_path)
 
             if status == "converted":
                 converted_files.append(output_path)
@@ -146,7 +143,7 @@ class ALACrity:
 
         return converted_files, original_files, skipped_files
 
-    def convert_file(self, input_path: str) -> tuple[str, str]:
+    def handle_file_conversion(self, input_path: str) -> tuple[str, str]:
         """
         Convert a single file to the specified format using ffmpeg_audio, including checking for
         existing files and preserving bit depth if specified.
@@ -208,35 +205,7 @@ class ALACrity:
             return False
         return True
 
-    def parse_arguments(self, args_list: list[str]) -> argparse.Namespace:
-        """Parse command-line arguments."""
-        parser = argparse.ArgumentParser(description="Convert audio files to different formats")
-
-        parser.add_argument("-f", "--flac", action="store_true", help="Convert files to FLAC")
-        parser.add_argument("-w", "--wav", action="store_true", help="Convert files to WAV")
-        parser.add_argument("-a", "--aiff", action="store_true", help="Convert files to AIFF/AIF")
-        parser.add_argument(
-            "--max", action="store_true", help="Preserve maximum bit depth of the files"
-        )
-
-        for ext in self.allowed_exts:
-            ext_without_dot = ext.lstrip(".")
-            if ext_without_dot not in ["flac", "wav", "aiff"]:
-                parser.add_argument(
-                    f"--{ext_without_dot}",
-                    action="store_true",
-                    help=f"Convert files to {ext_without_dot.upper()}",
-                )
-
-        paths_help = "File(s) or directory of files to convert or wildcard pattern (e.g., *.m4a) (defaulting to current directory)"
-        parser.add_argument("paths", nargs="*", default=[os.getcwd()], help=paths_help)
-
-        args = parser.parse_args(args_list)
-        self._set_vars_from_args(args)
-
-        return args
-
-    def _set_vars_from_args(self, args: argparse.Namespace) -> None:
+    def _configure_vars_from_args(self, args: argparse.Namespace) -> None:
         """Set instance variables based on the parsed command-line arguments."""
         resolved_paths = []
         for path in args.paths:
@@ -253,12 +222,12 @@ class ALACrity:
             or args.aiff
             or any(
                 getattr(args, ext.lstrip("."), False)
-                for ext in self.allowed_exts
+                for ext in ALLOWED_EXTS
                 if ext.lstrip(".") != "aif"
             )
         )
 
-        for ext in self.allowed_exts:
+        for ext in ALLOWED_EXTS:
             ext_without_dot = ext.lstrip(".")
             if getattr(args, ext_without_dot):
                 self.extension = ext_without_dot
@@ -266,15 +235,40 @@ class ALACrity:
         if self.extension is None:
             self.extension = "m4a"
 
-        self.exts_to_convert = self.default_exts if self.auto_mode else self.allowed_exts
+        self.exts_to_convert = DEFAULT_EXTS if self.auto_mode else ALLOWED_EXTS
         self.exts_to_convert = [
             ext for ext in self.exts_to_convert if ext.lstrip(".") != self.extension
         ]
         self.codec = self.file_codecs.get(self.extension, "alac")
 
 
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description="Convert audio files to different formats")
+
+    parser.add_argument("-f", "--flac", action="store_true", help="Convert files to FLAC")
+    parser.add_argument("-w", "--wav", action="store_true", help="Convert files to WAV")
+    parser.add_argument("-a", "--aiff", action="store_true", help="Convert files to AIFF/AIF")
+    parser.add_argument(
+        "--max", action="store_true", help="Preserve maximum bit depth of the files"
+    )
+
+    for ext in ALLOWED_EXTS:
+        ext_without_dot = ext.lstrip(".")
+        if ext_without_dot not in ["flac", "wav", "aiff"]:
+            parser.add_argument(
+                f"--{ext_without_dot}",
+                action="store_true",
+                help=f"Convert files to {ext_without_dot.upper()}",
+            )
+
+    paths_help = "File(s) or directory of files to convert or wildcard pattern (e.g., *.m4a) (defaulting to current directory)"
+    parser.add_argument("paths", nargs="*", default=[os.getcwd()], help=paths_help)
+
+    return parser.parse_args()
+
+
 def main():
     """Main entry point for the script."""
-    import sys
-
-    ALACrity(sys.argv[1:])
+    args = parse_arguments()
+    ALACrity(args)

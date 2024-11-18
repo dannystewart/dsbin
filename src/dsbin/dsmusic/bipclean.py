@@ -14,7 +14,6 @@ from __future__ import annotations
 import argparse
 import os
 from datetime import datetime, timedelta
-
 from zoneinfo import ZoneInfo
 
 from dsutil.files import delete_files, list_files
@@ -33,9 +32,9 @@ def parse_args(args_list: list[str]) -> argparse.Namespace:
     return parser.parse_args(args_list)
 
 
-def main(args_list: list[str]) -> None:
+def main() -> None:
     """Find and delete AIFF files created within the specified time period."""
-    args = parse_args(args_list)
+    args = parse_args()
     current_dir = os.getcwd()
     time_duration = datetime.now(tz=ZoneInfo("America/New_York")) - timedelta(hours=args.hours)
 

@@ -420,9 +420,9 @@ def process_all_files(
                 continue
 
 
-def main(args_list: list) -> None:
+def main() -> None:
     """Parse arguments then process input files at specified cutoff frequency with cover art."""
-    args = parse_arguments(args_list)
+    args = parse_arguments()
 
     output_folder = EV_OUTPUT_FOLDER if args.ev or args.ev_output else args.output
     cover_art = EV_COVER_ART if args.ev or args.ev_cover else args.cover

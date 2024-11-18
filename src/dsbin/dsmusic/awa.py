@@ -66,6 +66,18 @@ def convert_audio(
             print(f"Skipping {source_file} ({target_format.upper()} version already exists).")
 
 
+def aif2wav() -> None:
+    """Convert AIFF files to WAV format."""
+    sys.argv.extend(["--to", "wav"])
+    main()
+
+
+def wav2aif() -> None:
+    """Convert WAV files to AIFF format."""
+    sys.argv.extend(["--to", "aif"])
+    main()
+
+
 def parse_args(args_list: list[str]) -> argparse.Namespace:
     """Parse arguments passed in from the command line."""
     parser = argparse.ArgumentParser(description="Convert between WAV and AIFF audio formats.")
@@ -82,13 +94,12 @@ def parse_args(args_list: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--recursive", "-r", action="store_true", help="Search for files recursively."
     )
-
     return parser.parse_args(args_list)
 
 
-def main(args_list: list[str]) -> None:
+def main() -> None:
     """Convert between WAV and AIFF formats."""
-    args = parse_args(args_list)
+    args = parse_args()
 
     if args.logic and not re.match(r"^(10|11)\.\d+(?:\.\d+)?$", args.logic):
         print_colored("Error: Version number must use format 10.x, 10.x.x, 11.x, or 11.x.x", "red")
@@ -103,4 +114,4 @@ def main(args_list: list[str]) -> None:
 
 
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    main()

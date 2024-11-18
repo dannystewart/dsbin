@@ -30,25 +30,26 @@ from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
 from dsutil import TZ
+from dsutil.env_vars import DSEnv
 from dsutil.log import LocalLogger
 from dsutil.macos import get_timestamps
+from dsutil.paths import DSPaths
 from dsutil.text import color
 from dsutil.tools import async_retry_on_exception
 
-# Get the directory where the script is located
-script_directory = os.path.dirname(os.path.abspath(__file__))
-dotenv_path = os.path.join(script_directory, ".env")
-
-load_dotenv()
-load_dotenv(dotenv_path)
+env = DSEnv("pybounce")
+env.add_var("PYBOUNCE_TELEGRAM_API_ID", attr_name="api_id", var_type=str)
+env.add_var("PYBOUNCE_TELEGRAM_API_HASH", attr_name="api_hash", var_type=str, secret=True)
+env.add_var("PYBOUNCE_TELEGRAM_PHONE", attr_name="phone", var_type=str)
+env.add_var("PYBOUNCE_TELEGRAM_CHANNEL_URL", attr_name="channel_url", var_type=str)
 
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Upload audio files to a Telegram channel.")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode")
-    parser.add_argument("files", nargs="*", help="Files to upload")
-    parser.add_argument("comment", nargs="?", default="", help="Comment to add to the upload")
+    parser.add_argument("--debug", action="store_true", help="enable debug mode")
+    parser.add_argument("files", nargs="*", help="files to upload")
+    parser.add_argument("comment", nargs="?", default="", help="comment to add to the upload")
     return parser.parse_args()
 
 
@@ -166,34 +167,25 @@ class TelegramUploader:
     def __init__(self, files: FileManager) -> None:
         self.files = files
 
-        # Telegram information
-        self.api_id = os.getenv("PYBOUNCE_TELEGRAM_API_ID")
-        self.api_hash = os.getenv("PYBOUNCE_TELEGRAM_API_HASH")
-        self.phone = os.getenv("PYBOUNCE_TELEGRAM_PHONE")
-        self.channel_url = os.getenv("PYBOUNCE_TELEGRAM_CHANNEL_URL")
-
-        if not isinstance(self.channel_url, str):
+        if not isinstance(env.channel_url, str):
             msg = "No channel URL provided in the .env file."
             raise RuntimeError(msg)
 
-        # Set path for session file
-        self.session_dir = Path.home() / ".config" / "pybounce"
-        self.session_dir.mkdir(parents=True, exist_ok=True)
-        self.session_file = self.session_dir / f"{self.phone}.session"
-
-        # Create Telegram client
-        self.client = TelegramClient(str(self.session_file), self.api_id, self.api_hash)
+        # Set up session file and client
+        self.paths = DSPaths("pybounce")
+        self.session_file = self.paths.get_config_path(f"{env.phone}.session")
+        self.client = TelegramClient(str(self.session_file), env.api_id, env.api_hash)
 
     async def get_channel_entity(self) -> Channel | Chat:
         """Get the Telegram channel entity for the given URL."""
         try:
-            entity = await self.client.get_entity(self.channel_url)
+            entity = await self.client.get_entity(env.channel_url)
             if not isinstance(entity, Channel | Chat):
                 msg = "URL does not point to a channel or chat."
                 raise ValueError(msg)
             return entity
         except ValueError:
-            logger.error("Could not find the channel for the URL: %s", self.channel_url)
+            logger.error("Could not find the channel for the URL: %s", env.channel_url)
             raise
 
     async def post_file_to_channel(
@@ -224,7 +216,7 @@ class TelegramUploader:
 
         logger.info("Uploading '%s' created %s.", filename, timestamp)
         logger.debug("Upload title: '%s'%s", title, f", with comment: {comment}" if comment else "")
-        logger.debug("Uploading to %s (channel ID: %s)", self.channel_url, channel_entity.id)
+        logger.debug("Uploading to %s (channel ID: %s)", env.channel_url, channel_entity.id)
 
         spinner.stop()
 

@@ -28,7 +28,7 @@ from tqdm.asyncio import tqdm as async_tqdm
 
 from dsutil import TZ
 from dsutil.animation import walking_animation
-from dsutil.env_vars import DSEnv
+from dsutil.env import DSEnv
 from dsutil.log import LocalLogger
 from dsutil.macos import get_timestamps
 from dsutil.paths import DSPaths

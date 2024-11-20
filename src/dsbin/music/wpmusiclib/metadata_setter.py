@@ -23,7 +23,7 @@ class MetadataSetter:
         self.logger = LocalLogger.setup_logger(
             self.__class__.__name__,
             level=self.config.log_level,
-            message_only=True,
+            message_only=self.config.log_message_only,
         )
 
     def apply_metadata(self, audio_track: AudioTrack, audio_format: str, path: str) -> str:

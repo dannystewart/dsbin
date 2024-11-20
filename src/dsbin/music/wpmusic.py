@@ -52,7 +52,7 @@ class WPMusic:
         self.logger = LocalLogger.setup_logger(
             self.__class__.__name__,
             level=self.config.log_level,
-            message_only=True,
+            message_only=self.config.log_message_only,
         )
 
         # Only check for files if we're not doing history or DB operations

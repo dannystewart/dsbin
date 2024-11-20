@@ -30,7 +30,7 @@ class FileManager:
         self.logger = LocalLogger.setup_logger(
             self.__class__.__name__,
             level=self.config.log_level,
-            message_only=True,
+            message_only=self.config.log_message_only,
         )
 
     def format_filename(self, audio_track: AudioTrack) -> str:

@@ -26,7 +26,11 @@ class UploadTracker:
     def __init__(self, config: Config):
         self.config = config
         self.db = DatabaseManager(config)
-        self.logger = LocalLogger.setup_logger(self.__class__.__name__, level=self.config.log_level)
+        self.logger = LocalLogger.setup_logger(
+            self.__class__.__name__,
+            level=self.config.log_level,
+            message_only=self.config.log_message_only,
+        )
 
         # Track the current set of uploads before recording them to the upload log
         self.current_upload_set = defaultdict(dict)

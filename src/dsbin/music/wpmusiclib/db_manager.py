@@ -24,7 +24,11 @@ class DatabaseManager:
 
     def __init__(self, config: Config):
         self.config = config
-        self.logger = LocalLogger.setup_logger(self.__class__.__name__, level=self.config.log_level)
+        self.logger = LocalLogger.setup_logger(
+            self.__class__.__name__,
+            level=self.config.log_level,
+            message_only=self.config.log_message_only,
+        )
 
     def _ensure_mysql_tunnel(self) -> None:
         """Ensure MySQL SSH tunnel exists and is working."""

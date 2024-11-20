@@ -44,6 +44,7 @@ class Config:
     keep_files: bool
     debug: bool
     log_level: str = field(init=False)
+    log_message_only: bool = False
 
     # Whether to skip the local database cache
     no_cache: bool = False

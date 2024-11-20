@@ -11,7 +11,7 @@ class TableConfig:
     """Configuration for the upload history table."""
 
     # Uploads per song when displaying all songs
-    uploads_per_song: int = 4
+    uploads_per_song: int = 3
 
     # Date format
     date_format: str = "%a %m.%d.%Y %I:%M %p"

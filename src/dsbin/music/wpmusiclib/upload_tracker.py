@@ -170,6 +170,13 @@ class UploadTracker:
         """Print the upload history in a neatly organized way with color."""
         history = self.get_upload_history(track_name)
         table_formatter = TableFormatter(apply_limit=track_name is None)
+        num_uploads = table_formatter.config.uploads_per_song
+
+        self.logger.info(
+            "Listing %s uploads for %s (latest first).",
+            f"latest {num_uploads}" if not track_name else "all",
+            f'"{track_name}"' if track_name else "all tracks",
+        )
 
         for entry in history:
             table_formatter.print_table(entry["uploads"], entry["track_name"])

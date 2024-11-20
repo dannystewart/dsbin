@@ -57,8 +57,8 @@ class UploadTracker:
         if not self.current_upload_set:
             return
 
-        uploaded = datetime.now(tz=tz).isoformat()
-        self.logger.debug("Writing new uploads to MySQL database.")
+        # Get current time and format it for MySQL
+        uploaded = datetime.now(tz=tz).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S")
 
         with self.db.get_mysql_connection() as conn:
             cursor = conn.cursor()

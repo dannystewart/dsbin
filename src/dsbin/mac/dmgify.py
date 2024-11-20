@@ -51,7 +51,7 @@ tz = ZoneInfo("America/New_York")
 
 LOGIC_EXCLUSIONS = ["Bounces", "Old Bounces", "Movie Files", "Stems"]
 
-resources_for_cleanup = {
+resources_for_cleanup: dict[str, str | None] = {
     "temp_dmg": None,
     "current_sparsebundle": None,
 }
@@ -315,26 +315,47 @@ def parse_arguments() -> argparse.Namespace:
         description="Creates DMG files from folders, with specific handling for Logic project folders."
     )
     parser.add_argument(
-        "folder", nargs="?", default=".", help="Folder to process (default is current directory)"
+        "folder",
+        nargs="?",
+        default=".",
+        help="Folder to process (default is current directory)",
     )
     parser.add_argument(
-        "--logic", action="store_true", help="Indicate that the folder is a Logic project"
+        "--logic",
+        action="store_true",
+        help="Indicate that the folder is a Logic project",
     )
     parser.add_argument(
-        "-d", "--dry-run", action="store_true", help="Dry run: list files that would be created"
-    )
-    parser.add_argument("-e", "--exclude", help="Comma-separated list of folder names to exclude")
-    parser.add_argument(
-        "-f", "--force", action="store_true", help="Overwrite DMGs that already exist"
-    )
-    parser.add_argument(
-        "--date", action="store_true", help="Append current date to the DMG file name"
+        "-d",
+        "--dry-run",
+        action="store_true",
+        help="Dry run: list files that would be created",
     )
     parser.add_argument(
-        "--lzma", action="store_true", help="Use LZMA compression for the DMG (better but slower)"
+        "-e",
+        "--exclude",
+        help="Comma-separated list of folder names to exclude",
     )
     parser.add_argument(
-        "--backup", action="store_true", help="Use LZMA compression and append date"
+        "-f",
+        "--force",
+        action="store_true",
+        help="Overwrite DMGs that already exist",
+    )
+    parser.add_argument(
+        "--date",
+        action="store_true",
+        help="Append current date to the DMG file name",
+    )
+    parser.add_argument(
+        "--lzma",
+        action="store_true",
+        help="Use LZMA compression for the DMG (better but slower)",
+    )
+    parser.add_argument(
+        "--backup",
+        action="store_true",
+        help="Use LZMA compression and append date",
     )
     return parser.parse_args()
 

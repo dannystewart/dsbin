@@ -64,7 +64,7 @@ EV_OUTPUT_FOLDER = os.path.expanduser(
 )
 
 
-def parse_arguments(args_list: list) -> argparse.Namespace:
+def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments for applying a highpass filter to audio files."""
     parser = argparse.ArgumentParser(
         description="Apply a highpass filter to reduce bass for HomePod."
@@ -92,7 +92,7 @@ def parse_arguments(args_list: list) -> argparse.Namespace:
     parser.add_argument(
         "--ev-output", action="store_true", help="Use preset Evanescence output folder"
     )
-    return parser.parse_args(args_list)
+    return parser.parse_args()
 
 
 def run_with_spinner(text: str, func: Callable, *args: list, **kwargs: dict) -> Callable:
@@ -353,8 +353,8 @@ def process_file(
 
         os.makedirs(output_directory, exist_ok=True)
         filename = os.path.basename(input_filepath)
-        basename, extension = os.path.splitext(filename)
-        filename_with_suffix = f"{basename} {SUFFIX}{extension}"
+        basename, ext = os.path.splitext(filename)
+        filename_with_suffix = f"{basename} {SUFFIX}{ext}"
         output_filepath = os.path.join(output_directory, filename_with_suffix)
 
         write_audio_file(

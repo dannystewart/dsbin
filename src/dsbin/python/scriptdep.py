@@ -143,8 +143,8 @@ def analyze_dependencies() -> None:
     dsutil_imports = analyze_imports(Path("dsutil"), "dsutil", exclude_dirs)
     scripts_imports = analyze_imports(Path("."), "scripts", exclude_dirs)
 
-    dsutil_imports = analyze_imports(Path("dsutil"), "dsutil")
-    scripts_imports = analyze_imports(Path("."), "scripts")
+    dsutil_imports = analyze_imports(Path("dsutil"), "dsutil", exclude_dirs)
+    scripts_imports = analyze_imports(Path("."), "scripts", exclude_dirs)
 
     installed_packages = get_installed_packages()
 

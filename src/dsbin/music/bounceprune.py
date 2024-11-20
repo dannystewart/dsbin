@@ -93,13 +93,7 @@ def print_actions(actions: dict) -> None:
 
 
 def execute_actions(actions: dict) -> None:
-    """
-    Execute a series of actions on a given directory.
-
-    Args:
-        directory: The directory to execute the actions on.
-        actions: A dictionary containing the actions to be performed on the files.
-    """
+    """Execute a series of actions on a given directory."""
     if confirm_action("Proceed with these actions?", default_to_yes=False):
         successful_deletions, failed_deletions = delete_files(actions["trash"], show_output=False)
 

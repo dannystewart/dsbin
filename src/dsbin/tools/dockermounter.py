@@ -12,6 +12,10 @@ import termios
 import tty
 
 from termcolor import colored
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from dsutil.text import ColorName
 
 logging.basicConfig(
     filename="mount_check.log",
@@ -57,7 +61,9 @@ def get_single_char_input(prompt: str) -> str:
     return char
 
 
-def confirm_action(prompt: str, default_to_yes: bool = False, prompt_color: str = "white") -> bool:
+def confirm_action(
+    prompt: str, default_to_yes: bool = False, prompt_color: ColorName = "white"
+) -> bool:
     """Asks the user to confirm an action."""
     options = "[Y/n]" if default_to_yes else "[y/N]"
     full_prompt = colored(f"{prompt} {options} ", prompt_color)

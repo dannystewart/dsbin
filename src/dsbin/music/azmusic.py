@@ -172,8 +172,8 @@ def repopulate_cdn(client: Any, blob_name: str) -> None:
 
 def process_and_upload(upload_path: str, input_file: str) -> None:
     """Process and upload to Azure."""
-    connection_string = os.getenv("AZURE_CONNECTION_STRING")
-    if not connection_string:
+    connect_str = os.getenv("AZURE_CONNECTION_STRING")
+    if not connect_str:
         print(
             colored(
                 "Error: AZURE_CONNECTION_STRING not found. Check environment variables.",
@@ -182,9 +182,7 @@ def process_and_upload(upload_path: str, input_file: str) -> None:
         )
         sys.exit(1)
 
-    client = BlobServiceClient.from_connection_string(connection_string).get_container_client(
-        "music"
-    )
+    client = BlobServiceClient.from_connection_string(connect_str).get_container_client("music")
 
     subfolder, blob_name = upload_path.split("/", 1)
     validate_folder(subfolder)

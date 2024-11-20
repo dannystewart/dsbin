@@ -51,10 +51,10 @@ def parse_arguments() -> argparse.Namespace:
 
 
 # Parse command-line arguments
-args = parse_arguments()
+args_for_logger = parse_arguments()
 
 # Set up logger based on debug flag and set log level
-log_level = "debug" if args and args.debug else "info"
+log_level = "debug" if args_for_logger and args_for_logger.debug else "info"
 logger = LocalLogger.setup_logger(level=log_level)
 logging.basicConfig(level=logging.WARNING)
 

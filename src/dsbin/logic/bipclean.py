@@ -23,13 +23,13 @@ from dsutil.text import print_colored
 DEFAULT_HOURS = 4
 
 
-def parse_args(args_list: list[str]) -> argparse.Namespace:
+def parse_args() -> argparse.Namespace:
     """Parse arguments passed in from the command line."""
     parser = argparse.ArgumentParser(description="find and delete recent AIFF files")
     parser.add_argument(
         "--hours", type=int, default=DEFAULT_HOURS, help="hours to look back (default: 4)"
     )
-    return parser.parse_args(args_list)
+    return parser.parse_args()
 
 
 def main() -> None:

@@ -78,7 +78,7 @@ def wav2aif() -> None:
     main()
 
 
-def parse_args(args_list: list[str]) -> argparse.Namespace:
+def parse_args() -> argparse.Namespace:
     """Parse arguments passed in from the command line."""
     parser = argparse.ArgumentParser(description="Convert between WAV and AIFF audio formats.")
     parser.add_argument(
@@ -94,7 +94,7 @@ def parse_args(args_list: list[str]) -> argparse.Namespace:
     parser.add_argument(
         "--recursive", "-r", action="store_true", help="Search for files recursively."
     )
-    return parser.parse_args(args_list)
+    return parser.parse_args()
 
 
 def main() -> None:

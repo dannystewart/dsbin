@@ -164,7 +164,8 @@ class DatabaseManager:
             self.logger.warning("Failed to check cache staleness: %s", str(e))
             return True
 
-    def _init_sqlite_schema(self, conn: sqlite3.Connection) -> None:
+    @staticmethod
+    def _init_sqlite_schema(conn: sqlite3.Connection) -> None:
         """Initialize the SQLite schema."""
         cursor = conn.cursor()
         cursor.execute("""

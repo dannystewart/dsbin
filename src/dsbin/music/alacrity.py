@@ -187,7 +187,8 @@ class ALACrity:
                 print_colored(f"\nFailed to convert {input_filename}: {e}", "red")
                 return input_path, "failed"
 
-    def _handle_existing_file(self, output_path: str) -> bool:
+    @staticmethod
+    def _handle_existing_file(output_path: str) -> bool:
         """
         Check for an existing file and prompt to confirm whether to overwrite if needed.
 

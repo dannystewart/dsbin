@@ -132,7 +132,8 @@ class TableFormatter:
 
         return rows[: self.limit] if apply_limit and self.limit else rows
 
-    def _get_version(self, filename: str) -> str:
+    @staticmethod
+    def _get_version(filename: str) -> str:
         """Remove suffix and extract version number from filename."""
         base = filename.rsplit(".", 1)[0].replace(" No Vocals", "")
         return base.split()[-1]

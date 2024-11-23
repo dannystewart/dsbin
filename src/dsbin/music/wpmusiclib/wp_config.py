@@ -73,8 +73,8 @@ class Config:
         self.initialize_env_vars()
 
         # Set up paths
-        self.file_save_path = self.paths.downloads.base
-        self.local_sqlite_db = self.paths.cache("wpmusic_uploads.db")
+        self.file_save_path = self.paths.downloads_dir
+        self.local_sqlite_db = self.paths.get_cache_path("wpmusic_uploads.db")
 
         # Initialize subsystems
         self.initialize_ssh()

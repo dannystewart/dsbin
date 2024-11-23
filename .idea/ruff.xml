@@ -6,8 +6,6 @@
     <option name="globalRuffLspExecutablePath" value="$USER_HOME$/.pyenv/shims/ruff-lsp" />
     <option name="ruffConfigPath" value="$PROJECT_DIR$/ruff.toml" />
     <option name="runRuffOnSave" value="true" />
-    <option name="useIntellijLspClient" value="false" />
-    <option name="useLsp4ij" value="true" />
     <option name="useRuffFormat" value="true" />
     <option name="useRuffLsp" value="true" />
   </component>

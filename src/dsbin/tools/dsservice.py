@@ -1,11 +1,13 @@
 from __future__ import annotations
 
+import argparse
 import subprocess
 from pathlib import Path
 
 from .systemd.service_list import ServiceConfigs
 from .systemd.service_template import SystemdServiceTemplate
 
+from dsutil.shell import is_root_user
 from dsutil.text import color, print_colored
 
 # Define column widths
@@ -117,3 +119,65 @@ def list_services(search_term: str = "") -> None:
     for name, desc in sorted(services):
         print(color(f"{name:<{service_width}} ", "green") + color(desc, "white"))
     print()
+
+
+def handle_services(args: argparse.Namespace) -> int:
+    """Get available services and perform requested actions."""
+    manager = SystemdManager()
+    configs = ServiceConfigs()
+
+    # Get the service config if it exists
+    service_config = None
+    for name, config in vars(configs).items():
+        if isinstance(config, SystemdServiceTemplate) and name == args.service:
+            service_config = config
+            break
+
+    if not service_config:
+        print_colored(f"Service '{args.service}' not found.", "red")
+        return 1
+
+    if args.command == "install":
+        if manager.install_service(service_config):
+            print_colored(f"Successfully installed {args.service} service.", "green")
+            return 0
+        return 1
+
+    if args.command == "remove":
+        if manager.remove_service(args.service):
+            print_colored(f"Successfully removed {args.service} service.", "green")
+            return 0
+        return 1
+    raise ValueError("Unknown command.")
+
+
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description="Manage systemd services for DS utilities")
+    parser.add_argument("command", choices=["install", "remove", "list"], help="Action to perform")
+    parser.add_argument("service", nargs="?", help="Service to act on")
+    parser.add_argument("--search", help="Search term when listing services", default="")
+    return parser.parse_args()
+
+
+def main() -> int:
+    """Main function for managing systemd services."""
+    if not is_root_user():
+        print_colored("This script must be run as root.", "red")
+        return 1
+
+    args = parse_args()
+
+    if args.command == "list":
+        list_services(args.search)
+        return 0
+
+    if not args.service:
+        print_colored(f"Service name required for {args.command} command.", "red")
+        return 1
+
+    return handle_services(args)
+
+
+if __name__ == "__main__":
+    exit(main())

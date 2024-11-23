@@ -21,6 +21,7 @@ import requests
 from termcolor import colored
 
 from dsutil.text import remove_html_tags
+from dsutil.shell import handle_keyboard_interrupt
 
 SOURCES: dict[str, dict[str, Any]] = {
     "ip2location": {
@@ -113,12 +114,23 @@ MAX_RETRIES = 3
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="IP address lookup tool.")
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         "ip_address",
         type=str,
         nargs="?",
         default=None,
         help="The IP address to look up",
+    )
+    group.add_argument(
+        "--me",
+        action="store_true",
+        help="Look up your own external IP address",
+    )
+    group.add_argument(
+        "--me-with-lookup",
+        action="store_true",
+        help="Include your IP lookup in the output",
     )
     return parser.parse_args()
 
@@ -190,15 +202,34 @@ def _get_full_country_name(country_code: str) -> str:
         return country_code
 
 
+def get_external_ip() -> str | None:
+    """Get the external IP address using ipify.org."""
+    try:
+        response = requests.get("https://api.ipify.org", timeout=TIMEOUT)
+        if response.status_code == 200:
+            return response.text
+    except requests.exceptions.RequestException as e:
+        print(colored(f"Failed to get external IP: {e}", "red"))
+    return None
+
+
+@handle_keyboard_interrupt()
 def main() -> None:
     """Main function."""
-    parser = argparse.ArgumentParser(description="IP address lookup tool.")
-    parser.add_argument(
-        "ip_address", type=str, nargs="?", default=None, help="The IP address to look up"
-    )
-    args = parser.parse_args()
+    args = parse_arguments()
+    if args.me_with_lookup:
+        args.me = True
 
-    ip_address = args.ip_address or input("Please enter the IP address to look up: ")
+    if args.me:
+        ip_address = get_external_ip()
+        if not ip_address:
+            return
+        print(colored(f"Your external IP address is: {ip_address}", "blue"))
+        if not args.me_with_lookup:
+            return
+    else:
+        ip_address = args.ip_address or input("Please enter the IP address to look up: ")
+
     print(colored(f"\nIP lookup results for {ip_address}:", "blue"))
     fetch_and_print_ip_data(ip_address)
 

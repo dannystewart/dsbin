@@ -7,12 +7,18 @@ from __future__ import annotations
 import argparse
 import shutil
 import subprocess
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
+from typing import TYPE_CHECKING
 
+from dsutil.env import DSEnv
 from dsutil.log import LocalLogger
+from dsutil.notifiers import TelegramSender
 from dsutil.paths import DSPaths
 from dsutil.shell import confirm_action, is_root_user
+
+if TYPE_CHECKING:
+    from logging import Logger
 
 paths = DSPaths("dockermounter")
 LOG_FILE_PATH = paths.get_log_path("dockermounter.log")
@@ -20,6 +26,30 @@ LOG_FILE_PATH = paths.get_log_path("dockermounter.log")
 logger = LocalLogger.setup_logger(log_file=LOG_FILE_PATH)
 
 POSSIBLE_SHARES = ["Danny", "Downloads", "Music", "Media", "Storage"]
+
+
+def setup_env() -> DSEnv:
+    """Setup environment configuration."""
+    env = DSEnv("dockermounter")
+    env.add_var(
+        "TELEGRAM_BOT_TOKEN",
+        description="Telegram Bot API token for notifications",
+        secret=True,
+        required=False,
+    )
+    env.add_var(
+        "TELEGRAM_CHAT_ID",
+        description="Telegram chat ID for notifications",
+        required=False,
+    )
+    env.add_var(
+        "NOTIFY_ON_CHECK",
+        description="Send notification even when all mounts are okay",
+        required=False,
+        default="false",
+        var_type=lambda x: x.lower() == "true",
+    )
+    return env
 
 
 @dataclass
@@ -39,6 +69,30 @@ class ShareManager:
     mount_root: Path
     docker_compose: Path | None
     auto: bool
+
+    env: DSEnv = field(init=False)
+    telegram: TelegramSender | None = field(init=False)
+    logger: Logger = field(init=False)
+
+    def __post_init__(self) -> None:
+        """Initialize environment and optional Telegram notification."""
+        # Validate mount_root
+        if not self.mount_root.is_dir():
+            msg = f"Mount root directory does not exist: {self.mount_root}"
+            raise ValueError(msg)
+
+        # Validate docker_compose if provided
+        if self.docker_compose and not self.docker_compose.is_file():
+            msg = f"Docker compose file does not exist: {self.docker_compose}"
+            raise ValueError(msg)
+
+        # Setup environment and notifications
+        self.env = setup_env()
+        self.logger = LocalLogger.setup_logger()
+
+        self.telegram = None
+        if self.env.telegram_bot_token and self.env.telegram_chat_id:
+            self.telegram = TelegramSender(self.env.telegram_bot_token, self.env.telegram_chat_id)
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> ShareManager:

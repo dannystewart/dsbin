@@ -23,5 +23,8 @@
             ".idea": true,
             "redis": true,
         },
+        "cSpell.words": [
+            "dockermounter"
+        ],
 	}
 }

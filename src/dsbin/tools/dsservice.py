@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 from .systemd.service_list import ServiceConfigs
-from .systemd.service_template import SystemdServiceTemplate
+from .systemd.systemd import SystemdServiceTemplate
 
 from dsutil.shell import is_root_user
 from dsutil.text import color, print_colored

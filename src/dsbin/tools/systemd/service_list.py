@@ -1,18 +1,16 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
-
-from .service_template import SystemdServiceTemplate
+from .systemd import ServiceConfigBase, SystemdServiceTemplate, service_configs
 
 
-@dataclass
-class ServiceConfigs:
-    """Collection of service configurations for dsutil."""
-
-    dockermounter = SystemdServiceTemplate(
+@service_configs(
+    SystemdServiceTemplate(
         name="dockermounter",
         description="Check and fix Docker mount points",
         command=["/home/danny/.pyenv/shims/dockermounter", "--auto"],
         schedule="15min",
         after_targets=["network.target"],
-    )
+    ),
+)
+class ServiceConfigs(ServiceConfigBase):
+    """Collection of service configurations for dsutil."""

@@ -93,6 +93,7 @@ timestamps = "dsbin.mac.timestamps:main"
 
 # System tools
 changehostname = "dsbin.tools.changehostname:main"
+dsservice = "dsbin.tools.dsservice:main"
 distro = "dsbin.tools.distro:main"
 dockermounter = "dsbin.tools.dockermounter:main"
 envsync = "dsbin.tools.envsync:main"

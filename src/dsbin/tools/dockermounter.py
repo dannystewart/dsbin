@@ -12,6 +12,7 @@ from pathlib import Path
 
 from dsutil.log import LocalLogger
 from dsutil.paths import DSPaths
+from dsutil.shell import confirm_action, is_root_user
 
 paths = DSPaths("dockermounter")
 LOG_FILE_PATH = paths.get_log_path("dockermounter.log")
@@ -42,9 +43,19 @@ class ShareManager:
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> ShareManager:
         """Create a ShareManager instance from command-line arguments."""
+        docker_path = None
+        if args.docker:
+            path = Path(args.docker).expanduser()
+            if path.exists():
+                docker_path = path
+            else:
+                logger.warning(
+                    "Docker Compose file %s not found, skipping Docker operations.", path
+                )
+
         return cls(
             mount_root=Path("/mnt"),
-            docker_compose=Path(args.docker).expanduser() if args.docker else None,
+            docker_compose=docker_path,
             auto=args.auto,
         )
 
@@ -87,9 +98,12 @@ class ShareManager:
     def remount_all(self) -> bool:
         """Remount all filesystems."""
         try:
-            subprocess.run(["sudo", "mount", "-a"], check=True)
-            logger.info("Successfully remounted all filesystems")
+            subprocess.run(["sudo", "mount", "-a"], check=True, timeout=30)
+            logger.info("Successfully remounted all filesystems.")
             return True
+        except subprocess.TimeoutExpired:
+            logger.error("Timeout while trying to remount filesystems.")
+            return False
         except subprocess.CalledProcessError as e:
             logger.error("Failed to remount filesystems: %s", e)
             return False
@@ -102,10 +116,10 @@ class ShareManager:
         try:
             compose_dir = self.docker_compose.parent
             subprocess.run(["docker-compose", "down"], check=True, cwd=compose_dir)
-            logger.info("Docker stack is down")
+            logger.info("Docker stack is down.")
 
             subprocess.run(["docker-compose", "up", "-d"], check=True, cwd=compose_dir)
-            logger.info("Docker stack is up")
+            logger.info("Docker stack is up.")
             return True
         except subprocess.CalledProcessError as e:
             logger.error("Failed to restart Docker stack: %s", e)
@@ -139,14 +153,11 @@ class ShareManager:
         if problematic:
             if not self.auto:
                 shares_str = "\n  ".join(str(p) for p in problematic)
-                response = input(
+                if not confirm_action(
                     f"The following shares have contents but aren't mounted:\n"
-                    f"  {shares_str}\n"
-                    f"Do you want to clean them? (y/N): "
-                ).lower()
-
-                if response != "y":
-                    logger.info("User chose not to clean shares")
+                    f"  {shares_str}\nDo you want to clean them? (y/N): "
+                ):
+                    logger.info("Not cleaning shares.")
                     return False
 
             # Clean problematic shares
@@ -169,25 +180,25 @@ def parse_args() -> argparse.Namespace:
         "--check", action="store_true", help="Only check share status without making changes"
     )
     parser.add_argument(
-        "--docker",
-        help="Path to docker-compose.yml for restarting services",
-        default="~/docker/docker-compose.yml",
+        "--docker", help="Path to docker-compose.yml, to restart services if desired.", default=""
     )
     parser.add_argument(
-        "--auto",
-        action="store_true",
-        help="Don't prompt for confirmation before cleaning shares",
+        "--auto", action="store_true", help="Don't prompt for confirmation before cleaning shares"
     )
     return parser.parse_args()
 
 
 def main() -> int:
     """Main function for handling share management operations."""
+    if not is_root_user():
+        logger.error("This script must be run as root.")
+        return 1
+
     args = parse_args()
     manager = ShareManager.from_args(args)
 
     if args.check:
-        problematic, unmounted = manager.check_shares()
+        _, unmounted = manager.check_shares()
         return 1 if unmounted else 0
 
     if manager.fix_shares():

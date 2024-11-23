@@ -4,155 +4,198 @@
 
 from __future__ import annotations
 
-import logging
-import os
+import argparse
+import shutil
 import subprocess
-import sys
-import termios
-import tty
+from dataclasses import dataclass
+from pathlib import Path
 
-from termcolor import colored
-from typing import TYPE_CHECKING
+from dsutil.log import LocalLogger
+from dsutil.paths import DSPaths
 
-if TYPE_CHECKING:
-    from dsutil.text import ColorName
+paths = DSPaths("dockermounter")
+LOG_FILE_PATH = paths.get_log_path("dockermounter.log")
 
-logging.basicConfig(
-    filename="mount_check.log",
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
+logger = LocalLogger.setup_logger(log_file=LOG_FILE_PATH)
 
-mount_points = [
-    "/mnt/Danny",
-    "/mnt/Downloads",
-    "/mnt/Media",
-    "/mnt/Music",
-    "/mnt/Storage",
-]
-
-containers = [
-    "sonarr",
-    "radarr",
-    "lidarr",
-    "readarr",
-    "bazarr",
-    "prowlarr",
-    "whisparr",
-    "deluge",
-    "sabnzbd",
-    "tautulli",
-    "ombi",
-    "audiobookshelf",
-]
+POSSIBLE_SHARES = ["Danny", "Downloads", "Music", "Media", "Storage"]
 
 
-def get_single_char_input(prompt: str) -> str:
-    """Reads a single character without requiring the Enter key. Mainly for confirmation prompts."""
-    print(prompt, end="", flush=True)
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(fd)
-        char = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return char
+@dataclass
+class ShareManager:
+    """
+    Manage shared directories, checking their mount status and handling Docker stacks.
 
+    Checks mount status and directory contents, remounts all filesystems, and restarts Docker stacks
+    if necessary. Designed to work with command-line arguments and can be run automatically.
 
-def confirm_action(
-    prompt: str, default_to_yes: bool = False, prompt_color: ColorName = "white"
-) -> bool:
-    """Asks the user to confirm an action."""
-    options = "[Y/n]" if default_to_yes else "[y/N]"
-    full_prompt = colored(f"{prompt} {options} ", prompt_color)
-    sys.stdout.write(full_prompt)
+    Attributes:
+        mount_root: The root directory where shares are mounted.
+        docker_compose: Path to docker-compose file to control Docker stack.
+        auto: Whether to automatically fix share issues without user confirmation.
+    """
 
-    char = get_single_char_input("").lower()
+    mount_root: Path
+    docker_compose: Path | None
+    auto: bool
 
-    sys.stdout.write(char + "\n")
-    sys.stdout.flush()
+    @classmethod
+    def from_args(cls, args: argparse.Namespace) -> ShareManager:
+        """Create a ShareManager instance from command-line arguments."""
+        return cls(
+            mount_root=Path("/mnt"),
+            docker_compose=Path(args.docker).expanduser() if args.docker else None,
+            auto=args.auto,
+        )
 
-    return char != "n" if default_to_yes else char == "y"
+    def get_active_shares(self) -> list[Path]:
+        """Get list of share directories that actually exist."""
+        return [
+            self.mount_root / share
+            for share in POSSIBLE_SHARES
+            if (self.mount_root / share).exists()
+        ]
 
+    def is_mounted(self, path: Path) -> bool:
+        """Check if a path is currently mounted."""
+        try:
+            path_stat = path.stat()
+            parent_stat = path.parent.stat()
+            return path_stat.st_dev != parent_stat.st_dev
+        except Exception as e:
+            logger.error("Failed to check mount status for %s: %s", path, e)
+            return False
 
-def run_subprocess(command: str) -> str:
-    """Run a subprocess command and handle errors."""
-    try:
-        logging.info("Running command: %s", " ".join(command))
-        output = subprocess.run(command, check=True, capture_output=True)
-        return output.stdout.decode().strip()
-    except subprocess.CalledProcessError as e:
-        logging.error("Command '%s' failed with: %s", e.cmd, e.stderr.decode().strip())
-        raise
+    def has_contents(self, path: Path) -> bool:
+        """Check if a directory has any contents."""
+        return any(path.iterdir())
 
-
-def is_mounted(path: str) -> bool:
-    """Check to see if the folder is mounted."""
-    return os.path.ismount(path)
-
-
-def list_directory_contents(mount_point: str) -> bool:
-    """List contents of the directory."""
-    if os.path.exists(mount_point):
-        if contents := os.listdir(mount_point):
-            print("Directory is not empty. Contents:")
-            for item in contents:
-                print(item)
+    def clean_directory(self, path: Path) -> bool:
+        """Remove all contents from a directory while preserving the directory itself."""
+        try:
+            for item in path.iterdir():
+                if item.is_file():
+                    item.unlink()
+                elif item.is_dir():
+                    shutil.rmtree(item)
+            logger.info("Cleaned directory %s", path)
             return True
-        print("Directory is empty.")
-        return False
-    print("Directory does not exist.")
-    return False
+        except Exception as e:
+            logger.error("Failed to clean directory %s: %s", path, e)
+            return False
+
+    def remount_all(self) -> bool:
+        """Remount all filesystems."""
+        try:
+            subprocess.run(["sudo", "mount", "-a"], check=True)
+            logger.info("Successfully remounted all filesystems")
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error("Failed to remount filesystems: %s", e)
+            return False
+
+    def restart_docker(self) -> bool:
+        """Restart the Docker stack if docker-compose path was provided."""
+        if not self.docker_compose:
+            return True
+
+        try:
+            compose_dir = self.docker_compose.parent
+            subprocess.run(["docker-compose", "down"], check=True, cwd=compose_dir)
+            logger.info("Docker stack is down")
+
+            subprocess.run(["docker-compose", "up", "-d"], check=True, cwd=compose_dir)
+            logger.info("Docker stack is up")
+            return True
+        except subprocess.CalledProcessError as e:
+            logger.error("Failed to restart Docker stack: %s", e)
+            return False
+
+    def check_shares(self) -> tuple[list[Path], list[Path]]:
+        """Check all shares and return a tuple of (unmounted shares with contents, all unmounted shares)."""
+        unmounted_with_content = []
+        unmounted = []
+
+        for share in self.get_active_shares():
+            if not self.is_mounted(share):
+                unmounted.append(share)
+                if self.has_contents(share):
+                    unmounted_with_content.append(share)
+                    logger.warning("%s: Share is not mounted but has contents.", share)
+                else:
+                    logger.info("%s: Share is not mounted.", share)
+            else:
+                logger.info("%s: Share is properly mounted.", share)
+
+        return unmounted_with_content, unmounted
+
+    def fix_shares(self) -> bool:
+        """Fix any share mounting issues."""
+        problematic, unmounted = self.check_shares()
+
+        if not unmounted:
+            logger.info("All shares are properly mounted.")
+            return True
+        if problematic:
+            if not self.auto:
+                shares_str = "\n  ".join(str(p) for p in problematic)
+                response = input(
+                    f"The following shares have contents but aren't mounted:\n"
+                    f"  {shares_str}\n"
+                    f"Do you want to clean them? (y/N): "
+                ).lower()
+
+                if response != "y":
+                    logger.info("User chose not to clean shares")
+                    return False
+
+            # Clean problematic shares
+            for share in problematic:
+                if not self.clean_directory(share):
+                    return False
+
+        # Remount everything
+        if not self.remount_all():
+            return False
+
+        # Restart Docker if configured
+        return self.restart_docker()
 
 
-def clear_mount_point(mount_point: str) -> None:
-    """Clear the mount point."""
-    non_empty = list_directory_contents(mount_point)
-    if non_empty and confirm_action(
-        f"Are you sure you want to remove all contents in {mount_point}?"
-    ):
-        run_subprocess(["rm", "-rf", f"{mount_point}/*"])
-    else:
-        logging.info("User aborted clearing mount point at %s.", mount_point)
+def parse_args() -> argparse.Namespace:
+    """Parses command-line arguments for managing network shares and Docker services."""
+    parser = argparse.ArgumentParser(description="Manage network shares and Docker services")
+    parser.add_argument(
+        "--check", action="store_true", help="Only check share status without making changes"
+    )
+    parser.add_argument(
+        "--docker",
+        help="Path to docker-compose.yml for restarting services",
+        default="~/docker/docker-compose.yml",
+    )
+    parser.add_argument(
+        "--auto",
+        action="store_true",
+        help="Don't prompt for confirmation before cleaning shares",
+    )
+    return parser.parse_args()
 
 
-def remount(mount_point: str) -> None:
-    """Remount the mount point."""
-    subprocess.run(["mount", mount_point], check=True)
+def main() -> int:
+    """Main function for handling share management operations."""
+    args = parse_args()
+    manager = ShareManager.from_args(args)
 
+    if args.check:
+        problematic, unmounted = manager.check_shares()
+        return 1 if unmounted else 0
 
-def restart_docker_containers() -> None:
-    """Restart Docker containers."""
-    for container in containers:
-        subprocess.run(["docker", "restart", container], check=True)
-
-
-def main() -> None:
-    """Main function."""
-    anything_unmounted = False
-    for mount_point in mount_points:
-        if not is_mounted(mount_point):
-            logging.warning("Mount point %s is not mounted.", mount_point)
-            print(colored(f"Mount point {mount_point} is not mounted.", "yellow"))
-            anything_unmounted = True
-            try:
-                clear_mount_point(mount_point)
-                remount(mount_point)
-            except subprocess.CalledProcessError as e:
-                print(colored(f"An error occurred: {e}", "red"))
-                logging.error("Error while handling unmounted path %s: %s", mount_point, e)
-
-    if anything_unmounted:
-        print(colored("Restarting Docker containers...", "green"))
-        logging.info("Restarting Docker containers due to unmounted paths.")
-        restart_docker_containers()
-
-    if not anything_unmounted:
-        print(colored("All mount points are mounted. No action required.", "green"))
-        logging.info("All mount points were mounted. No action required.")
+    if manager.fix_shares():
+        logger.info("All operations completed successfully.")
+        return 0
+    logger.error("Failed to fix share issues.")
+    return 1
 
 
 if __name__ == "__main__":
-    main()
+    exit(main())

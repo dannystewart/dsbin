@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import ClassVar
 
 import paramiko
 from halo import Halo
@@ -9,18 +10,6 @@ from dsutil.env import DSEnv
 from dsutil.paths import DSPaths
 
 spinner = Halo(text="Initializing", spinner="dots")
-
-# Server paths and URLs
-UPLOAD_PATH_PREFIX: str = "/mnt/docker/web/www/wordpress/wp-content/uploads/sites/2/"
-UPLOAD_URL_PREFIX: str = "https://music.dannystewart.com/wp-content/uploads/sites/2/"
-
-# Default lists of supported and enabled file formats
-SUPPORTED_FORMATS: dict[str, str] = {
-    "flac": ".flac",
-    "alac": ".m4a",
-    "mp3": ".mp3",
-}
-ENABLED_FORMATS: list[str] = ["flac", "alac"]
 
 
 @dataclass
@@ -50,19 +39,21 @@ class Config:
     no_cache: bool = False
 
     # Paths and URLs
-    upload_path_prefix: str = field(default=UPLOAD_PATH_PREFIX)
-    upload_url_prefix: str = field(default=UPLOAD_URL_PREFIX)
+    upload_path_prefix: ClassVar[str] = "/mnt/docker/web/www/wordpress/wp-content/uploads/sites/2/"
+    upload_url_prefix: ClassVar[str] = "https://music.dannystewart.com/wp-content/uploads/sites/2/"
 
     # SSH settings
     ssh_passphrase: str = field(init=False)
     _private_key: paramiko.RSAKey | None = field(default=None, init=False)
 
     # Supported file formats
-    formats: dict[str, str] = field(default_factory=lambda: SUPPORTED_FORMATS.copy())
-
-    # Formats for conversion and upload
-    formats_to_convert: list[str] = field(default_factory=lambda: ENABLED_FORMATS.copy())
-    formats_to_upload: list[str] = field(default_factory=lambda: ENABLED_FORMATS.copy())
+    formats: ClassVar[dict[str, str]] = {
+        "flac": ".flac",
+        "alac": ".m4a",
+        "mp3": ".mp3",
+    }
+    formats_to_convert: ClassVar[list[str]] = ["flac", "alac"]
+    formats_to_upload: ClassVar[list[str]] = ["flac", "alac"]
 
     def __post_init__(self):
         # Configure log level based on debug setting

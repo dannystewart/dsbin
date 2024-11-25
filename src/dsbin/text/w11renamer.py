@@ -33,7 +33,7 @@ def destupify_filename(filename: str) -> str:
         if "X64FRE" in segment.upper():
             arch = "x64"
             break
-        if "ARM64FRE" in segment.upper():
+        if "ARM64FRE" in segment.upper() or "A64FRE" in segment.upper():
             arch = "ARM64"
             break
 

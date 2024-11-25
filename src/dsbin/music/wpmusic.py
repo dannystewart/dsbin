@@ -111,10 +111,21 @@ class WPMusic:
         self.upload_tracker.pretty_print_history(track_name)
 
     def process_file(self, file_path: str) -> None:
+        """Process a single audio file and its potential instrumental pair."""
+        # Process the original file first
+        self._process_single_file(file_path)
+
+        # Check for and process matching instrumental file
+        instrumental_path = self._find_instrumental_pair(file_path)
+        if instrumental_path:
+            self.logger.info("Found matching instrumental file: %s", instrumental_path)
+            self._process_single_file(instrumental_path, is_pair=True)
+
+    def _process_single_file(self, file_path: str, is_pair: bool = False) -> None:
         """Process a single audio file."""
         audio_track = AudioTrack(file_path, append_text=self.args.append)
 
-        try:  # Identify track and set metadata
+        try:
             track_metadata = self.track_identifier.identify_track(audio_track)
             audio_track.set_track_metadata(track_metadata)
 
@@ -133,13 +144,25 @@ class WPMusic:
             self.process_and_upload(audio_track, output_filename)
 
             if not self.config.skip_upload:
-                self.file_manager.print_and_copy_urls(output_filename)
+                self.file_manager.print_and_copy_urls(output_filename, is_pair)
 
             if not self.config.keep_files:
                 self.file_manager.cleanup_files_after_upload(audio_track, output_filename)
 
         except Exception as e:
             self.logger.error("An error occurred: %s", str(e))
+
+    def _find_instrumental_pair(self, file_path: str) -> str | None:
+        """Find a matching instrumental file for the given file path."""
+        base_path, ext = os.path.splitext(file_path)
+
+        # Skip if this is already an instrumental file
+        if base_path.endswith(" No Vocals"):
+            return None
+
+        # Check for instrumental pair
+        instrumental_path = f"{base_path} No Vocals{ext}"
+        return instrumental_path if os.path.exists(instrumental_path) else None
 
     def process_and_upload(self, audio_track: AudioTrack, output_filename: str) -> None:
         """Convert the files, apply metadata, and upload them to the web server."""

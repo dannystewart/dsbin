@@ -150,13 +150,23 @@ class FileManager:
         except Exception as e:
             self.logger.error("SSH error: %s", str(e))
 
-    def print_and_copy_urls(self, base_filename: str) -> None:
+    def print_and_copy_urls(self, base_filename: str, is_pair: bool = False) -> None:
         """Print the URLs of uploaded files and copy the FLAC URL to the clipboard."""
         flac_url = f"{self.config.upload_url_prefix}{base_filename}.flac"
         alac_url = f"{self.config.upload_url_prefix}{base_filename}.m4a"
-        pyperclip.copy(flac_url)
+
+        if not is_pair:
+            pyperclip.copy(flac_url)
 
         print("\nURLs of uploaded files:")
         print(colored(flac_url, "blue"), end="")
-        print("  ← on clipboard")
+
+        if not is_pair:
+            print("  ← on clipboard")
+        else:
+            print()
+
         print(colored(alac_url, "blue"))
+
+        if not is_pair:
+            print()

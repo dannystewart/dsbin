@@ -44,7 +44,7 @@ class Config:
 
     # SSH settings
     ssh_passphrase: str = field(init=False)
-    _private_key: paramiko.RSAKey | None = field(default=None, init=False)
+    _private_key: paramiko.Ed25519Key | None = field(default=None, init=False)
 
     # Supported file formats
     formats: ClassVar[dict[str, str]] = {
@@ -93,8 +93,8 @@ class Config:
         self.ssh_host = "dannystewart.com"
         self.ssh_user = "danny"
         self.ssh_passphrase = self.env.ssh_passphrase
-        self.private_key_path = self.paths.get_ssh_key("id_rsa")
-        self._private_key: paramiko.RSAKey | None = None
+        self.private_key_path = self.paths.get_ssh_key("id_ed25519")
+        self._private_key: paramiko.Ed25519Key | None = None
 
     def initialize_database(self) -> None:
         """Initialize database settings."""
@@ -105,10 +105,10 @@ class Config:
         self.db_password = self.env.db_password
 
     @property
-    def private_key(self) -> paramiko.RSAKey:
+    def private_key(self) -> paramiko.Ed25519Key:
         """Lazy load the SSH private key only when needed."""
         if self._private_key is None:
-            self._private_key = paramiko.RSAKey.from_private_key_file(
+            self._private_key = paramiko.Ed25519Key.from_private_key_file(
                 self.private_key_path, password=self.ssh_passphrase
             )
         return self._private_key

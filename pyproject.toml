@@ -12,8 +12,8 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-dsmusic = { git = "https://gitlab.dannystewart.com/danny/dsmusic.git" }
-dsupdater = { git = "https://gitlab.dannystewart.com/danny/updater.git" }
+ip-lookup = {git = "https://gitlab.dannystewart.com/danny/ip-lookup.git"}
+dsupdater = { git = "https://gitlab.dannystewart.com/danny/dsupdater.git" }
 dsutil = { git = "https://gitlab.dannystewart.com/danny/dsutil.git" }
 "path.py" = "^12.5.0"
 azure-storage-blob = "^12.23.1"
@@ -97,7 +97,7 @@ dsservice = "dsbin.tools.dsservice:main"
 distro = "dsbin.tools.distro:main"
 dockermounter = "dsbin.tools.dockermounter:main"
 envsync = "dsbin.tools.envsync:main"
-iplookup = "dsbin.tools.iplookup:main"
+iplookup = "iplookup.iplookup:main"
 ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
 watchtower = "dsbin.tools.watchtower:main"
 

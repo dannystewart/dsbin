@@ -18,10 +18,9 @@ import json
 from typing import Any
 
 import requests
-from termcolor import colored
 
-from dsutil.text import remove_html_tags
 from dsutil.shell import handle_keyboard_interrupt
+from dsutil.text import color, remove_html_tags
 
 SOURCES: dict[str, dict[str, Any]] = {
     "ip2location": {
@@ -113,24 +112,14 @@ MAX_RETRIES = 3
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="IP address lookup tool.")
+    parser = argparse.ArgumentParser(description="IP address lookup tool")
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
-        "ip_address",
-        type=str,
-        nargs="?",
-        default=None,
-        help="The IP address to look up",
+        "ip_address", type=str, nargs="?", default=None, help="the IP address to look up"
     )
+    group.add_argument("--me", action="store_true", help="get your external IP address")
     group.add_argument(
-        "--me",
-        action="store_true",
-        help="Look up your own external IP address",
-    )
-    group.add_argument(
-        "--me-with-lookup",
-        action="store_true",
-        help="Include your IP lookup in the output",
+        "--me-lookup", action="store_true", help="get lookup results for your IP address"
     )
     return parser.parse_args()
 
@@ -148,11 +137,9 @@ def get_ip_info(ip_address: str, source: str) -> dict | None:
             if response.status_code == 200:
                 return json.loads(response.text)
         except requests.exceptions.Timeout:
-            print(f"\n{colored(f'[{source}]', 'blue')} Timeout ({attempt + 1}/{MAX_RETRIES})")
+            print(f"\n{color(f'[{source}]', 'blue')} Timeout ({attempt + 1}/{MAX_RETRIES})")
         except requests.exceptions.RequestException as e:
-            print(
-                f"\n{colored(f'[{source}]', 'blue')} {colored(f'Failed to get data: {e}', 'red')}"
-            )
+            print(f"\n{color(f'[{source}]', 'blue')} {color(f'Failed to get data: {e}', 'red')}")
             break
 
     return None
@@ -160,10 +147,10 @@ def get_ip_info(ip_address: str, source: str) -> dict | None:
 
 def print_ip_data(source: str, country: str, region: str, city: str, isp: str, org: str) -> None:
     """Print the IP data."""
-    header = f"{colored(f'[{source}]', 'blue')}"
-    print(f"\n{header} {colored('Location:', 'green')} {city}, {region}, {country}")
+    header = f"{color(f'[{source}]', 'blue')}"
+    print(f"\n{header} {color('Location:', 'green')} {city}, {region}, {country}")
     if isp and org and isp not in ["Unknown ISP", ""] and org not in ["Unknown Org", ""]:
-        print(f"{header} {colored('ISP/Org:', 'green')} {isp} / {org}")
+        print(f"{header} {color('ISP/Org:', 'green')} {isp} / {org}")
 
 
 def fetch_and_print_ip_data(ip_address: str) -> None:
@@ -177,7 +164,7 @@ def fetch_and_print_ip_data(ip_address: str) -> None:
         for key in config["data_path"]:
             data = data.get(key, {})
         if not data:
-            print(f"\n{colored(f'[{source}]', 'blue')} No data available.")
+            print(f"\n{color(f'[{source}]', 'blue')} No data available.")
             continue
 
         print_data = {}
@@ -209,7 +196,7 @@ def get_external_ip() -> str | None:
         if response.status_code == 200:
             return response.text
     except requests.exceptions.RequestException as e:
-        print(colored(f"Failed to get external IP: {e}", "red"))
+        print(color(f"Failed to get external IP: {e}", "red"))
     return None
 
 
@@ -217,20 +204,20 @@ def get_external_ip() -> str | None:
 def main() -> None:
     """Main function."""
     args = parse_arguments()
-    if args.me_with_lookup:
+    if args.me_lookup:
         args.me = True
 
     if args.me:
         ip_address = get_external_ip()
         if not ip_address:
             return
-        print(colored(f"Your external IP address is: {ip_address}", "blue"))
-        if not args.me_with_lookup:
+        print(color(f"Your external IP address is: {ip_address}", "blue"))
+        if not args.me_lookup:
             return
     else:
         ip_address = args.ip_address or input("Please enter the IP address to look up: ")
 
-    print(colored(f"\nIP lookup results for {ip_address}:", "blue"))
+    print(color(f"\nIP lookup results for {ip_address}:", "blue"))
     fetch_and_print_ip_data(ip_address)
 
 

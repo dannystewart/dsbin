@@ -12,7 +12,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
 python = ">=3.12,<3.13"
-ip-lookup = {git = "https://gitlab.dannystewart.com/danny/ip-lookup.git"}
+iplookup = {git = "https://gitlab.dannystewart.com/danny/ip-lookup.git"}
 dsupdater = { git = "https://gitlab.dannystewart.com/danny/dsupdater.git" }
 dsutil = { git = "https://gitlab.dannystewart.com/danny/dsutil.git" }
 "path.py" = "^12.5.0"

@@ -114,8 +114,10 @@ class UploadTracker:
             if isinstance(conn, sqlite3.Connection):
                 conn.row_factory = sqlite3.Row
                 param_placeholder = "?"
+                case_insensitive_func = "LOWER"
             else:
                 param_placeholder = "%s"
+                case_insensitive_func = "LOWER"
 
             cursor = (
                 conn.cursor(dictionary=True)
@@ -129,7 +131,7 @@ class UploadTracker:
                     SELECT t.name as track_name, u.filename, u.instrumental, u.uploaded
                     FROM tracks t
                     JOIN uploads u ON t.id = u.track_id
-                    WHERE t.name = {param_placeholder}
+                    WHERE {case_insensitive_func}(t.name) = {case_insensitive_func}({param_placeholder})
                     ORDER BY u.uploaded DESC
                     """,
                     (track_name,),

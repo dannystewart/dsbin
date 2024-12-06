@@ -32,7 +32,7 @@ from dsutil.env import DSEnv
 from dsutil.log import LocalLogger
 from dsutil.macos import get_timestamps
 from dsutil.paths import DSPaths
-from dsutil.shell import handle_async_keyboard_interrupt
+from dsutil.shell import async_handle_keyboard_interrupt
 from dsutil.tools import async_retry_on_exception
 
 env = DSEnv("pybounce")
@@ -263,7 +263,7 @@ class TelegramUploader:
             logger.warning("Skipping '%s'.", file)
 
 
-@handle_async_keyboard_interrupt()
+@async_handle_keyboard_interrupt()
 async def run() -> None:
     """Upload files to a Telegram channel."""
     # Parse command-line arguments

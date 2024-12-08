@@ -9,8 +9,8 @@ from zoneinfo import ZoneInfo
 from mysql.connector.abstracts import MySQLConnectionAbstract
 from mysql.connector.pooling import PooledMySQLConnection
 
-from dsbin.music.wpmusiclib.db_manager import DatabaseError, DatabaseManager
-from dsbin.music.wpmusiclib.table_formatter import TableFormatter
+from .db_manager import DatabaseError, DatabaseManager
+from .table_formatter import TableFormatter
 
 from dsutil.log import LocalLogger
 

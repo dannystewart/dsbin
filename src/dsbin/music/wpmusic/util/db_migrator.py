@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 import mysql.connector
 
-from dsbin.music.wpmusiclib.wp_config import Config
+from dsbin.music.wpmusic.wp_config import Config
 
 from dsutil.log import LocalLogger
 

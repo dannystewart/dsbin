@@ -76,7 +76,7 @@ pybounce = "dsbin.music.pybounce:main"
 pyfiler = "dsbin.music.pyfiler:main"
 rmp3 = "dsbin.music.rmp3:main"
 wav2aif = "dsbin.music.awa:wav2aif"
-wpmusic = "dsbin.music.wpmusic:main"
+wpmusic = "dsbin.music.wpmusic.main:main"
 
 # Logic-specific scripts
 bipclean = "dsbin.logic.bipclean:main"

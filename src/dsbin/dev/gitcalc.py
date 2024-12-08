@@ -5,13 +5,26 @@ import subprocess
 import sys
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
+from enum import Enum
 
 from dsutil.animation import walking_animation
 from dsutil.log import LocalLogger, TimeAwareLogger
 
 base_logger = LocalLogger.setup_logger("gitcalc", message_only=True)
 logger = TimeAwareLogger(base_logger)
+
+
+class DayOfWeek(Enum):
+    """Enum to represent the days of the week."""
+
+    MONDAY = 0
+    TUESDAY = 1
+    WEDNESDAY = 2
+    THURSDAY = 3
+    FRIDAY = 4
+    SATURDAY = 5
+    SUNDAY = 6
 
 
 @dataclass
@@ -24,8 +37,11 @@ class WorkStats:
     latest_timestamp: datetime | None = None
     session_count: int = 0
     commits_by_day: defaultdict[date, int] = field(default_factory=lambda: defaultdict(int))
+    commits_by_hour: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
+    commits_by_weekday: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
     time_by_day: defaultdict[date, int] = field(default_factory=lambda: defaultdict(int))
     longest_session: tuple[datetime | None, int] = field(default_factory=lambda: (None, 0))
+    longest_streak: tuple[date | None, int] = field(default_factory=lambda: (None, 0))
 
 
 def parse_date(date_str: str) -> date:
@@ -40,6 +56,17 @@ def parse_date(date_str: str) -> date:
 def format_date(dt: datetime) -> str:
     """Format the date without leading zero in the day."""
     return dt.strftime("%B %-d, %Y at %-I:%M %p").replace(" 0", " ")
+
+
+def format_hour(hour: int) -> str:
+    """Format hour in 12-hour format with AM/PM."""
+    if hour == 0:
+        return "12 AM"
+    if hour < 12:
+        return f"{hour} AM"
+    if hour == 12:
+        return "12 PM"
+    return f"{hour - 12} PM"
 
 
 def format_work_time(total_minutes: int) -> tuple[int, int, int]:
@@ -95,6 +122,10 @@ def calculate_work_time(
                 continue
             filtered_timestamps.append(timestamp)
 
+            # Track hour and weekday stats for each valid commit
+            stats.commits_by_hour[timestamp.hour] += 1
+            stats.commits_by_weekday[timestamp.weekday()] += 1
+
             if stats.earliest_timestamp is None or timestamp < stats.earliest_timestamp:
                 stats.earliest_timestamp = timestamp
             if stats.latest_timestamp is None or timestamp > stats.latest_timestamp:
@@ -142,11 +173,31 @@ def calculate_work_time(
             stats.longest_session = (current_session_start, current_session_time)
 
         stats.total_time = total_time
+
+        # Calculate longest streak
+        active_days = sorted(stats.commits_by_day.keys())
+        current_streak = 1
+        current_streak_start = active_days[0]
+        longest_streak = 1
+        longest_streak_start = active_days[0]
+
+        for i in range(1, len(active_days)):
+            if (active_days[i] - active_days[i - 1]).days == 1:
+                current_streak += 1
+                if current_streak > longest_streak:
+                    longest_streak = current_streak
+                    longest_streak_start = current_streak_start
+            else:
+                current_streak = 1
+                current_streak_start = active_days[i]
+
+        stats.longest_streak = (longest_streak_start, longest_streak)
+
         return stats
 
 
-def main() -> None:
-    """Calculate work time based on git commit timestamps."""
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(
         description="Calculate work time based on git commit timestamps."
     )
@@ -172,10 +223,13 @@ def main() -> None:
         "--end",
         help="End date for filtering (format: MM/DD/YYYY)",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
-    try:
-        # Quick check if we're in a git repository
+
+def main() -> None:
+    """Calculate work time based on git commit timestamps."""
+    args = parse_args()
+    try:  # Quick check if we're in a git repository
         subprocess.run(
             ["git", "rev-parse", "--git-dir"],
             capture_output=True,
@@ -261,10 +315,49 @@ def main() -> None:
             session_minutes,
         )
 
+    # Day of week stats
+    logger.info("\nDay of week patterns:")
+    total_commits = sum(stats.commits_by_weekday.values())
+    for day in DayOfWeek:
+        commits = stats.commits_by_weekday[day.value]
+        percentage = (commits / total_commits) * 100
+        logger.debug(
+            "%s: %d commits (%.1f%%)",
+            day.name.capitalize(),
+            commits,
+            percentage,
+        )
+
+    # Time of day stats
+    most_active_hours = sorted(
+        stats.commits_by_hour.items(),
+        key=lambda x: x[1],
+        reverse=True,
+    )[:3]
+    logger.info("\nMost active hours:")
+    for hour, commits in most_active_hours:
+        percentage = (commits / total_commits) * 100
+        logger.debug(
+            "  %s: %d commits (%.1f%%)",
+            format_hour(hour),
+            commits,
+            percentage,
+        )
+
+    # Streak information (moved outside the hour loop)
+    if stats.longest_streak[0]:
+        streak_end = stats.longest_streak[0] + timedelta(days=stats.longest_streak[1] - 1)
+        logger.info(
+            "\nLongest streak: %d days (%s to %s)",
+            stats.longest_streak[1],
+            stats.longest_streak[0].strftime("%B %-d, %Y"),
+            streak_end.strftime("%B %-d, %Y"),
+        )
+
     # Average commits per day
     active_days = len(stats.commits_by_day)
     avg_commits = stats.total_commits / active_days
-    logger.debug("Average commits per active day: %.1f", avg_commits)
+    logger.info("Average commits per active day: %.1f", avg_commits)
 
     days_str = f"{days} day{'' if days == 1 else 's'}, " if days else ""
     logger.info("\nTotal work time: %s%d hours, %d minutes", days_str, hours, minutes)

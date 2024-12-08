@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import argparse
-import datetime
 import subprocess
 import sys
-from dataclasses import dataclass
+from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import date, datetime
 
 from dsutil.animation import walking_animation
 from dsutil.log import LocalLogger, TimeAwareLogger
@@ -19,20 +20,24 @@ class WorkStats:
 
     total_commits: int = 0
     total_time: int = 0
-    earliest_timestamp: datetime.datetime | None = None
-    latest_timestamp: datetime.datetime | None = None
+    earliest_timestamp: datetime | None = None
+    latest_timestamp: datetime | None = None
+    session_count: int = 0
+    commits_by_day: defaultdict[date, int] = field(default_factory=lambda: defaultdict(int))
+    time_by_day: defaultdict[date, int] = field(default_factory=lambda: defaultdict(int))
+    longest_session: tuple[datetime | None, int] = field(default_factory=lambda: (None, 0))
 
 
-def parse_date(date_str: str) -> datetime.date:
+def parse_date(date_str: str) -> date:
     """Parse the date string provided as an argument."""
     try:
-        return datetime.datetime.strptime(date_str, "%m/%d/%Y").date()  # noqa: DTZ007
+        return datetime.strptime(date_str, "%m/%d/%Y").date()  # noqa: DTZ007
     except ValueError as e:
         msg = f"Invalid date format: {date_str}. Please use MM/DD/YYYY."
         raise ValueError(msg) from e
 
 
-def format_date(dt: datetime.datetime) -> str:
+def format_date(dt: datetime) -> str:
     """Format the date without leading zero in the day."""
     return dt.strftime("%B %-d, %Y at %-I:%M %p").replace(" 0", " ")
 
@@ -44,7 +49,7 @@ def format_work_time(total_minutes: int) -> tuple[int, int, int]:
     return days, hours, minutes
 
 
-def get_git_commits() -> list[datetime.datetime]:
+def get_git_commits() -> list[datetime]:
     """Get timestamps of all commits in the repository."""
     try:
         # %aI gives us ISO 8601-like format with timezone information
@@ -61,7 +66,7 @@ def get_git_commits() -> list[datetime.datetime]:
     timestamps = []
     for line in result.stdout.splitlines():
         # datetime.fromisoformat handles the ISO format including timezone
-        dt = datetime.datetime.fromisoformat(line.strip())
+        dt = datetime.fromisoformat(line.strip())
         timestamps.append(dt)
 
     return timestamps
@@ -70,8 +75,8 @@ def get_git_commits() -> list[datetime.datetime]:
 def calculate_work_time(
     max_break_time: int,
     min_work_per_commit: int,
-    start_date: datetime.date | None,
-    end_date: datetime.date | None,
+    start_date: date | None,
+    end_date: date | None,
 ) -> WorkStats:
     """Calculate the total work time based on commit timestamps."""
     with walking_animation("\nAnalyzing commits...", "cyan"):
@@ -102,20 +107,39 @@ def calculate_work_time(
         total_time = 0
         last_timestamp = filtered_timestamps[0]
 
+        # Initialize session tracking
+        current_session_start = last_timestamp
+        current_session_time = min_work_per_commit
+        stats.commits_by_day[last_timestamp.date()] += 1
+
         # Add minimum work time for the first commit
         total_time += min_work_per_commit
 
         for timestamp in filtered_timestamps[1:]:
             time_diff = (timestamp - last_timestamp).total_seconds() / 60
+            stats.commits_by_day[timestamp.date()] += 1
+
             if time_diff <= max_break_time:
-                # If commits are close together, take the larger of:
-                # - The actual time difference
-                # - The minimum work time per commit
-                total_time += max(time_diff, min_work_per_commit)
+                # Same session
+                work_time = max(time_diff, min_work_per_commit)
+                total_time += work_time
+                current_session_time += work_time
             else:
-                # If commits are far apart, add minimum work time for the new commit
+                # New session
+                if current_session_time > stats.longest_session[1]:
+                    stats.longest_session = (current_session_start, current_session_time)
+                stats.session_count += 1
+                current_session_start = timestamp
+                current_session_time = min_work_per_commit
                 total_time += min_work_per_commit
+
+            stats.time_by_day[timestamp.date()] += work_time
             last_timestamp = timestamp
+
+        # Don't forget to count the last session
+        stats.session_count += 1
+        if current_session_time > stats.longest_session[1]:
+            stats.longest_session = (current_session_start, current_session_time)
 
         stats.total_time = total_time
         return stats
@@ -204,6 +228,43 @@ def main() -> None:
             int(span_days),
             int(span_hours),
         )
+
+    # Additional statistics
+    logger.info("\nWork patterns:")
+    logger.debug("Number of work sessions: %d", stats.session_count)
+
+    # Most productive day by commits
+    most_commits_day = max(stats.commits_by_day.items(), key=lambda x: x[1])
+    logger.debug(
+        "Most active day by commits: %s (%d commits)",
+        most_commits_day[0].strftime("%B %-d, %Y"),
+        most_commits_day[1],
+    )
+
+    # Most productive day by time
+    most_time_day = max(stats.time_by_day.items(), key=lambda x: x[1])
+    day_hours, day_minutes = divmod(most_time_day[1], 60)
+    logger.debug(
+        "Most active day by time: %s (%d hours, %d minutes)",
+        most_time_day[0].strftime("%B %-d, %Y"),
+        day_hours,
+        day_minutes,
+    )
+
+    # Longest session
+    if stats.longest_session[0]:
+        session_hours, session_minutes = divmod(stats.longest_session[1], 60)
+        logger.debug(
+            "Longest work session: %s (%d hours, %d minutes)",
+            stats.longest_session[0].strftime("%B %-d, %Y"),
+            session_hours,
+            session_minutes,
+        )
+
+    # Average commits per day
+    active_days = len(stats.commits_by_day)
+    avg_commits = stats.total_commits / active_days
+    logger.debug("Average commits per active day: %.1f", avg_commits)
 
     days_str = f"{days} day{'' if days == 1 else 's'}, " if days else ""
     logger.info("\nTotal work time: %s%d hours, %d minutes", days_str, hours, minutes)

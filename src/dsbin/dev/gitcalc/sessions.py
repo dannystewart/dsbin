@@ -47,6 +47,7 @@ class SessionAnalyzer:
             return 0
 
         total_time = min_work_per_commit  # First commit
+        work_time = total_time
         last_timestamp = timestamps[0]
         current_session_start = last_timestamp
         current_session_time = min_work_per_commit

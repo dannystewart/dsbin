@@ -91,6 +91,12 @@ setmag = "dsbin.mac.setmag:main"
 spacepurger = "dsbin.mac.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
 
+# Development-related scripts
+pipmigrator = "dsbin.dev.pipmigrator:main"
+pyenversioner = "dsbin.dev.pyenversioner:main"
+scriptdep = "dsbin.dev.scriptdep:main"
+uvmigrate = "dsbin.dev.uvmigrate:main"
+
 # System tools
 changehostname = "dsbin.tools.changehostname:main"
 dsservice = "dsbin.tools.dsservice:main"
@@ -104,9 +110,3 @@ watchtower = "dsbin.tools.watchtower:main"
 # Text processing scripts
 pycompare = "dsbin.text.pycompare:main"
 w11renamer = "dsbin.text.w11renamer:main"
-
-# Python-related scripts
-pipmigrator = "dsbin.python.pipmigrator:main"
-pyenversioner = "dsbin.python.pyenversioner:main"
-scriptdep = "dsbin.python.scriptdep:main"
-uvmigrate = "dsbin.python.uvmigrate:main"

@@ -4,10 +4,13 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from dsutil.animation import walking_animation
 from dsutil.log import LocalLogger
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 logger = LocalLogger.setup_logger("versioner")
 
@@ -29,8 +32,11 @@ def get_version(pyproject_path: Path) -> str:
         return data["tool"]["poetry"]["version"]
 
 
-def bump_version(bump_type: BumpType | str, current_version: str) -> str:
+def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
     """Calculate new version number."""
+    if bump_type is None:
+        return current_version
+
     if bump_type.count(".") == 2:
         return bump_type
 
@@ -49,7 +55,7 @@ def bump_version(bump_type: BumpType | str, current_version: str) -> str:
 
 
 def update_version(
-    bump_type: BumpType | str,
+    bump_type: BumpType | str | None,
     commit_msg: str | None = None,
     tag_msg: str | None = None,
     stash: bool = False,
@@ -73,19 +79,19 @@ def update_version(
 
     try:
         with walking_animation("Updating version...", "green"):
-            # Update version
-            subprocess.run(["poetry", "version", bump_type], check=True)
+            # Update version only if we're bumping
+            if bump_type is not None:
+                subprocess.run(["poetry", "version", bump_type], check=True)
+                subprocess.run(["git", "add", "pyproject.toml"], check=True)
 
-            # Git operations
-            subprocess.run(["git", "add", "pyproject.toml"], check=True)
+                if commit_msg:
+                    msg = f"{commit_msg}\n\nBump version to {new_version}"
+                else:
+                    msg = f"Bump version to {new_version}"
 
-            if commit_msg:
-                msg = f"{commit_msg}\n\nBump version to {new_version}"
-            else:
-                msg = f"Bump version to {new_version}"
+                subprocess.run(["git", "commit", "-m", msg], check=True)
 
-            subprocess.run(["git", "commit", "-m", msg], check=True)
-
+            # Tag operation happens regardless of bump
             if tag_msg:
                 subprocess.run(["git", "tag", "-a", f"v{new_version}", "-m", tag_msg], check=True)
             else:
@@ -94,7 +100,9 @@ def update_version(
             subprocess.run(["git", "push"], check=True)
             subprocess.run(["git", "push", "--tags"], check=True)
 
-        logger.info("Successfully updated to v%s!", new_version)
+        logger.info(
+            "Successfully %s v%s!", "tagged" if bump_type is None else "updated to", new_version
+        )
 
     finally:
         if stashed:
@@ -103,44 +111,67 @@ def update_version(
 
 
 def cmd_bump(
+    args: Sequence[str] | None = None,
     bump_type: BumpType | str = "patch",
     commit_msg: str | None = None,
     tag_msg: str | None = None,
 ) -> None:
-    """
-    Bump version, commit, tag, and push.
+    """Bump version, commit, tag, and push."""
+    if args is not None:
+        # Parse arguments when called as script
+        parser = argparse.ArgumentParser(description="Bump version")
+        parser.add_argument(
+            "type",
+            nargs="?",
+            default="patch",
+            help="Version bump type (major/minor/patch or specific version)",
+        )
+        parser.add_argument("-m", "--message", help="Commit message")
+        parser.add_argument("-t", "--tag-message", help="Tag message")
+        parsed_args = parser.parse_args(args)
+        bump_type = parsed_args.type
+        commit_msg = parsed_args.message
+        tag_msg = parsed_args.tag_message
 
-    Args:
-        bump_type: Version increment type or specific version.
-        commit_msg: Optional commit message.
-        tag_msg: Optional tag annotation message.
-    """
     update_version(bump_type, commit_msg, tag_msg)
 
 
-def cmd_tag(tag_msg: str | None = None) -> None:
-    """
-    Tag current version and push.
+def cmd_tag(
+    args: Sequence[str] | None = None,
+    tag_msg: str | None = None,
+) -> None:
+    """Tag current version and push."""
+    if args is not None:
+        parser = argparse.ArgumentParser(description="Tag version")
+        parser.add_argument("-m", "--message", help="Tag message")
+        parsed_args = parser.parse_args(args)
+        tag_msg = parsed_args.message
 
-    Args:
-        tag_msg: Optional tag annotation message.
-    """
     update_version(None, tag_msg=tag_msg)
 
 
 def cmd_pause(
+    args: Sequence[str] | None = None,
     bump_type: BumpType | str = "patch",
     commit_msg: str | None = None,
     tag_msg: str | None = None,
 ) -> None:
-    """
-    Stash changes, bump version, then restore changes.
+    """Stash changes, bump version, then restore changes."""
+    if args is not None:
+        parser = argparse.ArgumentParser(description="Pause, bump version, and resume")
+        parser.add_argument(
+            "type",
+            nargs="?",
+            default="patch",
+            help="Version bump type (major/minor/patch or specific version)",
+        )
+        parser.add_argument("-m", "--message", help="Commit message")
+        parser.add_argument("-t", "--tag-message", help="Tag message")
+        parsed_args = parser.parse_args(args)
+        bump_type = parsed_args.type
+        commit_msg = parsed_args.message
+        tag_msg = parsed_args.tag_message
 
-    Args:
-        bump_type: Version increment type or specific version.
-        commit_msg: Optional commit message.
-        tag_msg: Optional tag annotation message.
-    """
     update_version(bump_type, commit_msg, tag_msg, stash=True)
 
 
@@ -198,18 +229,23 @@ def main() -> None:
 
 # Entry point functions for Poetry scripts
 def script_bump() -> None:
-    """Poetry entry point for dsbump command."""
-    cmd_bump(sys.argv[1:])
+    """Entry point for dsbump command."""
+    # If no args provided, use default "patch"
+    args = sys.argv[1:] if len(sys.argv) > 1 else ["patch"]
+    cmd_bump(args)
 
 
 def script_tag() -> None:
-    """Poetry entry point for dstag command."""
-    cmd_tag(sys.argv[1:])
+    """Entry point for dstag command."""
+    args = sys.argv[1:] if len(sys.argv) > 1 else []
+    cmd_tag(args)
 
 
 def script_pause() -> None:
-    """Poetry entry point for dspause command."""
-    cmd_pause(sys.argv[1:])
+    """Entry point for dspause command."""
+    # If no args provided, use default "patch"
+    args = sys.argv[1:] if len(sys.argv) > 1 else ["patch"]
+    cmd_pause(args)
 
 
 if __name__ == "__main__":

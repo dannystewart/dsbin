@@ -16,13 +16,13 @@ iplookup = {git = "https://gitlab.dannystewart.com/danny/ip-lookup.git"}
 dsupdater = { git = "https://gitlab.dannystewart.com/danny/dsupdater.git" }
 dsutil = { git = "https://gitlab.dannystewart.com/danny/dsutil.git" }
 "path.py" = "^12.5.0"
-azure-storage-blob = "^12.23.1"
+azure-storage-blob = "^12.24.0"
 halo = "^0.0.31"
 inquirer = "^3.4.0"
 mutagen = "^1.47.0"
 mysql-connector-python = "^9.1.0"
 natsort = "^8.4.0"
-numpy = ">=2.0.2"
+numpy = ">=2.2.0"
 paramiko = "^3.5.0"
 pathlib = "^1.0.1"
 pillow = "^11.0.0"

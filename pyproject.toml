@@ -92,6 +92,7 @@ spacepurger = "dsbin.mac.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
 
 # Development-related scripts
+gitcalc = "dsbin.dev.gitcalc:main"
 pipmigrator = "dsbin.dev.pipmigrator:main"
 pyenversioner = "dsbin.dev.pyenversioner:main"
 scriptdep = "dsbin.dev.scriptdep:main"

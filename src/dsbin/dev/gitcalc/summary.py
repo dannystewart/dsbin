@@ -58,21 +58,25 @@ class SummaryStats:
     total_time: int  # in minutes
 
 
-def calculate_summary_stats(stats: WorkStats) -> SummaryStats:
-    """Calculate summary statistics."""
-    active_days = len(stats.commits_by_day)
-    return SummaryStats(
-        total_commits=stats.total_commits,
-        active_days=active_days,
-        avg_commits_per_day=stats.total_commits / active_days,
-        total_time=stats.total_time,
-    )
+class SummaryAnalyzer:
+    """Class to analyze summary statistics."""
 
+    @staticmethod
+    def calculate_summary_stats(stats: WorkStats) -> SummaryStats:
+        """Calculate summary statistics."""
+        active_days = len(stats.commits_by_day)
+        return SummaryStats(
+            total_commits=stats.total_commits,
+            active_days=active_days,
+            avg_commits_per_day=stats.total_commits / active_days,
+            total_time=stats.total_time,
+        )
 
-def format_summary_stats(stats: SummaryStats) -> list[str]:
-    """Format summary statistics for display."""
-    formatted_time = FormattedTime.from_minutes(stats.total_time)
-    return [
-        f"Average commits per active day: {stats.avg_commits_per_day:.1f}",
-        f"Total work time: {formatted_time}",
-    ]
+    @staticmethod
+    def format_summary_stats(stats: SummaryStats) -> list[str]:
+        """Format summary statistics for display."""
+        formatted_time = FormattedTime.from_minutes(stats.total_time)
+        return [
+            f"Average commits per active day: {stats.avg_commits_per_day:.1f}",
+            f"Total work time: {formatted_time}",
+        ]

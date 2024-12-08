@@ -5,16 +5,221 @@ import subprocess
 import sys
 from datetime import date, datetime
 
-from .sessions import calculate_session_stats, calculate_session_times, format_session_stats
-from .streaks import calculate_streaks, format_streak_info
-from .summary import WorkStats, calculate_summary_stats, format_summary_stats
-from .time import TimeSpan, calculate_time_distribution, format_time_span
+from .sessions import SessionAnalyzer
+from .streaks import StreakAnalyzer
+from .summary import SummaryAnalyzer, WorkStats
+from .time import TimeAnalyzer, TimeSpan
 
 from dsutil.animation import walking_animation
 from dsutil.log import LocalLogger, TimeAwareLogger
+from dsutil.tools import configure_traceback
 
-base_logger = LocalLogger.setup_logger("gitcalc", message_only=True)
-logger = TimeAwareLogger(base_logger)
+configure_traceback()
+
+
+class GitCalculator:
+    """Class to calculate work time based on git commit timestamps."""
+
+    def __init__(self, args: argparse.Namespace) -> None:
+        self.args = args
+        self.break_time = args.break_time
+        self.min_work = args.min_work
+
+        self.base_logger = LocalLogger.setup_logger("gitcalc", message_only=True)
+        self.logger = TimeAwareLogger(self.base_logger)
+
+        self.start_date = self.parse_date(args.start) if args.start else None
+        self.end_date = self.parse_date(args.end) if args.end else None
+
+        self.verify_git_repository()
+        self.get_run_dates()
+        self.log_details()
+
+        self.timestamps = self.get_git_commits()
+        self.total_commits = len(self.timestamps)
+
+        with walking_animation("\nAnalyzing commits...", "cyan"):
+            self.stats = WorkStats(total_commits=self.total_commits)
+            self.filtered_timestamps = self.filter_timestamps()
+
+            # Initialize analyzers
+            self.sessions = SessionAnalyzer()
+            self.streaks = StreakAnalyzer()
+            self.summary = SummaryAnalyzer()
+            self.time = TimeAnalyzer()
+
+            # Calculate work time before printing stats
+            self.calculate_work_time()
+
+        # Print stats after all calculations are complete
+        self.print_stats()
+
+    def verify_git_repository(self) -> None:
+        """Verify that the current directory is a git repository."""
+        # Verify git repository
+        try:
+            subprocess.run(
+                ["git", "rev-parse", "--git-dir"],
+                capture_output=True,
+                check=True,
+            )
+        except subprocess.CalledProcessError:
+            self.logger.error("Not a git repository.")
+            sys.exit(1)
+
+    def get_run_dates(self) -> None:
+        """Get start and end dates from command-line arguments."""
+        # Parse dates and build date range string
+        date_range_str = ""
+        if self.start_date or self.end_date:
+            date_range_str += "Only considering commits"
+        if self.start_date:
+            date_range_str += f" on or after {self.start_date:%B %-d, %Y}"
+            if self.end_date:
+                date_range_str += " and"
+        if self.end_date:
+            date_range_str += f" on or before {self.end_date:%B %-d, %Y}"
+        if date_range_str:
+            self.logger.info("%s.", date_range_str)
+
+    def log_details(self) -> None:
+        """Log the calculation based on the provided arguments."""
+        self.logger.debug(
+            "Considering %d minutes to be a session break with a minimum of %d minutes per commit.",
+            self.break_time,
+            self.min_work,
+        )
+
+    def get_git_commits(self) -> list[datetime]:
+        """Get timestamps of all commits in the repository."""
+        try:
+            result = subprocess.run(
+                ["git", "log", "--format=%aI"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+        except subprocess.CalledProcessError as e:
+            msg = "Failed to get git commits. Are you in a git repository?"
+            raise RuntimeError(msg) from e
+
+        timestamps = []
+        for line in result.stdout.splitlines():
+            dt = datetime.fromisoformat(line.strip())
+            timestamps.append(dt)
+
+        return timestamps
+
+    def filter_timestamps(self) -> list[datetime]:
+        """Filter timestamps based on date range and collect basic stats."""
+        filtered = []
+        for timestamp in self.timestamps:
+            if self.start_date and timestamp.date() < self.start_date:
+                continue
+            if self.end_date and timestamp.date() > self.end_date:
+                continue
+            filtered.append(timestamp)
+
+            # Track hour and weekday stats
+            self.stats.commits_by_hour[timestamp.hour] += 1
+            self.stats.commits_by_weekday[timestamp.weekday()] += 1
+
+            if self.stats.earliest_timestamp is None or timestamp < self.stats.earliest_timestamp:
+                self.stats.earliest_timestamp = timestamp
+            if self.stats.latest_timestamp is None or timestamp > self.stats.latest_timestamp:
+                self.stats.latest_timestamp = timestamp
+
+        return sorted(filtered)
+
+    def calculate_work_time(self) -> None:
+        """Calculate the total work time based on commit timestamps."""
+
+        if not self.timestamps or not self.filtered_timestamps:
+            return
+
+        self.stats.total_time = self.sessions.calculate_session_times(
+            self.filtered_timestamps,
+            self.break_time,
+            self.min_work,
+            self.stats,
+        )
+
+        # Calculate streak using existing calculate_streaks function
+        streak_info = self.streaks.calculate_streaks(sorted(self.stats.commits_by_day.keys()))
+        self.stats.longest_streak = (streak_info.longest_start, streak_info.longest_length)
+
+    def print_stats(self) -> None:
+        """Print calculated statistics."""
+        self.logger.info("Processed %d commits", self.stats.total_commits)
+
+        # Display time span information
+        if time_span := TimeSpan.from_stats(self.stats):
+            for message in self.time.format_time_span(time_span):
+                self.logger.debug("%s", message)
+
+        # Display active days information
+        if active_days_stats := self.time.calculate_active_days(self.stats):
+            for message in self.time.format_active_days_stats(active_days_stats):
+                self.logger.debug("%s", message)
+
+        # Display session statistics
+        self.logger.info("\nWork patterns:")
+        session_stats = self.sessions.calculate_session_stats(self.stats)
+        for message in self.sessions.format_session_stats(session_stats):
+            self.logger.debug("%s", message)
+
+        # Display time distribution
+        time_dist = self.time.calculate_time_distribution(self.stats)
+
+        self.logger.info("\nDay of week patterns:")
+        for day, (commits, percentage) in time_dist.by_weekday.items():
+            self.logger.debug(
+                "%s: %d commits (%.1f%%)",
+                day.name.capitalize(),
+                commits,
+                percentage,
+            )
+
+        self.logger.info("\nMost active hours:")
+        for hour, commits, percentage in time_dist.most_active_hours:
+            self.logger.debug(
+                "  %s: %d commits (%.1f%%)",
+                self.format_hour(hour),
+                commits,
+                percentage,
+            )
+
+        # Display streak information
+        print()
+        streak_info = self.streaks.calculate_streaks(sorted(self.stats.commits_by_day.keys()))
+        for message in self.streaks.format_streak_info(streak_info):
+            self.logger.info("%s", message)
+
+        # Display summary statistics
+        print()
+        summary_stats = self.summary.calculate_summary_stats(self.stats)
+        for message in self.summary.format_summary_stats(summary_stats):
+            self.logger.info("%s", message)
+
+    @staticmethod
+    def parse_date(date_str: str) -> date:
+        """Parse the date string provided as an argument."""
+        try:
+            return datetime.strptime(date_str, "%m/%d/%Y %z").date()
+        except ValueError as e:
+            msg = f"Invalid date format: {date_str}. Please use MM/DD/YYYY."
+            raise ValueError(msg) from e
+
+    @staticmethod
+    def format_hour(hour: int) -> str:
+        """Format hour in 12-hour format with AM/PM."""
+        if hour == 0:
+            return "12 AM"
+        if hour < 12:
+            return f"{hour} AM"
+        if hour == 12:
+            return "12 PM"
+        return f"{hour - 12} PM"
 
 
 def parse_args() -> argparse.Namespace:
@@ -47,208 +252,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def get_dates_from_args(args: argparse.Namespace) -> tuple[date | None, date | None]:
-    """Get start and end dates from command-line arguments."""
-    # Parse dates and build date range string
-    start_date = parse_date(args.start) if args.start else None
-    end_date = parse_date(args.end) if args.end else None
-
-    date_range_str = ""
-    if start_date or end_date:
-        date_range_str += "Only considering commits"
-    if start_date:
-        date_range_str += f" on or after {start_date:%B %-d, %Y}"
-        if end_date:
-            date_range_str += " and"
-    if end_date:
-        date_range_str += f" on or before {end_date:%B %-d, %Y}"
-    if date_range_str:
-        logger.info("%s.", date_range_str)
-
-    return start_date, end_date
-
-
-def parse_date(date_str: str) -> date:
-    """Parse the date string provided as an argument."""
-    try:
-        return datetime.strptime(date_str, "%m/%d/%Y %z").date()
-    except ValueError as e:
-        msg = f"Invalid date format: {date_str}. Please use MM/DD/YYYY."
-        raise ValueError(msg) from e
-
-
-def format_hour(hour: int) -> str:
-    """Format hour in 12-hour format with AM/PM."""
-    if hour == 0:
-        return "12 AM"
-    if hour < 12:
-        return f"{hour} AM"
-    if hour == 12:
-        return "12 PM"
-    return f"{hour - 12} PM"
-
-
-def get_git_commits() -> list[datetime]:
-    """Get timestamps of all commits in the repository."""
-    try:
-        result = subprocess.run(
-            ["git", "log", "--format=%aI"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError as e:
-        msg = "Failed to get git commits. Are you in a git repository?"
-        raise RuntimeError(msg) from e
-
-    timestamps = []
-    for line in result.stdout.splitlines():
-        dt = datetime.fromisoformat(line.strip())
-        timestamps.append(dt)
-
-    return timestamps
-
-
-def filter_timestamps(
-    timestamps: list[datetime],
-    start_date: date | None,
-    end_date: date | None,
-    stats: WorkStats,
-) -> list[datetime]:
-    """Filter timestamps based on date range and collect basic stats."""
-    filtered = []
-    for timestamp in timestamps:
-        if start_date and timestamp.date() < start_date:
-            continue
-        if end_date and timestamp.date() > end_date:
-            continue
-        filtered.append(timestamp)
-
-        # Track hour and weekday stats
-        stats.commits_by_hour[timestamp.hour] += 1
-        stats.commits_by_weekday[timestamp.weekday()] += 1
-
-        if stats.earliest_timestamp is None or timestamp < stats.earliest_timestamp:
-            stats.earliest_timestamp = timestamp
-        if stats.latest_timestamp is None or timestamp > stats.latest_timestamp:
-            stats.latest_timestamp = timestamp
-
-    return sorted(filtered)
-
-
-def calculate_work_time(
-    timestamps: list[datetime],
-    max_break_time: int,
-    min_work_per_commit: int,
-    start_date: date | None,
-    end_date: date | None,
-) -> WorkStats:
-    """Calculate the total work time based on commit timestamps."""
-    with walking_animation("\nAnalyzing commits...", "cyan"):
-        stats = WorkStats(total_commits=len(timestamps))
-
-        if not timestamps:
-            return stats
-
-        filtered_timestamps = filter_timestamps(timestamps, start_date, end_date, stats)
-        if not filtered_timestamps:
-            return stats
-
-        stats.total_time = calculate_session_times(
-            filtered_timestamps,
-            max_break_time,
-            min_work_per_commit,
-            stats,
-        )
-
-        # Calculate streak using existing calculate_streaks function
-        streak_info = calculate_streaks(sorted(stats.commits_by_day.keys()))
-        stats.longest_streak = (streak_info.longest_start, streak_info.longest_length)
-
-        return stats
-
-
-def print_stats(stats: WorkStats) -> None:
-    """Print calculated statistics."""
-    logger.info("Processed %d commits", stats.total_commits)
-
-    # Display time span information
-    if time_span := TimeSpan.from_stats(stats):
-        for message in format_time_span(time_span):
-            logger.debug("%s", message)
-
-    # Display session statistics
-    logger.info("\nWork patterns:")
-    session_stats = calculate_session_stats(stats)
-    for message in format_session_stats(session_stats):
-        logger.debug("%s", message)
-
-    # Display time distribution
-    time_dist = calculate_time_distribution(stats)
-
-    logger.info("\nDay of week patterns:")
-    for day, (commits, percentage) in time_dist.by_weekday.items():
-        logger.debug(
-            "%s: %d commits (%.1f%%)",
-            day.name.capitalize(),
-            commits,
-            percentage,
-        )
-
-    logger.info("\nMost active hours:")
-    for hour, commits, percentage in time_dist.most_active_hours:
-        logger.debug(
-            "  %s: %d commits (%.1f%%)",
-            format_hour(hour),
-            commits,
-            percentage,
-        )
-
-    # Display streak information
-    print()
-    streak_info = calculate_streaks(sorted(stats.commits_by_day.keys()))
-    for message in format_streak_info(streak_info):
-        logger.info("%s", message)
-
-    # Display summary statistics
-    print()
-    summary_stats = calculate_summary_stats(stats)
-    for message in format_summary_stats(summary_stats):
-        logger.info("%s", message)
-
-
 def main() -> None:
     """Calculate work time based on git commit timestamps."""
     args = parse_args()
-
-    # Verify git repository
-    try:
-        subprocess.run(
-            ["git", "rev-parse", "--git-dir"],
-            capture_output=True,
-            check=True,
-        )
-    except subprocess.CalledProcessError:
-        logger.error("Not a git repository.")
-        sys.exit(1)
-
-    start_date, end_date = get_dates_from_args(args)
-
-    # Log calculation parameters
-    logger.debug(
-        "Considering %d minutes to be a session break with a minimum of %d minutes per commit.",
-        args.break_time,
-        args.min_work,
-    )
-
-    # Calculate base statistics
-    timestamps = get_git_commits()
-    stats = calculate_work_time(
-        timestamps,
-        args.break_time,
-        args.min_work,
-        start_date,
-        end_date,
-    )
-
-    print_stats(stats)
+    GitCalculator(args)

@@ -10,7 +10,7 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
-from dsutil.tools import configure_traceback
+from dsutil import configure_traceback
 
 configure_traceback()
 

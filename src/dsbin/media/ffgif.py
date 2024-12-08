@@ -8,8 +8,8 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
+from dsutil import configure_traceback
 from dsutil.argparser import ArgParser
-from dsutil.tools import configure_traceback
 
 if TYPE_CHECKING:
     import argparse

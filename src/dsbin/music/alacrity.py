@@ -18,13 +18,13 @@ import os
 
 from natsort import natsorted
 
+from dsutil import configure_traceback
 from dsutil.files import delete_files, list_files
 from dsutil.macos import get_timestamps, set_timestamps
 from dsutil.media import ffmpeg_audio, find_bit_depth
 from dsutil.progress import conversion_list_context
 from dsutil.shell import confirm_action
 from dsutil.text import print_colored
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

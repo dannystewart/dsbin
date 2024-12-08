@@ -18,9 +18,9 @@ import time
 
 from natsort import natsorted
 
+from dsutil import configure_traceback
 from dsutil.shell import confirm_action
 from dsutil.text import color
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

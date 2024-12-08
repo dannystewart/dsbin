@@ -13,8 +13,8 @@ from __future__ import annotations
 import argparse
 import os
 
+from dsutil import configure_traceback
 from dsutil.files import delete_files, list_files
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

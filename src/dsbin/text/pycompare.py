@@ -13,9 +13,9 @@ import argparse
 
 import inquirer
 
+from dsutil import configure_traceback
 from dsutil.shell import handle_keyboard_interrupt
 from dsutil.text import color, print_colored
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

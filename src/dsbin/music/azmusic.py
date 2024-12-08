@@ -29,7 +29,7 @@ from halo import Halo
 from pydub import AudioSegment
 from termcolor import colored
 
-from dsutil.tools import configure_traceback
+from dsutil import configure_traceback
 
 configure_traceback()
 warnings.filterwarnings("ignore", category=SyntaxWarning)

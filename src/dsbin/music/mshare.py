@@ -19,11 +19,10 @@ import sys
 import inquirer
 from termcolor import colored
 
-from dsutil import animation
+from dsutil import animation, configure_traceback
 from dsutil.media import find_bit_depth
 from dsutil.progress import halo_progress
 from dsutil.shell import handle_keyboard_interrupt
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

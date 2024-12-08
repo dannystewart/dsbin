@@ -24,9 +24,9 @@ from mutagen.mp4 import MP4, MP4Cover
 from PIL import Image
 from pydub import AudioSegment
 
+from dsutil import configure_traceback
 from dsutil.notifiers.send_telegram import TelegramSender
 from dsutil.progress import halo_progress
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

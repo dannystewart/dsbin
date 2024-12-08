@@ -14,11 +14,11 @@ import re
 import sys
 from typing import Literal
 
+from dsutil import configure_traceback
 from dsutil.files import list_files
 from dsutil.macos import get_timestamps, set_timestamps
 from dsutil.media import ffmpeg_audio
 from dsutil.text import print_colored
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

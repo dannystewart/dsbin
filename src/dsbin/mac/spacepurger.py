@@ -16,8 +16,8 @@ import shutil
 
 from termcolor import colored
 
+from dsutil import configure_traceback
 from dsutil.progress import halo_progress
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

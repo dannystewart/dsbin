@@ -10,9 +10,9 @@ import sys
 
 from termcolor import colored
 
+from dsutil import configure_traceback
 from dsutil.files import list_files
 from dsutil.media import ffmpeg_audio
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

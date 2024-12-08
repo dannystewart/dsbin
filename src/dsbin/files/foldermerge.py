@@ -10,9 +10,9 @@ from pathlib import Path
 
 from termcolor import colored
 
+from dsutil import configure_traceback
 from dsutil.files import sha256_checksum
 from dsutil.shell import confirm_action
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

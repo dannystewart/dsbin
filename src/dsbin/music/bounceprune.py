@@ -27,10 +27,10 @@ from pathlib import Path
 
 from dsbin.music.bounce_parser import Bounce, BounceParser
 
+from dsutil import configure_traceback
 from dsutil.files import delete_files
 from dsutil.shell import confirm_action
 from dsutil.text import color, print_colored
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

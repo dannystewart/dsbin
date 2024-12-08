@@ -26,14 +26,14 @@ from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
-from dsutil import TZ
+from dsutil import TZ, configure_traceback
 from dsutil.animation import walking_animation
 from dsutil.env import DSEnv
 from dsutil.log import LocalLogger
 from dsutil.macos import get_timestamps
 from dsutil.paths import DSPaths
 from dsutil.shell import async_handle_keyboard_interrupt
-from dsutil.tools import async_retry_on_exception, configure_traceback
+from dsutil.tools import async_retry_on_exception
 
 configure_traceback()
 

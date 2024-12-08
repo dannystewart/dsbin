@@ -40,8 +40,8 @@ from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
 from pydub import AudioSegment
 
+from dsutil import configure_traceback
 from dsutil.text import color, print_colored
-from dsutil.tools import configure_traceback
 
 if TYPE_CHECKING:
     from collections.abc import Callable

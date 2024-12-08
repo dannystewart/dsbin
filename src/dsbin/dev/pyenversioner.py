@@ -14,9 +14,8 @@ import os
 
 from termcolor import colored
 
-from dsutil import animation
+from dsutil import animation, configure_traceback
 from dsutil.shell import confirm_action, handle_keyboard_interrupt
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

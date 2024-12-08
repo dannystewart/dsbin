@@ -29,11 +29,11 @@ from dsbin.music.wpmusiclib.track_identifier import TrackIdentifier
 from dsbin.music.wpmusiclib.upload_tracker import UploadTracker
 from dsbin.music.wpmusiclib.wp_config import Config, spinner
 
+from dsutil import configure_traceback
 from dsutil.log import LocalLogger
 from dsutil.media import ffmpeg_audio
 from dsutil.shell import handle_keyboard_interrupt
 from dsutil.text import color
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

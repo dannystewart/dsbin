@@ -8,7 +8,7 @@ import os
 import subprocess
 import sys
 
-from dsutil.tools import configure_traceback
+from dsutil import configure_traceback
 
 configure_traceback()
 

@@ -16,8 +16,8 @@ import re
 from importlib.metadata import entry_points
 from pathlib import Path
 
+from dsutil import configure_traceback
 from dsutil.text import color, print_colored
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

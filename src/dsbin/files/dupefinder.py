@@ -11,8 +11,8 @@ from __future__ import annotations
 import os
 import sys
 
+from dsutil import configure_traceback
 from dsutil.files import find_duplicate_files_by_hash
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

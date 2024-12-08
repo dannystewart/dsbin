@@ -14,12 +14,12 @@ import inquirer
 
 from dsbin.music.bounce_parser import Bounce, BounceParser
 
+from dsutil import configure_traceback
 from dsutil.animation import walking_animation
 from dsutil.files import move_file
 from dsutil.log import LocalLogger
 from dsutil.progress import halo_progress
 from dsutil.text import color
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

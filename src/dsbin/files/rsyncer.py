@@ -11,9 +11,9 @@ from pathlib import Path
 import inquirer
 import pyperclip
 
+from dsutil import configure_traceback
 from dsutil.shell import handle_keyboard_interrupt
 from dsutil.text import print_colored
-from dsutil.tools import configure_traceback
 
 configure_traceback()
 

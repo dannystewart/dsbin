@@ -22,7 +22,7 @@ import colorama
 import readchar
 from colorama import Fore, Style
 
-from dsutil.tools import configure_traceback
+from dsutil import configure_traceback
 
 configure_traceback()
 

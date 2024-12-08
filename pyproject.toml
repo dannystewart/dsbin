@@ -11,7 +11,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.dependencies]
-python = ">=3.12,<3.13"
+python = "^3.12"
 iplookup = {git = "https://gitlab.dannystewart.com/danny/ip-lookup.git"}
 dsupdater = { git = "https://gitlab.dannystewart.com/danny/dsupdater.git" }
 dsutil = { git = "https://gitlab.dannystewart.com/danny/dsutil.git" }
@@ -94,6 +94,10 @@ timestamps = "dsbin.mac.timestamps:main"
 
 # Development-related scripts
 dsbots = "dsbin.dev.dsbots.dsbots:main"
+dsbump = "dsbin.dev.pyversioner:script_bump"
+dspause = "dsbin.dev.pyversioner:script_pause"
+dstag = "dsbin.dev.pyversioner:script_tag"
+dsversion = "dsbin.dev.pyversioner:main"
 gitcalc = "dsbin.dev.gitcalc.main:main"
 pipmigrator = "dsbin.dev.pipmigrator:main"
 pyenversioner = "dsbin.dev.pyenversioner:main"

@@ -13,6 +13,9 @@ import pyperclip
 
 from dsutil.shell import handle_keyboard_interrupt
 from dsutil.text import print_colored
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 
 def get_full_path(path: str, filename: str) -> str:

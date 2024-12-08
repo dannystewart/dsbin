@@ -16,6 +16,9 @@ from termcolor import colored
 
 from dsutil import animation
 from dsutil.shell import confirm_action, handle_keyboard_interrupt
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 
 @handle_keyboard_interrupt()

@@ -12,6 +12,9 @@ from termcolor import colored
 
 from dsutil.files import list_files
 from dsutil.media import ffmpeg_audio
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 allowed_extensions = [".aiff", ".aif", ".wav", ".m4a", ".flac"]
 

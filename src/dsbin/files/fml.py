@@ -14,6 +14,10 @@ from requests import Session
 from requests.auth import HTTPBasicAuth
 from termcolor import colored
 
+from dsutil.tools import configure_traceback
+
+configure_traceback()
+
 # Load environment variables
 script_directory = os.path.dirname(os.path.abspath(__file__))
 env_path = os.path.join(script_directory, ".env")

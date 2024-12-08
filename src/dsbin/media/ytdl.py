@@ -19,6 +19,9 @@ from dsutil.files import delete_files, move_file
 from dsutil.media import ffmpeg_video
 from dsutil.progress import halo_progress
 from dsutil.text import print_colored
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 
 def get_default_filename(url: str) -> str:

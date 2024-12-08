@@ -24,6 +24,9 @@ from dsutil.media import ffmpeg_audio, find_bit_depth
 from dsutil.progress import conversion_list_context
 from dsutil.shell import confirm_action
 from dsutil.text import print_colored
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 DEFAULT_EXTS = [".aiff", ".aif", ".wav"]
 ALLOWED_EXTS = [".aiff", ".aif", ".wav", ".m4a", ".flac"]

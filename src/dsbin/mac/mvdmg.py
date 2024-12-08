@@ -8,6 +8,10 @@ import argparse
 import os
 import shutil
 
+from dsutil.tools import configure_traceback
+
+configure_traceback()
+
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""

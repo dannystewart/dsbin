@@ -40,12 +40,15 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-if TYPE_CHECKING:
-    import types
-
 from dsutil.files import delete_files, list_files, move_file
 from dsutil.progress import halo_progress, with_retries
 from dsutil.text import print_colored
+from dsutil.tools import configure_traceback
+
+if TYPE_CHECKING:
+    import types
+
+configure_traceback()
 
 tz = ZoneInfo("America/New_York")
 

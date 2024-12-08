@@ -20,6 +20,9 @@ from natsort import natsorted
 
 from dsutil.shell import confirm_action
 from dsutil.text import color
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 BACKUP_PATH = "/Users/danny/Library/CloudStorage/OneDrive-Personal/Documents/Archive/Backups/Bots"
 

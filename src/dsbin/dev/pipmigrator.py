@@ -13,6 +13,10 @@ import argparse
 import os
 import subprocess
 
+from dsutil.tools import configure_traceback
+
+configure_traceback()
+
 
 def run_command(command: str, env: dict[str, str]) -> None:
     """Run a shell command with a specified environment."""

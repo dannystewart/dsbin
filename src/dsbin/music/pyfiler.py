@@ -19,6 +19,9 @@ from dsutil.files import move_file
 from dsutil.log import LocalLogger
 from dsutil.progress import halo_progress
 from dsutil.text import color
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 logger = LocalLogger.setup_logger("pyfiler", level="info", message_only=True, use_color=False)
 

@@ -13,6 +13,9 @@ from dsutil.files import delete_files
 from dsutil.log import LocalLogger
 from dsutil.shell import confirm_action
 from dsutil.text import color
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 logger = LocalLogger.setup_logger("pkginst")
 

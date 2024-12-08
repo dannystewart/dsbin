@@ -23,6 +23,9 @@ from dsutil import animation
 from dsutil.media import find_bit_depth
 from dsutil.progress import halo_progress
 from dsutil.shell import handle_keyboard_interrupt
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 HOME_DIR = os.path.expanduser("~")
 OUTPUT_PATH = os.path.join(HOME_DIR, "Downloads")
@@ -204,7 +207,7 @@ def perform_conversions(
     )
 
     for option, details in conversion_options.items():
-        if option in answers["options"] and isinstance(details["filename"], str):
+        if option in answers["options"]:
             action, new_filename = prompt_if_file_exists(details["filename"])
             if action == "cancel":
                 print(colored("Conversion canceled by user.", "yellow"))

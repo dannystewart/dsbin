@@ -33,6 +33,9 @@ from dsutil.log import LocalLogger
 from dsutil.media import ffmpeg_audio
 from dsutil.shell import handle_keyboard_interrupt
 from dsutil.text import color
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 
 class WPMusic:

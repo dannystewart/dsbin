@@ -9,9 +9,12 @@ import sys
 from typing import TYPE_CHECKING
 
 from dsutil.argparser import ArgParser
+from dsutil.tools import configure_traceback
 
 if TYPE_CHECKING:
     import argparse
+
+configure_traceback()
 
 
 def parse_arguments() -> argparse.Namespace:

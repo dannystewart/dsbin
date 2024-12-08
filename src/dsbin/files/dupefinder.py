@@ -12,6 +12,9 @@ import os
 import sys
 
 from dsutil.files import find_duplicate_files_by_hash
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 if __name__ == "__main__":
     input_files = sys.argv[1:]

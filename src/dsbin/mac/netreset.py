@@ -13,6 +13,9 @@ from typing import Any
 from termcolor import colored
 
 from dsutil.shell import acquire_sudo, confirm_action
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 IP_TO_PING = "9.9.9.9"
 

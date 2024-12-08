@@ -10,6 +10,10 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
+from dsutil.tools import configure_traceback
+
+configure_traceback()
+
 
 def run_tool(cmd: list, cwd: str = None) -> tuple[str, str]:
     """Run a uv tool and return its output."""

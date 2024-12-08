@@ -19,6 +19,9 @@ from zoneinfo import ZoneInfo
 from dsutil.files import delete_files, list_files
 from dsutil.shell import confirm_action
 from dsutil.text import print_colored
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 DEFAULT_HOURS = 4
 

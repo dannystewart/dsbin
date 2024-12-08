@@ -26,6 +26,9 @@ from pydub import AudioSegment
 
 from dsutil.notifiers.send_telegram import TelegramSender
 from dsutil.progress import halo_progress
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 TRACK_URL = "https://gitlab.dannystewart.com/danny/evremixes/-/raw/main/evtracks.json"
 

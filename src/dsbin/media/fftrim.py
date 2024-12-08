@@ -8,6 +8,10 @@ import argparse
 import os
 import subprocess
 
+from dsutil.tools import configure_traceback
+
+configure_traceback()
+
 
 def convert_to_hhmmss(time_str: str) -> str:
     """Convert MM:SS or HH:MM:SS format to HH:MM:SS."""

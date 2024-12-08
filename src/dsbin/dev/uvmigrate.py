@@ -9,8 +9,12 @@ from typing import TYPE_CHECKING, Any
 
 import tomlkit
 
+from dsutil.tools import configure_traceback
+
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+configure_traceback()
 
 
 def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:

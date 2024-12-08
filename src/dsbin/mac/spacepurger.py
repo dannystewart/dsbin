@@ -17,6 +17,9 @@ import shutil
 from termcolor import colored
 
 from dsutil.progress import halo_progress
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 # Sizes (in GB)
 FILE_SIZE_IN_GB = 1  # Size of each file to be written (in GB)

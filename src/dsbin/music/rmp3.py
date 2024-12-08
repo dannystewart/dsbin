@@ -14,6 +14,9 @@ import argparse
 import os
 
 from dsutil.files import delete_files, list_files
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 
 def delete_mp3(directory: str, dry_run: bool = False) -> None:

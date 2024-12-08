@@ -22,6 +22,10 @@ import colorama
 import readchar
 from colorama import Fore, Style
 
+from dsutil.tools import configure_traceback
+
+configure_traceback()
+
 
 def format_path(path: str, base_dir: str) -> str:
     """Format a path to be relative to the base directory."""

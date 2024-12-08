@@ -17,6 +17,9 @@ from importlib.metadata import entry_points
 from pathlib import Path
 
 from dsutil.text import color, print_colored
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 # Define column widths
 COLUMN_BUFFER = 2

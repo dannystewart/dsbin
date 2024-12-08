@@ -12,6 +12,9 @@ from termcolor import colored
 
 from dsutil.files import sha256_checksum
 from dsutil.shell import confirm_action
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 
 def merge_folders(first_folder: str, second_folder: str, dry_run: bool = False) -> None:

@@ -10,6 +10,9 @@ import sys
 from pathlib import Path
 
 from dsutil.log import LocalLogger
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 logger = LocalLogger.setup_logger("metacopy")
 

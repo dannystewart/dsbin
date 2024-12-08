@@ -41,9 +41,12 @@ from mutagen.mp4 import MP4, MP4Cover
 from pydub import AudioSegment
 
 from dsutil.text import color, print_colored
+from dsutil.tools import configure_traceback
 
 if TYPE_CHECKING:
     from collections.abc import Callable
+
+configure_traceback()
 
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 

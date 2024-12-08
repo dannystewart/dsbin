@@ -8,6 +8,10 @@ import os
 import subprocess
 import sys
 
+from dsutil.tools import configure_traceback
+
+configure_traceback()
+
 
 def log_message(message: str) -> None:
     """Log a message to stdout or syslog."""

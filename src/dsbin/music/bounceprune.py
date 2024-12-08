@@ -30,6 +30,9 @@ from dsbin.music.bounce_parser import Bounce, BounceParser
 from dsutil.files import delete_files
 from dsutil.shell import confirm_action
 from dsutil.text import color, print_colored
+from dsutil.tools import configure_traceback
+
+configure_traceback()
 
 
 def determine_actions(bounce_groups: dict[tuple, dict[str, list[Bounce]]]) -> dict:

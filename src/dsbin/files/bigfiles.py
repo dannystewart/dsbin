@@ -14,6 +14,10 @@ from collections import defaultdict
 
 from termcolor import colored
 
+from dsutil.tools import configure_traceback
+
+configure_traceback()
+
 
 def bytes_to_readable(size_in_bytes: float) -> str:
     """

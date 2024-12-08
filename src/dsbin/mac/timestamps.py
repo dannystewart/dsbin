@@ -43,9 +43,12 @@ from dsutil.argparser import ArgInfo, ArgParser, ArgumentsBase
 from dsutil.macos import get_timestamps, set_timestamps
 from dsutil.shell import catch_errors
 from dsutil.text import color
+from dsutil.tools import configure_traceback
 
 if TYPE_CHECKING:
     import argparse
+
+configure_traceback()
 
 
 @dataclass

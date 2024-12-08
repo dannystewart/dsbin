@@ -33,7 +33,9 @@ from dsutil.log import LocalLogger
 from dsutil.macos import get_timestamps
 from dsutil.paths import DSPaths
 from dsutil.shell import async_handle_keyboard_interrupt
-from dsutil.tools import async_retry_on_exception
+from dsutil.tools import async_retry_on_exception, configure_traceback
+
+configure_traceback()
 
 env = DSEnv("pybounce")
 env.add_var("PYBOUNCE_TELEGRAM_API_ID", attr_name="api_id", var_type=str)

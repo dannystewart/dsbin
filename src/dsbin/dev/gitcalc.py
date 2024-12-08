@@ -69,6 +69,7 @@ def get_git_commits() -> list[datetime.datetime]:
 
 def calculate_work_time(
     max_break_time: int,
+    min_work_per_commit: int,
     start_date: datetime.date | None,
     end_date: datetime.date | None,
 ) -> WorkStats:
@@ -80,7 +81,7 @@ def calculate_work_time(
         if not timestamps:
             return stats
 
-        # Filter by date if specified
+        # Filter and sort timestamps
         filtered_timestamps = []
         for timestamp in timestamps:
             if start_date and timestamp.date() < start_date:
@@ -101,9 +102,19 @@ def calculate_work_time(
         total_time = 0
         last_timestamp = filtered_timestamps[0]
 
+        # Add minimum work time for the first commit
+        total_time += min_work_per_commit
+
         for timestamp in filtered_timestamps[1:]:
             time_diff = (timestamp - last_timestamp).total_seconds() / 60
-            total_time += min(time_diff, max_break_time)
+            if time_diff <= max_break_time:
+                # If commits are close together, take the larger of:
+                # - The actual time difference
+                # - The minimum work time per commit
+                total_time += max(time_diff, min_work_per_commit)
+            else:
+                # If commits are far apart, add minimum work time for the new commit
+                total_time += min_work_per_commit
             last_timestamp = timestamp
 
         stats.total_time = total_time
@@ -121,6 +132,13 @@ def main() -> None:
         type=int,
         default=60,
         help="Max minutes before session end (default: 60)",
+    )
+    parser.add_argument(
+        "-m",
+        "--min-work",
+        type=int,
+        default=15,
+        help="Minimum minutes of work per commit (default: 15)",
     )
     parser.add_argument(
         "--start",
@@ -159,9 +177,18 @@ def main() -> None:
     if date_range_str:
         logger.info("%s.", date_range_str)
 
-    logger.debug("Considering %d minutes to be a session break.", max_break_time)
+    logger.debug(
+        "Considering %d minutes to be a session break with a minimum of %d minutes per commit.",
+        max_break_time,
+        args.min_work,
+    )
 
-    stats = calculate_work_time(max_break_time, start_date, end_date)
+    stats = calculate_work_time(
+        args.break_time,
+        args.min_work,
+        start_date,
+        end_date,
+    )
     days, hours, minutes = format_work_time(int(stats.total_time))
 
     logger.info("Processed %d commits", stats.total_commits)
@@ -178,4 +205,5 @@ def main() -> None:
             int(span_hours),
         )
 
-    logger.info("\nTotal work time: %d days, %d hours, %d minutes", days, hours, minutes)
+    days_str = f"{days} day{'' if days == 1 else 's'}, " if days else ""
+    logger.info("\nTotal work time: %s%d hours, %d minutes", days_str, hours, minutes)

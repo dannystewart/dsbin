@@ -12,7 +12,7 @@ from mysql.connector.pooling import PooledMySQLConnection
 from .db_manager import DatabaseError, DatabaseManager
 from .table_formatter import TableFormatter
 
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger
 
 if TYPE_CHECKING:
     from .wp_config import Config

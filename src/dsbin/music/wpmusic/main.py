@@ -29,8 +29,7 @@ from .track_identifier import TrackIdentifier
 from .upload_tracker import UploadTracker
 from .wp_config import Config, spinner
 
-from dsutil import configure_traceback
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger, configure_traceback
 from dsutil.media import ffmpeg_audio
 from dsutil.shell import handle_keyboard_interrupt
 from dsutil.text import color

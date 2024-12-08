@@ -10,9 +10,8 @@ from .streaks import StreakAnalyzer
 from .summary import SummaryAnalyzer, WorkStats
 from .time import TimeAnalyzer, TimeSpan
 
-from dsutil import configure_traceback
+from dsutil import LocalLogger, TimeAwareLogger, configure_traceback
 from dsutil.animation import walking_animation
-from dsutil.log import LocalLogger, TimeAwareLogger
 
 configure_traceback()
 

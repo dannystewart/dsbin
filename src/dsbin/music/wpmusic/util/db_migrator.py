@@ -12,7 +12,7 @@ import mysql.connector
 
 from dsbin.music.wpmusic.wp_config import Config
 
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger
 
 if TYPE_CHECKING:
     from collections.abc import Generator

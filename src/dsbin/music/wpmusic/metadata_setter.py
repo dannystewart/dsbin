@@ -8,7 +8,7 @@ from mutagen.id3._frames import APIC, TALB, TCON, TDRC, TIT2, TPE1, TRCK
 from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4, MP4Cover
 
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger
 
 if TYPE_CHECKING:
     from .audio_track import AudioTrack

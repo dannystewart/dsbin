@@ -9,9 +9,8 @@ import os
 import subprocess
 from glob import glob
 
-from dsutil import configure_traceback
+from dsutil import LocalLogger, configure_traceback
 from dsutil.files import delete_files
-from dsutil.log import LocalLogger
 from dsutil.shell import confirm_action
 from dsutil.text import color
 

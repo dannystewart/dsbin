@@ -11,8 +11,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from dsutil import LocalLogger
 from dsutil.env import DSEnv
-from dsutil.log import LocalLogger
 from dsutil.notifiers import TelegramSender
 from dsutil.paths import DSPaths
 from dsutil.shell import confirm_action, is_root_user

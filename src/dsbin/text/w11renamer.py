@@ -17,8 +17,7 @@ import re
 import sys
 from pathlib import Path
 
-from dsutil import configure_traceback
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger, configure_traceback
 
 configure_traceback()
 

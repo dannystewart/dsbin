@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 import mysql.connector
 
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger
 
 if TYPE_CHECKING:
     from collections.abc import Generator

@@ -9,7 +9,7 @@ from termcolor import colored
 
 from .wp_config import Config, spinner
 
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger
 
 if TYPE_CHECKING:
     from .audio_track import AudioTrack

@@ -38,7 +38,7 @@ from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger
 from dsutil.macos import get_timestamps
 
 tz = ZoneInfo("America/New_York")

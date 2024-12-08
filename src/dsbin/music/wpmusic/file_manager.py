@@ -12,8 +12,8 @@ from termcolor import colored
 
 from .wp_config import Config, spinner
 
+from dsutil import LocalLogger
 from dsutil.files import delete_files
-from dsutil.log import LocalLogger
 from dsutil.shell import handle_keyboard_interrupt
 
 if TYPE_CHECKING:

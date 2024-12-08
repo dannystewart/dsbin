@@ -8,10 +8,9 @@ import os
 import sys
 from dataclasses import dataclass
 
-from dsutil import TZ, configure_traceback
+from dsutil import TZ, LocalLogger, TimeAwareLogger, configure_traceback
 from dsutil.animation import walking_animation
 from dsutil.files import list_files
-from dsutil.log import LocalLogger, TimeAwareLogger
 from dsutil.macos import get_timestamps
 from dsutil.shell import handle_keyboard_interrupt
 

@@ -28,8 +28,6 @@ def run_tool(cmd: list, cwd: str = None) -> tuple[str, str]:
 
 def get_imports(path: Path, exclude_dirs: list[str] = None) -> dict:
     """Get all imports from Python files in the given path, excluding specified directories."""
-    if exclude_dirs is None:
-        exclude_dirs = []
     imports_by_file = defaultdict(set)
 
     for file in path.rglob("*.py"):

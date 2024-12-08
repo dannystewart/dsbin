@@ -416,5 +416,13 @@ def main() -> None:
     avg_commits = stats.total_commits / active_days
     logger.info("Average commits per active day: %.1f", avg_commits)
 
+    days, hours, minutes = format_work_time(int(stats.total_time))
+    total_hours = round(stats.total_time / 60)
     days_str = f"{days} day{'' if days == 1 else 's'}, " if days else ""
-    logger.info("\nTotal work time: %s%d hours, %d minutes", days_str, hours, minutes)
+    logger.info(
+        "\nTotal work time: %s%d hours, %d minutes (%d hours)",
+        days_str,
+        hours,
+        minutes,
+        total_hours,
+    )

@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
 from enum import Enum
 
+from dsutil import TZ
 from dsutil.animation import walking_animation
 from dsutil.log import LocalLogger, TimeAwareLogger
 
@@ -44,10 +45,20 @@ class WorkStats:
     longest_streak: tuple[date | None, int] = field(default_factory=lambda: (None, 0))
 
 
+@dataclass
+class StreakInfo:
+    """Information about commit streaks."""
+
+    longest_start: date | None = None
+    longest_length: int = 0
+    current_start: date | None = None
+    current_length: int = 0
+
+
 def parse_date(date_str: str) -> date:
     """Parse the date string provided as an argument."""
     try:
-        return datetime.strptime(date_str, "%m/%d/%Y").date()  # noqa: DTZ007
+        return datetime.strptime(date_str, "%m/%d/%Y %z").date()
     except ValueError as e:
         msg = f"Invalid date format: {date_str}. Please use MM/DD/YYYY."
         raise ValueError(msg) from e
@@ -79,7 +90,6 @@ def format_work_time(total_minutes: int) -> tuple[int, int, int]:
 def get_git_commits() -> list[datetime]:
     """Get timestamps of all commits in the repository."""
     try:
-        # %aI gives us ISO 8601-like format with timezone information
         result = subprocess.run(
             ["git", "log", "--format=%aI"],
             capture_output=True,
@@ -92,7 +102,6 @@ def get_git_commits() -> list[datetime]:
 
     timestamps = []
     for line in result.stdout.splitlines():
-        # datetime.fromisoformat handles the ISO format including timezone
         dt = datetime.fromisoformat(line.strip())
         timestamps.append(dt)
 
@@ -194,6 +203,62 @@ def calculate_work_time(
         stats.longest_streak = (longest_streak_start, longest_streak)
 
         return stats
+
+
+def calculate_streaks(active_days: list[date]) -> StreakInfo:
+    """Calculate longest and current streaks from active days."""
+    if not active_days:
+        return StreakInfo()
+
+    streaks = StreakInfo()
+    current_streak = 1
+    current_streak_start = active_days[0]
+    longest_streak = 1
+    longest_streak_start = active_days[0]
+
+    for i in range(1, len(active_days)):
+        if (active_days[i] - active_days[i - 1]).days == 1:
+            current_streak += 1
+            if current_streak > longest_streak:
+                longest_streak = current_streak
+                longest_streak_start = current_streak_start
+        else:
+            current_streak = 1
+            current_streak_start = active_days[i]
+
+    # Check if we're currently in a streak
+    today = datetime.now(tz=TZ).date()
+    last_active = active_days[-1]
+    days_since_last = (today - last_active).days
+
+    if days_since_last <= 1:  # Consider today and yesterday as continuing the streak
+        streaks.current_start = current_streak_start
+        streaks.current_length = current_streak
+
+    streaks.longest_start = longest_streak_start
+    streaks.longest_length = longest_streak
+
+    return streaks
+
+
+def format_streak_info(streak_info: StreakInfo) -> list[str]:
+    """Format streak information for display."""
+    messages = []
+
+    if streak_info.longest_start:
+        streak_end = streak_info.longest_start + timedelta(days=streak_info.longest_length - 1)
+        messages.append(
+            f"Longest streak: {streak_info.longest_length} days "
+            f"({streak_info.longest_start:%B %-d, %Y} to {streak_end:%B %-d, %Y})"
+        )
+
+    if streak_info.current_length > 0:
+        messages.append(
+            f"Current streak: {streak_info.current_length} days "
+            f"(since {streak_info.current_start:%B %-d, %Y})"
+        )
+
+    return messages
 
 
 def parse_args() -> argparse.Namespace:
@@ -329,11 +394,7 @@ def main() -> None:
         )
 
     # Time of day stats
-    most_active_hours = sorted(
-        stats.commits_by_hour.items(),
-        key=lambda x: x[1],
-        reverse=True,
-    )[:3]
+    most_active_hours = sorted(stats.commits_by_hour.items(), key=lambda x: x[1], reverse=True)[:3]
     logger.info("\nMost active hours:")
     for hour, commits in most_active_hours:
         percentage = (commits / total_commits) * 100
@@ -344,15 +405,11 @@ def main() -> None:
             percentage,
         )
 
-    # Streak information (moved outside the hour loop)
-    if stats.longest_streak[0]:
-        streak_end = stats.longest_streak[0] + timedelta(days=stats.longest_streak[1] - 1)
-        logger.info(
-            "\nLongest streak: %d days (%s to %s)",
-            stats.longest_streak[1],
-            stats.longest_streak[0].strftime("%B %-d, %Y"),
-            streak_end.strftime("%B %-d, %Y"),
-        )
+    # Calculate and display streaks
+    print()
+    streak_info = calculate_streaks(sorted(stats.commits_by_day.keys()))
+    for message in format_streak_info(streak_info):
+        logger.info("%s", message)
 
     # Average commits per day
     active_days = len(stats.commits_by_day)

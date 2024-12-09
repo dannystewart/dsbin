@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import socket
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
@@ -44,7 +45,10 @@ class BotControlConfig:
     # Runtime state
     dev: bool = False
     all: bool = False
-    action: Literal["start", "restart", "stop", "logs", "sync", "enable", "disable"] | None = None
+
+    # Action
+    ActionType = Literal["start", "restart", "stop", "logs", "sync", "enable", "disable"]
+    action: ActionType | None = None
 
     # Derived fields
     instance_name: str = field(init=False)
@@ -58,7 +62,7 @@ class BotControlConfig:
 
         # Validate hosts
         if not self.allowed_hosts:
-            msg = "At least one allowed host must be specified"
+            msg = "At least one allowed host must be specified."
             raise ValueError(msg)
 
         # Convert all hosts to lowercase for consistent comparison
@@ -67,6 +71,9 @@ class BotControlConfig:
         # Set derived attributes
         self.project_root = self.dev_root if self.dev else self.prod_root
         self.instance_name = self.dev_instance_name if self.dev else self.prod_instance_name
+
+        # Validate the configuration and environment
+        self.validate()
 
     @classmethod
     def from_args(cls, args: argparse.Namespace) -> BotControlConfig:
@@ -77,7 +84,11 @@ class BotControlConfig:
             action=args.action,
         )
 
-    def validate_environment(self) -> None:
+    def get_instance(self, dev: bool) -> str:
+        """Get the name for the specified instance."""
+        return self.dev_instance_name if dev else self.prod_instance_name
+
+    def validate(self) -> None:
         """Validate the execution environment."""
         logger = LocalLogger.setup_logger(level="info")
 
@@ -107,16 +118,17 @@ class BotControlConfig:
             for name in host_names
             for allowed in self.allowed_hosts
         ):
-            msg = (
-                f"This script can only run on allowed hosts: {', '.join(self.allowed_hosts)}. "
-                f"Current hostname: {hostname}."
+            logger.error(
+                "This script can only run on allowed hosts: %s. Current hostname: %s",
+                self.allowed_hosts,
+                hostname,
             )
-            raise RuntimeError(msg)
+            sys.exit(1)
 
         if not self.prod_root.exists():
-            msg = f"Production root does not exist: {self.prod_root}"
-            raise RuntimeError(msg)
+            logger.error("Production root does not exist: %s", self.prod_root)
+            sys.exit(1)
 
         if not self.dev_root.exists():
-            msg = f"Development root does not exist: {self.dev_root}"
-            raise RuntimeError(msg)
+            logger.error("Development root does not exist: %s", self.dev_root)
+            sys.exit(1)

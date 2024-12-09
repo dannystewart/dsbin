@@ -392,7 +392,7 @@ resolved_reference = "af20f77cd724501783f5599cd2e75bbf4bffb988"
 
 [[package]]
 name = "dsutil"
-version = "2.3.1"
+version = "2.3.2"
 description = "Danny's Python utility scripts"
 optional = false
 python-versions = "^3.11"
@@ -400,24 +400,24 @@ files = []
 develop = false
 
 [package.dependencies]
-halo = "^0.0.31"
-natsort = "^8.4.0"
-"path.py" = "^12.5.0"
-pathlib = "^1.0.1"
-pygments = "^2.18.0"
-python-dotenv = "^1.0.1"
-requests = "^2.32.3"
-send2trash = "^1.8.3"
-soundfile = "^0.12.1"
-termcolor = "^2.5.0"
-textual = "<0.86.0,>=0.85.2"
-tzdata = "^2024.2"
+halo = ">=0.0.31"
+natsort = ">=8.4.0"
+"path.py" = ">=12.5.0"
+pathlib = ">=1.0.1"
+pygments = ">=2.18.0"
+python-dotenv = ">=1.0.1"
+requests = ">=2.32.3"
+send2trash = ">=1.8.3"
+soundfile = ">=0.12.1"
+termcolor = ">=2.5.0"
+textual = ">=0.89.1"
+tzdata = ">=2024.2"
 
 [package.source]
 type = "git"
 url = "https://gitlab.dannystewart.com/danny/dsutil.git"
 reference = "HEAD"
-resolved_reference = "1d847b1fc746424745239d2955dab26f32167531"
+resolved_reference = "493560aa1a0523cece79f323b85869c614b7bfd1"
 
 [[package]]
 name = "editor"
@@ -1411,13 +1411,13 @@ tests = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "textual"
-version = "0.85.2"
+version = "0.89.1"
 description = "Modern Text User Interface framework"
 optional = false
 python-versions = "<4.0.0,>=3.8.1"
 files = [
-    {file = "textual-0.85.2-py3-none-any.whl", hash = "sha256:9ccdeb6b8a6a0ff72d497f714934f2e524f2eb67783b459fb08b1339ee537dc0"},
-    {file = "textual-0.85.2.tar.gz", hash = "sha256:2a416995c49d5381a81d0a6fd23925cb0e3f14b4f239ed05f35fa3c981bb1df2"},
+    {file = "textual-0.89.1-py3-none-any.whl", hash = "sha256:0a5d214df6e951b4a2c421e13d0b608482882471c1e34ea74a3631adede8054f"},
+    {file = "textual-0.89.1.tar.gz", hash = "sha256:66befe80e2bca5a8c876cd8ceeaf01752267b6b1dc1d0f73071f1f1e15d90cc8"},
 ]
 
 [package.dependencies]
@@ -1427,7 +1427,7 @@ rich = ">=13.3.3"
 typing-extensions = ">=4.4.0,<5.0.0"
 
 [package.extras]
-syntax = ["tree-sitter (>=0.20.1,<0.21.0)", "tree-sitter-languages (==1.10.2)"]
+syntax = ["tree-sitter (>=0.23.0)", "tree-sitter-bash (>=0.23.0)", "tree-sitter-css (>=0.23.0)", "tree-sitter-go (>=0.23.0)", "tree-sitter-html (>=0.23.0)", "tree-sitter-java (>=0.23.0)", "tree-sitter-javascript (>=0.23.0)", "tree-sitter-json (>=0.24.0)", "tree-sitter-markdown (>=0.3.0)", "tree-sitter-python (>=0.23.0)", "tree-sitter-regex (>=0.24.0)", "tree-sitter-rust (>=0.23.0)", "tree-sitter-sql (>=0.3.0)", "tree-sitter-toml (>=0.6.0)", "tree-sitter-xml (>=0.7.0)", "tree-sitter-yaml (>=0.6.0)"]
 
 [[package]]
 name = "types-paramiko"
@@ -1556,5 +1556,5 @@ files = [
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.12,<3.13"
-content-hash = "e7e33ead6ea21b321e7aa619cb670bc0595ce78afa56513b695d6cc0d584022f"
+python-versions = "^3.12"
+content-hash = "95f08ea632a178166440ddc32ad6aa2770cf4808555de46b27dd57e5d0f8e7da"

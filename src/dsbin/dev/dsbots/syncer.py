@@ -23,36 +23,6 @@ class InstanceSync:
     def __init__(self, config: BotControlConfig):
         self.config = config
         self.logger = LocalLogger.setup_logger()
-        self._validate_environment()
-
-    def _validate_environment(self) -> None:
-        """Validate the execution environment."""
-        # Check if running on allowed host
-        hostname = socket.gethostname().lower()
-        fqdn = socket.getfqdn().lower()
-
-        allowed_hosts = [host.lower() for host in self.config.allowed_hosts]
-        if not any(
-            hostname == host or fqdn == host or hostname.startswith(host) for host in allowed_hosts
-        ):
-            msg = (
-                f"This script can only run on allowed hosts: {', '.join(self.config.allowed_hosts)}\n"
-                f"Current hostname: {hostname} ({fqdn})"
-            )
-            raise RuntimeError(msg)
-
-        # Check if running on Linux
-        if platform.system() != "Linux":
-            msg = "This script is designed to run on Linux systems only"
-            raise RuntimeError(msg)
-
-        # Validate paths exist
-        if not self.config.prod_root.exists():
-            msg = f"Production root does not exist: {self.config.prod_root}"
-            raise RuntimeError(msg)
-        if not self.config.dev_root.exists():
-            msg = f"Development root does not exist: {self.config.dev_root}"
-            raise RuntimeError(msg)
 
     def _should_exclude(self, path: Path) -> bool:
         """Check if a file should be excluded based on patterns."""
@@ -67,12 +37,10 @@ class InstanceSync:
             self.logger.warning("Source file does not exist: %s", source)
             return False
 
-        # New file
-        if not target.exists():
+        if not target.exists():  # New file
             return self._handle_new_file(source, target)
 
-        # Existing file
-        if filecmp.cmp(source, target, shallow=False):
+        if filecmp.cmp(source, target, shallow=False):  # Existing file
             return False
 
         return self._handle_existing_file(source, target)

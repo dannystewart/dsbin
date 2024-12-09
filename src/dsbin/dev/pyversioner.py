@@ -6,7 +6,6 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
-from dsutil.animation import walking_animation
 from dsutil.log import LocalLogger
 
 if TYPE_CHECKING:
@@ -24,12 +23,17 @@ def get_version(pyproject_path: Path) -> str:
             ["poetry", "version", "-s"], capture_output=True, text=True, check=True
         )
         return result.stdout.strip()
-    except subprocess.CalledProcessError:  # Fallback to reading file directly
+    except subprocess.CalledProcessError:
+        # Fallback to reading file directly
         content = pyproject_path.read_text()
         import tomllib
 
         data = tomllib.loads(content)
-        return data["tool"]["poetry"]["version"]
+        try:
+            return data["tool"]["poetry"]["version"]
+        except KeyError as e:
+            msg = "Could not find version in pyproject.toml."
+            raise ValueError(msg) from e
 
 
 def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
@@ -78,27 +82,43 @@ def update_version(
         stashed = False
 
     try:
-        with walking_animation("Updating version...", "green"):
-            # Update version only if we're bumping
-            if bump_type is not None:
+        # Update version only if we're bumping
+        if bump_type is not None:
+            try:
+                # Try Poetry first
                 subprocess.run(["poetry", "version", bump_type], check=True)
-                subprocess.run(["git", "add", "pyproject.toml"], check=True)
+            except subprocess.CalledProcessError:
+                # Fallback to manual file editing
+                content = pyproject.read_text()
+                import tomllib
 
-                if commit_msg:
-                    msg = f"{commit_msg}\n\nBump version to {new_version}"
-                else:
-                    msg = f"Bump version to {new_version}"
+                data = tomllib.loads(content)
 
-                subprocess.run(["git", "commit", "-m", msg], check=True)
+                # Update version in data
+                data["tool"]["poetry"]["version"] = new_version
 
-            # Tag operation happens regardless of bump
-            if tag_msg:
-                subprocess.run(["git", "tag", "-a", f"v{new_version}", "-m", tag_msg], check=True)
+                # Write back to file
+                import tomli_w
+
+                pyproject.write_text(tomli_w.dumps(data))
+
+            subprocess.run(["git", "add", "pyproject.toml"], check=True)
+
+            if commit_msg:
+                msg = f"{commit_msg}\n\nBump version to {new_version}"
             else:
-                subprocess.run(["git", "tag", f"v{new_version}"], check=True)
+                msg = f"Bump version to {new_version}"
 
-            subprocess.run(["git", "push"], check=True)
-            subprocess.run(["git", "push", "--tags"], check=True)
+            subprocess.run(["git", "commit", "-m", msg], check=True)
+
+        # Tag operation happens regardless of bump
+        if tag_msg:
+            subprocess.run(["git", "tag", "-a", f"v{new_version}", "-m", tag_msg], check=True)
+        else:
+            subprocess.run(["git", "tag", f"v{new_version}"], check=True)
+
+        subprocess.run(["git", "push"], check=True)
+        subprocess.run(["git", "push", "--tags"], check=True)
 
         logger.info(
             "Successfully %s v%s!", "tagged" if bump_type is None else "updated to", new_version

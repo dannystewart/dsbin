@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dsbin"
-version = "1.2.2"
+version = "1.2.3"
 description = "Personal Python scripts"
 authors = ["Danny Stewart <danny@stewart.cc>"]
 readme = "README.md"

@@ -7,7 +7,6 @@ from __future__ import annotations
 import argparse
 import subprocess
 import sys
-from pathlib import Path
 
 from ruamel.yaml import YAML
 
@@ -28,9 +27,17 @@ def parse_args() -> argparse.Namespace:
         help="action to perform (defaults to logs if not specified)",
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--dev", action="store_true", help="perform action on dev instance")
     group.add_argument(
-        "--all", action="store_true", help="perform action on both prod and dev instances"
+        "--dev",
+        nargs="?",
+        const=True,  # When --dev is specified without a value
+        choices=["enable", "disable"],  # When --dev is given a value
+        help="perform action on dev instance, or enable/disable dev instance",
+    )
+    group.add_argument(
+        "--all",
+        action="store_true",
+        help="perform action on both prod and dev instances",
     )
     return parser.parse_args()
 
@@ -220,7 +227,11 @@ class BotControl:
             with config_file.open() as f:
                 data = yaml.load(f) or {}
 
-            data["enable_dev_instance"] = enabled
+            # Ensure the nested structure exists
+            if "dev_instance" not in data:
+                data["dev_instance"] = {}
+
+            data["dev_instance"]["enable"] = enabled
 
             with config_file.open("w") as f:
                 yaml.dump(data, f)
@@ -235,7 +246,7 @@ class BotControl:
 def main() -> None:
     """Perform the requested action."""
     args = parse_args()
-    config = BotControlConfig.create_default(Path("/mnt/docker"), args)
+    config = BotControlConfig.from_args(args)
 
     try:
         config.validate_environment()
@@ -246,6 +257,10 @@ def main() -> None:
 
     bots = BotControl(config)
 
+    if isinstance(args.dev, str):
+        enabled = args.dev == "enable"
+        bots.update_dev_instance_status(enabled)
+        return
     if args.action == "sync":
         syncer = InstanceSync(config)
         syncer.sync()
@@ -256,7 +271,7 @@ def main() -> None:
     elif args.action == "stop":
         bots.handle_stop()
     else:
-        bots.follow_logs(dev=args.dev)
+        bots.follow_logs(dev=bool(args.dev))
 
 
 if __name__ == "__main__":

@@ -13,27 +13,48 @@ if TYPE_CHECKING:
 
 @dataclass
 class BotControlConfig:
-    """Configuration for instance sync operations."""
+    """Configuration for instance sync and control operations."""
 
-    prod_root: Path
-    dev_root: Path
-    sync_dirs: list[str]
-    sync_files: list[str]
-    exclude_patterns: list[str]
-    allowed_hosts: list[str]
-    prod_instance_name: str
-    dev_instance_name: str
-    instance_name: str = field(init=False)
-    project_root: Path = field(init=False)
+    # Core paths with standard defaults
+    base_path: Path = Path("/mnt/docker")
+    prod_root: Path = field(init=False)
+    dev_root: Path = field(init=False)
+
+    # Sync configuration
+    sync_dirs: list[str] = field(default_factory=lambda: ["config", "data"])
+    sync_files: list[str] = field(
+        default_factory=lambda: [
+            "src/dsbots/config/ip_whitelist.py",
+            "src/dsbots/.env",
+        ]
+    )
+    exclude_patterns: list[str] = field(
+        default_factory=lambda: [
+            ".gitignore",
+            "__pycache__",
+            "*.pyc",
+        ]
+    )
+
+    # Instance configuration
+    allowed_hosts: list[str] = field(default_factory=lambda: ["web"])
+    prod_instance_name: str = "dsbots"
+    dev_instance_name: str = "dsbots-dev"
+
+    # Runtime state
     dev: bool = False
     all: bool = False
-    action: Literal["start", "restart", "stop", "logs", "sync"] | None = None
+    action: Literal["start", "restart", "stop", "logs", "sync", "enable", "disable"] | None = None
+
+    # Derived fields
+    instance_name: str = field(init=False)
+    project_root: Path = field(init=False)
 
     def __post_init__(self):
         """Validate and set derived attributes."""
-        # Validate paths
-        self.prod_root = Path(self.prod_root).resolve()
-        self.dev_root = Path(self.dev_root).resolve()
+        # Set core paths
+        self.prod_root = (self.base_path / "dsbots").resolve()
+        self.dev_root = (self.base_path / "dsbots-dev").resolve()
 
         # Validate hosts
         if not self.allowed_hosts:
@@ -46,6 +67,15 @@ class BotControlConfig:
         # Set derived attributes
         self.project_root = self.dev_root if self.dev else self.prod_root
         self.instance_name = self.dev_instance_name if self.dev else self.prod_instance_name
+
+    @classmethod
+    def from_args(cls, args: argparse.Namespace) -> BotControlConfig:
+        """Create configuration from command line arguments."""
+        return cls(
+            dev=args.dev,
+            all=args.all,
+            action=args.action,
+        )
 
     def validate_environment(self) -> None:
         """Validate the execution environment."""
@@ -90,27 +120,3 @@ class BotControlConfig:
         if not self.dev_root.exists():
             msg = f"Development root does not exist: {self.dev_root}"
             raise RuntimeError(msg)
-
-    @classmethod
-    def create_default(cls, base_path: Path, args: argparse.Namespace) -> BotControlConfig:
-        """Create default configuration for dsbots sync."""
-        return cls(
-            prod_root=base_path / "dsbots",
-            dev_root=base_path / "dsbots-dev",
-            sync_dirs=["config", "data"],
-            sync_files=[
-                "src/dsbots/config/ip_whitelist.py",
-                "src/dsbots/.env",
-            ],
-            exclude_patterns=[
-                ".gitignore",
-                "__pycache__",
-                "*.pyc",
-            ],
-            allowed_hosts=["web"],
-            dev=args.dev,
-            all=args.all,
-            prod_instance_name="dsbots",
-            dev_instance_name="dsbots-dev",
-            action=args.action,
-        )

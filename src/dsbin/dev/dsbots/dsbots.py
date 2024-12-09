@@ -23,16 +23,14 @@ def parse_args() -> argparse.Namespace:
         "action",
         nargs="?",
         default="logs",
-        choices=["start", "restart", "stop", "logs", "sync"],
+        choices=["start", "restart", "stop", "logs", "sync", "enable", "disable"],
         help="action to perform (defaults to logs if not specified)",
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         "--dev",
-        nargs="?",
-        const=True,  # When --dev is specified without a value
-        choices=["enable", "disable"],  # When --dev is given a value
-        help="perform action on dev instance, or enable/disable dev instance",
+        action="store_true",
+        help="perform action on dev instance",
     )
     group.add_argument(
         "--all",
@@ -88,11 +86,13 @@ class DockerControl:
             self.logger.error("An error occurred while building the Docker image: %s", str(e))
             return False
 
-    def stop_and_remove_containers(self) -> None:
+    def stop_and_remove_containers(self, dev: bool = False) -> None:
         """Stop and remove Docker containers."""
-        self.logger.info("Stopping and removing %s...", self.config.instance_name)
-        run("docker compose down", cwd=str(self.config.project_root))
-        self.logger.info("%s stopped and removed.", self.config.instance_name)
+        project_root = self.config.dev_root if dev else self.config.project_root
+        instance_name = self.config.dev_instance_name if dev else self.config.instance_name
+        self.logger.info("Stopping and removing %s...", instance_name)
+        run("docker compose down", cwd=str(project_root))
+        self.logger.info("%s stopped and removed.", instance_name)
 
     def prune_docker_resources(self) -> None:
         """Clean up unused Docker resources to free up space."""
@@ -129,7 +129,7 @@ class BotControl:
 
     def __init__(self, config: BotControlConfig) -> None:
         self.config = config
-        self.docker = DockerControl(self)
+        self.docker = DockerControl(config)
         self.logger = LocalLogger.setup_logger()
 
     def start_dsbots(self, dev: bool = False) -> None:
@@ -177,10 +177,11 @@ class BotControl:
         if self.config.all:
             self.handle_all()
         else:
-            self.docker.stop_and_remove_containers(self.config.dev)
             if self.config.dev:
+                self.docker.stop_and_remove_containers(dev=True)
                 self.start_dsbots(dev=True)
             else:
+                self.docker.stop_and_remove_containers(dev=False)
                 self.docker.check_nginx()
                 self.start_dsbots(dev=False)
             self.follow_logs(self.config.dev)
@@ -188,7 +189,6 @@ class BotControl:
     def handle_stop(self) -> None:
         """Handle 'stop' action."""
         if self.config.all:
-            # Stop dev first, then prod
             self.update_dev_instance_status(False)
             self.docker.stop_and_remove_containers(dev=True)
             self.docker.stop_and_remove_containers(dev=False)
@@ -246,6 +246,13 @@ class BotControl:
 def main() -> None:
     """Perform the requested action."""
     args = parse_args()
+
+    if args.action in ["enable", "disable"]:
+        config = BotControlConfig.from_args(args)
+        bots = BotControl(config)
+        bots.update_dev_instance_status(args.action == "enable")
+        return
+
     config = BotControlConfig.from_args(args)
 
     try:
@@ -257,10 +264,6 @@ def main() -> None:
 
     bots = BotControl(config)
 
-    if isinstance(args.dev, str):
-        enabled = args.dev == "enable"
-        bots.update_dev_instance_status(enabled)
-        return
     if args.action == "sync":
         syncer = InstanceSync(config)
         syncer.sync()
@@ -271,7 +274,7 @@ def main() -> None:
     elif args.action == "stop":
         bots.handle_stop()
     else:
-        bots.follow_logs(dev=bool(args.dev))
+        bots.follow_logs(dev=args.dev)
 
 
 if __name__ == "__main__":

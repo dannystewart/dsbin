@@ -1,10 +1,9 @@
 from __future__ import annotations
 
 import filecmp
-import platform
 import shutil
-import socket
-from typing import TYPE_CHECKING
+from pathlib import Path
+from typing import TYPE_CHECKING, TypedDict
 
 from dsutil import LocalLogger
 from dsutil.animation import start_animation, stop_animation
@@ -12,9 +11,15 @@ from dsutil.diff import DiffResult, show_diff
 from dsutil.shell import confirm_action, handle_keyboard_interrupt
 
 if TYPE_CHECKING:
-    from pathlib import Path
-
     from .config import BotControlConfig
+
+
+class Changes(TypedDict):
+    """Type definition for changes to be made."""
+
+    new: list[Path]
+    modified: list[Path]
+    binary: list[Path]
 
 
 class InstanceSync:
@@ -125,6 +130,58 @@ class InstanceSync:
 
         return changed_files
 
+    def preview_changes(self, source_root: Path, target_root: Path) -> Changes:
+        """Preview what would be synced without making changes."""
+        changes: Changes = {"new": [], "modified": [], "binary": []}
+        changes = self.get_dir_changes(source_root, target_root, changes)
+        return self.get_file_changes(source_root, target_root, changes)
+
+    def get_dir_changes(self, source_root: Path, target_root: Path, changes: Changes) -> Changes:
+        """Get the list of changes to be made in a directory."""
+        for dir_name in self.config.sync_dirs:
+            source_dir = source_root / dir_name
+            target_dir = target_root / dir_name
+
+            if not source_dir.exists():
+                continue
+
+            for source_path in source_dir.rglob("*"):
+                if self._should_exclude(source_path):
+                    continue
+
+                rel_path = source_path.relative_to(source_dir)
+                target_path = target_dir / rel_path
+
+                if source_path.is_file():
+                    if not target_path.exists():
+                        changes["new"].append(rel_path)
+                    elif not filecmp.cmp(source_path, target_path, shallow=False):
+                        try:
+                            source_path.read_text()
+                            changes["modified"].append(rel_path)
+                        except UnicodeDecodeError:
+                            changes["binary"].append(rel_path)
+        return changes
+
+    def get_file_changes(self, source_root: Path, target_root: Path, changes: Changes) -> Changes:
+        """Preview changes to be made to individual files."""
+        for file_path in self.config.sync_files:
+            source_file = source_root / file_path
+            target_file = target_root / file_path
+
+            if not source_file.exists():
+                continue
+
+            if not target_file.exists():
+                changes["new"].append(Path(file_path))
+            elif not filecmp.cmp(source_file, target_file, shallow=False):
+                try:
+                    source_file.read_text()
+                    changes["modified"].append(Path(file_path))
+                except UnicodeDecodeError:
+                    changes["binary"].append(Path(file_path))
+        return changes
+
     @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
     def sync_instances(self, source_root: Path, target_root: Path) -> None:
         """Sync specified directories and files between instances."""
@@ -154,6 +211,22 @@ class InstanceSync:
         else:
             self.logger.info("No changes needed.")
 
+    def summarize_changes(self, changes: dict[str, list[Path]]) -> None:
+        """Summarize changes to be made."""
+        self.logger.info("Changes to be made:")
+        if changes["new"]:
+            self.logger.info("  New files:")
+            for path in changes["new"]:
+                self.logger.info("    %s", path)
+        if changes["modified"]:
+            self.logger.info("  Modified files:")
+            for path in changes["modified"]:
+                self.logger.info("    %s", path)
+        if changes["binary"]:
+            self.logger.info("  Binary files:")
+            for path in changes["binary"]:
+                self.logger.info("    %s", path)
+
     def sync(self, prod_to_dev: bool | None = None) -> None:
         """Sync files between prod and dev instances."""
         if prod_to_dev is None:
@@ -166,4 +239,17 @@ class InstanceSync:
 
         source = self.config.prod_root if prod_to_dev else self.config.dev_root
         target = self.config.dev_root if prod_to_dev else self.config.prod_root
-        self.sync_instances(source, target)
+
+        # Preview changes first
+        changes = self.preview_changes(source, target)
+
+        if not any(changes.values()):
+            self.logger.info("No changes needed.")
+            return
+
+        # Summarize changes
+        self.summarize_changes(changes)
+
+        # Confirm and proceed with the sync
+        if confirm_action("\nProceed with sync?", prompt_color="yellow"):
+            self.sync_instances(source, target)

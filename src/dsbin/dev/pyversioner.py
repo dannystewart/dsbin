@@ -12,7 +12,7 @@ from dsutil.shell import handle_keyboard_interrupt
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-logger = LocalLogger.setup_logger("versioner")
+logger = LocalLogger.setup_logger()
 
 BumpType = Literal["major", "minor", "patch", "dev"]
 
@@ -195,11 +195,9 @@ def _update_version_in_pyproject(
     pyproject: Path, bump_type: BumpType | str, new_version: str
 ) -> None:
     """Update version in pyproject.toml using Poetry or manual update."""
-    try:  # Try Poetry first
-        subprocess.run(["poetry", "version", bump_type], check=True)
-    except subprocess.CalledProcessError:
-        logger.debug("Poetry version update failed, falling back to manual update.")
-        content = pyproject.read_text()  # Fallback to manual file editing
+    if bump_type == "dev" or ".dev" in new_version:  # Set dev versions manually for Poetry
+        logger.debug("Using manual update for dev version.")
+        content = pyproject.read_text()
         import tomllib
 
         data = tomllib.loads(content)
@@ -207,6 +205,22 @@ def _update_version_in_pyproject(
         import tomli_w
 
         pyproject.write_text(tomli_w.dumps(data))
+
+    else:  # Try Poetry for regular versions
+        try:
+            subprocess.run(["poetry", "version", bump_type], check=True)
+
+        # Fall back to manual version update if Poetry fails
+        except subprocess.CalledProcessError:
+            logger.debug("Poetry version update failed, falling back to manual update.")
+            content = pyproject.read_text()
+            import tomllib
+
+            data = tomllib.loads(content)
+            data["tool"]["poetry"]["version"] = new_version
+            import tomli_w
+
+            pyproject.write_text(tomli_w.dumps(data))
 
     # Verify the changes
     if get_version(pyproject) != new_version:
@@ -222,7 +236,7 @@ def _cleanup_dev_tags(old_version: str, new_version: str) -> None:
     1.2.4-dev.3 -> dsbump major -> 2.0.0   # removes v1.*-dev*
     """
     logger.debug(
-        "Checking for dev tags to clean up when moving from %s to %s", old_version, new_version
+        "Checking for dev tags to clean up when moving from %s to %s.", old_version, new_version
     )
 
     old_major, old_minor, _, _, _ = parse_version(old_version)
@@ -250,7 +264,7 @@ def _cleanup_dev_tags(old_version: str, new_version: str) -> None:
 
         # Remove local tags
         for tag in all_dev_tags:
-            logger.debug("Removing local tag: %s", tag)
+            logger.info("Removing tag: %s", tag)
             subprocess.run(["git", "tag", "-d", tag], check=True)
 
         # Remove remote tags if remote exists

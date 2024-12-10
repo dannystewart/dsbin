@@ -22,17 +22,20 @@ logger = LocalLogger.setup_logger(level=log_level, message_only=not env.debug)
 BumpType = Literal["major", "minor", "patch", "dev"]
 
 
+@handle_keyboard_interrupt()
 def dsbump() -> None:
     """Entry point for dsbump command."""
     bump_command(sys.argv[1:] if len(sys.argv) > 1 else None)
 
 
+@handle_keyboard_interrupt()
 def dspause() -> None:
     """Entry point for dspause command."""
     args = sys.argv[1:] if len(sys.argv) > 1 else ["patch"]
     pause_command(args)
 
 
+@handle_keyboard_interrupt()
 def get_version(pyproject_path: Path) -> str:
     """Get current version from pyproject.toml."""
     try:
@@ -52,6 +55,7 @@ def get_version(pyproject_path: Path) -> str:
             raise ValueError(msg) from e
 
 
+@handle_keyboard_interrupt()
 def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
     """Parse version string into components."""
     if ".dev" in version:  # Handle dev suffix (.devN)
@@ -75,6 +79,7 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
         raise ValueError(msg) from e
 
 
+@handle_keyboard_interrupt()
 def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
     """Calculate new version number."""
     if bump_type is None:
@@ -113,6 +118,7 @@ def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
             raise ValueError(msg)
 
 
+@handle_keyboard_interrupt()
 def _handle_explicit_version(version: str) -> None:
     """Validate explicit version number format."""
     try:
@@ -131,6 +137,7 @@ def _handle_explicit_version(version: str) -> None:
         raise ValueError(msg) from e
 
 
+@handle_keyboard_interrupt()
 def update_version(
     bump_type: BumpType | str | None,
     commit_msg: str | None = None,
@@ -173,6 +180,7 @@ def update_version(
         raise
 
 
+@handle_keyboard_interrupt()
 def check_git_state() -> None:
     """Check if we're in a git repository and on a valid branch."""
     try:  # Check if we're in a git repo
@@ -190,6 +198,7 @@ def check_git_state() -> None:
         raise RuntimeError(msg)
 
 
+@handle_keyboard_interrupt()
 def _update_version_in_pyproject(
     pyproject: Path, bump_type: BumpType | str, new_version: str
 ) -> None:
@@ -227,6 +236,7 @@ def _update_version_in_pyproject(
         raise RuntimeError(msg)
 
 
+@handle_keyboard_interrupt()
 def _cleanup_dev_tags(old_version: str, new_version: str) -> None:
     """Remove all dev tags for relevant versions.
 
@@ -279,6 +289,7 @@ def _cleanup_dev_tags(old_version: str, new_version: str) -> None:
             )
 
 
+@handle_keyboard_interrupt()
 def _handle_git_operations(
     new_version: str,
     bump_type: BumpType | str | None,
@@ -321,6 +332,7 @@ def _handle_git_operations(
     subprocess.run(["git", "push", "--tags"], check=True)
 
 
+@handle_keyboard_interrupt()
 def handle_stash(stash: bool) -> tuple[bool, str | None]:
     """Handle stashing of changes, return if stashed and stash hash."""
     if not stash:
@@ -347,6 +359,7 @@ def handle_stash(stash: bool) -> tuple[bool, str | None]:
     return True, stash_hash
 
 
+@handle_keyboard_interrupt()
 def bump_command(
     args: Sequence[str] | None = None,
     bump_type: BumpType | str = "patch",
@@ -378,6 +391,7 @@ def bump_command(
     update_version(bump_type, commit_msg, tag_msg)
 
 
+@handle_keyboard_interrupt()
 def pause_command(
     args: Sequence[str] | None = None,
     bump_type: BumpType | str = "patch",

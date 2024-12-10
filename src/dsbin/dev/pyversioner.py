@@ -6,13 +6,18 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
+from dsutil.env import DSEnv
 from dsutil.log import LocalLogger
 from dsutil.shell import handle_keyboard_interrupt
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
-logger = LocalLogger.setup_logger()
+env = DSEnv("pyversioner")
+env.add_debug_var()
+
+log_level = "debug" if env.debug else "info"
+logger = LocalLogger.setup_logger(level=log_level, message_only=not env.debug)
 
 BumpType = Literal["major", "minor", "patch", "dev"]
 

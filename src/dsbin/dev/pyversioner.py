@@ -221,6 +221,40 @@ def _update_version_in_pyproject(
         raise RuntimeError(msg)
 
 
+def _cleanup_dev_tags(version: str) -> None:
+    """Remove all dev tags for a given version."""
+    logger.debug("Checking for dev tags to clean up for version %s", version)
+
+    # Get all tags that match the pattern v1.2.3-dev*
+    base_version = version.split("-")[0]  # Strip any dev suffix
+    pattern = f"v{base_version}-dev*"
+
+    # List matching tags
+    result = subprocess.run(
+        ["git", "tag", "-l", pattern], capture_output=True, text=True, check=True
+    )
+    dev_tags = result.stdout.strip().split("\n")
+
+    if dev_tags and dev_tags[0]:  # Check if we actually found any tags
+        logger.info("Cleaning up %d dev tags.", len(dev_tags))
+
+        # Remove local tags
+        for tag in dev_tags:
+            logger.debug("Removing local tag: %s", tag)
+            subprocess.run(["git", "tag", "-d", tag], check=True)
+
+        # Remove remote tags if remote exists
+        remote_check = subprocess.run(["git", "remote"], capture_output=True, text=True)
+        if remote_check.stdout.strip():
+            logger.debug("Removing remote tags...")
+            # Delete all matching remote tags in one command
+            subprocess.run(
+                ["git", "push", "--delete", "origin"] + dev_tags,
+                capture_output=True,  # Suppress output in case tags don't exist remotely
+                check=False,  # Don't fail if some tags don't exist remotely
+            )
+
+
 def _handle_git_operations(
     new_version: str,
     bump_type: BumpType | str | None,
@@ -240,6 +274,12 @@ def _handle_git_operations(
             msg = f"Bump version to {new_version}"
 
         subprocess.run(["git", "commit", "-m", msg], check=True)
+
+    # If finalizing or explicitly setting a version, clean up dev tags
+    if (bump_type == "patch" and "-dev" not in new_version) or (
+        bump_type and bump_type.count(".") >= 2 and "-dev" not in bump_type
+    ):
+        _cleanup_dev_tags(new_version)
 
     # Check if tag already exists
     if subprocess.run(["git", "rev-parse", tag_name], capture_output=True).returncode == 0:

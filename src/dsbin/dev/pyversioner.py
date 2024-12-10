@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Literal
 
 from dsutil.log import LocalLogger
+from dsutil.shell import handle_keyboard_interrupt
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
@@ -70,7 +71,19 @@ def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
             msg = f"Invalid version format: {bump_type}. Must be three numbers separated by dots."
             raise ValueError(msg) from e
 
-    return current_version
+    # Handle major/minor/patch bumps
+    major, minor, patch = map(int, current_version.split("."))
+
+    match bump_type:
+        case "major":
+            return f"{major + 1}.0.0"
+        case "minor":
+            return f"{major}.{minor + 1}.0"
+        case "patch":
+            return f"{major}.{minor}.{patch + 1}"
+        case _:
+            msg = f"Invalid bump type: {bump_type}"
+            raise ValueError(msg)
 
 
 def update_version(
@@ -132,32 +145,6 @@ def check_git_state() -> None:
         raise RuntimeError(msg)
 
 
-def handle_stash(stash: bool) -> tuple[bool, str | None]:
-    """Handle stashing of changes, return if stashed and stash hash."""
-    if not stash:
-        return False, None
-
-    # Check if there are changes to stash
-    result = subprocess.run(["git", "diff", "--quiet"], capture_output=True)
-    if result.returncode == 0:
-        return False, None
-
-    before = subprocess.run(  # Get current stash list for comparison
-        ["git", "rev-list", "-g", "stash"], capture_output=True, text=True
-    ).stdout.split()
-
-    # Stash changes
-    subprocess.run(["git", "stash", "push", "-m", "Temporary stash for version bump"], check=True)
-
-    after = subprocess.run(  # Get new stash list to find our stash
-        ["git", "rev-list", "-g", "stash"], capture_output=True, text=True
-    ).stdout.split()
-
-    # Find the new stash hash
-    stash_hash = next((h for h in after if h not in before), None)
-    return True, stash_hash
-
-
 def _update_version_in_pyproject(
     pyproject: Path, bump_type: BumpType | str, new_version: str
 ) -> None:
@@ -214,6 +201,32 @@ def _handle_git_operations(
 
     subprocess.run(["git", "push"], check=True)
     subprocess.run(["git", "push", "--tags"], check=True)
+
+
+def handle_stash(stash: bool) -> tuple[bool, str | None]:
+    """Handle stashing of changes, return if stashed and stash hash."""
+    if not stash:
+        return False, None
+
+    # Check if there are changes to stash
+    result = subprocess.run(["git", "diff", "--quiet"], capture_output=True)
+    if result.returncode == 0:
+        return False, None
+
+    before = subprocess.run(  # Get current stash list for comparison
+        ["git", "rev-list", "-g", "stash"], capture_output=True, text=True
+    ).stdout.split()
+
+    # Stash changes
+    subprocess.run(["git", "stash", "push", "-m", "Temporary stash for version bump"], check=True)
+
+    after = subprocess.run(  # Get new stash list to find our stash
+        ["git", "rev-list", "-g", "stash"], capture_output=True, text=True
+    ).stdout.split()
+
+    # Find the new stash hash
+    stash_hash = next((h for h in after if h not in before), None)
+    return True, stash_hash
 
 
 def bump_command(
@@ -326,20 +339,26 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+@handle_keyboard_interrupt()
 def main() -> None:
     """Perform version update operations."""
-    args = parse_args()
-
-    match args.command:
-        case "bump":
-            bump_command(bump_type=args.type, commit_msg=args.message, tag_msg=args.tag_message)
-        case "tag":
-            tag_command(tag_msg=args.message)
-        case "pause":
-            pause_command(bump_type=args.type, commit_msg=args.message, tag_msg=args.tag_message)
-        case _:
-            msg = f"Invalid command: {args.command}"
-            raise ValueError(msg)
+    try:
+        args = parse_args()
+        match args.command:
+            case "bump":
+                bump_command(bump_type=args.type, commit_msg=args.message, tag_msg=args.tag_message)
+            case "tag":
+                tag_command(tag_msg=args.message)
+            case "pause":
+                pause_command(
+                    bump_type=args.type, commit_msg=args.message, tag_msg=args.tag_message
+                )
+            case _:
+                msg = f"Invalid command: {args.command}"
+                raise ValueError(msg)
+    except Exception as e:
+        logger.error(str(e))
+        sys.exit(1)
 
 
 if __name__ == "__main__":

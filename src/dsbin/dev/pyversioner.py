@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 logger = LocalLogger.setup_logger("versioner")
 
-BumpType = Literal["major", "minor", "patch"]
+BumpType = Literal["major", "minor", "patch", "dev"]
 
 
 def dsbump() -> None:
@@ -53,27 +53,62 @@ def get_version(pyproject_path: Path) -> str:
             raise ValueError(msg) from e
 
 
+def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
+    """Parse version string into components."""
+
+    if "-" in version:  # Split version and pre-release parts
+        version_part, pre_release = version.split("-", 1)
+
+        if "." in pre_release:  # Handle dev.N format
+            pre_type, pre_num = pre_release.rsplit(".", 1)
+            try:
+                pre_num = int(pre_num)
+            except ValueError as e:
+                msg = f"Invalid pre-release number: {pre_num}"
+                raise ValueError(msg) from e
+        else:
+            pre_type, pre_num = pre_release, None
+    else:
+        version_part = version
+        pre_type = None
+        pre_num = None
+
+    # Parse version numbers
+    try:
+        major, minor, patch = map(int, version_part.split("."))
+        return major, minor, patch, pre_type, pre_num
+    except ValueError as e:
+        msg = f"Invalid version format: {version}"
+        raise ValueError(msg) from e
+
+
 def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
     """Calculate new version number."""
     if bump_type is None:
         return current_version
 
-    if bump_type.count(".") == 2:
-        try:
-            major, minor, patch = map(int, bump_type.split("."))
-            if any(n < 0 for n in (major, minor, patch)):
-                msg = f"Invalid version number: {bump_type}. Numbers cannot be negative."
-                raise ValueError(msg)
-            return bump_type
-        except ValueError as e:
-            if str(e).startswith("Invalid version number"):
-                raise
-            msg = f"Invalid version format: {bump_type}. Must be three numbers separated by dots."
-            raise ValueError(msg) from e
+    # Handle explicit version setting
+    if bump_type.count(".") >= 2:
+        _handle_explicit_version(bump_type)
+        return bump_type
 
-    # Handle major/minor/patch bumps
-    major, minor, patch = map(int, current_version.split("."))
+    # Parse current version
+    major, minor, patch, pre_type, pre_num = parse_version(current_version)
 
+    # Handle dev version bumping
+    if bump_type == "dev":
+        if pre_type == "dev":
+            # Increment dev number
+            return f"{major}.{minor}.{patch}-dev.{pre_num + 1 if pre_num else 1}"
+
+        # Start dev series for next patch version
+        return f"{major}.{minor}.{patch + 1}-dev.1"
+
+    # When moving from dev to release, just remove the dev suffix
+    if pre_type == "dev" and bump_type == "patch":
+        return f"{major}.{minor}.{patch}"
+
+    # Handle regular version bumping
     match bump_type:
         case "major":
             return f"{major + 1}.0.0"
@@ -84,6 +119,24 @@ def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
         case _:
             msg = f"Invalid bump type: {bump_type}"
             raise ValueError(msg)
+
+
+def _handle_explicit_version(version: str) -> None:
+    """Validate explicit version number format."""
+    try:
+        if "-" in version:
+            version_part, _ = version.split("-", 1)
+            major, minor, patch = map(int, version_part.split("."))
+        else:
+            major, minor, patch = map(int, version.split("."))
+            if any(n < 0 for n in (major, minor, patch)):
+                msg = f"Invalid version number: {version}. Numbers cannot be negative."
+                raise ValueError(msg)
+    except ValueError as e:
+        if str(e).startswith("Invalid version number"):
+            raise
+        msg = f"Invalid version format: {version}. Must be three numbers separated by dots."
+        raise ValueError(msg) from e
 
 
 def update_version(
@@ -242,7 +295,7 @@ def bump_command(
         parsed_tag_msg = None
 
         if args:  # First arg could be type or commit msg
-            if args[0] in ("major", "minor", "patch") or args[0].count(".") == 2:
+            if args[0] in ("major", "minor", "patch", "dev") or args[0].count(".") >= 2:
                 parsed_type = args[0]
                 if len(args) > 1:
                     parsed_commit_msg = args[1]

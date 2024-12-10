@@ -55,26 +55,20 @@ def get_version(pyproject_path: Path) -> str:
 
 def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
     """Parse version string into components."""
-
-    if "-" in version:  # Split version and pre-release parts
-        version_part, pre_release = version.split("-", 1)
-
-        if "." in pre_release:  # Handle dev.N format
-            pre_type, pre_num = pre_release.rsplit(".", 1)
-            try:
-                pre_num = int(pre_num)
-            except ValueError as e:
-                msg = f"Invalid pre-release number: {pre_num}"
-                raise ValueError(msg) from e
-        else:
-            pre_type, pre_num = pre_release, None
+    if ".dev" in version:  # Handle dev suffix (.devN)
+        version_part, dev_num = version.rsplit(".dev", 1)
+        try:
+            pre_num = int(dev_num)
+        except ValueError as e:
+            msg = f"Invalid dev number: {dev_num}"
+            raise ValueError(msg) from e
+        pre_type = "dev"
     else:
         version_part = version
         pre_type = None
         pre_num = None
 
-    # Parse version numbers
-    try:
+    try:  # Parse version numbers
         major, minor, patch = map(int, version_part.split("."))
         return major, minor, patch, pre_type, pre_num
     except ValueError as e:
@@ -99,10 +93,9 @@ def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
     if bump_type == "dev":
         if pre_type == "dev":
             # Increment dev number
-            return f"{major}.{minor}.{patch}-dev.{pre_num + 1 if pre_num else 1}"
-
+            return f"{major}.{minor}.{patch}.dev{pre_num + 1 if pre_num else 1}"
         # Start dev series for next patch version
-        return f"{major}.{minor}.{patch + 1}-dev.1"
+        return f"{major}.{minor}.{patch + 1}.dev1"
 
     # When moving from dev to release, just remove the dev suffix
     if pre_type == "dev" and bump_type == "patch":
@@ -237,11 +230,11 @@ def _cleanup_dev_tags(old_version: str, new_version: str) -> None:
 
     patterns = []
     if new_major > old_major:  # Major bump: clean all dev tags for the old major version
-        patterns.append(f"v{old_major}.*-dev*")
+        patterns.append(f"v{old_major}.*.dev*")
     elif new_minor > old_minor:  # Minor bump: clean all dev tags for the old minor version
-        patterns.append(f"v{old_major}.{old_minor}.*-dev*")
+        patterns.append(f"v{old_major}.{old_minor}.*.dev*")
     else:  # Patch bump or explicit version: clean specific version
-        patterns.append(f"v{new_major}.{new_minor}.{new_patch}-dev*")
+        patterns.append(f"v{new_major}.{new_minor}.{new_patch}.dev*")
 
     all_dev_tags = set()
     for pattern in patterns:

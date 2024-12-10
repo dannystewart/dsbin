@@ -162,7 +162,7 @@ def update_version(
         try:  # Update version if needed
             if bump_type is not None:
                 _update_version_in_pyproject(pyproject, bump_type, new_version)
-            _handle_git_operations(new_version, bump_type, commit_msg, tag_msg)
+            _handle_git_operations(new_version, bump_type, commit_msg, tag_msg, current_version)
             logger.info(
                 "Successfully %s v%s!", "tagged" if bump_type is None else "updated to", new_version
             )
@@ -221,25 +221,42 @@ def _update_version_in_pyproject(
         raise RuntimeError(msg)
 
 
-def _cleanup_dev_tags(version: str) -> None:
-    """Remove all dev tags for a given version."""
-    logger.debug("Checking for dev tags to clean up for version %s", version)
+def _cleanup_dev_tags(old_version: str, new_version: str) -> None:
+    """Remove all dev tags for relevant versions.
 
-    # Get all tags that match the pattern v1.2.3-dev*
-    base_version = version.split("-")[0]  # Strip any dev suffix
-    pattern = f"v{base_version}-dev*"
-
-    # List matching tags
-    result = subprocess.run(
-        ["git", "tag", "-l", pattern], capture_output=True, text=True, check=True
+    1.2.4-dev.3 -> dsbump patch -> 1.2.4   # removes v1.2.4-dev*
+    1.2.4-dev.3 -> dsbump minor -> 1.3.0   # removes v1.2.*-dev*
+    1.2.4-dev.3 -> dsbump major -> 2.0.0   # removes v1.*-dev*
+    """
+    logger.debug(
+        "Checking for dev tags to clean up when moving from %s to %s", old_version, new_version
     )
-    dev_tags = result.stdout.strip().split("\n")
 
-    if dev_tags and dev_tags[0]:  # Check if we actually found any tags
-        logger.info("Cleaning up %d dev tags.", len(dev_tags))
+    old_major, old_minor, _, _, _ = parse_version(old_version)
+    new_major, new_minor, new_patch, _, _ = parse_version(new_version)
+
+    patterns = []
+    if new_major > old_major:  # Major bump: clean all dev tags for the old major version
+        patterns.append(f"v{old_major}.*-dev*")
+    elif new_minor > old_minor:  # Minor bump: clean all dev tags for the old minor version
+        patterns.append(f"v{old_major}.{old_minor}.*-dev*")
+    else:  # Patch bump or explicit version: clean specific version
+        patterns.append(f"v{new_major}.{new_minor}.{new_patch}-dev*")
+
+    all_dev_tags = set()
+    for pattern in patterns:
+        result = subprocess.run(
+            ["git", "tag", "-l", pattern], capture_output=True, text=True, check=True
+        )
+        tags = result.stdout.strip().split("\n")
+        if tags and tags[0]:  # Check if we actually found any tags
+            all_dev_tags.update(tags)
+
+    if all_dev_tags:
+        logger.info("Cleaning up %d dev tags.", len(all_dev_tags))
 
         # Remove local tags
-        for tag in dev_tags:
+        for tag in all_dev_tags:
             logger.debug("Removing local tag: %s", tag)
             subprocess.run(["git", "tag", "-d", tag], check=True)
 
@@ -247,9 +264,10 @@ def _cleanup_dev_tags(version: str) -> None:
         remote_check = subprocess.run(["git", "remote"], capture_output=True, text=True)
         if remote_check.stdout.strip():
             logger.debug("Removing remote tags...")
+
             # Delete all matching remote tags in one command
             subprocess.run(
-                ["git", "push", "--delete", "origin"] + dev_tags,
+                ["git", "push", "--delete", "origin"] + list(all_dev_tags),
                 capture_output=True,  # Suppress output in case tags don't exist remotely
                 check=False,  # Don't fail if some tags don't exist remotely
             )
@@ -260,6 +278,7 @@ def _handle_git_operations(
     bump_type: BumpType | str | None,
     commit_msg: str | None,
     tag_msg: str | None,
+    current_version: str,
 ) -> None:
     """Handle git commit, tag, and push operations."""
     tag_name = f"v{new_version}"
@@ -275,11 +294,11 @@ def _handle_git_operations(
 
         subprocess.run(["git", "commit", "-m", msg], check=True)
 
-    # If finalizing or explicitly setting a version, clean up dev tags
-    if (bump_type == "patch" and "-dev" not in new_version) or (
+    # Clean up dev tags when moving to a release version
+    if (bump_type in ("patch", "minor", "major") and "-dev" not in new_version) or (
         bump_type and bump_type.count(".") >= 2 and "-dev" not in bump_type
     ):
-        _cleanup_dev_tags(new_version)
+        _cleanup_dev_tags(current_version, new_version)
 
     # Check if tag already exists
     if subprocess.run(["git", "rev-parse", tag_name], capture_output=True).returncode == 0:

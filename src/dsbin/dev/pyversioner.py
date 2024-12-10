@@ -27,12 +27,6 @@ def dsbump() -> None:
     bump_command(sys.argv[1:] if len(sys.argv) > 1 else None)
 
 
-def dstag() -> None:
-    """Entry point for dstag command."""
-    args = sys.argv[1:] if len(sys.argv) > 1 else []
-    tag_command(args)
-
-
 def dspause() -> None:
     """Entry point for dspause command."""
     args = sys.argv[1:] if len(sys.argv) > 1 else ["patch"]
@@ -384,18 +378,6 @@ def bump_command(
     update_version(bump_type, commit_msg, tag_msg)
 
 
-def tag_command(
-    args: Sequence[str] | None = None,
-    tag_msg: str | None = None,
-) -> None:
-    """Tag current version and push."""
-    if args is not None:
-        parsed_tag_msg = None if len(args) == 0 else args[0]
-        tag_msg = parsed_tag_msg
-
-    update_version(None, tag_msg=tag_msg)
-
-
 def pause_command(
     args: Sequence[str] | None = None,
     bump_type: BumpType | str = "patch",
@@ -443,10 +425,6 @@ def parse_args() -> argparse.Namespace:
     bump_parser.add_argument("-m", "--message", help="Commit message")
     bump_parser.add_argument("-t", "--tag-message", help="Tag message")
 
-    # tag command
-    tag_parser = subparsers.add_parser("tag", help="Tag current version")
-    tag_parser.add_argument("-m", "--message", help="Tag message")
-
     # pause command
     pause_parser = subparsers.add_parser(
         "pause", help="Stash changes, bump version, then restore changes"
@@ -471,8 +449,6 @@ def main() -> None:
         match args.command:
             case "bump":
                 bump_command(bump_type=args.type, commit_msg=args.message, tag_msg=args.tag_message)
-            case "tag":
-                tag_command(tag_msg=args.message)
             case "pause":
                 pause_command(
                     bump_type=args.type, commit_msg=args.message, tag_msg=args.tag_message

@@ -16,6 +16,24 @@ logger = LocalLogger.setup_logger("versioner")
 BumpType = Literal["major", "minor", "patch"]
 
 
+def script_bump() -> None:
+    """Entry point for dsbump command."""
+    cmd_bump(sys.argv[1:] if len(sys.argv) > 1 else None)
+
+
+def script_tag() -> None:
+    """Entry point for dstag command."""
+    args = sys.argv[1:] if len(sys.argv) > 1 else []
+    cmd_tag(args)
+
+
+def script_pause() -> None:
+    """Entry point for dspause command."""
+    # If no args provided, use default "patch"
+    args = sys.argv[1:] if len(sys.argv) > 1 else ["patch"]
+    cmd_pause(args)
+
+
 def get_version(pyproject_path: Path) -> str:
     """Get current version from pyproject.toml."""
     try:
@@ -24,8 +42,7 @@ def get_version(pyproject_path: Path) -> str:
         )
         return result.stdout.strip()
     except subprocess.CalledProcessError:
-        # Fallback to reading file directly
-        content = pyproject_path.read_text()
+        content = pyproject_path.read_text()  # Fallback to reading file directly
         import tomllib
 
         data = tomllib.loads(content)
@@ -138,20 +155,25 @@ def cmd_bump(
 ) -> None:
     """Bump version, commit, tag, and push."""
     if args is not None:
-        # Parse arguments when called as script
-        parser = argparse.ArgumentParser(description="Bump version")
-        parser.add_argument(
-            "type",
-            nargs="?",
-            default="patch",
-            help="Version bump type (major/minor/patch or specific version)",
-        )
-        parser.add_argument("-m", "--message", help="Commit message")
-        parser.add_argument("-t", "--tag-message", help="Tag message")
-        parsed_args = parser.parse_args(args)
-        bump_type = parsed_args.type
-        commit_msg = parsed_args.message
-        tag_msg = parsed_args.tag_message
+        parsed_type = "patch"  # default
+        parsed_commit_msg = None  # First non-version arg is commit msg
+        parsed_tag_msg = None
+
+        if args:  # First arg could be type or commit msg
+            if args[0] in ("major", "minor", "patch") or args[0].count(".") == 2:
+                parsed_type = args[0]
+                if len(args) > 1:
+                    parsed_commit_msg = args[1]
+                    if len(args) > 2:
+                        parsed_tag_msg = args[2]
+            else:  # First arg is commit msg
+                parsed_commit_msg = args[0]
+                if len(args) > 1:
+                    parsed_tag_msg = args[1]
+
+        bump_type = parsed_type
+        commit_msg = parsed_commit_msg
+        tag_msg = parsed_tag_msg
 
     update_version(bump_type, commit_msg, tag_msg)
 
@@ -162,10 +184,8 @@ def cmd_tag(
 ) -> None:
     """Tag current version and push."""
     if args is not None:
-        parser = argparse.ArgumentParser(description="Tag version")
-        parser.add_argument("-m", "--message", help="Tag message")
-        parsed_args = parser.parse_args(args)
-        tag_msg = parsed_args.message
+        parsed_tag_msg = None if len(args) == 0 else args[0]
+        tag_msg = parsed_tag_msg
 
     update_version(None, tag_msg=tag_msg)
 
@@ -178,19 +198,28 @@ def cmd_pause(
 ) -> None:
     """Stash changes, bump version, then restore changes."""
     if args is not None:
-        parser = argparse.ArgumentParser(description="Pause, bump version, and resume")
-        parser.add_argument(
-            "type",
-            nargs="?",
-            default="patch",
-            help="Version bump type (major/minor/patch or specific version)",
-        )
-        parser.add_argument("-m", "--message", help="Commit message")
-        parser.add_argument("-t", "--tag-message", help="Tag message")
-        parsed_args = parser.parse_args(args)
-        bump_type = parsed_args.type
-        commit_msg = parsed_args.message
-        tag_msg = parsed_args.tag_message
+        # Match same behavior as cmd_bump
+        parsed_type = "patch"  # default
+        parsed_commit_msg = None
+        parsed_tag_msg = None
+
+        if args:
+            # First arg could be type or commit msg
+            if args[0] in ("major", "minor", "patch") or args[0].count(".") == 2:
+                parsed_type = args[0]
+                if len(args) > 1:
+                    parsed_commit_msg = args[1]
+                    if len(args) > 2:
+                        parsed_tag_msg = args[2]
+            else:
+                # First arg is commit msg
+                parsed_commit_msg = args[0]
+                if len(args) > 1:
+                    parsed_tag_msg = args[1]
+
+        bump_type = parsed_type
+        commit_msg = parsed_commit_msg
+        tag_msg = parsed_tag_msg
 
     update_version(bump_type, commit_msg, tag_msg, stash=True)
 
@@ -245,27 +274,6 @@ def main() -> None:
         case _:
             msg = f"Invalid command: {args.command}"
             raise ValueError(msg)
-
-
-# Entry point functions for Poetry scripts
-def script_bump() -> None:
-    """Entry point for dsbump command."""
-    # If no args provided, use default "patch"
-    args = sys.argv[1:] if len(sys.argv) > 1 else ["patch"]
-    cmd_bump(args)
-
-
-def script_tag() -> None:
-    """Entry point for dstag command."""
-    args = sys.argv[1:] if len(sys.argv) > 1 else []
-    cmd_tag(args)
-
-
-def script_pause() -> None:
-    """Entry point for dspause command."""
-    # If no args provided, use default "patch"
-    args = sys.argv[1:] if len(sys.argv) > 1 else ["patch"]
-    cmd_pause(args)
 
 
 if __name__ == "__main__":

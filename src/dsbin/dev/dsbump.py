@@ -385,17 +385,24 @@ def _find_base_release_tag() -> str | None:
 
     If we're at 1.3.6b1, find v1.3.5 or the last from before the pre-releases began.
     """
+    current_version = get_version(Path("pyproject.toml"))
+    major, minor, patch, _, _ = parse_version(current_version)
+    base_version = f"v{major}.{minor}.{patch}"
+
     # Get all tags sorted by version
     result = subprocess.run(
-        ["git", "tag", "--sort=-v:refname"],  # Sort in reverse order
-        capture_output=True,
-        text=True,
-        check=True,
+        ["git", "tag", "--sort=v:refname"], capture_output=True, text=True, check=True
     )
-    tags = result.stdout.strip().split("\n")
 
-    # Find last tag that isn't a pre-release
-    return next((tag for tag in tags if not any(x in tag for x in (".dev", "a", "b", "rc"))), None)
+    # Find first pre-release tag of this version
+    return next(
+        (
+            tag
+            for tag in result.stdout.strip().split("\n")
+            if tag.startswith(base_version) and any(x in tag for x in ("a", "b", "rc"))
+        ),
+        None,
+    )
 
 
 @handle_keyboard_interrupt()
@@ -498,15 +505,18 @@ def check_if_commits_safe_to_drop() -> tuple[bool, list[str]]:
         Tuple of (safe_to_drop, commits). safe_to_drop is False if non-version files are modified.
     """
     logger.debug("Checking if pre-release commits can be safely dropped.")
-
-    # Find the base release tag to compare against
-    base_tag = _find_base_release_tag()
-    if not base_tag:
-        logger.error("No release tag found to compare against.")
+    first_prerelease = _find_base_release_tag()
+    if not first_prerelease:
+        logger.error("No pre-release tags found for current version series.")
         return False, []
 
+    # Get commits that would be dropped
+    commits = _find_commits_to_drop()
+    if not commits:
+        return True, []
+
     # Check what files would be affected
-    affected_files = _check_affected_files(base_tag)
+    affected_files = _check_affected_files(commits)
     if affected_files - {"pyproject.toml"}:
         logger.error("Cannot safely drop commits as it would affect the following files:")
         for file in sorted(affected_files - {"pyproject.toml"}):
@@ -514,7 +524,7 @@ def check_if_commits_safe_to_drop() -> tuple[bool, list[str]]:
         return False, []
 
     # Get commits that would be dropped
-    commits = _find_commits_to_drop(base_tag)
+    commits = _find_commits_to_drop()
     if commits:
         logger.info("Found %d commits to drop:", len(commits))
         for commit in commits:
@@ -524,7 +534,7 @@ def check_if_commits_safe_to_drop() -> tuple[bool, list[str]]:
 
 
 @handle_keyboard_interrupt()
-def _check_affected_files(first_pre: str) -> set[str]:
+def _check_affected_files(commits: list[str]) -> set[str]:
     """Check which files would be affected by dropping commits.
 
     Examines changes between first pre-release tag and HEAD.
@@ -532,17 +542,25 @@ def _check_affected_files(first_pre: str) -> set[str]:
     Returns:
         Set of file paths that would be modified.
     """
-    result = subprocess.run(
-        ["git", "diff", "--name-only", f"{first_pre}^", "HEAD"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    return set(result.stdout.strip().split("\n"))
+    affected_files = set()
+    commit_hashes = [commit.split()[0] for commit in commits]
+
+    for commit in commit_hashes:
+        result = subprocess.run(
+            ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", f"{commit}^..{commit}"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        files = set(result.stdout.strip().split("\n"))
+        logger.debug("Files in commit %s: %s", commit, files)
+        affected_files.update(files)
+
+    return affected_files
 
 
 @handle_keyboard_interrupt()
-def _find_commits_to_drop(first_pre: str) -> list[str]:
+def _find_commits_to_drop() -> list[str]:
     """Get list of commits that would be dropped.
 
     Lists all commits between first pre-release tag and HEAD.
@@ -550,13 +568,43 @@ def _find_commits_to_drop(first_pre: str) -> list[str]:
     Returns:
         List of commit descriptions in oneline format.
     """
+    # Get all tags in the current pre-release series
     result = subprocess.run(
-        ["git", "log", "--oneline", f"{first_pre}..HEAD"],
-        capture_output=True,
-        text=True,
-        check=True,
+        ["git", "tag", "--sort=v:refname"], capture_output=True, text=True, check=True
     )
-    return [line for line in result.stdout.strip().split("\n") if line]
+
+    current_version = get_version(Path("pyproject.toml"))
+    major, minor, patch, _, _ = parse_version(current_version)
+    base_version = f"v{major}.{minor}.{patch}"
+
+    # Filter tags to only include those in current pre-release series
+    prerelease_tags = [
+        tag
+        for tag in result.stdout.strip().split("\n")
+        if tag.startswith(base_version) and any(x in tag for x in ("a", "b", "rc"))
+    ]
+
+    if not prerelease_tags:
+        return []
+
+    # Find commits that created these tags
+    version_commits = []
+    for tag in prerelease_tags:
+        result = subprocess.run(
+            ["git", "rev-list", "-n", "1", tag], capture_output=True, text=True, check=True
+        )
+        commit_hash = result.stdout.strip()
+
+        # Get the commit message/description
+        result = subprocess.run(
+            ["git", "log", "--oneline", "-n", "1", commit_hash],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        version_commits.append(result.stdout.strip())
+
+    return version_commits
 
 
 @handle_keyboard_interrupt()
@@ -571,7 +619,24 @@ def drop_prerelease_commits(commits: list[str]) -> None:
         f.write(script)
         script_path = f.name
 
-    try:  # Set up environment to use our script
+    try:
+        # Check if we have uncommitted changes
+        status = subprocess.run(
+            ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+        )
+        has_changes = bool(status.stdout.strip())
+        if has_changes:
+            logger.warning("You have uncommitted changes that will be stashed.")
+            if not confirm_action(
+                "Continue with version bump?", default_to_yes=False, prompt_color="yellow"
+            ):
+                logger.info("Aborting version bump.")
+                sys.exit(1)
+            # Stash changes if needed
+            subprocess.run(["git", "stash", "push", "-m", "temp_stash_before_rebase"], check=True)
+            logger.debug("Stashed working directory changes.")
+
+        # Set up environment to use our script
         env = os.environ.copy()
         env["GIT_SEQUENCE_EDITOR"] = f"cat {script_path} >"
 
@@ -584,8 +649,22 @@ def drop_prerelease_commits(commits: list[str]) -> None:
         # Force push the rewritten history
         logger.warning("Force pushing changes - this will rewrite history!")
         subprocess.run(["git", "push", "--force"], check=True)
+
+        if has_changes:
+            try:
+                # Try to pop the stash
+                subprocess.run(["git", "stash", "pop"], check=True)
+                logger.debug("Restored working directory changes.")
+            except subprocess.CalledProcessError:
+                # If there are conflicts, drop the stash and warn the user
+                subprocess.run(["git", "stash", "drop"], check=True)
+                logger.warning(
+                    "Could not restore working directory changes due to conflicts. "
+                    "Your changes are in the stash, please resolve manually."
+                )
+
     finally:
-        os.unlink(script_path)  # Clean up temp file
+        os.unlink(script_path)  # Clean up temp file  # Clean up temp file
 
 
 @handle_keyboard_interrupt()

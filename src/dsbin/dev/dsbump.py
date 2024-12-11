@@ -610,61 +610,42 @@ def _find_commits_to_drop() -> list[str]:
 @handle_keyboard_interrupt()
 def drop_prerelease_commits(commits: list[str]) -> None:
     """Drop pre-release commits by removing them from history via rebase."""
-    # Create rebase script to drop each commit
-    script = "".join(f"drop {commit}\n" for commit in commits)
-    logger.debug("Rebase script:\n%s", script)
-
-    # Create temporary file for rebase script
-    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
-        f.write(script)
-        script_path = f.name
+    # Save current state
+    subprocess.run(["git", "stash", "push", "-m", "temp_save_final_state"], check=True)
 
     try:
-        # Check if we have uncommitted changes
-        status = subprocess.run(
-            ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
-        )
-        has_changes = bool(status.stdout.strip())
-        if has_changes:
-            logger.warning("You have uncommitted changes that will be stashed.")
-            if not confirm_action(
-                "Continue with version bump?", default_to_yes=False, prompt_color="yellow"
-            ):
-                logger.info("Aborting version bump.")
-                sys.exit(1)
-            # Stash changes if needed
-            subprocess.run(["git", "stash", "push", "-m", "temp_stash_before_rebase"], check=True)
-            logger.debug("Stashed working directory changes.")
+        # Create rebase script to drop version bump commits
+        script = "".join(f"drop {commit}\n" for commit in commits)
+        logger.debug("Rebase script:\n%s", script)
 
-        # Set up environment to use our script
-        env = os.environ.copy()
-        env["GIT_SEQUENCE_EDITOR"] = f"cat {script_path} >"
+        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+            f.write(script)
+            script_path = f.name
 
-        # Run rebase
-        subprocess.run(["git", "rebase", "-i", f"HEAD~{len(commits)}"], env=env, check=True)
-        logger.info("Successfully dropped %d commits:", len(commits))
-        for commit in commits:
-            logger.info("  %s", commit)
+        try:  # Set up environment to use our script
+            env = os.environ.copy()
+            env["GIT_SEQUENCE_EDITOR"] = f"cat {script_path} >"
 
-        # Force push the rewritten history
-        logger.warning("Force pushing changes - this will rewrite history!")
-        subprocess.run(["git", "push", "--force"], check=True)
+            # Run rebase
+            subprocess.run(["git", "rebase", "-i", f"HEAD~{len(commits)}"], env=env, check=True)
 
-        if has_changes:
-            try:
-                # Try to pop the stash
-                subprocess.run(["git", "stash", "pop"], check=True)
-                logger.debug("Restored working directory changes.")
-            except subprocess.CalledProcessError:
-                # If there are conflicts, drop the stash and warn the user
-                subprocess.run(["git", "stash", "drop"], check=True)
-                logger.warning(
-                    "Could not restore working directory changes due to conflicts. "
-                    "Your changes are in the stash, please resolve manually."
-                )
+            # Pop the saved state back
+            subprocess.run(["git", "stash", "pop"], check=True)
 
-    finally:
-        os.unlink(script_path)  # Clean up temp file  # Clean up temp file
+            logger.info("Successfully dropped %d commits:", len(commits))
+            for commit in commits:
+                logger.info("  %s", commit)
+
+            # Force push the rewritten history
+            logger.warning("Force pushing changes - this will rewrite history!")
+            subprocess.run(["git", "push", "--force"], check=True)
+
+        finally:
+            os.unlink(script_path)  # Clean up temp file
+
+    except Exception:  # If anything goes wrong, try to restore the state
+        subprocess.run(["git", "stash", "pop"], check=False)
+        raise
 
 
 @handle_keyboard_interrupt()

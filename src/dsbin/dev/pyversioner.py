@@ -22,7 +22,7 @@ env.add_debug_var()
 log_level = "debug" if env.debug else "info"
 logger = LocalLogger.setup_logger(level=log_level, message_only=not env.debug)
 
-BumpType = Literal["major", "minor", "patch", "dev"]
+BumpType = Literal["major", "minor", "patch", "dev", "alpha", "beta", "rc"]
 
 
 @handle_keyboard_interrupt()
@@ -36,6 +36,24 @@ def dspause() -> None:
     """Entry point for dspause command."""
     args = sys.argv[1:] if len(sys.argv) > 1 else ["patch"]
     pause_command(args)
+
+
+@handle_keyboard_interrupt()
+def check_git_state() -> None:
+    """Check if we're in a git repository and on a valid branch."""
+    try:  # Check if we're in a git repo
+        subprocess.run(["git", "rev-parse", "--git-dir"], check=True, capture_output=True)
+    except subprocess.CalledProcessError as e:
+        msg = "Not a git repository."
+        raise RuntimeError(msg) from e
+
+    # Check if we're on a branch (not in detached HEAD state)
+    result = subprocess.run(
+        ["git", "symbolic-ref", "--short", "HEAD"], capture_output=True, text=True
+    )
+    if result.returncode != 0:
+        msg = "Not on a git branch (detached HEAD state)."
+        raise RuntimeError(msg)
 
 
 @handle_keyboard_interrupt()
@@ -58,10 +76,10 @@ def get_version(pyproject_path: Path) -> str:
             raise ValueError(msg) from e
 
 
-@handle_keyboard_interrupt()
 def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
     """Parse version string into components."""
-    if ".dev" in version:  # Handle dev suffix (.devN)
+    # Handle dev suffix (.devN)
+    if ".dev" in version:
         version_part, dev_num = version.rsplit(".dev", 1)
         try:
             pre_num = int(dev_num)
@@ -69,6 +87,18 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
             msg = f"Invalid dev number: {dev_num}"
             raise ValueError(msg) from e
         pre_type = "dev"
+    # Handle pre-release suffixes (aN, bN, rcN)
+    elif any(x in version for x in ("a", "b", "rc")):
+        for pre in ("a", "b", "rc"):
+            if pre in version:
+                version_part, pre_num = version.rsplit(pre, 1)
+                try:
+                    pre_num = int(pre_num)
+                except ValueError as e:
+                    msg = f"Invalid pre-release number: {pre_num}"
+                    raise ValueError(msg) from e
+                pre_type = pre
+                break
     else:
         version_part = version
         pre_type = None
@@ -98,14 +128,14 @@ def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
 
     # Handle dev version bumping
     if bump_type == "dev":
-        if pre_type == "dev":
-            # Increment dev number
-            return f"{major}.{minor}.{patch}.dev{pre_num + 1 if pre_num else 1}"
-        # Start dev series for next patch version
-        return f"{major}.{minor}.{patch + 1}.dev1"
+        return _handle_dev_version(pre_type, major, minor, patch, pre_num)
 
-    # When moving from dev to release, just remove the dev suffix
-    if pre_type == "dev" and bump_type == "patch":
+    # Handle pre-release bumping
+    if bump_type in ("alpha", "beta", "rc"):
+        return _handle_pre_version(bump_type, pre_type, major, minor, patch, pre_num)
+
+    # When moving from pre-release to release
+    if pre_type in ("a", "b", "rc") and bump_type == "patch":
         return f"{major}.{minor}.{patch}"
 
     # Handle regular version bumping
@@ -121,7 +151,6 @@ def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
             raise ValueError(msg)
 
 
-@handle_keyboard_interrupt()
 def _handle_explicit_version(version: str) -> None:
     """Validate explicit version number format."""
     try:
@@ -138,6 +167,49 @@ def _handle_explicit_version(version: str) -> None:
             raise
         msg = f"Invalid version format: {version}. Must be three numbers separated by dots."
         raise ValueError(msg) from e
+
+
+def _handle_dev_version(
+    pre_type: str, major: int, minor: int, patch: int, pre_num: int | None
+) -> str:
+    """Calculate dev version bump."""
+    if pre_type == "dev":
+        # Increment dev number
+        return f"{major}.{minor}.{patch}.dev{pre_num + 1 if pre_num else 1}"
+    # Start dev series for next patch version
+    return f"{major}.{minor}.{patch + 1}.dev1"
+
+
+def _handle_pre_version(
+    bump_type: BumpType | str,
+    pre_type: str,
+    major: int,
+    minor: int,
+    patch: int,
+    pre_num: int | None,
+) -> str:
+    """Calculate pre-release version bump."""
+    pre_map = {"alpha": "a", "beta": "b", "rc": "rc"}
+    new_pre = pre_map[bump_type]
+
+    if pre_type == new_pre:
+        # Increment existing pre-release
+        return f"{major}.{minor}.{patch}{new_pre}{pre_num + 1 if pre_num else 1}"
+    if pre_type in ("a", "b", "rc"):
+        # Moving to next pre-release type
+        if _pre_release_order(new_pre) > _pre_release_order(pre_type):
+            return f"{major}.{minor}.{patch}{new_pre}1"
+        # Moving backwards not allowed
+        msg = f"Cannot move from {pre_type} to {new_pre}"
+        raise ValueError(msg)
+    # Start new pre-release series
+    return f"{major}.{minor}.{patch + 1}{new_pre}1"
+
+
+def _pre_release_order(pre_type: str) -> int:
+    """Get sort order for pre-release types."""
+    order = {"a": 0, "b": 1, "rc": 2}
+    return order.get(pre_type, -1)
 
 
 @handle_keyboard_interrupt()
@@ -195,24 +267,6 @@ def update_version(
     except Exception as e:
         logger.error("Version update failed: %s", str(e))
         raise
-
-
-@handle_keyboard_interrupt()
-def check_git_state() -> None:
-    """Check if we're in a git repository and on a valid branch."""
-    try:  # Check if we're in a git repo
-        subprocess.run(["git", "rev-parse", "--git-dir"], check=True, capture_output=True)
-    except subprocess.CalledProcessError as e:
-        msg = "Not a git repository."
-        raise RuntimeError(msg) from e
-
-    # Check if we're on a branch (not in detached HEAD state)
-    result = subprocess.run(
-        ["git", "symbolic-ref", "--short", "HEAD"], capture_output=True, text=True
-    )
-    if result.returncode != 0:
-        msg = "Not on a git branch (detached HEAD state)."
-        raise RuntimeError(msg)
 
 
 @handle_keyboard_interrupt()
@@ -475,7 +529,7 @@ def bump_command(
 
         if remaining_args:  # First arg could be type or commit msg
             if (
-                remaining_args[0] in ("major", "minor", "patch", "dev")
+                remaining_args[0] in ("major", "minor", "patch", "dev", "alpha", "beta", "rc")
                 or remaining_args[0].count(".") >= 2
             ):
                 parsed_type = remaining_args[0]

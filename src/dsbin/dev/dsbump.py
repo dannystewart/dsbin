@@ -32,8 +32,10 @@ All operations include git tagging and pushing changes to remote repository.
 from __future__ import annotations
 
 import argparse
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 from typing import Literal, get_args
 
@@ -320,7 +322,7 @@ def update_version(
                 default_to_yes=False,
                 prompt_color="yellow",
             ):
-                drop_commits(commits)
+                drop_prerelease_commits(commits)
 
         # Update version
         if bump_type is not None:
@@ -377,29 +379,22 @@ def _update_version_in_pyproject(
         sys.exit(1)
 
 
-def _find_first_tag(version_prefix: str) -> str | None:
-    """Find the first pre-release tag for a version.
+def _find_base_release_tag() -> str | None:
+    """Find the last release tag before current pre-release series.
 
-    Looks for any pre-release tag (dev/alpha/beta/rc) that matches the version prefix. Tags are
-    checked in version sort order.
-
-    Args:
-        version_prefix: Version prefix to search for (e.g., "v1.2.3").
-
-    Returns:
-        First matching tag or None if no pre-release tags found.
+    If we're at 1.3.6b1, find v1.3.5 or the last from before the pre-releases began.
     """
+    # Get all tags sorted by version
     result = subprocess.run(
-        ["git", "tag", "--sort=v:refname"], capture_output=True, text=True, check=True
+        ["git", "tag", "--sort=-v:refname"],  # Sort in reverse order
+        capture_output=True,
+        text=True,
+        check=True,
     )
-    return next(  # Look for any pre-release tag of this version
-        (
-            tag
-            for tag in result.stdout.strip().split("\n")
-            if tag.startswith(version_prefix) and any(x in tag for x in (".dev", "a", "b", "rc"))
-        ),
-        None,
-    )
+    tags = result.stdout.strip().split("\n")
+
+    # Find last tag that isn't a pre-release
+    return next((tag for tag in tags if not any(x in tag for x in (".dev", "a", "b", "rc"))), None)
 
 
 @handle_keyboard_interrupt()
@@ -503,18 +498,14 @@ def check_if_commits_safe_to_drop() -> tuple[bool, list[str]]:
     """
     logger.debug("Checking if pre-release commits can be safely dropped.")
 
-    # Find first pre-release tag of current series
-    current_version = get_version(Path("pyproject.toml"))
-    major, minor, patch, _, _ = parse_version(current_version)
-    base_version = f"v{major}.{minor}.{patch}"
-
-    first_prerelease = _find_first_tag(base_version)
-    if not first_prerelease:
-        logger.error("No pre-release tags found for current version series.")
+    # Find the base release tag to compare against
+    base_tag = _find_base_release_tag()
+    if not base_tag:
+        logger.error("No release tag found to compare against.")
         return False, []
 
     # Check what files would be affected
-    affected_files = _check_affected_files(first_prerelease)
+    affected_files = _check_affected_files(base_tag)
     if affected_files - {"pyproject.toml"}:
         logger.error("Cannot safely drop commits as it would affect the following files:")
         for file in sorted(affected_files - {"pyproject.toml"}):
@@ -522,7 +513,7 @@ def check_if_commits_safe_to_drop() -> tuple[bool, list[str]]:
         return False, []
 
     # Get commits that would be dropped
-    commits = _find_commits_to_drop(first_prerelease)
+    commits = _find_commits_to_drop(base_tag)
     if commits:
         logger.info("Found %d commits to drop:", len(commits))
         for commit in commits:
@@ -568,24 +559,29 @@ def _find_commits_to_drop(first_pre: str) -> list[str]:
 
 
 @handle_keyboard_interrupt()
-def drop_commits(commits: list[str]) -> None:
-    """Drop pre-release commits by removing them from history via interactive rebase."""
+def drop_prerelease_commits(commits: list[str]) -> None:
+    """Drop pre-release commits by removing them from history via rebase."""
     # Create rebase script to drop each commit
     script = "".join(f"drop {commit}\n" for commit in commits)
     logger.debug("Rebase script:\n%s", script)
 
-    # Use interactive rebase
-    process = subprocess.Popen(
-        ["git", "rebase", "-i", f"HEAD~{len(commits)}"], stdin=subprocess.PIPE, text=True
-    )
-    process.communicate(input=script)
-    if process.returncode != 0:
-        logger.error("Rebase failed.")
-        sys.exit(1)
+    # Create temporary file for rebase script
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+        f.write(script)
+        script_path = f.name
 
-    # Force push the rewritten history
-    logger.warning("Force pushing changes - this will rewrite history!")
-    subprocess.run(["git", "push", "--force"], check=True)
+    try:  # Set up environment to use our script
+        env = os.environ.copy()
+        env["GIT_SEQUENCE_EDITOR"] = f"cat {script_path} >"
+
+        # Run rebase
+        subprocess.run(["git", "rebase", "-i", f"HEAD~{len(commits)}"], env=env, check=True)
+
+        # Force push the rewritten history
+        logger.warning("Force pushing changes - this will rewrite history!")
+        subprocess.run(["git", "push", "--force"], check=True)
+    finally:
+        os.unlink(script_path)  # Clean up temp file
 
 
 @handle_keyboard_interrupt()

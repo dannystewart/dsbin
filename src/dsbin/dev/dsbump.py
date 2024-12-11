@@ -1,7 +1,8 @@
-"""Version management tool for Python projects using Poetry.
+"""Version management tool for Python projects.
 
 Handles version bumping, pre-releases, development versions, and git operations following PEP 440.
 Supports major.minor.patch versioning with alpha/beta/rc pre-releases and .devN development versions.
+Works natively with Poetry, but also supports standard pyproject.toml version management.
 
 Usage:
     # Regular version bumping

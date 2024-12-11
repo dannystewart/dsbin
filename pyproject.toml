@@ -98,7 +98,6 @@ timestamps = "dsbin.mac.timestamps:main"
 # Development-related scripts
 dsbots = "dsbin.dev.dsbots.dsbots:main"
 dsbump = "dsbin.dev.pyversioner:dsbump"
-dspause = "dsbin.dev.pyversioner:dspause"
 dsversion = "dsbin.dev.pyversioner:main"
 gitcalc = "dsbin.dev.gitcalc.main:main"
 pipmigrator = "dsbin.dev.pipmigrator:main"

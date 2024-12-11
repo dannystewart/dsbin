@@ -43,17 +43,17 @@ def check_git_state() -> None:
     """Check if we're in a git repository and on a valid branch."""
     try:  # Check if we're in a git repo
         subprocess.run(["git", "rev-parse", "--git-dir"], check=True, capture_output=True)
-    except subprocess.CalledProcessError as e:
-        msg = "Not a git repository."
-        raise RuntimeError(msg) from e
+    except subprocess.CalledProcessError:
+        logger.error("Not a git repository.")
+        sys.exit(1)
 
     # Check if we're on a branch (not in detached HEAD state)
     result = subprocess.run(
         ["git", "symbolic-ref", "--short", "HEAD"], capture_output=True, text=True
     )
     if result.returncode != 0:
-        msg = "Not on a git branch (detached HEAD state)."
-        raise RuntimeError(msg)
+        logger.error("Not on a git branch (detached HEAD state).")
+        sys.exit(1)
 
 
 @handle_keyboard_interrupt()
@@ -71,9 +71,9 @@ def get_version(pyproject_path: Path) -> str:
         data = tomllib.loads(content)
         try:
             return data["tool"]["poetry"]["version"]
-        except KeyError as e:
-            msg = "Could not find version in pyproject.toml."
-            raise ValueError(msg) from e
+        except KeyError:
+            logger.error("Could not find version in pyproject.toml.")
+            sys.exit(1)
 
 
 def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
@@ -83,9 +83,9 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
         version_part, dev_num = version.rsplit(".dev", 1)
         try:
             pre_num = int(dev_num)
-        except ValueError as e:
-            msg = f"Invalid dev number: {dev_num}"
-            raise ValueError(msg) from e
+        except ValueError:
+            logger.error("Invalid dev number: %s", dev_num)
+            sys.exit(1)
         pre_type = "dev"
     # Handle pre-release suffixes (aN, bN, rcN)
     elif any(x in version for x in ("a", "b", "rc")):
@@ -94,9 +94,9 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
                 version_part, pre_num = version.rsplit(pre, 1)
                 try:
                     pre_num = int(pre_num)
-                except ValueError as e:
-                    msg = f"Invalid pre-release number: {pre_num}"
-                    raise ValueError(msg) from e
+                except ValueError:
+                    logger.error("Invalid pre-release number: %s", pre_num)
+                    sys.exit(1)
                 pre_type = pre
                 break
     else:
@@ -107,9 +107,9 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
     try:  # Parse version numbers
         major, minor, patch = map(int, version_part.split("."))
         return major, minor, patch, pre_type, pre_num
-    except ValueError as e:
-        msg = f"Invalid version format: {version}"
-        raise ValueError(msg) from e
+    except ValueError:
+        logger.error("Invalid version format: %s", version)
+        sys.exit(1)
 
 
 @handle_keyboard_interrupt()
@@ -147,8 +147,8 @@ def bump_version(bump_type: BumpType | str | None, current_version: str) -> str:
         case "patch":
             return f"{major}.{minor}.{patch + 1}"
         case _:
-            msg = f"Invalid bump type: {bump_type}"
-            raise ValueError(msg)
+            logger.error("Invalid bump type: %s", bump_type)
+            sys.exit(1)
 
 
 def _handle_explicit_version(version: str) -> None:
@@ -160,13 +160,13 @@ def _handle_explicit_version(version: str) -> None:
         else:
             major, minor, patch = map(int, version.split("."))
             if any(n < 0 for n in (major, minor, patch)):
-                msg = f"Invalid version number: {version}. Numbers cannot be negative."
-                raise ValueError(msg)
+                logger.error("Invalid version number: %s. Numbers cannot be negative.", version)
+                sys.exit(1)
     except ValueError as e:
         if str(e).startswith("Invalid version number"):
             raise
-        msg = f"Invalid version format: {version}. Must be three numbers separated by dots."
-        raise ValueError(msg) from e
+        logger.error("Invalid format: %s. Must be three numbers separated by dots.", version)
+        sys.exit(1)
 
 
 def _handle_dev_version(
@@ -200,8 +200,8 @@ def _handle_pre_version(
         if _pre_release_order(new_pre) > _pre_release_order(pre_type):
             return f"{major}.{minor}.{patch}{new_pre}1"
         # Moving backwards not allowed
-        msg = f"Cannot move from {pre_type} to {new_pre}"
-        raise ValueError(msg)
+        logger.error("Cannot move from %s to %s.", pre_type, new_pre)
+        sys.exit(1)
     # Start new pre-release series
     return f"{major}.{minor}.{patch + 1}{new_pre}1"
 
@@ -307,8 +307,8 @@ def _update_version_in_pyproject(
 
     # Verify the changes
     if get_version(pyproject) != new_version:
-        msg = "Version update failed verification"
-        raise RuntimeError(msg)
+        logger.error("Version update failed verification.")
+        sys.exit(1)
 
 
 @handle_keyboard_interrupt()
@@ -447,8 +447,8 @@ def _drop_pre_commits(commits: list[str]) -> None:
     )
     process.communicate(input=script)
     if process.returncode != 0:
-        msg = "Rebase failed."
-        raise RuntimeError(msg)
+        logger.error("Rebase failed.")
+        sys.exit(1)
 
     # Force push the rewritten history
     logger.warning("Force pushing changes - this will rewrite history!")
@@ -490,8 +490,8 @@ def _handle_git_operations(
 
     # Check if tag already exists
     if subprocess.run(["git", "rev-parse", tag_name], capture_output=True).returncode == 0:
-        msg = f"Tag {tag_name} already exists"
-        raise RuntimeError(msg)
+        logger.error("Tag %s already exists.", tag_name)
+        sys.exit(1)
 
     # Create tag and push
     if tag_msg:

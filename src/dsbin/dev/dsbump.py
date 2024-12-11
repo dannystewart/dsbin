@@ -340,8 +340,12 @@ def _update_version_in_pyproject(
     pyproject: Path, bump_type: BumpType | str, new_version: str
 ) -> None:
     """Update version in pyproject.toml using Poetry or manual update."""
-    if bump_type == "dev" or ".dev" in new_version:  # Set dev versions manually for Poetry
-        logger.debug("Using manual update for dev version.")
+    if (
+        bump_type == "dev"
+        or bump_type in ("alpha", "beta", "rc")  # Add pre-release types
+        or any(x in new_version for x in (".dev", "a", "b", "rc"))  # Check version too
+    ):
+        logger.debug("Using manual update for pre-release/dev version.")
         content = pyproject.read_text()
         import tomllib
 

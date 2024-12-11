@@ -4,7 +4,7 @@ import argparse
 import subprocess
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, get_args
 
 from dsutil import configure_traceback
 from dsutil.env import DSEnv
@@ -232,8 +232,12 @@ def update_version(
         new_version = bump_version(bump_type, current_version)
 
         # If dropping commits is requested and we're moving from dev to release
-        if drop_commits and ".dev" in current_version and ".dev" not in new_version:
-            safe_to_drop, commits = _check_dev_commits_safe_to_drop()
+        if (
+            drop_commits
+            and (".dev" in current_version or any(x in current_version for x in ("a", "b", "rc")))
+            and not any(x in new_version for x in (".dev", "a", "b", "rc"))
+        ):
+            safe_to_drop, commits = _check_pre_commits_safe_to_drop()
             if not safe_to_drop:
                 logger.error("Cannot safely drop dev commits without conflicts. Aborting.")
                 sys.exit(1)
@@ -242,7 +246,7 @@ def update_version(
                 default_to_yes=False,
                 prompt_color="yellow",
             ):
-                _drop_dev_commits(commits)
+                _drop_pre_commits(commits)
 
         # Stash if needed, getting stash hash for safety
         stashed, stash_hash = handle_stash(stash)
@@ -308,13 +312,8 @@ def _update_version_in_pyproject(
 
 
 @handle_keyboard_interrupt()
-def _cleanup_dev_tags(old_version: str, new_version: str) -> None:
-    """Remove all dev tags for relevant versions.
-
-    1.2.4.dev3 -> dsbump patch -> 1.2.4   # removes v1.2.4.dev*
-    1.2.4.dev3 -> dsbump minor -> 1.3.0   # removes v1.2.*.dev*
-    1.2.4.dev3 -> dsbump major -> 2.0.0   # removes v1.*.dev*
-    """
+def _cleanup_pre_tags(old_version: str, new_version: str) -> None:
+    """Remove all pre-release tags for relevant versions."""
     logger.debug(
         "Checking for dev tags to clean up when moving from %s to %s.", old_version, new_version
     )
@@ -323,12 +322,33 @@ def _cleanup_dev_tags(old_version: str, new_version: str) -> None:
     new_major, new_minor, new_patch, _, _ = parse_version(new_version)
 
     patterns = []
-    if new_major > old_major:  # Major bump: clean all dev tags for the old major version
-        patterns.append(f"v{old_major}.*.dev*")
-    elif new_minor > old_minor:  # Minor bump: clean all dev tags for the old minor version
-        patterns.append(f"v{old_major}.{old_minor}.*.dev*")
-    else:  # Patch bump or explicit version: clean specific version
-        patterns.append(f"v{new_major}.{new_minor}.{new_patch}.dev*")
+    if new_major > old_major:  # Major bump: clean all pre-release tags
+        patterns.extend(
+            [
+                f"v{old_major}.*.dev*",
+                f"v{old_major}.*a*",
+                f"v{old_major}.*b*",
+                f"v{old_major}.*rc*",
+            ]
+        )
+    elif new_minor > old_minor:  # Minor bump: clean minor pre-releases
+        patterns.extend(
+            [
+                f"v{old_major}.{old_minor}.*.dev*",
+                f"v{old_major}.{old_minor}.*a*",
+                f"v{old_major}.{old_minor}.*b*",
+                f"v{old_major}.{old_minor}.*rc*",
+            ]
+        )
+    else:  # Patch bump or explicit version
+        patterns.extend(
+            [
+                f"v{new_major}.{new_minor}.{new_patch}.dev*",
+                f"v{new_major}.{new_minor}.{new_patch}a*",
+                f"v{new_major}.{new_minor}.{new_patch}b*",
+                f"v{new_major}.{new_minor}.{new_patch}rc*",
+            ]
+        )
 
     all_dev_tags = set()
     for pattern in patterns:
@@ -360,11 +380,11 @@ def _cleanup_dev_tags(old_version: str, new_version: str) -> None:
             )
 
 
-def _check_dev_commits_safe_to_drop() -> tuple[bool, list[str]]:
-    """Check if dev commits can be safely dropped."""
-    logger.debug("Checking if dev commits can be safely dropped.")
+def _check_pre_commits_safe_to_drop() -> tuple[bool, list[str]]:
+    """Check if pre-release commits can be safely dropped."""
+    logger.debug("Checking if pre-release commits can be safely dropped.")
 
-    # Find first dev tag of current series
+    # Find first pre-release tag of current series
     current_version = get_version(Path("pyproject.toml"))
     major, minor, patch, _, _ = parse_version(current_version)
     base_version = f"v{major}.{minor}.{patch}"
@@ -415,8 +435,8 @@ def _check_dev_commits_safe_to_drop() -> tuple[bool, list[str]]:
     return True, dev_commits
 
 
-def _drop_dev_commits(commits: list[str]) -> None:
-    """Drop development commits by removing them from history via interactive rebase."""
+def _drop_pre_commits(commits: list[str]) -> None:
+    """Drop pre-release commits by removing them from history via interactive rebase."""
     # Create rebase script to drop each commit
     script = "".join(f"drop {commit}\n" for commit in commits)
     logger.debug("Rebase script:\n%s", script)
@@ -457,11 +477,16 @@ def _handle_git_operations(
 
         subprocess.run(["git", "commit", "-m", msg], check=True)
 
-    # Clean up dev tags when moving to a release version
-    if (bump_type in ("patch", "minor", "major") and ".dev" not in new_version) or (
-        bump_type and bump_type.count(".") >= 2 and ".dev" not in bump_type
+    # Clean up pre-release tags when moving to a release version
+    if (
+        bump_type in get_args(BumpType)
+        and not any(x in new_version for x in (".dev", "a", "b", "rc"))
+    ) or (
+        bump_type
+        and bump_type.count(".") >= 2
+        and not any(x in bump_type for x in (".dev", "a", "b", "rc"))
     ):
-        _cleanup_dev_tags(current_version, new_version)
+        _cleanup_pre_tags(current_version, new_version)
 
     # Check if tag already exists
     if subprocess.run(["git", "rev-parse", tag_name], capture_output=True).returncode == 0:
@@ -518,26 +543,23 @@ def bump_command(
         parser.add_argument(
             "--drop-commits",
             action="store_true",
-            help="Drop dev commits when finalizing version (dangerous!)",
+            help="drop dev commits when finalizing version (dangerous!)",
         )
 
         # Parse out any flags then handle positional args
         known_args, remaining_args = parser.parse_known_args(args)
         parsed_type = "patch"  # Default
-        parsed_commit_msg = None  # First non-version arg is commit msg
+        parsed_commit_msg = None  # First non-version arg is commit message
         parsed_tag_msg = None
 
-        if remaining_args:  # First arg could be type or commit msg
-            if (
-                remaining_args[0] in ("major", "minor", "patch", "dev", "alpha", "beta", "rc")
-                or remaining_args[0].count(".") >= 2
-            ):
+        if remaining_args:  # First arg could be type or commit message
+            if remaining_args[0] in get_args(BumpType) or remaining_args[0].count(".") >= 2:
                 parsed_type = remaining_args[0]
                 if len(remaining_args) > 1:
                     parsed_commit_msg = remaining_args[1]
                     if len(remaining_args) > 2:
                         parsed_tag_msg = remaining_args[2]
-            else:  # First arg is commit msg
+            else:  # First arg is commit message
                 parsed_commit_msg = remaining_args[0]
                 if len(remaining_args) > 1:
                     parsed_tag_msg = remaining_args[1]
@@ -563,14 +585,14 @@ def pause_command(
         parsed_commit_msg = None
         parsed_tag_msg = None
 
-        if args:  # First arg could be type or commit msg
-            if args[0] in ("major", "minor", "patch") or args[0].count(".") == 2:
+        if args:  # First arg could be type or commit message
+            if args[0] in get_args(BumpType) or args[0].count(".") == 2:
                 parsed_type = args[0]
                 if len(args) > 1:
                     parsed_commit_msg = args[1]
                     if len(args) > 2:
                         parsed_tag_msg = args[2]
-            else:  # First arg is commit msg
+            else:  # First arg is commit message
                 parsed_commit_msg = args[0]
                 if len(args) > 1:
                     parsed_tag_msg = args[1]
@@ -593,14 +615,14 @@ def parse_args() -> argparse.Namespace:
         "type",
         nargs="?",
         default="patch",
-        help="Version bump type (major/minor/patch or specific version)",
+        help="version bump type (major/minor/patch or specific version)",
     )
     bump_parser.add_argument("-m", "--message", help="Commit message")
     bump_parser.add_argument("-t", "--tag-message", help="Tag message")
     bump_parser.add_argument(
         "--drop-commits",
         action="store_true",
-        help="Drop dev commits when finalizing version (dangerous!)",
+        help="drop dev commits when finalizing version (dangerous!)",
     )
 
     # pause command
@@ -611,7 +633,7 @@ def parse_args() -> argparse.Namespace:
         "type",
         nargs="?",
         default="patch",
-        help="Version bump type (major/minor/patch or specific version)",
+        help="version bump type (major/minor/patch or specific version)",
     )
     pause_parser.add_argument("-m", "--message", help="Commit message")
     pause_parser.add_argument("-t", "--tag-message", help="Tag message")

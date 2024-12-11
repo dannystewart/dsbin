@@ -576,6 +576,9 @@ def drop_prerelease_commits(commits: list[str]) -> None:
 
         # Run rebase
         subprocess.run(["git", "rebase", "-i", f"HEAD~{len(commits)}"], env=env, check=True)
+        logger.info("Successfully dropped %d commits:", len(commits))
+        for commit in commits:
+            logger.info("  %s", commit)
 
         # Force push the rewritten history
         logger.warning("Force pushing changes - this will rewrite history!")

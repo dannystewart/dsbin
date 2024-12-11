@@ -44,7 +44,7 @@ from dsutil.shell import confirm_action, handle_keyboard_interrupt
 
 configure_traceback()
 
-env = DSEnv("pyversioner")
+env = DSEnv("dsbump")
 env.add_debug_var()
 
 log_level = "debug" if env.debug else "info"

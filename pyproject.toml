@@ -49,8 +49,11 @@ mypy = ">=1.13.0"
 ruff = ">=0.8.2"
 
 [tool.poetry.scripts]
-# Script to list all scripts
+# Script to list all my scripts
 lsbin = "dsbin.lsbin:main"
+
+# Script to check my package versions
+dsver = "dsbin.dsver:main"
 
 # File management scripts
 backupsort = "dsbin.files.backupsort:main"

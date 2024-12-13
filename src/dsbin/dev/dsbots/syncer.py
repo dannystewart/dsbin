@@ -27,17 +27,34 @@ SYNC_FILES = [
     "src/dsbots/.env",
 ]
 
-# Files to exclude
-EXCLUDE_FILES = [
+# Files and directories to exclude
+# Will match recursively, so "logs/" will exclude all logs directories
+EXCLUDE_PATTERNS = [
     ".gitignore",
-    "__pycache__",
     "*.pyc",
+    "__pycache__",
+    ".git/",
+    "cache/",
+    "gifs/",
+    "logs/",
+    "tmp/",
+    "temp/",
 ]
 
 
 def should_exclude(path: Path) -> bool:
-    """Check if a file should be excluded based on patterns."""
-    return any(path.match(pattern) or pattern in str(path) for pattern in EXCLUDE_FILES)
+    """Check if a path should be excluded based on patterns. Handles both file patterns (*.pyc)
+    and directory patterns (logs/). Directory patterns should end with a forward slash and will
+    match directories recursively, so "logs/" will exclude all logs directories regardless of depth.
+    """
+    name = str(path)
+    if path.is_dir():
+        name = f"{name}/"
+    return any(
+        (pattern.endswith("/") and pattern in f"{name}/")
+        or (not pattern.endswith("/") and path.match(pattern))
+        for pattern in EXCLUDE_PATTERNS
+    )
 
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)

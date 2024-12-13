@@ -30,15 +30,16 @@ SYNC_FILES = [
 # Files and directories to exclude
 # Will match recursively, so "logs/" will exclude all logs directories
 EXCLUDE_PATTERNS = [
-    ".gitignore",
-    "*.pyc",
-    "__pycache__",
+    "__pycache__/",
     ".git/",
     "cache/",
     "gifs/",
     "logs/",
-    "tmp/",
     "temp/",
+    "tmp/",
+    "*.pyc",
+    ".gitignore",
+    "inactive_bots.yaml",
 ]
 
 

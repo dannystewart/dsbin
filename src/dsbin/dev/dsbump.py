@@ -77,20 +77,32 @@ def check_git_state() -> None:
 @handle_keyboard_interrupt()
 def get_version(pyproject_path: Path) -> str:
     """Get current version from pyproject.toml."""
-    try:
+    try:  # Try Poetry version command first
         result = subprocess.run(
             ["poetry", "version", "-s"], capture_output=True, text=True, check=True
         )
         return result.stdout.strip()
     except subprocess.CalledProcessError:
-        content = pyproject_path.read_text()  # Fallback to reading file directly
-        import tomllib
-
-        data = tomllib.loads(content)
+        # Fallback to reading file directly
+        content = pyproject_path.read_text()
         try:
-            return data["tool"]["poetry"]["version"]
-        except KeyError:
-            logger.error("Could not find version in pyproject.toml.")
+            import tomllib
+
+            data = tomllib.loads(content)
+
+            try:  # Try Poetry format first
+                return data["tool"]["poetry"]["version"]
+            except KeyError:
+                try:  # Try standard format
+                    return data["project"]["version"]
+                except KeyError:
+                    logger.error(
+                        "Could not find version in pyproject.toml. "
+                        "Expected either tool.poetry.version or project.version."
+                    )
+                    sys.exit(1)
+        except tomllib.TOMLDecodeError:
+            logger.error("Invalid TOML format in pyproject.toml")
             sys.exit(1)
 
 

@@ -17,32 +17,19 @@ if TYPE_CHECKING:
 configure_traceback()
 
 
-def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
-    """Parse command line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Convert Poetry pyproject.toml files to uv-compatible format"
-    )
-    parser.add_argument(
-        "--confirm",
-        action="store_true",
-        help="Actually perform the conversion. Without this, only shows what would be converted",
-    )
+def find_pyproject_files(start_path: Path) -> list[Path]:
+    """Find all pyproject.toml files under the start path."""
+    return sorted(start_path.rglob("pyproject.toml"))
 
-    # Create mutually exclusive group for path/file arguments
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        "--path",
-        type=Path,
-        default=Path("."),
-        help="Directory path to search for pyproject.toml files (default: current directory)",
-    )
-    group.add_argument(
-        "--file",
-        type=Path,
-        help="Single pyproject.toml file to convert",
-    )
 
-    return parser.parse_args(argv)
+def validate_file(file_path: Path) -> None:
+    """Validate that the file exists and is a pyproject.toml file."""
+    if not file_path.exists():
+        msg = f"File not found: {file_path}"
+        raise FileNotFoundError(msg)
+    if file_path.name != "pyproject.toml":
+        msg = f"File must be named 'pyproject.toml', got: {file_path.name}"
+        raise ValueError(msg)
 
 
 def parse_authors(authors: list[Any] | str | None) -> list[dict[str, str]]:
@@ -73,47 +60,101 @@ def parse_authors(authors: list[Any] | str | None) -> list[dict[str, str]]:
     return parsed
 
 
-def convert_dependencies(deps: dict[str, Any]) -> list[str]:
-    """Convert Poetry dependency specs to PEP 621 format."""
-    converted = []
-    for name, spec in deps.items():
-        # Strip quotes from package name if present
-        name = name.strip('"')
-
-        if isinstance(spec, str):
-            converted.append(f'{name}>={spec.replace("^", "")}')
-        elif isinstance(spec, dict):
-            if "version" in spec:
-                converted.append(f'{name}>={spec["version"].replace("^", "")}')
-    return converted
-
-
-def convert_pyproject(file_path: Path) -> None:
-    """Convert a Poetry pyproject.toml to uv-compatible format."""
-    with open(file_path) as f:
-        pyproject = tomlkit.load(f)
-
-    # Copy basic metadata
-    poetry_section = pyproject.get("tool", {}).get("poetry", {})
-    if not poetry_section:
-        msg = "No [tool.poetry] section found in pyproject.toml"
-        raise ValueError(msg)
-
+def create_basic_project(poetry_section: dict) -> dict:
+    """Create basic project metadata from Poetry section."""
     project = {
         "name": poetry_section.get("name"),
-        "dynamic": ["version"],  # Add dynamic version
         "description": poetry_section.get("description"),
     }
 
-    # Handle authors
-    if authors := parse_authors(poetry_section.get("authors")):
-        project["authors"] = authors
+    if version := poetry_section.get("version"):
+        project["version"] = version
 
-    # Handle readme if present
+    if authors := parse_authors(poetry_section.get("authors")):
+        authors_array = tomlkit.array()
+        authors_array.multiline(False)
+        for author in authors:
+            author_item = tomlkit.inline_table()
+            author_item.update(author)
+            authors_array.append(author_item)
+        project["authors"] = authors_array
+
     if "readme" in poetry_section:
         project["readme"] = poetry_section["readme"]
 
-    # Convert dependencies
+    return project
+
+
+def setup_build_config(project_name: str) -> dict:
+    """Create build system and initial tool configuration."""
+    return {
+        "build-system": {"requires": ["hatchling"], "build-backend": "hatchling.build"},
+        "tool": {
+            "hatch": {
+                "version": {"path": "__init__.py"},
+                "build": {"targets": {"wheel": {"packages": [project_name]}}},
+            }
+        },
+    }
+
+
+def convert_dependencies(
+    deps: dict[str, Any], multiline: bool = True
+) -> tuple[list[str], dict[str, dict]]:
+    """Convert Poetry dependency specs to PEP 621 format."""
+    converted = tomlkit.array()
+    converted.multiline(multiline)
+    converted.indent(4)
+    sources = tomlkit.table()
+
+    # Convert and sort dependencies
+    dep_list = []
+    for name, spec in sorted(deps.items()):  # Sort by package name
+        name = name.strip('"')
+
+        if isinstance(spec, dict):
+            if git_result := convert_git_dependency(name, spec):
+                pkg_name, source = git_result
+                dep_list.append(pkg_name)
+                src_table = tomlkit.inline_table()
+                src_table.update(source)
+                sources[pkg_name] = src_table
+                continue
+
+            if "version" in spec:
+                version = spec["version"].replace("^", "")
+                if version.startswith(">="):
+                    version = version[2:]
+                dep_list.append(f"{name}>={version}")
+        elif isinstance(spec, str):
+            version = spec.replace("^", "")
+            if version.startswith(">="):
+                version = version[2:]
+            dep_list.append(f"{name}>={version}")
+
+    # Add sorted dependencies to the array
+    for dep in sorted(dep_list):
+        converted.append(dep)
+
+    return converted, sources
+
+
+def convert_git_dependency(name: str, spec: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
+    """Convert a Poetry git dependency to uv format."""
+    if "git" in spec:
+        source = {"git": spec["git"]}
+        if "branch" in spec:
+            source["rev"] = spec["branch"]
+        if "tag" in spec:
+            source["rev"] = spec["tag"]
+        if "rev" in spec:
+            source["rev"] = spec["rev"]
+        return name, source
+    return None
+
+
+def handle_dependencies(poetry_section: dict, project: dict, uv_sources: dict) -> None:
+    """Process and add all dependencies to the project."""
     if "dependencies" in poetry_section:
         if python_version := poetry_section["dependencies"].get("python", ""):
             project["requires-python"] = f'>={python_version.replace("^", "")}'
@@ -122,34 +163,25 @@ def convert_pyproject(file_path: Path) -> None:
         else:
             deps = poetry_section["dependencies"]
 
-        project["dependencies"] = convert_dependencies(deps)
+        project["dependencies"], sources = convert_dependencies(deps, multiline=False)
+        uv_sources.update(sources)
 
-    # Handle dev dependencies
+
+def handle_dev_dependencies(poetry_section: dict, project: dict, uv_sources: dict) -> None:
+    """Process and add development dependencies to the project."""
     if "group" in poetry_section and "dev" in poetry_section["group"]:
-        project["optional-dependencies"] = {
-            "dev": convert_dependencies(poetry_section["group"]["dev"]["dependencies"])
-        }
+        dev_deps, dev_sources = convert_dependencies(
+            poetry_section["group"]["dev"]["dependencies"], multiline=True
+        )
+        opt_deps = tomlkit.table()
+        opt_deps["dev"] = dev_deps
+        project["optional-dependencies"] = opt_deps
 
-    # Create new pyproject structure
-    new_pyproject = {
-        "build-system": {"requires": ["hatchling"], "build-backend": "hatchling.build"},
-        "project": project,
-    }
+        uv_sources.update(dev_sources)
 
-    # Add package configuration
-    project_name = project["name"]
 
-    # Initialize tool.hatch section
-    new_pyproject["tool"] = {
-        "hatch": {
-            "version": {
-                "path": "__init__.py"  # Add version path
-            },
-            "build": {"targets": {"wheel": {"packages": [project_name]}}},
-        }
-    }
-
-    # If src layout is detected, adjust the packages path
+def adjust_src_layout(project_name: str, new_pyproject: dict) -> None:
+    """Adjust configuration for src layout if detected."""
     if (Path.cwd() / "src" / project_name).exists():
         new_pyproject["tool"]["hatch"]["version"]["path"] = f"src/{project_name}/__init__.py"
         new_pyproject["tool"]["hatch"]["build"]["targets"]["wheel"]["packages"] = [
@@ -161,24 +193,115 @@ def convert_pyproject(file_path: Path) -> None:
             "Package configuration might need manual adjustment."
         )
 
-    # Write back to file
+
+def backup_file(file_path: Path) -> Path:
+    """Create a backup of the original file."""
+    backup_path = file_path.with_suffix(file_path.suffix + ".old")
+
+    # If .old already exists, add a number
+    counter = 1
+    while backup_path.exists():
+        backup_path = file_path.with_suffix(f"{file_path.suffix}.old{counter}")
+        counter += 1
+
+    backup_path.write_text(file_path.read_text())
+    return backup_path
+
+
+def convert_pyproject(file_path: Path) -> None:
+    """Convert a Poetry pyproject.toml to uv-compatible format."""
+    # Create backup first
+    backup_path = backup_file(file_path)
+    print(f"Backup created at: {backup_path}")
+
+    with open(file_path) as f:
+        pyproject = tomlkit.load(f)
+
+    poetry_section = pyproject.get("tool", {}).get("poetry", {})
+    if not poetry_section:
+        msg = "No [tool.poetry] section found in pyproject.toml"
+        raise ValueError(msg)
+
+    # Create document with ordered sections
+    new_pyproject = tomlkit.document()
+
+    # 1. Build system
+    new_pyproject["build-system"] = {"requires": ["hatchling"], "build-backend": "hatchling.build"}
+
+    # 2. Project section and its immediate children
+    project = create_basic_project(poetry_section)
+
+    # Store UV sources separately
+    uv_sources = {}
+
+    # Handle dependencies and capture UV sources
+    handle_dependencies(poetry_section, project, uv_sources)
+    handle_dev_dependencies(poetry_section, project, uv_sources)
+
+    # Add complete project section
+    new_pyproject["project"] = project
+
+    # 3. Tool section
+    tool_section = tomlkit.table()
+
+    # 3a. Hatch configuration
+    hatch_config = {
+        "version": {"path": "__init__.py"},
+        "build": {"targets": {"wheel": {"packages": [project["name"]]}}},
+    }
+    tool_section["hatch"] = hatch_config
+
+    # 3b. UV sources (if any)
+    if uv_sources:
+        tool_section["uv"] = {"sources": uv_sources}
+
+    new_pyproject["tool"] = tool_section
+
+    # Adjust src layout if needed
+    adjust_src_layout(project["name"], new_pyproject)
+
+    # Store original scripts section text
+    scripts_text = ""
+    if "scripts" in poetry_section:
+        with open(file_path) as f:
+            content = f.read()
+            # Find the [tool.poetry.scripts] section
+            if "[tool.poetry.scripts]" in content:
+                scripts_part = content.split("[tool.poetry.scripts]")[1]
+                # Get everything up to the next section or end of file
+                scripts_text = scripts_part.split("\n[")[0]
+
+    # Write main configuration
     with open(file_path, "w") as f:
         tomlkit.dump(new_pyproject, f)
 
+    # Add scripts section with original formatting if it exists
+    if scripts_text:
+        with open(file_path, "a") as f:
+            f.write("\n[project.scripts]")
+            f.write(scripts_text)
 
-def find_pyproject_files(start_path: Path) -> list[Path]:
-    """Find all pyproject.toml files under the start path."""
-    return sorted(start_path.rglob("pyproject.toml"))
 
+def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="convert Poetry pyproject.toml files to uv-compatible format"
+    )
+    parser.add_argument(
+        "--confirm", action="store_true", help="perform conversion (without this, only dry run)"
+    )
 
-def validate_file(file_path: Path) -> None:
-    """Validate that the file exists and is a pyproject.toml file."""
-    if not file_path.exists():
-        msg = f"File not found: {file_path}"
-        raise FileNotFoundError(msg)
-    if file_path.name != "pyproject.toml":
-        msg = f"File must be named 'pyproject.toml', got: {file_path.name}"
-        raise ValueError(msg)
+    # Create mutually exclusive group for path/file arguments
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
+        "--path",
+        type=Path,
+        default=Path("."),
+        help="directory to search for pyproject.toml files (default: current dir)",
+    )
+    group.add_argument("--file", type=Path, help="single pyproject.toml file to convert")
+
+    return parser.parse_args(argv)
 
 
 def main(argv: Sequence[str] | None = None) -> int:

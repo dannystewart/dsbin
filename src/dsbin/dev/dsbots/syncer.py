@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import filecmp
 import shutil
+from json import dumps as json_dumps
 from pathlib import Path
+
+from json5 import loads as json5_loads
 
 from dsutil.animation import start_animation, stop_animation
 from dsutil.diff import show_diff
@@ -56,6 +59,84 @@ def should_exclude(path: Path) -> bool:
         or (not pattern.endswith("/") and path.match(pattern))
         for pattern in EXCLUDE_PATTERNS
     )
+
+
+def sync_workspace_files(source_root: Path) -> None:
+    """Sync VS Code workspace files while preserving color customizations.
+
+    Ensures that workspace files within the source directory have identical settings (except for
+    color customizations). Uses the source directory's primary workspace file (dsbots.code-workspace
+    or dsbots-dev.code-workspace depending on sync direction) as the source of truth for settings.
+    """
+    try:
+        # Read both workspace files from the source directory
+        main_file = source_root / "dsbots.code-workspace"
+        dev_file = source_root / "dsbots-dev.code-workspace"
+
+        if not main_file.exists() or not dev_file.exists():
+            logger.warning("One or both workspace files not found in %s", source_root)
+            return
+
+        # When syncing from dev, use dev workspace as source of truth
+        is_dev_source = "dev" in str(source_root)
+        source_file = dev_file if is_dev_source else main_file
+        target_file = main_file if is_dev_source else dev_file
+
+        try:
+            source_data = json5_loads(source_file.read_text())
+            if not isinstance(source_data, dict) or not isinstance(
+                source_data.get("settings"), dict
+            ):
+                logger.error("Invalid workspace file format in %s", source_file.name)
+                return
+        except ValueError as e:
+            logger.error("Failed to parse %s: %s", source_file.name, e)
+            return
+
+        try:
+            target_data = json5_loads(target_file.read_text())
+            if not isinstance(target_data, dict) or not isinstance(
+                target_data.get("settings"), dict
+            ):
+                logger.error("Invalid workspace file format in %s", target_file.name)
+                return
+            logger.debug("Successfully read %s", target_file.name)
+        except ValueError as e:
+            logger.error("Failed to parse %s: %s", target_file.name, e)
+            return
+
+        # Preserve color-related settings from target workspace
+        target_colors = {
+            k: v
+            for k, v in target_data["settings"].items()
+            if "peacock" in k or k == "workbench.colorCustomizations"
+        }
+
+        # Update target workspace with source workspace settings
+        new_settings = source_data["settings"].copy()
+        for key, value in target_colors.items():
+            new_settings[key] = value
+
+        # Only update if there are actual changes
+        if new_settings != target_data["settings"]:
+            new_data = target_data.copy()
+            new_data["settings"] = new_settings
+
+            # Show diff of changes
+            current = json_dumps(target_data, indent=4)
+            new = json_dumps(new_data, indent=4)
+
+            show_diff(current, new, target_file.name)
+
+            if confirm_action(f"Update {target_file.name}?", prompt_color="yellow"):
+                target_file.write_text(json_dumps(new_data, indent=4) + "\n")
+                logger.info("Workspace file updated in %s", source_root)
+        else:
+            logger.info("No changes needed for workspace files in %s", source_root)
+
+    except Exception as e:
+        logger.error("Unexpected error processing workspace files: %s", e)
+        logger.debug("Error details:", exc_info=True)
 
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
@@ -149,6 +230,9 @@ def sync_directory(source_dir: Path, target_dir: Path) -> list[str]:
 def sync_instances(source_root: Path, target_root: Path) -> None:
     """Sync specified directories and files between instances."""
     changes_made = []
+
+    # Sync workspace files first
+    sync_workspace_files(source_root)
 
     # Sync directories
     for dir_name in SYNC_DIRS:

@@ -17,7 +17,7 @@ class BotControlConfig:
     """Configuration for instance sync and control operations."""
 
     # Core paths with standard defaults
-    base_path: Path = Path("/mnt/docker")
+    base_path: Path = Path("/home/danny/docker")
     prod_root: Path = field(init=False)
     dev_root: Path = field(init=False)
 

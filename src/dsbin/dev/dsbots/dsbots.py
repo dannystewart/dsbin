@@ -19,7 +19,7 @@ from dsutil.log import LocalLogger
 logger = LocalLogger.setup_logger()
 
 # Program paths
-PROGRAM_PATH = "/mnt/docker/dsbots"
+PROGRAM_PATH = "/home/danny/docker/dsbots"
 PROD_ROOT = Path(PROGRAM_PATH)
 DEV_ROOT = PROD_ROOT.parent / "dsbots-dev"
 ALLOWED_HOSTS = ["web"]

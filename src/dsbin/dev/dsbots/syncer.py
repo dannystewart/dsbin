@@ -12,8 +12,8 @@ from dsutil.shell import confirm_action, handle_keyboard_interrupt
 logger = LocalLogger.setup_logger(__name__)
 
 # Root directories
-PROD_ROOT = Path("/mnt/docker/dsbots")
-DEV_ROOT = Path("/mnt/docker/dsbots-dev")
+PROD_ROOT = Path("/home/danny/docker/dsbots")
+DEV_ROOT = Path("/home/danny/docker/dsbots-dev")
 
 # Directories to sync entirely
 SYNC_DIRS = [

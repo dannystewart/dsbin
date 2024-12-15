@@ -39,7 +39,9 @@ class Config:
     no_cache: bool = False
 
     # Paths and URLs
-    upload_path_prefix: ClassVar[str] = "/mnt/docker/web/www/wordpress/wp-content/uploads/sites/2/"
+    upload_path_prefix: ClassVar[str] = (
+        "/home/danny/docker/web/www/wordpress/wp-content/uploads/sites/2/"
+    )
     upload_url_prefix: ClassVar[str] = "https://music.dannystewart.com/wp-content/uploads/sites/2/"
 
     # SSH settings

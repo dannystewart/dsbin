@@ -17,6 +17,7 @@ dependencies = [
     "halo>=0.0.31",
     "inquirer>=3.4.0",
     "iplookup @ git+https://gitlab.dannystewart.com/danny/ip-lookup.git",
+    "json5",
     "mutagen>=1.47.0",
     "mysql-connector-python>=9.1.0",
     "natsort>=8.4.0",

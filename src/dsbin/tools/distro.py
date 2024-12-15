@@ -3,9 +3,8 @@
 """
 Identifies the current OS distribution.
 
-This script is designed to identify the current OS distribution. It can be used to
-determine which package manager to use for installing packages, or for other
-distribution-specific tasks.
+This script is designed to identify the current OS distribution. It can be used to determine which
+package manager to use for installing packages, or for other distribution-specific tasks.
 """
 
 from __future__ import annotations

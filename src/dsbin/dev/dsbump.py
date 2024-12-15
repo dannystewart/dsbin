@@ -77,33 +77,26 @@ def check_git_state() -> None:
 @handle_keyboard_interrupt()
 def get_version(pyproject_path: Path) -> str:
     """Get current version from pyproject.toml."""
-    try:  # Try Poetry version command first
-        result = subprocess.run(
-            ["poetry", "version", "-s"], capture_output=True, text=True, check=True
+    content = pyproject_path.read_text()
+    try:
+        import tomllib
+
+        data = tomllib.loads(content)
+
+        # Try standard format first
+        if "project" in data:
+            return data["project"]["version"]
+        # Fall back to Poetry format
+        if "tool" in data and "poetry" in data["tool"]:
+            return data["tool"]["poetry"]["version"]
+        logger.error(
+            "Could not find version in pyproject.toml. "
+            "Expected either project.version or tool.poetry.version."
         )
-        return result.stdout.strip()
-    except subprocess.CalledProcessError:
-        # Fallback to reading file directly
-        content = pyproject_path.read_text()
-        try:
-            import tomllib
-
-            data = tomllib.loads(content)
-
-            try:  # Try Poetry format first
-                return data["tool"]["poetry"]["version"]
-            except KeyError:
-                try:  # Try standard format
-                    return data["project"]["version"]
-                except KeyError:
-                    logger.error(
-                        "Could not find version in pyproject.toml. "
-                        "Expected either tool.poetry.version or project.version."
-                    )
-                    sys.exit(1)
-        except tomllib.TOMLDecodeError:
-            logger.error("Invalid TOML format in pyproject.toml")
-            sys.exit(1)
+        sys.exit(1)
+    except tomllib.TOMLDecodeError:
+        logger.error("Invalid TOML format in pyproject.toml")
+        sys.exit(1)
 
 
 def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
@@ -339,7 +332,7 @@ def update_version(
 
         # Update version
         if bump_type is not None:
-            _update_version_in_pyproject(pyproject, bump_type, new_version)
+            _update_version_in_pyproject(pyproject, new_version)
         handle_git_operations(new_version, bump_type, commit_msg, tag_msg, current_version)
         logger.info(
             "Successfully %s v%s!", "tagged" if bump_type is None else "updated to", new_version
@@ -351,40 +344,25 @@ def update_version(
 
 
 @handle_keyboard_interrupt()
-def _update_version_in_pyproject(
-    pyproject: Path, bump_type: BumpType | str, new_version: str
-) -> None:
-    """Update version in pyproject.toml using Poetry or manual update."""
-    if (
-        bump_type == "dev"
-        or bump_type in ("alpha", "beta", "rc")  # Add pre-release types
-        or any(x in new_version for x in (".dev", "a", "b", "rc"))  # Check version too
-    ):
-        logger.debug("Using manual update for pre-release/dev version.")
-        content = pyproject.read_text()
-        import tomllib
+def _update_version_in_pyproject(pyproject: Path, new_version: str) -> None:
+    """Update version in pyproject.toml."""
+    content = pyproject.read_text()
+    import tomllib
 
-        data = tomllib.loads(content)
+    data = tomllib.loads(content)
+
+    # Determine where to update the version
+    if "project" in data:
+        data["project"]["version"] = new_version
+    elif "tool" in data and "poetry" in data["tool"]:
         data["tool"]["poetry"]["version"] = new_version
-        import tomli_w
+    else:
+        logger.error("Could not find version field in pyproject.toml")
+        sys.exit(1)
 
-        pyproject.write_text(tomli_w.dumps(data))
+    import tomli_w
 
-    else:  # Try Poetry for regular versions
-        try:
-            subprocess.run(["poetry", "version", bump_type], check=True)
-
-        # Fall back to manual version update if Poetry fails
-        except subprocess.CalledProcessError:
-            logger.debug("Poetry version update failed, falling back to manual update.")
-            content = pyproject.read_text()
-            import tomllib
-
-            data = tomllib.loads(content)
-            data["tool"]["poetry"]["version"] = new_version
-            import tomli_w
-
-            pyproject.write_text(tomli_w.dumps(data))
+    pyproject.write_text(tomli_w.dumps(data))
 
     # Verify the changes
     if get_version(pyproject) != new_version:

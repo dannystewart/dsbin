@@ -11,11 +11,11 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "azure-storage-blob>=12.24.0",
-    "dsupdater",
-    "dsutil",
+    "dsupdater @ git+https://gitlab.dannystewart.com/danny/dsupdater.git",
+    "dsutil @ git+https://gitlab.dannystewart.com/danny/dsutil.git",
     "halo>=0.0.31",
     "inquirer>=3.4.0",
-    "iplookup",
+    "iplookup @ git+https://gitlab.dannystewart.com/danny/ip-lookup.git",
     "mutagen>=1.47.0",
     "mysql-connector-python>=9.1.0",
     "natsort>=8.4.0",
@@ -53,10 +53,8 @@ path = "src/dsbin/__init__.py"
 [tool.hatch.build.targets.wheel]
 packages = ["src/dsbin"]
 
-[tool.uv.sources]
-dsupdater = { git = "https://gitlab.dannystewart.com/danny/dsupdater.git" }
-dsutil = { git = "https://gitlab.dannystewart.com/danny/dsutil.git" }
-iplookup = { git = "https://gitlab.dannystewart.com/danny/ip-lookup.git" }
+[tool.hatch.metadata]
+allow-direct-references = true
 
 [project.scripts]
 # Script to list all my scripts

@@ -93,6 +93,7 @@ def setup_build_config(project_name: str) -> dict:
             "hatch": {
                 "version": {"path": "__init__.py"},
                 "build": {"targets": {"wheel": {"packages": [project_name]}}},
+                "metadata": {"allow-direct-references": True},
             }
         },
     }
@@ -114,8 +115,8 @@ def convert_dependencies(
 
         if isinstance(spec, dict):
             if git_result := convert_git_dependency(name, spec):
-                pkg_name, source = git_result
-                dep_list.append(pkg_name)
+                pkg_name, source, pep508_ref = git_result
+                dep_list.append(pep508_ref)  # Use PEP 508 reference in dependencies
                 src_table = tomlkit.inline_table()
                 src_table.update(source)
                 sources[pkg_name] = src_table
@@ -139,17 +140,32 @@ def convert_dependencies(
     return converted, sources
 
 
-def convert_git_dependency(name: str, spec: dict[str, Any]) -> tuple[str, dict[str, Any]] | None:
-    """Convert a Poetry git dependency to uv format."""
+def convert_git_dependency(
+    name: str, spec: dict[str, Any]
+) -> tuple[str, dict[str, Any], str] | None:
+    """Convert a Poetry git dependency to both uv and PEP 508 formats."""
     if "git" in spec:
-        source = {"git": spec["git"]}
+        git_url = spec["git"]
+        source = {"git": git_url}
+
+        # Handle revision specifications
+        rev = None
         if "branch" in spec:
-            source["rev"] = spec["branch"]
+            rev = spec["branch"]
+            source["rev"] = rev
         if "tag" in spec:
-            source["rev"] = spec["tag"]
+            rev = spec["tag"]
+            source["rev"] = rev
         if "rev" in spec:
-            source["rev"] = spec["rev"]
-        return name, source
+            rev = spec["rev"]
+            source["rev"] = rev
+
+        # Create PEP 508 direct reference
+        pep508_ref = f"{name} @ git+{git_url}"
+        if rev:
+            pep508_ref += f"@{rev}"
+
+        return name, source, pep508_ref
     return None
 
 

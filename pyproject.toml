@@ -1,20 +1,17 @@
 [build-system]
-requires = [
-    "hatchling",
-]
+requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
 name = "dsbin"
 description = "Personal Python scripts"
 version = "1.3.1"
-authors = [
-    { name = "Danny Stewart", email = "danny@stewart.cc" },
-]
+authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "azure-storage-blob>=12.24.0",
+    "distro>=1.9.0",
     "dsupdater @ git+https://gitlab.dannystewart.com/danny/dsupdater.git",
     "dsutil @ git+https://gitlab.dannystewart.com/danny/dsutil.git",
     "halo>=0.0.31",
@@ -49,10 +46,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = [
-    "mypy>=1.13.0",
-    "ruff>=0.8.2",
-]
+dev = ["mypy>=1.13.0", "ruff>=0.8.2"]
 
 [project.scripts]
 lsbin = "dsbin.lsbin:main"
@@ -114,9 +108,7 @@ w11renamer = "dsbin.text.w11renamer:main"
 path = "src/dsbin/__init__.py"
 
 [tool.hatch.build.targets.wheel]
-packages = [
-    "src/dsbin",
-]
+packages = ["src/dsbin"]
 
 [tool.hatch.metadata]
 allow-direct-references = true

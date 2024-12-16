@@ -8,11 +8,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import tomlkit
+import tomlkit.toml_document
 
 from dsutil import configure_traceback
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
+
+    from tomlkit.items import Table
 
 configure_traceback()
 
@@ -83,20 +86,6 @@ def create_basic_project(poetry_section: dict) -> dict:
         project["readme"] = poetry_section["readme"]
 
     return project
-
-
-def setup_build_config(project_name: str) -> dict:
-    """Create build system and initial tool configuration."""
-    return {
-        "build-system": {"requires": ["hatchling"], "build-backend": "hatchling.build"},
-        "tool": {
-            "hatch": {
-                "version": {"path": "__init__.py"},
-                "build": {"targets": {"wheel": {"packages": [project_name]}}},
-                "metadata": {"allow-direct-references": True},
-            }
-        },
-    }
 
 
 def convert_dependencies(
@@ -187,15 +176,16 @@ def handle_dependencies(poetry_section: dict, project: dict) -> None:
         project["dependencies"], _ = convert_dependencies(deps, multiline=False)
 
 
-def handle_dev_dependencies(poetry_section: dict, project: dict) -> None:
+def handle_dev_dependencies(poetry_section: dict) -> Table | None:
     """Process and add development dependencies to the project."""
     if "group" in poetry_section and "dev" in poetry_section["group"]:
         dev_deps, _ = convert_dependencies(
             poetry_section["group"]["dev"]["dependencies"], multiline=True
         )
-        opt_deps = tomlkit.table()
-        opt_deps["dev"] = dev_deps
-        project["optional-dependencies"] = opt_deps
+        dep_groups = tomlkit.table()
+        dep_groups["dev"] = dev_deps
+        return dep_groups
+    return None
 
 
 def adjust_src_layout(project_name: str, new_pyproject: dict) -> None:
@@ -249,12 +239,15 @@ def convert_pyproject(file_path: Path) -> None:
     # 2. Project section and its immediate children
     project = create_basic_project(poetry_section)
 
-    # Handle dependencies and capture UV sources
+    # Handle dependencies
     handle_dependencies(poetry_section, project)
-    handle_dev_dependencies(poetry_section, project)
 
     # Add complete project section
     new_pyproject["project"] = project
+
+    # Add dependency groups if they exist
+    if dep_groups := handle_dev_dependencies(poetry_section):
+        new_pyproject["dependency-groups"] = dep_groups
 
     # 3. Tool section
     tool_section = tomlkit.table()

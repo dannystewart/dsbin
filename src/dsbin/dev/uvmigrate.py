@@ -169,31 +169,33 @@ def convert_git_dependency(
     return None
 
 
-def handle_dependencies(poetry_section: dict, project: dict, uv_sources: dict) -> None:
+def handle_dependencies(poetry_section: dict, project: dict) -> None:
     """Process and add all dependencies to the project."""
     if "dependencies" in poetry_section:
         if python_version := poetry_section["dependencies"].get("python", ""):
-            project["requires-python"] = f'>={python_version.replace("^", "")}'
+            cleaned_version = python_version.replace("^", "")
+            project["requires-python"] = (
+                cleaned_version
+                if any(op in cleaned_version for op in (">=", "<=", "<", ">", "==", "!="))
+                else f">={cleaned_version}"
+            )
             deps = poetry_section["dependencies"].copy()
             deps.pop("python", None)
         else:
             deps = poetry_section["dependencies"]
 
-        project["dependencies"], sources = convert_dependencies(deps, multiline=False)
-        uv_sources.update(sources)
+        project["dependencies"], _ = convert_dependencies(deps, multiline=False)
 
 
-def handle_dev_dependencies(poetry_section: dict, project: dict, uv_sources: dict) -> None:
+def handle_dev_dependencies(poetry_section: dict, project: dict) -> None:
     """Process and add development dependencies to the project."""
     if "group" in poetry_section and "dev" in poetry_section["group"]:
-        dev_deps, dev_sources = convert_dependencies(
+        dev_deps, _ = convert_dependencies(
             poetry_section["group"]["dev"]["dependencies"], multiline=True
         )
         opt_deps = tomlkit.table()
         opt_deps["dev"] = dev_deps
         project["optional-dependencies"] = opt_deps
-
-        uv_sources.update(dev_sources)
 
 
 def adjust_src_layout(project_name: str, new_pyproject: dict) -> None:
@@ -247,12 +249,9 @@ def convert_pyproject(file_path: Path) -> None:
     # 2. Project section and its immediate children
     project = create_basic_project(poetry_section)
 
-    # Store UV sources separately
-    uv_sources = {}
-
     # Handle dependencies and capture UV sources
-    handle_dependencies(poetry_section, project, uv_sources)
-    handle_dev_dependencies(poetry_section, project, uv_sources)
+    handle_dependencies(poetry_section, project)
+    handle_dev_dependencies(poetry_section, project)
 
     # Add complete project section
     new_pyproject["project"] = project
@@ -264,13 +263,9 @@ def convert_pyproject(file_path: Path) -> None:
     hatch_config = {
         "version": {"path": "__init__.py"},
         "build": {"targets": {"wheel": {"packages": [project["name"]]}}},
+        "metadata": {"allow-direct-references": True},
     }
     tool_section["hatch"] = hatch_config
-
-    # 3b. UV sources (if any)
-    if uv_sources:
-        tool_section["uv"] = {"sources": uv_sources}
-
     new_pyproject["tool"] = tool_section
 
     # Adjust src layout if needed

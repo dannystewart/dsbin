@@ -88,8 +88,42 @@ def create_basic_project(poetry_section: dict) -> dict:
     return project
 
 
+def _convert_git_dependency_to_pep508(name: str, spec: dict[str, Any]) -> str:
+    """Convert a git dependency to PEP 508 format."""
+    git_url = spec["git"]
+    rev = None
+    if "branch" in spec:
+        rev = spec["branch"]
+    if "tag" in spec:
+        rev = spec["tag"]
+    if "rev" in spec:
+        rev = spec["rev"]
+
+    pep508_ref = f"{name} @ git+{git_url}"
+    if rev:
+        pep508_ref += f"@{rev}"
+    return pep508_ref
+
+
+def _convert_regular_dependency(
+    name: str, spec: dict[str, Any] | str, dev_group: bool = False
+) -> str:
+    """Convert a regular (non-git) dependency specification."""
+    if dev_group:
+        return name
+
+    if isinstance(spec, dict) and "version" in spec:
+        version = spec["version"].replace("^", "")
+    else:
+        version = str(spec).replace("^", "")
+
+    if version.startswith(">="):
+        version = version[2:]
+    return f"{name}>={version}"
+
+
 def convert_dependencies(
-    deps: dict[str, Any], multiline: bool = True
+    deps: dict[str, Any], multiline: bool = True, dev_group: bool = False
 ) -> tuple[list[str], dict[str, dict]]:
     """Convert Poetry dependency specs to PEP 621 format."""
     converted = tomlkit.array()
@@ -99,28 +133,15 @@ def convert_dependencies(
 
     # Convert and sort dependencies
     dep_list = []
-    for name, spec in sorted(deps.items()):  # Sort by package name
+    for name, spec in sorted(deps.items()):
         name = name.strip('"')
 
-        if isinstance(spec, dict):
-            if git_result := convert_git_dependency(name, spec):
-                pkg_name, source, pep508_ref = git_result
-                dep_list.append(pep508_ref)  # Use PEP 508 reference in dependencies
-                src_table = tomlkit.inline_table()
-                src_table.update(source)
-                sources[pkg_name] = src_table
-                continue
+        if isinstance(spec, dict) and "git" in spec:
+            pep508_ref = _convert_git_dependency_to_pep508(name, spec)
+            dep_list.append(pep508_ref)
+            continue
 
-            if "version" in spec:
-                version = spec["version"].replace("^", "")
-                if version.startswith(">="):
-                    version = version[2:]
-                dep_list.append(f"{name}>={version}")
-        elif isinstance(spec, str):
-            version = spec.replace("^", "")
-            if version.startswith(">="):
-                version = version[2:]
-            dep_list.append(f"{name}>={version}")
+        dep_list.append(_convert_regular_dependency(name, spec, dev_group))
 
     # Add sorted dependencies to the array
     for dep in sorted(dep_list):
@@ -180,7 +201,7 @@ def handle_dev_dependencies(poetry_section: dict) -> Table | None:
     """Process and add development dependencies to the project."""
     if "group" in poetry_section and "dev" in poetry_section["group"]:
         dev_deps, _ = convert_dependencies(
-            poetry_section["group"]["dev"]["dependencies"], multiline=True
+            poetry_section["group"]["dev"]["dependencies"], multiline=True, dev_group=True
         )
         dep_groups = tomlkit.table()
         dep_groups["dev"] = dev_deps

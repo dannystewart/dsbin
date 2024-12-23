@@ -26,7 +26,7 @@ SYNC_DIRS = [
 
 # Individual files
 SYNC_FILES = [
-    "src/dsbots/config/ip_whitelist.py",
+    ".env",
     "src/dsbots/.env",
 ]
 
@@ -36,7 +36,6 @@ EXCLUDE_PATTERNS = [
     "__pycache__/",
     ".git/",
     "cache/",
-    "gifs/",
     "logs/",
     "temp/",
     "tmp/",
@@ -263,10 +262,10 @@ def sync_instances(source_root: Path, target_root: Path) -> None:
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
 def main() -> None:
     """Sync files between prod and dev instances."""
-    if confirm_action("Sync from prod to dev?", prompt_color="yellow"):
-        sync_instances(PROD_ROOT, DEV_ROOT)
-    elif confirm_action("Sync from dev to prod?", prompt_color="red"):
+    if confirm_action("Sync from dev to prod?", prompt_color="yellow"):
         sync_instances(DEV_ROOT, PROD_ROOT)
+    elif confirm_action("Sync from prod to dev?", prompt_color="green"):
+        sync_instances(PROD_ROOT, DEV_ROOT)
 
 
 if __name__ == "__main__":

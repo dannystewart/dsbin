@@ -25,8 +25,8 @@ class BotControlConfig:
     sync_dirs: list[str] = field(default_factory=lambda: ["config", "data"])
     sync_files: list[str] = field(
         default_factory=lambda: [
-            "src/dsbots/config/ip_whitelist.py",
-            "src/dsbots/.env",
+            "src/prism/config/ip_whitelist.py",
+            "src/prism/.env",
         ]
     )
     exclude_patterns: list[str] = field(
@@ -39,8 +39,8 @@ class BotControlConfig:
 
     # Instance configuration
     allowed_hosts: list[str] = field(default_factory=lambda: ["web"])
-    prod_instance_name: str = "dsbots"
-    dev_instance_name: str = "dsbots-dev"
+    prod_instance_name: str = "prism"
+    dev_instance_name: str = "prism-dev"
 
     # Runtime state
     dev: bool = False
@@ -57,8 +57,8 @@ class BotControlConfig:
     def __post_init__(self):
         """Validate and set derived attributes."""
         # Set core paths
-        self.prod_root = (self.base_path / "dsbots").resolve()
-        self.dev_root = (self.base_path / "dsbots-dev").resolve()
+        self.prod_root = (self.base_path / "prism").resolve()
+        self.dev_root = (self.base_path / "prism-dev").resolve()
 
         # Validate hosts
         if not self.allowed_hosts:

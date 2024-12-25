@@ -1,22 +1,29 @@
 from __future__ import annotations
 
 import filecmp
+import json
 import shutil
+from dataclasses import dataclass
 from json import dumps as json_dumps
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from json5 import loads as json5_loads
 
 from dsutil.animation import start_animation, stop_animation
 from dsutil.diff import show_diff
+from dsutil.env import DSEnv
 from dsutil.log import LocalLogger
 from dsutil.shell import confirm_action, handle_keyboard_interrupt
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
 
 logger = LocalLogger.setup_logger(__name__)
 
 # Root directories
-PROD_ROOT = Path("/home/danny/docker/dsbots")
-DEV_ROOT = Path("/home/danny/docker/dsbots-dev")
+PROD_ROOT = Path("/home/danny/docker/prism")
+DEV_ROOT = Path("/home/danny/docker/prism-dev")
 
 # Directories to sync entirely
 SYNC_DIRS = [
@@ -27,7 +34,7 @@ SYNC_DIRS = [
 # Individual files
 SYNC_FILES = [
     ".env",
-    "src/dsbots/.env",
+    "src/prism/.env",
 ]
 
 # Files and directories to exclude
@@ -35,14 +42,90 @@ SYNC_FILES = [
 EXCLUDE_PATTERNS = [
     "__pycache__/",
     ".git/",
+    ".gitignore",
+    ".sync_cache.json",
+    "*.pyc",
     "cache/",
+    "inactive_bots.yaml",
     "logs/",
     "temp/",
     "tmp/",
-    "*.pyc",
-    ".gitignore",
-    "inactive_bots.yaml",
 ]
+
+
+@dataclass
+class FileMetadata:
+    """Metadata for a single file."""
+
+    path: str
+    size: int
+    mtime: float
+
+    @classmethod
+    def from_path(cls, path: Path, root: Path) -> FileMetadata:
+        """Create metadata from a Path object."""
+        stat = path.stat()
+        return cls(path=str(path.relative_to(root)), size=stat.st_size, mtime=stat.st_mtime)
+
+
+class DirectoryCache:
+    """Cache for directory contents."""
+
+    def __init__(self, root: Path, env: DSEnv):
+        self.root = root
+        self.env = env
+
+        # Set up cache directory and file
+        env.add_var(
+            "CACHE_DIR",
+            required=False,
+            default=str(Path.home() / ".cache" / env.app_name),
+            description="Directory for cache files",
+        )
+
+        cache_dir = Path(env.cache_dir)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+
+        # Use a cache filename based on the directory path
+        dir_hash = hash(str(root.resolve()))
+        self.cache_file = cache_dir / f"sync_cache_{dir_hash}.json"
+
+        self.files: dict[str, FileMetadata] = {}
+
+    def scan_directory(self, dir_path: Path) -> None:
+        """Scan directory and update cache."""
+        self.files.clear()
+        for path in dir_path.rglob("*"):
+            if path.is_file() and not should_exclude(path):
+                metadata = FileMetadata.from_path(path, self.root)
+                self.files[metadata.path] = metadata
+
+    def load(self) -> bool:
+        """Load cache from file. Returns True if successful."""
+        try:
+            if not self.cache_file.exists():
+                return False
+
+            data = json.loads(self.cache_file.read_text())
+            if not isinstance(data, dict) or "files" not in data:
+                return False
+
+            self.files = {
+                path: FileMetadata(**metadata) for path, metadata in data["files"].items()
+            }
+            return True
+
+        except Exception as e:
+            logger.debug("Failed to load cache: %s", e)
+            return False
+
+    def save(self) -> None:
+        """Save cache to file."""
+        try:
+            data = {"files": {path: vars(metadata) for path, metadata in self.files.items()}}
+            self.cache_file.write_text(json.dumps(data, indent=2))
+        except Exception as e:
+            logger.debug("Failed to save cache: %s", e)
 
 
 def should_exclude(path: Path) -> bool:
@@ -64,13 +147,13 @@ def sync_workspace_files(source_root: Path) -> None:
     """Sync VS Code workspace files while preserving color customizations.
 
     Ensures that workspace files within the source directory have identical settings (except for
-    color customizations). Uses the source directory's primary workspace file (dsbots.code-workspace
-    or dsbots-dev.code-workspace depending on sync direction) as the source of truth for settings.
+    color customizations). Uses the source directory's primary workspace file (prism.code-workspace
+    or prism-dev.code-workspace depending on sync direction) as the source of truth for settings.
     """
     try:
         # Read both workspace files from the source directory
-        main_file = source_root / "dsbots.code-workspace"
-        dev_file = source_root / "dsbots-dev.code-workspace"
+        main_file = source_root / "prism.code-workspace"
+        dev_file = source_root / "prism-dev.code-workspace"
 
         if not main_file.exists() or not dev_file.exists():
             logger.warning("One or both workspace files not found in %s", source_root)
@@ -138,6 +221,23 @@ def sync_workspace_files(source_root: Path) -> None:
         logger.debug("Error details:", exc_info=True)
 
 
+def get_changed_files(
+    source_cache: DirectoryCache, target_cache: DirectoryCache
+) -> Iterator[tuple[Path, Path]]:
+    """Get iterator of (source_path, target_path) pairs that need syncing."""
+    for rel_path, source_meta in source_cache.files.items():
+        source_path = source_cache.root / rel_path
+        target_path = target_cache.root / rel_path
+
+        target_meta = target_cache.files.get(rel_path)
+        if not target_meta:  # New file
+            yield source_path, target_path
+        elif (
+            source_meta.size != target_meta.size or source_meta.mtime > target_meta.mtime
+        ):  # Modified file
+            yield source_path, target_path
+
+
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
 def sync_file(source: Path, target: Path) -> bool:
     """Sync a single file, showing diff if text file."""
@@ -190,34 +290,44 @@ def sync_file(source: Path, target: Path) -> bool:
 
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
-def sync_directory(source_dir: Path, target_dir: Path) -> list[str]:
+def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv) -> list[str]:
     """Sync a directory, returning list of changed files."""
     changed_files = []
 
-    # Create target directory if it doesn't exist
-    target_dir.mkdir(parents=True, exist_ok=True)
+    # Initialize caches with environment
+    source_cache = DirectoryCache(source_dir.parent, env)
+    target_cache = DirectoryCache(target_dir.parent, env)
 
-    animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
+    animation_thread = start_animation(f"Scanning {source_dir.name}...", "blue")
 
     try:
-        for source_path in source_dir.rglob("*"):
-            if should_exclude(source_path):
-                continue
+        # Try to load existing caches
+        source_cache_valid = source_cache.load()
+        target_cache_valid = target_cache.load()
 
-            # Get the relative path and construct target path
-            rel_path = source_path.relative_to(source_dir)
-            target_path = target_dir / rel_path
+        # Scan directories if cache is invalid
+        if not source_cache_valid:
+            source_cache.scan_directory(source_dir)
+            source_cache.save()
+        if not target_cache_valid:
+            target_cache.scan_directory(target_dir)
+            target_cache.save()
 
-            if source_path.is_file() and (
-                not target_path.exists() or not filecmp.cmp(source_path, target_path, shallow=False)
-            ):
-                stop_animation(animation_thread)
-                print()  # Clear the animation line
+        stop_animation(animation_thread)
+        animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
 
-                if sync_file(source_path, target_path):
-                    changed_files.append(str(rel_path))
+        # Create target directory if it doesn't exist
+        target_dir.mkdir(parents=True, exist_ok=True)
 
-                animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
+        # Process changed files
+        for source_path, target_path in get_changed_files(source_cache, target_cache):
+            stop_animation(animation_thread)
+            print()  # Clear the animation line
+
+            if sync_file(source_path, target_path):
+                changed_files.append(str(source_path.relative_to(source_dir)))
+
+            animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
 
     finally:
         stop_animation(animation_thread)
@@ -228,6 +338,9 @@ def sync_directory(source_dir: Path, target_dir: Path) -> list[str]:
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
 def sync_instances(source_root: Path, target_root: Path) -> None:
     """Sync specified directories and files between instances."""
+    # Initialize environment
+    env = DSEnv("prism-sync")
+
     changes_made = []
 
     # Sync workspace files first
@@ -242,7 +355,7 @@ def sync_instances(source_root: Path, target_root: Path) -> None:
             logger.warning("Source directory does not exist: %s", source_dir)
             continue
 
-        changed = sync_directory(source_dir, target_dir)
+        changed = sync_directory(source_dir, target_dir, env)
         changes_made.extend(f"{dir_name}/{file}" for file in changed)
 
     # Sync individual files

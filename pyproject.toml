@@ -57,17 +57,26 @@ dev = [
 ]
 
 [project.scripts]
+# Script to list all my scripts
 lsbin = "dsbin.lsbin:main"
+
+# Script to check my package versions
 dsver = "dsbin.dsver:main"
+
+# File management scripts
 backupsort = "dsbin.files.backupsort:main"
 bigfiles = "dsbin.files.bigfiles:main"
 dupefinder = "dsbin.files.dupefinder:main"
 fml = "dsbin.files.fml:main"
 foldermerge = "dsbin.files.foldermerge:main"
 rsyncer = "dsbin.files.rsyncer:main"
+
+# Media scripts
 ffgif = "dsbin.media.ffgif:main"
 fftrim = "dsbin.media.fftrim:main"
 ytdl = "dsbin.media.ytdl:main"
+
+# Music scripts
 aif2wav = "dsbin.music.awa:aif2wav"
 alacrity = "dsbin.music.alacrity:main"
 azmusic = "dsbin.music.azmusic:main"
@@ -83,8 +92,12 @@ pyfiler = "dsbin.music.pyfiler:main"
 rmp3 = "dsbin.music.rmp3:main"
 wav2aif = "dsbin.music.awa:wav2aif"
 wpmusic = "dsbin.music.wpmusic.main:main"
+
+# Logic-specific scripts
 bipclean = "dsbin.logic.bipclean:main"
 oldprojects = "dsbin.logic.oldprojects:main"
+
+# Mac-specific scripts
 dmgify = "dsbin.mac.dmgify:main"
 mvdmg = "dsbin.mac.mvdmg:main"
 netreset = "dsbin.mac.netreset:main"
@@ -92,15 +105,19 @@ pkginst = "dsbin.mac.pkginst:main"
 setmag = "dsbin.mac.setmag:main"
 spacepurger = "dsbin.mac.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
-dsbots = "dsbin.dev.dsbots.dsbots:main"
+
+# Development-related scripts
 dsbump = "dsbin.dev.dsbump:main"
 dsversion = "dsbin.dev.dsbump:main"
 gitcalc = "dsbin.dev.gitcalc.main:main"
 pipmigrator = "dsbin.dev.pipmigrator:main"
+prism = "dsbin.dev.prism.prism:main"
 pyenversioner = "dsbin.dev.pyenversioner:main"
 scriptdep = "dsbin.dev.scriptdep:main"
 tagreplace = "dsbin.dev.tag_replace:main"
 uvmigrate = "dsbin.dev.uvmigrate:main"
+
+# System tools
 changehostname = "dsbin.tools.changehostname:main"
 dsservice = "dsbin.tools.dsservice:main"
 distro = "dsbin.tools.distro:main"
@@ -109,6 +126,8 @@ envsync = "dsbin.tools.envsync:main"
 iplookup = "iplookup.iplookup:main"
 ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
 watchtower = "dsbin.tools.watchtower:main"
+
+# Text processing scripts
 pycompare = "dsbin.text.pycompare:main"
 w11renamer = "dsbin.text.w11renamer:main"
 

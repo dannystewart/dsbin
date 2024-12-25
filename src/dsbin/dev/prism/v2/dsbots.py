@@ -1,28 +1,21 @@
 #!/usr/bin/env python3
 
-"""Control script for the dsbots service."""
+"""Control script for the prism service."""
 
 from __future__ import annotations
 
 import argparse
-import socket
 import subprocess
 import sys
-from pathlib import Path
 
 from ruamel.yaml import YAML
 
-from .syncer import main as sync_instances
+from .config import BotControlConfig
+from .syncer import InstanceSync
 
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger
 
 logger = LocalLogger.setup_logger()
-
-# Program paths
-PROGRAM_PATH = "/home/danny/docker/dsbots"
-PROD_ROOT = Path(PROGRAM_PATH)
-DEV_ROOT = PROD_ROOT.parent / "dsbots-dev"
-ALLOWED_HOSTS = ["web"]
 
 
 def parse_args() -> argparse.Namespace:
@@ -32,13 +25,19 @@ def parse_args() -> argparse.Namespace:
         "action",
         nargs="?",
         default="logs",
-        choices=["start", "restart", "stop", "logs", "sync"],
+        choices=["start", "restart", "stop", "logs", "sync", "enable", "disable"],
         help="action to perform (defaults to logs if not specified)",
     )
     group = parser.add_mutually_exclusive_group()
-    group.add_argument("--dev", action="store_true", help="perform action on dev instance")
     group.add_argument(
-        "--all", action="store_true", help="perform action on both prod and dev instances"
+        "--dev",
+        action="store_true",
+        help="perform action on dev instance",
+    )
+    group.add_argument(
+        "--all",
+        action="store_true",
+        help="perform action on both prod and dev instances",
     )
     return parser.parse_args()
 
@@ -67,19 +66,18 @@ def run(
 class DockerControl:
     """Control Docker containers."""
 
-    def __init__(self, bots: BotControl) -> None:
-        self.bots = bots
+    def __init__(self, config: BotControlConfig) -> None:
+        self.config = config
 
-    def build_image(self, dev: bool = False) -> bool:
+    def build_image(self) -> bool:
         """Build the Docker image."""
-        project_root = DEV_ROOT if dev else PROD_ROOT
         logger.info("Building the Docker image...")
 
         git_commit_hash = self._fetch_git_commit_hash()
         command = f"GIT_COMMIT_HASH={git_commit_hash} docker compose build"
 
         try:
-            result = subprocess.call(command, shell=True, cwd=str(project_root))
+            result = subprocess.call(command, shell=True, cwd=str(self.config.project_root))
             if result == 0:
                 logger.info("Docker image built successfully.")
                 return True
@@ -91,11 +89,10 @@ class DockerControl:
 
     def stop_and_remove_containers(self, dev: bool = False) -> None:
         """Stop and remove Docker containers."""
-        instance = "dsbots-dev" if dev else "dsbots"
-        project_root = DEV_ROOT if dev else PROD_ROOT
-        logger.info("Stopping and removing %s...", instance)
-        run("docker compose down", cwd=str(project_root))
-        logger.info("%s stopped and removed.", instance)
+        instance_name = self.config.get_instance(dev)
+        logger.info("Stopping and removing %s...", instance_name)
+        run("docker compose down", cwd=str(self.config.project_root))
+        logger.info("%s stopped and removed.", instance_name)
 
     def prune_docker_resources(self) -> None:
         """Clean up unused Docker resources to free up space."""
@@ -128,92 +125,92 @@ class DockerControl:
 
 
 class BotControl:
-    """Control the dsbots service and the script execution flow."""
+    """Control the prism service and the script execution flow."""
 
-    def __init__(self, args: argparse.Namespace) -> None:
-        self.args = args
-        self.docker = DockerControl(self)
+    def __init__(self, config: BotControlConfig) -> None:
+        self.config = config
+        self.docker = DockerControl(config)
 
-    def start_dsbots(self, dev: bool = False) -> None:
-        """Start the dsbots service."""
-        instance = "dsbots-dev" if dev else "dsbots"
-        project_root = DEV_ROOT if dev else PROD_ROOT
+    def start_prism(self, dev: bool = False) -> None:
+        """Start the prism service."""
+        instance = self.config.get_instance(dev)
         logger.info("Starting %s...", instance)
 
         try:
-            subprocess.call("docker compose up -d", shell=True, cwd=str(project_root))
+            subprocess.call("docker compose up -d", shell=True, cwd=str(self.config.project_root))
         except KeyboardInterrupt:
             logger.error("Start process interrupted.")
 
     def ensure_prod_running(self) -> None:
-        """Ensure prod instance is running, start if not."""
-        command = ["docker", "ps", "--filter", "name=dsbots", "--format", "{{.Status}}"]
+        """Ensure prod instance is running. Start it if not."""
+        command = ["docker", "ps", "--filter", "name=prism", "--format", "{{.Status}}"]
         _, output = run(command)
         if "Up" not in output:
             logger.info("Prod instance not running, starting...")
-            self.start_dsbots(dev=False)
+            self.start_prism(dev=False)
 
     def handle_start(self) -> None:
         """Handle 'start' action."""
-        if self.args.all:
+        if self.config.all:
             self.docker.check_nginx()
-            self.update_dev_instance_status(True)
-            self.start_dsbots(dev=False)
-            self.start_dsbots(dev=True)
-            self.follow_logs(dev=True)
-        elif self.args.dev:
+            self.configure_dev_forwarding(self.config)
+            self.start_prism(dev=False)  # prod start
+            self.start_prism(dev=True)  # dev start
+            self._follow_logs(dev=True)  # follow dev logs
+        elif self.config.dev:
             self.ensure_prod_running()
-            self.update_dev_instance_status(True)
-            self.start_dsbots(dev=True)
-            self.follow_logs(dev=True)
+            self.configure_dev_forwarding(self.config)
+            self.start_prism(dev=True)  # dev start
+            self._follow_logs(dev=True)  # follow dev logs
         else:
             self.docker.check_nginx()
-            self.start_dsbots(dev=False)
-            self.follow_logs(dev=False)
+            self.start_prism(dev=False)  # prod start
+            self._follow_logs(dev=False)  # follow prod logs
 
     def handle_restart(self) -> None:
         """Handle 'restart' action."""
-        if not self.docker.build_image(self.args.dev):
+        if not self.docker.build_image():
             logger.error("Image build failed. Exiting...")
             sys.exit(1)
 
-        if self.args.all:
-            self.handle_all()
+        if self.config.all:
+            self.docker.check_nginx()
+            # Stop both instances
+            self.docker.stop_and_remove_containers(dev=False)  # prod stop
+            self.docker.stop_and_remove_containers(dev=True)  # dev stop
+            # Start both instances
+            self.start_prism(dev=False)  # prod start
+            self.start_prism(dev=True)  # dev start
+            self._follow_logs(dev=True)  # follow dev logs
+        elif self.config.dev:
+            self.docker.stop_and_remove_containers(dev=True)  # dev stop
+            self.start_prism(dev=True)  # dev start
+            self._follow_logs(dev=True)  # follow dev logs
         else:
-            self.docker.stop_and_remove_containers(self.args.dev)
-            if self.args.dev:
-                self.start_dsbots(dev=True)
-            else:
-                self.docker.check_nginx()
-                self.start_dsbots(dev=False)
-            self.follow_logs(self.args.dev)
+            self.docker.stop_and_remove_containers(dev=False)  # prod stop
+            self.docker.check_nginx()
+            self.start_prism(dev=False)  # prod start
+            self._follow_logs(dev=False)  # follow prod logs
 
     def handle_stop(self) -> None:
         """Handle 'stop' action."""
-        if self.args.all:
-            # Stop dev first, then prod
-            self.update_dev_instance_status(False)
-            self.docker.stop_and_remove_containers(dev=True)
-            self.docker.stop_and_remove_containers(dev=False)
-        elif self.args.dev:
-            self.update_dev_instance_status(False)
-            self.docker.stop_and_remove_containers(dev=True)
-            self.follow_logs(dev=False)
+        if self.config.all:
+            self.configure_dev_forwarding(self.config)
+            self.docker.stop_and_remove_containers(dev=True)  # dev stop
+            self.docker.stop_and_remove_containers(dev=False)  # prod stop
+        elif self.config.dev:
+            self.configure_dev_forwarding(self.config)
+            self.docker.stop_and_remove_containers(dev=True)  # dev stop
         else:
-            self.docker.stop_and_remove_containers(dev=False)
+            self.docker.stop_and_remove_containers(dev=False)  # prod stop
 
-    def handle_all(self):
-        """Handle 'restart' action for both instances."""
-        self.docker.stop_and_remove_containers(dev=False)
-        self.docker.check_nginx()
-        self.start_dsbots(dev=False)
-        self.docker.stop_and_remove_containers(dev=True)
-        self.start_dsbots(dev=True)
-        self.follow_logs(self.args.dev)
+    def follow_instance_logs(self) -> None:
+        """Follow logs based on current configuration."""
+        follow_dev = self.config.dev or self.config.all
+        self._follow_logs(dev=follow_dev)
 
-    def follow_logs(self, dev: bool = False) -> None:
-        """Follow the logs of the specified instance."""
-        instance = "dsbots-dev" if dev else "dsbots"
+    def _follow_logs(self, dev: bool = False) -> None:
+        instance = self.config.get_instance(dev)
         try:
             subprocess.call(["docker", "logs", "-f", instance])
         except KeyboardInterrupt:
@@ -221,17 +218,22 @@ class BotControl:
             sys.exit(0)
 
     @staticmethod
-    def update_dev_instance_status(enabled: bool) -> None:
+    def configure_dev_forwarding(config: BotControlConfig) -> None:
         """Update the dev instance status in config."""
-        config_file = PROD_ROOT / "config" / "private" / "debug.yaml"
+        config_file = config.prod_root / "config" / "private" / "debug.yaml"
         yaml = YAML()
         yaml.preserve_quotes = True
 
         try:
+            enabled = config.action == "enable"
             with config_file.open() as f:
                 data = yaml.load(f) or {}
 
-            data["enable_dev_instance"] = enabled
+            # Ensure the nested structure exists
+            if "dev_instance" not in data:
+                data["dev_instance"] = {}
+
+            data["dev_instance"]["enable"] = enabled
 
             with config_file.open("w") as f:
                 yaml.dump(data, f)
@@ -243,48 +245,25 @@ class BotControl:
 
 def main() -> None:
     """Perform the requested action."""
-    validate()
     args = parse_args()
-    bots = BotControl(args)
+    config = BotControlConfig.from_args(args)
+
+    if args.action in ["enable", "disable"]:
+        return BotControl.configure_dev_forwarding(config)
 
     if args.action == "sync":
-        sync_instances()
-    elif args.action == "start":
+        syncer = InstanceSync(config)
+        return syncer.sync()
+
+    bots = BotControl(config)
+    if args.action == "start":
         bots.handle_start()
     elif args.action == "restart":
         bots.handle_restart()
     elif args.action == "stop":
         bots.handle_stop()
     else:
-        bots.follow_logs(dev=args.dev)
-
-
-def validate() -> None:
-    """Validate the execution environment."""
-    hostname = socket.gethostname().lower()
-    try:
-        fqdn = socket.getfqdn().lower()
-        if "ip6.arpa" in fqdn:
-            fqdn = hostname
-    except Exception:
-        fqdn = hostname
-
-    host_names = {hostname, fqdn}
-    host_names.add(hostname.split(".")[0])
-
-    allowed_on_host = any(
-        name == allowed or name.startswith(allowed + ".")
-        for name in host_names
-        for allowed in ALLOWED_HOSTS
-    )
-
-    if not allowed_on_host:
-        logger.error("This script can only run on hosts: %s.", ALLOWED_HOSTS)
-        sys.exit(1)
-
-    if not PROD_ROOT.exists() or not DEV_ROOT.exists():
-        logger.error("Required paths for prod and dev instances not found.")
-        sys.exit(1)
+        bots.follow_instance_logs()
 
 
 if __name__ == "__main__":

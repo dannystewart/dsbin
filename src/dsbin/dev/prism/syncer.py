@@ -143,6 +143,19 @@ def should_exclude(path: Path) -> bool:
     )
 
 
+def get_file_names(source_root: Path) -> tuple[Path, Path]:
+    """Get the names of the workspace files in the source directory."""
+    main_file = source_root / "prism.code-workspace"
+    dev_file = source_root / "prism-dev.code-workspace"
+
+    if not main_file.exists():
+        main_file = source_root / "prism.code-workspace"
+    if not dev_file.exists():
+        dev_file = source_root / "prism-dev.code-workspace"
+
+    return main_file, dev_file
+
+
 def sync_workspace_files(source_root: Path) -> None:
     """Sync VS Code workspace files while preserving color customizations.
 
@@ -151,9 +164,7 @@ def sync_workspace_files(source_root: Path) -> None:
     or prism-dev.code-workspace depending on sync direction) as the source of truth for settings.
     """
     try:
-        # Read both workspace files from the source directory
-        main_file = source_root / "prism.code-workspace"
-        dev_file = source_root / "prism-dev.code-workspace"
+        main_file, dev_file = get_file_names(source_root)
 
         if not main_file.exists() or not dev_file.exists():
             logger.warning("One or both workspace files not found in %s", source_root)

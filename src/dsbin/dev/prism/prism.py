@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Control script for the prism service."""
+"""Control script for the Prism service."""
 
 from __future__ import annotations
 
@@ -103,7 +103,7 @@ class DockerControl:
         run("docker system prune -f", show_output=True)
 
     def check_nginx(self) -> None:
-        """Check if both nginx containers are running."""
+        """Check if both Nginx containers are running."""
         command = 'docker ps --filter "name=nginx" --format "{{.Names}}"'
         _, output = run(command)
         running_containers = set(output.splitlines())
@@ -128,14 +128,14 @@ class DockerControl:
 
 
 class BotControl:
-    """Control the prism service and the script execution flow."""
+    """Control the Prism service and the script execution flow."""
 
     def __init__(self, args: argparse.Namespace) -> None:
         self.args = args
         self.docker = DockerControl(self)
 
     def start_prism(self, dev: bool = False) -> None:
-        """Start the prism service."""
+        """Start the Prism service."""
         instance = "prism-dev" if dev else "prism"
         project_root = DEV_ROOT if dev else PROD_ROOT
         logger.info("Starting %s...", instance)

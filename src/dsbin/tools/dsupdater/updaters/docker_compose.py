@@ -1,0 +1,61 @@
+from __future__ import annotations
+
+import os
+from dataclasses import dataclass
+from typing import ClassVar
+
+from dsbin.tools.dsupdater.update_manager import UpdateManager, UpdateStage, UpdateStageFailedError
+
+from dsutil.shell import handle_keyboard_interrupt
+
+
+@dataclass
+class DockerComposeUpdater(UpdateManager):
+    """Docker Compose updater."""
+
+    display_name: str = "docker"
+    description: str = "pull Docker images, if docker-compose.yml is in this directory"
+    prerequisite: str | None = "docker"
+
+    update_stages: ClassVar[dict[str, UpdateStage]] = {
+        "pull": UpdateStage(
+            command="docker compose pull",
+            start_message="Pulling latest Docker images...",
+            end_message="Docker images updated successfully.",
+            error_message="Failed to pull Docker images: %s",
+            capture_output=True,
+            raise_error=True,
+        ),
+    }
+
+    @handle_keyboard_interrupt()
+    def perform_update_stages(self) -> None:
+        """Update Docker images if docker-compose.yml is present."""
+        if not os.path.isfile("docker-compose.yml"):
+            self.logger.debug(
+                "[%s] No docker-compose.yml found in current directory. Skipping.",
+                self.display_name,
+            )
+            return
+        self.logger.debug("[%s] Found docker-compose.yml in current directory.", self.display_name)
+
+        try:
+            self.run_stage("pull")
+        except UpdateStageFailedError as e:
+            if "must be built from source" in str(e):
+                self.logger.warning(
+                    "[%s] Docker images updated, but some must be built manually.",
+                    self.display_name,
+                )
+            elif "Pulled" in str(e) and "Warning" not in str(e):
+                self.logger.info("[%s] Docker images updated successfully.", self.display_name)
+            else:
+                self.logger.warning(
+                    "[%s] Some Docker images may not have updated successfully.", self.display_name
+                )
+
+            if self.debug:
+                self.logger.debug("[%s] Full output:\n%s", self.display_name, str(e))
+            return
+
+        self.logger.info("[%s] Docker images updated successfully.", self.display_name)

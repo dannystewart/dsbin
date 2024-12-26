@@ -213,16 +213,14 @@ wheels = [
 
 [[package]]
 name = "dsbin"
-version = "1.3.1"
+version = "1.3.5"
 source = { editable = "." }
 dependencies = [
     { name = "azure-storage-blob" },
     { name = "distro" },
-    { name = "dsupdater" },
     { name = "dsutil" },
     { name = "halo" },
     { name = "inquirer" },
-    { name = "iplookup" },
     { name = "json5" },
     { name = "mutagen" },
     { name = "mysql-connector-python" },
@@ -231,7 +229,9 @@ dependencies = [
     { name = "paramiko" },
     { name = "path-py" },
     { name = "pathlib" },
+    { name = "pexpect" },
     { name = "pillow" },
+    { name = "pycountry" },
     { name = "pydub" },
     { name = "pygments" },
     { name = "pyperclip" },
@@ -262,11 +262,9 @@ dev = [
 requires-dist = [
     { name = "azure-storage-blob", specifier = ">=12.24.0" },
     { name = "distro", specifier = ">=1.9.0" },
-    { name = "dsupdater", git = "https://gitlab.dannystewart.com/danny/dsupdater.git" },
     { name = "dsutil", git = "https://gitlab.dannystewart.com/danny/dsutil.git" },
     { name = "halo", specifier = ">=0.0.31" },
     { name = "inquirer", specifier = ">=3.4.0" },
-    { name = "iplookup", git = "https://gitlab.dannystewart.com/danny/ip-lookup.git" },
     { name = "json5" },
     { name = "mutagen", specifier = ">=1.47.0" },
     { name = "mypy", marker = "extra == 'dev'", specifier = ">=1.13.0" },
@@ -276,7 +274,9 @@ requires-dist = [
     { name = "paramiko", specifier = ">=3.5.0" },
     { name = "path-py", specifier = ">=12.5.0" },
     { name = "pathlib", specifier = ">=1.0.1" },
+    { name = "pexpect" },
     { name = "pillow", specifier = ">=10.4.0" },
+    { name = "pycountry" },
     { name = "pydub", specifier = ">=0.25.1" },
     { name = "pygments", specifier = ">=2.18.0" },
     { name = "pyperclip", specifier = ">=1.9.0" },
@@ -299,19 +299,9 @@ requires-dist = [
 ]
 
 [[package]]
-name = "dsupdater"
-version = "1.2.3"
-source = { git = "https://gitlab.dannystewart.com/danny/dsupdater.git#af20f77cd724501783f5599cd2e75bbf4bffb988" }
-dependencies = [
-    { name = "dsutil" },
-    { name = "path-py" },
-    { name = "pexpect" },
-]
-
-[[package]]
 name = "dsutil"
-version = "1.3.5"
-source = { git = "https://gitlab.dannystewart.com/danny/dsutil.git#9f3adccdc673fb10b43f83a1b2dbb13bf9f00fdf" }
+version = "1.4.3"
+source = { git = "https://gitlab.dannystewart.com/danny/dsutil.git#7b71c68be5c54bd9dff03b5be9703c6ba4d8fb9e" }
 dependencies = [
     { name = "halo" },
     { name = "natsort" },
@@ -374,17 +364,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/f3/06/ef91eb8f3feafb736aa33dcb278fc9555d17861aa571b684715d095db24d/inquirer-3.4.0.tar.gz", hash = "sha256:8edc99c076386ee2d2204e5e3653c2488244e82cb197b2d498b3c1b5ffb25d0b", size = 14472 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a4/b2/be907c8c0f8303bc4b10089f5470014c3bf3521e9b8d3decf3037fd94725/inquirer-3.4.0-py3-none-any.whl", hash = "sha256:bb0ec93c833e4ce7b51b98b1644b0a4d2bb39755c39787f6a504e4fee7a11b60", size = 18077 },
-]
-
-[[package]]
-name = "iplookup"
-version = "1.1.1"
-source = { git = "https://gitlab.dannystewart.com/danny/ip-lookup.git#529becc616942b62a143ee9f5ef879f8ffa38e91" }
-dependencies = [
-    { name = "dsutil" },
-    { name = "pycountry" },
-    { name = "requests" },
-    { name = "termcolor" },
 ]
 
 [[package]]

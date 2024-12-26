@@ -26,21 +26,35 @@ ALLOWED_HOSTS = ["web"]
 
 
 def parse_args() -> argparse.Namespace:
-    """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument(
-        "action",
-        nargs="?",
-        default="logs",
-        choices=["start", "restart", "stop", "logs", "sync"],
-        help="action to perform (defaults to logs if not specified)",
-    )
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument("--dev", action="store_true", help="perform action on dev instance")
-    group.add_argument(
-        "--all", action="store_true", help="perform action on both prod and dev instances"
-    )
-    return parser.parse_args()
+    """Parse command-line arguments in a flexible, command-style way."""
+    # Define valid options
+    actions = {"start", "restart", "stop", "logs", "sync"}
+    modifiers = {"dev", "all"}
+
+    # Get all args after the script name
+    args = {arg.lower() for arg in sys.argv[1:]}
+
+    # Find the action (default to logs if none specified)
+    action = next((arg for arg in args if arg in actions), "logs")
+
+    # Check for modifiers
+    is_dev = "dev" in args
+    is_all = "all" in args
+
+    # Validate combinations
+    if is_dev and is_all:
+        logger.error("Cannot specify both 'dev' and 'all' at the same time")
+        sys.exit(1)
+
+    # Check for unknown arguments
+    valid_args = actions | modifiers
+    unknown_args = args - valid_args
+    if unknown_args:
+        logger.error("Unknown arguments: %s", ", ".join(unknown_args))
+        sys.exit(1)
+
+    # Create a Namespace object to maintain compatibility with existing code
+    return argparse.Namespace(action=action, dev=is_dev, all=is_all)
 
 
 def run(

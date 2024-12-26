@@ -345,24 +345,54 @@ def update_version(
 
 @handle_keyboard_interrupt()
 def _update_version_in_pyproject(pyproject: Path, new_version: str) -> None:
-    """Update version in pyproject.toml."""
+    """Update version in pyproject.toml while preserving formatting."""
     content = pyproject.read_text()
-    import tomllib
+    lines = content.splitlines()
 
-    data = tomllib.loads(content)
+    # Find the version line
+    version_line_idx = None
+    in_project = False
+    in_poetry = False
 
-    # Determine where to update the version
-    if "project" in data:
-        data["project"]["version"] = new_version
-    elif "tool" in data and "poetry" in data["tool"]:
-        data["tool"]["poetry"]["version"] = new_version
-    else:
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if stripped.startswith("[project]"):
+            in_project = True
+            in_poetry = False
+        elif stripped.startswith("[tool.poetry]"):
+            in_project = False
+            in_poetry = True
+        elif stripped.startswith("["):  # Any other section
+            in_project = False
+            in_poetry = False
+
+        if (in_project or in_poetry) and stripped.startswith("version"):
+            version_line_idx = i
+            break
+
+    if version_line_idx is None:
         logger.error("Could not find version field in pyproject.toml")
         sys.exit(1)
 
-    import tomli_w
+    # Update the version line while preserving indentation
+    current_line = lines[version_line_idx]
+    if "=" in current_line:
+        before_version = current_line.split("=")[0]
+        quote_char = '"' if '"' in current_line else "'"
+        lines[version_line_idx] = f"{before_version}= {quote_char}{new_version}{quote_char}"
 
-    pyproject.write_text(tomli_w.dumps(data))
+    # Verify the new content is valid TOML before writing
+    new_content = "\n".join(lines) + "\n"
+    try:
+        import tomllib
+
+        tomllib.loads(new_content)
+    except tomllib.TOMLDecodeError:
+        logger.error("Version update would create invalid TOML. Aborting.")
+        sys.exit(1)
+
+    # Write back the file
+    pyproject.write_text(new_content)
 
     # Verify the changes
     if get_version(pyproject) != new_version:

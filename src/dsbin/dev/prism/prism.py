@@ -10,8 +10,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-from ruamel.yaml import YAML
-
 from .syncer import main as sync_instances
 
 from dsutil.log import LocalLogger
@@ -171,13 +169,11 @@ class BotControl:
         """Handle 'start' action."""
         if self.args.all:
             self.docker.check_nginx()
-            self.update_dev_instance_status(True)
             self.start_prism(dev=False)
             self.start_prism(dev=True)
             self.follow_logs(dev=True)
         elif self.args.dev:
             self.ensure_prod_running()
-            self.update_dev_instance_status(True)
             self.start_prism(dev=True)
             self.follow_logs(dev=True)
         else:
@@ -206,11 +202,9 @@ class BotControl:
         """Handle 'stop' action."""
         if self.args.all:
             # Stop dev first, then prod
-            self.update_dev_instance_status(False)
             self.docker.stop_and_remove_containers(dev=True)
             self.docker.stop_and_remove_containers(dev=False)
         elif self.args.dev:
-            self.update_dev_instance_status(False)
             self.docker.stop_and_remove_containers(dev=True)
             self.follow_logs(dev=False)
         else:
@@ -233,26 +227,6 @@ class BotControl:
         except KeyboardInterrupt:
             logger.info("Ending log stream.")
             sys.exit(0)
-
-    @staticmethod
-    def update_dev_instance_status(enabled: bool) -> None:
-        """Update the dev instance status in config."""
-        config_file = PROD_ROOT / "config" / "private" / "debug.yaml"
-        yaml = YAML()
-        yaml.preserve_quotes = True
-
-        try:
-            with config_file.open() as f:
-                data = yaml.load(f) or {}
-
-            data["enable_dev_instance"] = enabled
-
-            with config_file.open("w") as f:
-                yaml.dump(data, f)
-
-            logger.debug("Dev instance %s on prod instance.", "enabled" if enabled else "disabled")
-        except Exception as e:
-            logger.error("Failed to update dev instance status: %s", e)
 
 
 def main() -> None:

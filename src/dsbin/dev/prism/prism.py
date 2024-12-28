@@ -4,12 +4,12 @@
 
 from __future__ import annotations
 
-import argparse
 import socket
 import subprocess
 import sys
 from pathlib import Path
 
+from .prism_config import Action, PrismConfig
 from .syncer import main as sync_instances
 
 from dsutil.log import LocalLogger
@@ -26,10 +26,8 @@ ALLOWED_HOSTS = ["web"]
 class PrismController:
     """Control class for Prism's environment and Docker stack."""
 
-    def __init__(self, args: argparse.Namespace):
-        self.args = args
-        self.on_all = args.all
-        self.on_dev = args.dev
+    def __init__(self, config: PrismConfig):
+        self.config = config
 
     @staticmethod
     def run(
@@ -162,12 +160,12 @@ class PrismController:
 
     def handle_start(self) -> None:
         """Handle 'start' action."""
-        if self.on_all:
+        if self.config.on_all:
             self.check_nginx()
             self.start_prism(dev=False)
             self.start_prism(dev=True)
             self.follow_logs(dev=True)
-        elif self.on_dev:
+        elif self.config.on_dev:
             self.ensure_prod_running()
             self.start_prism(dev=True)
             self.follow_logs(dev=True)
@@ -178,27 +176,27 @@ class PrismController:
 
     def handle_restart(self) -> None:
         """Handle 'restart' action."""
-        if not self.build_image(self.on_dev):
+        if not self.build_image(self.config.on_dev):
             logger.error("Image build failed. Exiting...")
             sys.exit(1)
 
-        if self.on_all:
+        if self.config.on_all:
             self.handle_all()
         else:
-            self.stop_and_remove_containers(self.on_dev)
-            if self.on_dev:
+            self.stop_and_remove_containers(self.config.on_dev)
+            if self.config.on_dev:
                 self.start_prism(dev=True)
             else:
                 self.check_nginx()
                 self.start_prism(dev=False)
-            self.follow_logs(self.on_dev)
+            self.follow_logs(self.config.on_dev)
 
     def handle_stop(self) -> None:
         """Handle 'stop' action."""
-        if self.on_all:  # Stop dev first, then prod
+        if self.config.on_all:  # Stop dev first, then prod
             self.stop_and_remove_containers(dev=True)
             self.stop_and_remove_containers(dev=False)
-        elif self.on_dev:
+        elif self.config.on_dev:
             self.stop_and_remove_containers(dev=True)
             self.follow_logs(dev=False)
         else:
@@ -211,7 +209,7 @@ class PrismController:
         self.start_prism(dev=False)
         self.stop_and_remove_containers(dev=True)
         self.start_prism(dev=True)
-        self.follow_logs(self.on_dev)
+        self.follow_logs(self.config.on_dev)
 
     def follow_logs(self, dev: bool = False) -> None:
         """Follow the logs of the specified instance."""
@@ -221,38 +219,6 @@ class PrismController:
         except KeyboardInterrupt:
             logger.info("Ending log stream.")
             sys.exit(0)
-
-
-def parse_args() -> argparse.Namespace:
-    """Parse command-line arguments in a flexible, command-style way."""
-    # Define valid options
-    actions = {"start", "restart", "stop", "logs", "sync"}
-    modifiers = {"dev", "all"}
-
-    # Get all args after the script name
-    args = {arg.lower() for arg in sys.argv[1:]}
-
-    # Find the action (default to logs if none specified)
-    action = next((arg for arg in args if arg in actions), "logs")
-
-    # Check for modifiers
-    is_dev = "dev" in args
-    is_all = "all" in args
-
-    # Validate combinations
-    if is_dev and is_all:
-        logger.error("Cannot specify both 'dev' and 'all' at the same time")
-        sys.exit(1)
-
-    # Check for unknown arguments
-    valid_args = actions | modifiers
-    unknown_args = args - valid_args
-    if unknown_args:
-        logger.error("Unknown arguments: %s", ", ".join(unknown_args))
-        sys.exit(1)
-
-    # Create a Namespace object with the parsed arguments
-    return argparse.Namespace(action=action, dev=is_dev, all=is_all)
 
 
 def validate() -> None:
@@ -286,22 +252,28 @@ def validate() -> None:
         logger.warning("Telegram Bot API service should be running for proper operation.")
 
 
+def parse_args() -> PrismConfig:
+    """Parse command-line arguments in a flexible, command-style way."""
+    args = {arg.lower() for arg in sys.argv[1:]}
+    return PrismConfig.from_args(args, logger)
+
+
 def main() -> None:
     """Perform the requested action."""
     validate()
-    args = parse_args()
-    prism = PrismController(args)
+    config = parse_args()
+    prism = PrismController(config)
 
-    if args.action == "sync":
+    if config.action is Action.SYNC:
         sync_instances()
-    elif args.action == "start":
+    elif config.action is Action.START:
         prism.handle_start()
-    elif args.action == "restart":
+    elif config.action is Action.RESTART:
         prism.handle_restart()
-    elif args.action == "stop":
+    elif config.action is Action.STOP:
         prism.handle_stop()
     else:
-        prism.follow_logs(dev=args.dev)
+        prism.follow_logs(dev=config.on_dev)
 
 
 if __name__ == "__main__":

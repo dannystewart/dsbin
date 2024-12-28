@@ -14,7 +14,7 @@ from .syncer import main as sync_instances
 
 from dsutil.log import LocalLogger
 
-logger = LocalLogger.setup_logger()
+logger = LocalLogger.setup_logger(level="info")
 
 # Program paths
 PROGRAM_PATH = "/home/danny/docker/prism"
@@ -50,30 +50,23 @@ class PrismController:
                 print(e.output.decode("utf-8").strip())
             return False, e.output.decode("utf-8").strip()
 
-    def docker_compose_command(
-        self, action: str, dev: bool = False, exclude_services: list[str] | None = None
-    ) -> None:
+    def docker_compose_command(self, action: str, dev: bool = False) -> None:
         """Run a Docker Compose command while optionally excluding specific services.
 
         Args:
             action: The Docker Compose action (up, down, etc.).
             dev: Whether to use dev environment.
-            exclude_services: List of service names to exclude from the command.
         """
         project_root = DEV_ROOT if dev else PROD_ROOT
 
-        if exclude_services and action in ["down", "stop"]:
-            # For down/stop, explicitly list services we want to affect
-            services = ["prism"]  # Only target the main service
-            service_str = " ".join(services)
-            command = f"docker compose {action} {service_str}"
-        elif exclude_services and action == "up":
-            # For up, use the main command so docker-compose will respect dependencies
-            command = f"docker compose {action} -d"
-        else:
-            command = f"docker compose {action}"
+        # Always explicitly specify the prism service
+        service = "prism-dev" if dev else "prism"
+        command = f"docker compose {action} {service}"
 
-        logger.info("Running command: %s in %s", command, project_root)
+        if action == "up":
+            command += " -d"
+
+        logger.debug("Running command in %s: %s", project_root, command)
         try:
             subprocess.call(command, shell=True, cwd=str(project_root))
         except Exception as e:
@@ -106,20 +99,18 @@ class PrismController:
     def start_prism(self, dev: bool = False) -> None:
         """Start the Prism service."""
         instance = "prism-dev" if dev else "prism"
-        project_root = DEV_ROOT if dev else PROD_ROOT
         logger.info("Starting %s...", instance)
 
         try:
-            subprocess.call("docker compose up -d", shell=True, cwd=str(project_root))
+            self.docker_compose_command("up", dev)
         except KeyboardInterrupt:
             logger.error("Start process interrupted.")
 
     def stop_and_remove_containers(self, dev: bool = False) -> None:
         """Stop and remove Docker containers."""
         instance = "prism-dev" if dev else "prism"
-        project_root = DEV_ROOT if dev else PROD_ROOT
         logger.info("Stopping and removing %s...", instance)
-        self.run("docker compose down", cwd=str(project_root))
+        self.docker_compose_command("down", dev)
         logger.info("%s stopped and removed.", instance)
 
     def check_nginx(self) -> None:

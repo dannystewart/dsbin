@@ -51,17 +51,14 @@ class PrismController:
             return False, e.output.decode("utf-8").strip()
 
     def docker_compose_command(self, action: str, dev: bool = False) -> None:
-        """Run a Docker Compose command while optionally excluding specific services.
+        """Run a Docker Compose command.
 
         Args:
             action: The Docker Compose action (up, down, etc.).
             dev: Whether to use dev environment.
         """
         project_root = DEV_ROOT if dev else PROD_ROOT
-
-        # Always explicitly specify the prism service
-        service = "prism-dev" if dev else "prism"
-        command = f"docker compose {action} {service}"
+        command = f"docker compose {action}"
 
         if action == "up":
             command += " -d"
@@ -132,14 +129,13 @@ class PrismController:
             sys.exit(1)
 
     @staticmethod
-    def check_telegram_api() -> bool:
-        """Check if the Telegram Bot API service is running."""
+    def ensure_telegram_api() -> None:
+        """Ensure Telegram Bot API service is running."""
         command = ["docker", "ps", "--filter", "name=telegram-bot-api", "--format", "{{.Status}}"]
         _, output = PrismController.run(command)
-        is_running = "Up" in output
-        if not is_running:
-            logger.warning("Telegram Bot API service is not running!")
-        return is_running
+        if "Up" not in output:
+            logger.info("Starting Telegram Bot API service...")
+            subprocess.call("docker compose --profile shared up -d", shell=True, cwd=str(PROD_ROOT))
 
     def ensure_prod_running(self) -> None:
         """Ensure prod instance is running, start if not."""
@@ -239,8 +235,7 @@ def validate() -> None:
         logger.error("Required paths for prod and dev instances not found.")
         sys.exit(1)
 
-    if not PrismController.check_telegram_api():
-        logger.warning("Telegram Bot API service should be running for proper operation.")
+    PrismController.ensure_telegram_api()
 
 
 def parse_args() -> PrismConfig:

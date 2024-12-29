@@ -12,7 +12,9 @@ from pathlib import Path
 from .prism_config import Action, PrismConfig
 from .syncer import main as sync_instances
 
-from dsutil.log import LocalLogger
+from dsutil import LocalLogger, configure_traceback
+
+configure_traceback()
 
 logger = LocalLogger.setup_logger(level="info")
 

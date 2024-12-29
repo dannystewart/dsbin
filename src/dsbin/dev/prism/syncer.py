@@ -10,14 +10,16 @@ from typing import TYPE_CHECKING
 
 from json5 import loads as json5_loads
 
+from dsutil import LocalLogger, configure_traceback
 from dsutil.animation import start_animation, stop_animation
 from dsutil.diff import show_diff
 from dsutil.env import DSEnv
-from dsutil.log import LocalLogger
 from dsutil.shell import confirm_action, handle_keyboard_interrupt
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+
+configure_traceback()
 
 logger = LocalLogger.setup_logger(__name__)
 

@@ -36,7 +36,7 @@ from dsutil.tools import async_retry_on_exception
 
 configure_traceback()
 
-env = DSEnv("pybounce")
+env = DSEnv()
 env.add_var("PYBOUNCE_TELEGRAM_API_ID", attr_name="api_id", var_type=str)
 env.add_var("PYBOUNCE_TELEGRAM_API_HASH", attr_name="api_hash", var_type=str, secret=True)
 env.add_var("PYBOUNCE_TELEGRAM_PHONE", attr_name="phone", var_type=str)
@@ -191,8 +191,7 @@ class TelegramUploader:
     async def post_file_to_channel(
         self, file_path: str, comment: str, channel_entity: Channel | Chat
     ) -> None:
-        """
-        Upload the given file to the given channel.
+        """Upload the given file to the given channel.
 
         Args:
             file_path: The path to the file to upload.

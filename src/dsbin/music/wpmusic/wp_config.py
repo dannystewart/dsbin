@@ -14,8 +14,7 @@ spinner = Halo(text="Initializing", spinner="dots")
 
 @dataclass
 class Config:
-    """
-    Establish configuration settings for the script.
+    """Establish configuration settings for the script.
 
     Uses DSPaths for path management and DSEnv for environment variables. Initializes all required
     paths, environment variables, and subsystem configurations (SSH, database, etc.).
@@ -75,7 +74,7 @@ class Config:
 
     def initialize_env_vars(self) -> None:
         """Get environment variables."""
-        self.env = DSEnv("wpmusic")
+        self.env = DSEnv()
 
         # Set up required environment variables
         self.env.add_var(

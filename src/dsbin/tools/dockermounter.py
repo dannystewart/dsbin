@@ -30,7 +30,7 @@ POSSIBLE_SHARES = ["Danny", "Downloads", "Music", "Media", "Storage"]
 
 def setup_env() -> DSEnv:
     """Setup environment configuration."""
-    env = DSEnv("dockermounter")
+    env = DSEnv()
     env.add_var(
         "TELEGRAM_BOT_TOKEN",
         description="Telegram Bot API token for notifications",
@@ -54,8 +54,7 @@ def setup_env() -> DSEnv:
 
 @dataclass
 class ShareManager:
-    """
-    Manage shared directories, checking their mount status and handling Docker stacks.
+    """Manage shared directories, checking their mount status and handling Docker stacks.
 
     Checks mount status and directory contents, remounts all filesystems, and restarts Docker stacks
     if necessary. Designed to work with command-line arguments and can be run automatically.

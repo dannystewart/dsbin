@@ -350,7 +350,7 @@ def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv) -> list[str]:
 def sync_instances(source_root: Path, target_root: Path) -> None:
     """Sync specified directories and files between instances."""
     # Initialize environment
-    env = DSEnv("prism-sync")
+    env = DSEnv()
 
     changes_made = []
 

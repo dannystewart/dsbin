@@ -81,7 +81,7 @@ class DirectoryCache:
         env.add_var(
             "CACHE_DIR",
             required=False,
-            default=str(Path.home() / ".cache" / env.app_name),
+            default=str(Path.home() / ".cache" / "prism"),
             description="Directory for cache files",
         )
 

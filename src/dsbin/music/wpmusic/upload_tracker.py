@@ -35,27 +35,6 @@ class UploadTracker:
         # Track the current set of uploads before recording them to the upload log
         self.current_upload_set = defaultdict(dict)
 
-    def _init_db(self) -> None:
-        with sqlite3.connect(self.config.local_sqlite_db) as conn:
-            cursor = conn.cursor()
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS tracks (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL UNIQUE
-                )
-            """)
-            cursor.execute("""
-                CREATE TABLE IF NOT EXISTS uploads (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    track_id INTEGER NOT NULL,
-                    filename TEXT NOT NULL,
-                    instrumental BOOLEAN NOT NULL,
-                    uploaded TIMESTAMP NOT NULL,
-                    FOREIGN KEY (track_id) REFERENCES tracks(id)
-                )
-            """)
-            conn.commit()
-
     def log_upload_set(self) -> None:
         """Log the current set of uploads and clear the set."""
         if not self.current_upload_set:

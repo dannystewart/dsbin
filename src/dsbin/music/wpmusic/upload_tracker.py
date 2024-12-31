@@ -5,9 +5,6 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-from mysql.connector.abstracts import MySQLConnectionAbstract
-from mysql.connector.pooling import PooledMySQLConnection
-
 from .db_manager import DatabaseManager
 from .table_formatter import TableFormatter
 
@@ -47,7 +44,7 @@ class UploadTracker:
 
     def pretty_print_history(self, track_name: str | None = None) -> None:
         """Print the upload history in a neatly organized way with color."""
-        history = self.get_upload_history(track_name)
+        history = self.db.get_upload_history(track_name)
         table_formatter = TableFormatter(apply_limit=track_name is None)
         num_uploads = table_formatter.config.uploads_per_song
 

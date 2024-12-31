@@ -101,13 +101,13 @@ class UploadTracker:
 
         # Process and display each track's history
         for entry in history:
-            table = Table(border_style="yellow", padding=(0, 0), box=box.SIMPLE_HEAD)
+            table = Table(border_style="dim", padding=(0, 1), box=box.HORIZONTALS)
 
             table.add_column(
-                f"[yellow]{entry['track_name']}[/yellow]", style="cyan", width=38, no_wrap=True
+                f"[yellow]{entry['track_name']}[/yellow]", style="cyan", width=36, no_wrap=True
             )
-            table.add_column("[yellow]Inst[/yellow]", justify="center", style="green", width=5)
-            table.add_column("[yellow]Uploaded[/yellow]", justify="right", width=24)
+            table.add_column("[yellow]Inst[/yellow]", justify="center", style="green", width=4)
+            table.add_column("[yellow]Uploaded[/yellow]", style="white", width=24)
 
             # Process uploads to pair instrumentals with their main tracks
             processed_uploads = self._prepare_rows_for_display(entry["uploads"])

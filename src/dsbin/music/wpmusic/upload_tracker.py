@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
+from rich import box
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
@@ -100,15 +101,13 @@ class UploadTracker:
 
         # Process and display each track's history
         for entry in history:
-            table = Table(
-                header_style="yellow underline",
-                border_style="yellow",
-                box=None,
-            )
+            table = Table(border_style="yellow", padding=(0, 0), box=box.SIMPLE_HEAD)
 
-            table.add_column(f"{entry['track_name']}", style="cyan", width=36, no_wrap=True)
-            table.add_column("Inst", justify="center", style="green", width=5)
-            table.add_column("Uploaded")
+            table.add_column(
+                f"[yellow]{entry['track_name']}[/yellow]", style="cyan", width=38, no_wrap=True
+            )
+            table.add_column("[yellow]Inst[/yellow]", justify="center", style="green", width=5)
+            table.add_column("[yellow]Uploaded[/yellow]", justify="right", width=24)
 
             # Process uploads to pair instrumentals with their main tracks
             processed_uploads = self._prepare_rows_for_display(entry["uploads"])
@@ -134,8 +133,6 @@ class UploadTracker:
                     ),
                     width=80,
                 )
-
-            console.print()
 
     def _prepare_rows_for_display(self, data: list[dict]) -> list[tuple[dict, bool]]:
         """Process rows to combine main tracks with their instrumentals."""

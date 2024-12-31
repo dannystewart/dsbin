@@ -12,7 +12,7 @@ requires-python = ">=3.12"
 dependencies = [
     "azure-storage-blob>=12.24.0",
     "distro>=1.9.0",
-    "dsutil @ git+https://gitlab.dannystewart.com/danny/dsutil.git",
+    "dsutil @ git+https://gitlab.dannystewart.com/danny/dsutil.git@main",
     "halo>=0.0.31",
     "inquirer>=3.4.0",
     "json5",
@@ -31,6 +31,7 @@ dependencies = [
     "pyperclip>=1.9.0",
     "python-dotenv>=1.0.1",
     "requests>=2.32.3",
+    "rich",
     "ruamel-yaml>=0.18.6",
     "scipy>=1.14.1",
     "scp>=0.15.0",

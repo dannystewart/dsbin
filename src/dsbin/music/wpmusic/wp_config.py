@@ -57,12 +57,12 @@ class Config:
     formats_to_upload: ClassVar[list[str]] = ["flac", "alac"]
 
     def __post_init__(self):
-        # Configure log level based on debug setting
-        self.log_level = "debug" if self.debug else "info"
-
         # Initialize core services
         self.paths = DSPaths("wpmusic")
         self.initialize_env_vars()
+
+        # Configure log level based on debug setting
+        self.log_level = "debug" if self.debug else "info"
 
         # Set up paths
         self.file_save_path = self.paths.downloads_dir
@@ -88,6 +88,8 @@ class Config:
             description="MySQL password for music_uploads user",
             secret=True,
         )
+        self.env.add_debug_var()
+        self.debug = self.env.debug
 
     def initialize_ssh(self) -> None:
         """Initialize SSH settings."""

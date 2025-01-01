@@ -110,6 +110,34 @@ class DatabaseManager:
             msg = f"Failed to establish database connection: {e!s}"
             raise DatabaseError(msg) from e
 
+    def check_database(self) -> None:
+        """Check database connection and log track and upload counts."""
+        with self.get_mysql_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM tracks")
+            result = cursor.fetchone()
+            track_count = result[0] if result else 0
+
+            cursor.execute("SELECT COUNT(*) FROM uploads")
+            result = cursor.fetchone()
+            upload_count = result[0] if result else 0
+
+            self.logger.info(
+                "Database connection successful! Found %s tracks and %s uploads.",
+                track_count,
+                upload_count,
+            )
+
+    def force_db_refresh(self, force_refresh: bool = False, refresh_only: bool = False) -> bool:
+        """Force a refresh of the local cache from MySQL."""
+        if force_refresh:
+            self.logger.info("Forcing cache refresh from MySQL server...")
+            self.force_refresh()
+            self.logger.info("Cache refresh complete!")
+            if refresh_only:
+                return True
+        return False
+
     def record_upload_set_to_db(self, uploaded: str, current_upload_set: dict) -> None:
         """Record the current upload set to the database.
 

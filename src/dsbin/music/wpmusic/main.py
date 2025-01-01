@@ -76,10 +76,11 @@ class WPMusic:
 
         # Check database connection if requested
         if self.args.check_db:
-            self._check_database()
+            self.upload_tracker.db.check_database()
 
         # Force refresh of local cache if requested
-        if self._force_db_refresh():
+        refresh_only = not (self.args.history is not None or self.args.files)
+        if self.upload_tracker.db.force_db_refresh(self.args.force_refresh, refresh_only):
             return
 
         # Process files
@@ -223,33 +224,6 @@ class WPMusic:
         )
 
         return output_file_path
-
-    def _check_database(self) -> None:
-        with self.upload_tracker.db.get_mysql_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM tracks")
-            result = cursor.fetchone()
-            track_count = result[0] if result else 0
-
-            cursor.execute("SELECT COUNT(*) FROM uploads")
-            result = cursor.fetchone()
-            upload_count = result[0] if result else 0
-
-            self.logger.info(
-                "Database connection successful! Found %s tracks and %s uploads.",
-                track_count,
-                upload_count,
-            )
-        return
-
-    def _force_db_refresh(self) -> bool:
-        if self.args.force_refresh:
-            self.logger.info("Forcing cache refresh from MySQL server...")
-            self.upload_tracker.db.force_refresh()
-            self.logger.info("Cache refresh complete!")
-            if not (self.args.history is not None or self.args.files):
-                return True
-        return False
 
     @staticmethod
     def show_help_and_exit() -> None:

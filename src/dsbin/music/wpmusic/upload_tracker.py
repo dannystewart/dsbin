@@ -135,8 +135,9 @@ class UploadTracker:
                 )
 
     def _prepare_rows_for_display(self, data: list[dict]) -> list[tuple[dict, bool]]:
-        """Process rows to combine main tracks with their instrumentals."""
-        rows = []
+        """Process rows to combine main tracks with their instrumentals and skip duplicates."""
+        # First pass: Handle instrumental pairing
+        paired_rows = []
         prev_item = None
 
         sorted_data = sorted(data, key=lambda x: x["uploaded"], reverse=True)
@@ -151,12 +152,21 @@ class UploadTracker:
 
                 if prev_item["instrumental"] and current_version == prev_version:
                     has_matching_inst = True
-                    rows.pop()  # Remove the instrumental entry
+                    paired_rows.pop()  # Remove the instrumental entry
 
-            rows.append((item, has_matching_inst))
+            paired_rows.append((item, has_matching_inst))
             prev_item = item
 
-        return rows
+        # Second pass: Remove duplicates
+        final_rows = []
+        prev_filename = None
+
+        for item, has_inst in paired_rows:
+            if item["filename"] != prev_filename:
+                final_rows.append((item, has_inst))
+                prev_filename = item["filename"]
+
+        return final_rows
 
     @staticmethod
     def _get_version(filename: str) -> str:

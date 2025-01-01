@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from dsutil.text import remove_html_tags
+from dsutil.text import Text
 
 IP_SOURCES: dict[str, dict[str, Any]] = {
     "ip2location": {
@@ -21,8 +21,8 @@ IP_SOURCES: dict[str, dict[str, Any]] = {
             "country": "country",
             "region": "region",
             "city": "city",
-            "isp": ("isp", remove_html_tags),
-            "org": ("organization", remove_html_tags),
+            "isp": ("isp", Text.HTML.strip),
+            "org": ("organization", Text.HTML.strip),
         },
     },
     "dbip": {

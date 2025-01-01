@@ -18,7 +18,7 @@ from dsbin.tools.dsupdater.updaters.macos import MacOSSoftwareUpdate
 from dsutil.argparser import ArgParser
 from dsutil.log import LocalLogger
 from dsutil.shell import handle_keyboard_interrupt
-from dsutil.text import color, format_duration, print_colored
+from dsutil.text import Text, color, print_colored
 from dsutil.tools import configure_traceback
 
 if TYPE_CHECKING:
@@ -195,7 +195,7 @@ class Updater:
     def _get_elapsed_time(self) -> str:
         elapsed_time = time.time() - self.start_time
         minutes, seconds = divmod(int(elapsed_time), 60)
-        return format_duration(0, minutes, seconds)
+        return Text.format_duration(0, minutes, seconds)
 
 
 def parse_arguments() -> Namespace:

@@ -44,10 +44,13 @@ class WPMusic:
         if args.doc:
             self.show_help_and_exit()
 
+        # Keep files based on argument or if skipping upload
+        should_keep = args.keep_files or args.skip_upload
+
         # Initialize configuration and logger
         self.config = Config(
             skip_upload=args.skip_upload,
-            keep_files=args.keep_files,
+            keep_files=should_keep,
             debug=args.debug,
             no_cache=args.no_cache,
         )
@@ -70,9 +73,6 @@ class WPMusic:
 
         # Store args for processing
         self.args = args
-
-        # Keep files based on argument or if skipping upload
-        self.should_keep = args.keep_files or args.skip_upload
 
         # Check database connection if requested
         if self.args.check_db:

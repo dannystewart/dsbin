@@ -98,8 +98,9 @@ class TrackIdentifier:
 
     def _get_fallback_selection(self, tracks: list[dict[str, Any]]) -> str:
         """Generate a fallback menu for selecting a track."""
-        choices = sorted([f"{track['track_name']}" for track in tracks]) + [
-            "(skip adding metadata)"
+        choices = [
+            *sorted([f"{track['track_name']}" for track in tracks]),
+            "(skip adding metadata)",
         ]
         questions = [
             inquirer.List(

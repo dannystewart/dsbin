@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
-import os
 from dataclasses import dataclass, field
 from io import BytesIO
+from pathlib import Path
 
 import requests
 from PIL import Image
@@ -46,7 +46,7 @@ class AudioTrack:
         """Initialize the audio track."""
         # Get file attributes
         self.is_instrumental = "No Vocals" in self.filename
-        self.file_extension = os.path.splitext(self.filename)[1][1:].lower()
+        self.file_extension = Path(self.filename).suffix[1:].lower()
         self.file_format = "alac" if self.file_extension == "m4a" else self.file_extension
 
         # Fetch and set metadata
@@ -78,7 +78,7 @@ class AudioTrack:
             self.track_title += " (Instrumental)"
 
     def download_all_metadata(self) -> tuple[dict, bytes | None]:
-        """Retrieve and prepare metadata for the album and all tracks, as well as downloading cover art."""
+        """Retrieve and prepare metadata for the album and all tracks, and download cover art."""
         response = requests.get(self.metadata_url, timeout=10)
         all_metadata = json.loads(response.text)
 

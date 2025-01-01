@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import operator
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -140,7 +141,7 @@ class UploadTracker:
         paired_rows = []
         prev_item = None
 
-        sorted_data = sorted(data, key=lambda x: x["uploaded"], reverse=True)
+        sorted_data = sorted(data, key=operator.itemgetter("uploaded"), reverse=True)
 
         for item in sorted_data:
             has_matching_inst = False

@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-import os
 import sqlite3
 import subprocess
 from contextlib import contextmanager
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import mysql.connector
@@ -31,7 +31,11 @@ class DatabaseManager:
         )
 
     def _ensure_mysql_tunnel(self) -> None:
-        """Ensure MySQL SSH tunnel exists and is working."""
+        """Ensure MySQL SSH tunnel exists and is working.
+
+        Raises:
+            DatabaseError: If the tunnel cannot be established.
+        """
         # Check for existing tunnel
         success, output = subprocess.getstatusoutput("lsof -ti:3306 -sTCP:LISTEN")
         if success == 0 and output.strip():
@@ -52,7 +56,11 @@ class DatabaseManager:
     def get_mysql_connection(
         self,
     ) -> Generator[MySQLConnectionAbstract | PooledMySQLConnection, None, None]:
-        """Get MySQL connection through SSH tunnel."""
+        """Get MySQL connection through SSH tunnel.
+
+        Yields:
+            The database connection.
+        """
         self._ensure_mysql_tunnel()
 
         try:
@@ -75,7 +83,14 @@ class DatabaseManager:
     ) -> Generator[
         sqlite3.Connection | MySQLConnectionAbstract | PooledMySQLConnection, None, None
     ]:
-        """Get a connection for reading, using local cache if available."""
+        """Get a connection for reading, using local cache if available.
+
+        Raises:
+            DatabaseError: If the database connection fails.
+
+        Yields:
+            The database connection.
+        """
         if self.config.no_cache:  # If cache is disabled, use MySQL
             self.logger.debug("Cache disabled, using MySQL directly.")
             with self.get_mysql_connection() as conn:
@@ -83,7 +98,7 @@ class DatabaseManager:
             return
 
         try:  # Otherwise, use the cache if it exists, or create it if it doesn't
-            if not os.path.exists(self.config.local_sqlite_db):
+            if not Path.exists(self.config.local_sqlite_db):
                 self.logger.info("No local cache found, creating from MySQL.")
                 self.refresh_cache()
             else:
@@ -92,11 +107,15 @@ class DatabaseManager:
             with sqlite3.connect(self.config.local_sqlite_db) as conn:
                 yield conn
         except Exception as e:
-            msg = f"Failed to establish database connection: {str(e)}"
+            msg = f"Failed to establish database connection: {e!s}"
             raise DatabaseError(msg) from e
 
     def record_upload_set_to_db(self, uploaded: str, current_upload_set: dict) -> None:
-        """Record the current upload set to the database."""
+        """Record the current upload set to the database.
+
+        Raises:
+            DatabaseError: If the database operation fails.
+        """
         with self.get_mysql_connection() as conn:
             cursor = conn.cursor()
             for track_name, audio_tracks in current_upload_set.items():
@@ -236,13 +255,13 @@ class DatabaseManager:
     def force_refresh(self) -> None:
         """Force a refresh of the local cache from MySQL."""
         self.logger.debug("Forcing cache refresh from MySQL")
-        if os.path.exists(self.config.local_sqlite_db):
-            os.remove(self.config.local_sqlite_db)
+        if Path.exists(self.config.local_sqlite_db):
+            Path.unlink(self.config.local_sqlite_db)
         self.refresh_cache()
 
     def is_cache_stale(self) -> bool:
         """Check if local cache needs updating by comparing row counts."""
-        if not os.path.exists(self.config.local_sqlite_db):
+        if not Path.exists(self.config.local_sqlite_db):
             self.logger.debug("No cache file exists.")
             return True
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-import os
 import re
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import inquirer
@@ -34,11 +34,11 @@ class FileManager:
         )
 
     def format_filename(self, audio_track: AudioTrack) -> str:
-        """Format the filename for the converted file based on the metadata and any text to be appended."""
+        """Format filename for the converted file based on the metadata and any appended text."""
         track_name = audio_track.track_name
         self.logger.debug("Filename derived from track name: '%s'", track_name)
 
-        # Remove apostrophes and then replace spaces and other non-alphanumeric characters with hyphens
+        # Remove apostrophes and replace spaces and other non-alphanumeric characters with hyphens
         track_name = track_name.replace("'", "")  # Remove apostrophes first
         base_filename = re.sub(r"[^a-zA-Z0-9-]", "-", track_name).strip("-")
         self.logger.debug("Filename with hyphens instead of spaces: %s", base_filename)
@@ -49,7 +49,7 @@ class FileManager:
             self.logger.debug("Filename for instrumental: %s", base_filename)
 
         # Construct output path
-        output_filename = os.path.join(self.config.file_save_path, f"{base_filename}.flac")
+        output_filename = Path(self.config.file_save_path) / f"{base_filename}.flac"
         self.logger.debug("Output filename: %s", output_filename)
 
         if audio_track.append_text:
@@ -57,7 +57,7 @@ class FileManager:
             try:
                 base_filename = self.prompt_for_custom_filename(base_filename)
             except TypeError:
-                self.logger.error("No filename provided. Aborting.", "red")
+                self.logger.error("No filename provided. Aborting.")
                 return ""
 
         return base_filename or ""
@@ -80,29 +80,29 @@ class FileManager:
         return answers["filename"]
 
     def cleanup_files_after_upload(self, audio_track: AudioTrack, output_filename: str) -> None:
-        """
-        Clean up the files after upload.
+        """Clean up the files after upload.
 
         Args:
             audio_track: The AudioTrack object containing the track metadata.
             output_filename: The base filename for the converted files.
         """
         files_to_process = [  # List of files to process based on requested formats
-            os.path.join(self.config.file_save_path, f"{output_filename}{self.config.formats[fmt]}")
+            Path(self.config.file_save_path) / f"{output_filename}{self.config.formats[fmt]}"
             for fmt in self.config.formats_to_convert
         ]
 
         if self.config.keep_files:  # If keeping files, rename to match the song name
             song_name = audio_track.track_title
             for fmt in self.config.formats_to_convert:
-                old_path = os.path.join(
-                    self.config.file_save_path, f"{output_filename}{self.config.formats[fmt]}"
+                old_path = (
+                    Path(self.config.file_save_path)
+                    / f"{output_filename}{self.config.formats[fmt]}"
                 )
-                new_path = os.path.join(
-                    self.config.file_save_path, f"{song_name}{self.config.formats[fmt]}"
+                new_path = (
+                    Path(self.config.file_save_path) / f"{song_name}{self.config.formats[fmt]}"
                 )
-                if os.path.exists(old_path):
-                    os.rename(old_path, new_path)
+                if old_path.exists():
+                    old_path.rename(new_path)
                 else:
                     self.logger.warning("File not found for renaming: %s", old_path)
 
@@ -113,7 +113,7 @@ class FileManager:
 
     def upload_file_to_web_server(self, file_path: str, audio_track: AudioTrack) -> None:
         """Upload a file to my web server."""
-        final_filename = os.path.basename(file_path)
+        final_filename = Path(file_path).name
         try:
             with paramiko.SSHClient() as ssh:
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())

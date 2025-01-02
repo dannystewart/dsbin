@@ -34,10 +34,7 @@ SYNC_DIRS = [
 ]
 
 # Individual files
-SYNC_FILES = [
-    ".env",
-    "src/prism/.env",
-]
+SYNC_FILES = [".env"]
 
 # Files and directories to exclude
 # Will match recursively, so "logs/" will exclude all logs directories

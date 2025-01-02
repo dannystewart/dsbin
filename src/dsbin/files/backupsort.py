@@ -39,25 +39,51 @@ def format_timestamp(file_path: str) -> str:
     return time.strftime("%y%m%d_%H%M", time.localtime(mtime))
 
 
-def clean_filename(filename: str, timestamp_count: int) -> str:
+def split_filename(filename: str) -> tuple[str, str]:
+    """Split a filename into base name and full extension, preserving multi-level extensions.
+
+    Args:
+        filename: The filename to split
+
+    Returns:
+        Tuple of (base_name, extension)
     """
-    Clean a filename by removing unwanted patterns including ".dump", " copy", "(1)", dates in
-    "_YYYY-MM-DD" format, and extra spaces.
+    # Handle special cases like '.hidden' files
+    if filename.startswith(".") and "." not in filename[1:]:
+        return filename, ""
+
+    # Split on the first dot, then join remaining parts
+    parts = filename.split(".")
+    if len(parts) <= 1:
+        return filename, ""
+
+    base = parts[0]
+    extension = ".".join([""] + parts[1:])  # Prepend empty string to add leading dot
+    return base, extension
+
+
+def clean_filename(filename: str, timestamp_count: int) -> str:
+    """Clean a filename by removing unwanted patterns.
+
+    Includes ".dump", " copy", "(1)", dates in "_YYYY-MM-DD" format, and extra spaces.
 
     Args:
         filename: The filename to clean.
         timestamp_count: The number of timestamp suffixes found.
-
-    Returns:
-        The cleaned filename.
     """
-    clean_basename = re.sub(r"\.dump", "", filename)
+    # Split filename to preserve full extension
+    base_name, extension = split_filename(filename)
+
+    # Clean the base name
+    clean_basename = re.sub(r"\.dump", "", base_name)
     clean_basename = re.sub(r"\s*\bcopy\b\s*\d*|\(\d+\)|_\d{4}-\d{2}-\d{2}", "", clean_basename)
 
     if timestamp_count > 1:
         clean_basename = re.sub(r"_\d{6}_\d{4}(?=_\d{6}_\d{4})", "", clean_basename)
 
-    return re.sub(r"\s+\.", ".", clean_basename).strip()
+    # Recombine with original extension
+    clean_basename = re.sub(r"\s+", " ", clean_basename).strip()
+    return f"{clean_basename}{extension}"
 
 
 def get_files_to_process(args: argparse.Namespace) -> list:
@@ -69,7 +95,7 @@ def get_files_to_process(args: argparse.Namespace) -> list:
     return natsorted(expanded_files)
 
 
-def process_file(filename: str) -> tuple | None:
+def process_file(filename: str) -> tuple[str, str] | None:
     """Process a single file and return planned changes if any."""
     if filename.startswith(".") or not os.path.isfile(filename):
         return None
@@ -79,7 +105,7 @@ def process_file(filename: str) -> tuple | None:
     if timestamp_count == 0:
         formatted_timestamp = format_timestamp(filename)
         clean_name = clean_filename(filename, timestamp_count)
-        base_name, extension = os.path.splitext(clean_name)
+        base_name, extension = split_filename(clean_name)
         new_name = f"{base_name}_{formatted_timestamp}{extension}"
         print(color(filename, "blue") + " ➔ " + color(new_name, "green"))
         return filename, new_name
@@ -91,7 +117,7 @@ def process_file(filename: str) -> tuple | None:
 
         print(color(filename, "red") + " was renamed multiple times, trimming extra timestamps.")
         clean_name = clean_filename(filename, timestamp_count)
-        base_name, extension = os.path.splitext(clean_name)
+        base_name, extension = split_filename(clean_name)
         new_name = f"{base_name}{extension}"
         print(color(filename, "blue") + " ➔ " + color(new_name, "green"))
         return filename, new_name

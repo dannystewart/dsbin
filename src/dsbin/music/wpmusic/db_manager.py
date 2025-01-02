@@ -98,7 +98,7 @@ class DatabaseManager:
             return
 
         try:  # Otherwise, use the cache if it exists, or create it if it doesn't
-            if not Path.exists(self.config.local_sqlite_db):
+            if not Path(self.config.local_sqlite_db).exists():
                 self.logger.info("No local cache found, creating from MySQL.")
                 self.refresh_cache()
             else:
@@ -107,7 +107,7 @@ class DatabaseManager:
             with sqlite3.connect(self.config.local_sqlite_db) as conn:
                 yield conn
         except Exception as e:
-            msg = f"Failed to establish database connection: {e!s}"
+            msg = f"Failed to connect to MySQL or SQLite database: {e!s}"
             raise DatabaseError(msg) from e
 
     def check_database(self) -> None:
@@ -282,16 +282,18 @@ class DatabaseManager:
 
     def force_refresh(self) -> None:
         """Force a refresh of the local cache from MySQL."""
-        self.logger.debug("Forcing cache refresh from MySQL")
-        if Path.exists(self.config.local_sqlite_db):
+        self.logger.debug("Forcing cache refresh from MySQL.")
+        if Path(self.config.local_sqlite_db).exists():
             Path.unlink(self.config.local_sqlite_db)
         self.refresh_cache()
 
     def is_cache_stale(self) -> bool:
         """Check if local cache needs updating by comparing row counts."""
-        if not Path.exists(self.config.local_sqlite_db):
-            self.logger.debug("No cache file exists.")
-            return True
+        self.logger.debug("Forcing cache refresh from MySQL.")
+        cache_path = Path(self.config.local_sqlite_db)
+        if cache_path.exists():
+            cache_path.unlink()
+        self.refresh_cache()
 
         try:
             with self.get_mysql_connection() as mysql_conn:

@@ -8,10 +8,11 @@ from json import dumps as json_dumps
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import rich
 from json5 import loads as json5_loads
+from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from dsutil import LocalLogger, configure_traceback
-from dsutil.animation import start_animation, stop_animation
 from dsutil.diff import show_diff
 from dsutil.env import DSEnv
 from dsutil.shell import confirm_action, handle_keyboard_interrupt
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 
 configure_traceback()
 
-logger = LocalLogger.setup_logger(__name__)
+logger = LocalLogger().get_logger(level="info", message_only=True)
 
 # Root directories
 PROD_ROOT = Path("/home/danny/docker/prism")
@@ -225,7 +226,7 @@ def sync_workspace_files(source_root: Path) -> None:
                 target_file.write_text(json_dumps(new_data, indent=4) + "\n")
                 logger.info("Workspace file updated in %s", source_root)
         else:
-            logger.info("No changes needed for workspace files in %s", source_root)
+            logger.info("✔ Workspaces in sync")
 
     except Exception as e:
         logger.error("Unexpected error processing workspace files: %s", e)
@@ -305,7 +306,7 @@ def sync_file(source: Path, target: Path) -> bool:
 
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
-def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv) -> list[str]:
+def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv, progress: Progress) -> list[str]:
     """Sync a directory, returning list of changed files."""
     changed_files = []
 
@@ -313,40 +314,42 @@ def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv) -> list[str]:
     source_cache = DirectoryCache(source_dir.parent, env)
     target_cache = DirectoryCache(target_dir.parent, env)
 
-    animation_thread = start_animation(f"Scanning {source_dir.name}...", "blue")
+    # Add tasks for this directory
+    scan_task = progress.add_task(f"Scanning {source_dir.name}...", total=None)
 
-    try:
-        # Try to load existing caches
-        source_cache_valid = source_cache.load()
-        target_cache_valid = target_cache.load()
+    # Try to load existing caches
+    source_cache_valid = source_cache.load()
+    target_cache_valid = target_cache.load()
 
-        # Scan directories if cache is invalid
-        if not source_cache_valid:
-            source_cache.scan_directory(source_dir)
-            source_cache.save()
-        if not target_cache_valid:
-            target_cache.scan_directory(target_dir)
-            target_cache.save()
+    # Scan directories if cache is invalid
+    if not source_cache_valid:
+        source_cache.scan_directory(source_dir)
+        source_cache.save()
+    if not target_cache_valid:
+        target_cache.scan_directory(target_dir)
+        target_cache.save()
 
-        stop_animation(animation_thread)
-        animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
+    progress.remove_task(scan_task)
 
-        # Create target directory if it doesn't exist
-        target_dir.mkdir(parents=True, exist_ok=True)
+    # Create target directory if it doesn't exist
+    target_dir.mkdir(parents=True, exist_ok=True)
 
-        # Process changed files
-        for source_path, target_path in get_changed_files(source_cache, target_cache):
-            stop_animation(animation_thread)
-            print()  # Clear the animation line
+    # Get all files that need syncing first
+    files_to_sync = list(get_changed_files(source_cache, target_cache))
 
-            if sync_file(source_path, target_path):
-                changed_files.append(str(source_path.relative_to(source_dir)))
+    if not files_to_sync:
+        return changed_files
 
-            animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
+    # Add a task for syncing files
+    sync_task = progress.add_task(f"Syncing {source_dir.name}...", total=len(files_to_sync))
 
-    finally:
-        stop_animation(animation_thread)
+    # Process changed files
+    for source_path, target_path in files_to_sync:
+        if sync_file(source_path, target_path):
+            changed_files.append(str(source_path.relative_to(source_dir)))
+        progress.advance(sync_task)
 
+    progress.remove_task(sync_task)
     return changed_files
 
 
@@ -355,44 +358,61 @@ def sync_instances(source_root: Path, target_root: Path) -> None:
     """Sync specified directories and files between instances."""
     # Initialize environment
     env = DSEnv()
-
     changes_made = []
 
-    # Sync workspace files first
-    sync_workspace_files(source_root)
+    # Create a console that will be shared between Progress and print statements
+    console = rich.console.Console()
 
-    # Sync directories
-    for dir_name in SYNC_DIRS:
-        source_dir = source_root / dir_name
-        target_dir = target_root / dir_name
+    with Progress(
+        SpinnerColumn(), TextColumn("[blue]{task.description}"), console=console, transient=True
+    ) as progress:
+        # First task for workspace files
+        workspace_task = progress.add_task("Syncing workspace files...")
 
-        if not source_dir.exists():
-            logger.warning("Source directory does not exist: %s", source_dir)
-            continue
+        # Temporarily hide the progress display
+        progress.stop()
+        sync_workspace_files(source_root)
+        progress.start()
 
-        changed = sync_directory(source_dir, target_dir, env)
-        changes_made.extend(f"{dir_name}/{file}" for file in changed)
+        progress.remove_task(workspace_task)
 
-    # Sync individual files
-    for file_path in SYNC_FILES:
-        source_file = source_root / file_path
-        target_file = target_root / file_path
+        # Sync directories
+        for dir_name in SYNC_DIRS:
+            source_dir = source_root / dir_name
+            target_dir = target_root / dir_name
 
-        if sync_file(source_file, target_file):
-            changes_made.append(file_path)
+            if not source_dir.exists():
+                logger.warning("Source directory does not exist: %s", source_dir)
+                continue
+
+            changed = sync_directory(source_dir, target_dir, env, progress)
+            changes_made.extend(f"{dir_name}/{file}" for file in changed)
+
+        # Add a task for individual files
+        file_task = progress.add_task("Syncing individual files...", total=len(SYNC_FILES))
+
+        # Sync individual files
+        for file_path in SYNC_FILES:
+            progress.update(file_task, description=f"Syncing {file_path}...")
+            source_file = source_root / file_path
+            target_file = target_root / file_path
+
+            if sync_file(source_file, target_file):
+                changes_made.append(file_path)
+            progress.advance(file_task)
 
     if changes_made:
         logger.info("Synced files:\n  %s", "\n  ".join(changes_made))
     else:
-        logger.info("No changes needed.")
+        logger.info("✔ Files in sync")
 
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
 def main() -> None:
     """Sync files between prod and dev instances."""
-    if confirm_action("Sync from dev to prod?", prompt_color="yellow"):
+    if confirm_action("Perform sync from dev to prod?", prompt_color="blue"):
         sync_instances(DEV_ROOT, PROD_ROOT)
-    elif confirm_action("Sync from prod to dev?", prompt_color="green"):
+    elif confirm_action("Perform sync from prod to dev?", prompt_color="yellow"):
         sync_instances(PROD_ROOT, DEV_ROOT)
 
 

@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 from .prism_config import Action, PrismConfig
-from .syncer import main as sync_instances
+from .prism_sync import main as sync_instances
 
 from dsutil import LocalLogger, configure_traceback
 

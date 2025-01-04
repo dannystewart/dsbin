@@ -255,7 +255,7 @@ def get_changed_files(
 
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
-def sync_file(source: Path, target: Path) -> bool:
+def sync_file(source: Path, target: Path, progress: Progress | None = None) -> bool:
     """Sync a single file, showing diff if text file."""
     if not source.exists():
         logger.warning("Source file does not exist: %s", source)
@@ -263,19 +263,47 @@ def sync_file(source: Path, target: Path) -> bool:
 
     # New file
     if not target.exists():
-        logger.warning("New file: %s", source.name)
-        logger.info("  Source: %s", source)
-        logger.info("  Size: %s bytes", source.stat().st_size)
-        if confirm_action("Create new file?", prompt_color="yellow"):
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copy2(source, target)
-            return True
-        return False
+        return _handle_new_file(source, target, progress)
 
     # Existing file
     if filecmp.cmp(source, target, shallow=False):
         return False
 
+    _handle_existing_file(source, target)
+
+    if progress:
+        progress.stop()
+    result = confirm_action(f"Update {target.name}?", prompt_color="yellow")
+    if progress:
+        progress.start()
+
+    if result:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        return True
+
+    return False
+
+
+def _handle_new_file(source: Path, target: Path, progress: Progress | None = None) -> bool:
+    logger.warning("New file: %s", source.name)
+    logger.info("  Source: %s", source)
+    logger.info("  Size: %s bytes", source.stat().st_size)
+
+    if progress:
+        progress.stop()
+    result = confirm_action("Create new file?", prompt_color="yellow")
+    if progress:
+        progress.start()
+
+    if result:
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        return True
+    return False
+
+
+def _handle_existing_file(source: Path, target: Path):
     try:  # Try to treat as text file
         current = target.read_text()
         new = source.read_text()
@@ -296,13 +324,6 @@ def sync_file(source: Path, target: Path) -> bool:
         logger.info("  Source: %s", source)
         logger.info("  Target: %s", target)
         logger.info("  Size: %s -> %s bytes", target.stat().st_size, source.stat().st_size)
-
-    if confirm_action(f"Update {target.name}?", prompt_color="yellow"):
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
-        return True
-
-    return False
 
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)

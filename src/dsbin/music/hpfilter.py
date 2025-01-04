@@ -1,5 +1,4 @@
-"""
-Apply a highpass filter to cut bass frequencies for HomePod playback.
+"""Apply a highpass filter to cut bass frequencies for HomePod playback.
 
 This script is designed to make it easier for me to apply a highpass filter to audio files
 so I can play them on my HomePods without worrying about the bass being too loud.
@@ -26,10 +25,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import glob
-import os
 import subprocess
 import warnings
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
@@ -57,13 +55,15 @@ DEFAULT_CUTOFF_FREQ = 100
 SUFFIX = "HomePod"
 
 # Evanescence cover art image (used with --ev argument)
-EV_COVER_ART = os.path.expanduser(
-    "~/Library/CloudStorage/OneDrive-Personal/Pictures/Album Artwork/Evanescence/Evanescence Remixes HomePod.png"
+EV_COVER_ART = (
+    Path.home()
+    / "Library/CloudStorage/OneDrive-Personal/Pictures/Album Artwork/Evanescence/Evanescence Remixes HomePod.png"
 )
 
 # Evanescence output folder (used with --ev argument)
-EV_OUTPUT_FOLDER = os.path.expanduser(
-    "~/Library/CloudStorage/OneDrive-Personal/Music/Danny Stewart/Evanescence Remixes/HomePod"
+EV_OUTPUT_FOLDER = (
+    Path.home()
+    / "Library/CloudStorage/OneDrive-Personal/Music/Danny Stewart/Evanescence Remixes/HomePod"
 )
 
 
@@ -72,9 +72,15 @@ def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Apply a highpass filter to reduce bass for HomePod."
     )
-    parser.add_argument("input", nargs="+", help="Input audio file(s) pattern, e.g., *.m4a")
     parser.add_argument(
-        "--cover", help="Path to cover art image to apply to files", metavar="COVER_IMAGE"
+        "input",
+        nargs="+",
+        help="Input audio file(s) pattern, e.g., *.m4a",
+    )
+    parser.add_argument(
+        "--cover",
+        help="Path to cover art image to apply to files",
+        metavar="COVER_IMAGE",
     )
     parser.add_argument(
         "--cutoff",
@@ -89,18 +95,25 @@ def parse_arguments() -> argparse.Namespace:
         metavar="OUTPUT_FOLDER",
     )
     parser.add_argument(
-        "--ev", action="store_true", help="Use preset Evanescence cover art and output folder"
+        "--ev",
+        action="store_true",
+        help="Use preset Evanescence cover art and output folder",
     )
-    parser.add_argument("--ev-cover", action="store_true", help="Use preset Evanescence cover art")
     parser.add_argument(
-        "--ev-output", action="store_true", help="Use preset Evanescence output folder"
+        "--ev-cover",
+        action="store_true",
+        help="Use preset Evanescence cover art",
+    )
+    parser.add_argument(
+        "--ev-output",
+        action="store_true",
+        help="Use preset Evanescence output folder",
     )
     return parser.parse_args()
 
 
 def run_with_spinner(text: str, func: Callable, *args: list, **kwargs: dict) -> Callable:
-    """
-    Run a function with a spinner animation to indicate progress.
+    """Run a function with a spinner animation to indicate progress.
 
     Args:
         text: The text to display before the spinner.
@@ -110,16 +123,13 @@ def run_with_spinner(text: str, func: Callable, *args: list, **kwargs: dict) -> 
 
     Returns:
         The result of the function.
-
-    Raises:
-        Exception: If the function raises an exception.
     """
     spinner = Halo(text=text, spinner="dots")
     spinner.start()
 
     try:
         result = func(*args, **kwargs)
-        spinner.succeed(color(f"Saved {os.path.basename(result)}", "green"))
+        spinner.succeed(color(f"Saved {Path(result).name}", "green"))
         return result
     except Exception as e:
         spinner.fail(color(f"Error: {e}", "red"))
@@ -128,9 +138,8 @@ def run_with_spinner(text: str, func: Callable, *args: list, **kwargs: dict) -> 
         spinner.stop()
 
 
-def read_audio_file(filepath: str) -> tuple[np.ndarray, int]:
-    """
-    Read an audio file from the given filepath and return the audio data and sample rate.
+def read_audio_file(filepath: Path | str) -> tuple[np.ndarray, int]:
+    """Read an audio file from the given filepath and return the audio data and sample rate.
 
     Args:
         filepath: The path to the audio file.
@@ -141,17 +150,18 @@ def read_audio_file(filepath: str) -> tuple[np.ndarray, int]:
     Raises:
         ValueError: If the file extension is not supported.
     """
-    if os.path.isdir(filepath):
+    filepath = Path(filepath)
+    if filepath.is_dir():
         msg = f"The path '{filepath}' is a directory, not a file."
         raise ValueError(msg)
 
-    extension = os.path.splitext(filepath)[1].lower()
+    extension = filepath.suffix.lower()
 
-    if extension in [".wav", ".flac"]:
-        data, sample_rate = sf.read(filepath)
+    if extension in {".wav", ".flac"}:
+        data, sample_rate = sf.read(str(filepath))
         return data, sample_rate
-    if extension in [".m4a"]:
-        audio = AudioSegment.from_file(filepath, format="m4a")
+    if extension == ".m4a":
+        audio = AudioSegment.from_file(str(filepath), format="m4a")
         data = np.array(audio.get_array_of_samples())
         if audio.channels == 2:
             data = data.reshape((-1, 2))
@@ -162,16 +172,16 @@ def read_audio_file(filepath: str) -> tuple[np.ndarray, int]:
 
 
 def write_audio_file(
-    filepath: str,
+    filepath: Path | str,
     data: np.ndarray,
     sample_rate: int,
     channels: int,
-    original_file: str,
-    cover_art: str,
+    original_file: Path | str,
+    cover_art: Path | str | None,
 ) -> None:
-    """
-    Write audio data to a file with the specified filepath, sample rate, and number of channels. The
-    original file is used to copy metadata to the new file.
+    """Write audio data to a file with the specified filepath, sample rate, and number of channels.
+
+    The original file is used to copy metadata to the new file.
 
     Args:
         filepath: The path to the output file.
@@ -184,9 +194,10 @@ def write_audio_file(
     Raises:
         ValueError: If the file extension is not supported.
     """
-    extension = os.path.splitext(filepath)[1].lower()
-    if extension in [".wav", ".flac"]:
-        sf.write(filepath, data, sample_rate)
+    filepath = Path(filepath)
+    extension = filepath.suffix.lower()
+    if extension in {".wav", ".flac"}:
+        sf.write(str(filepath), data, sample_rate)
     elif extension == ".m4a":
         if data.dtype == np.float32:
             data = (data * 32767).astype(np.int16)
@@ -194,7 +205,7 @@ def write_audio_file(
         audio = AudioSegment(
             data.tobytes(), frame_rate=sample_rate, sample_width=2, channels=channels
         )
-        audio.export(filepath, format="ipod", codec="alac")
+        audio.export(str(filepath), format="ipod", codec="alac")
     else:
         msg = f"Unsupported file format: {extension}"
         raise ValueError(msg)
@@ -202,25 +213,25 @@ def write_audio_file(
     copy_metadata(original_file, filepath, cover_art)
 
 
-def copy_metadata(src: str, dst: str, cover_art: str) -> None:
-    """
-    Copy the metadata from the source file to the destination file with cover art.
+def copy_metadata(src: Path | str, dst: Path | str, cover_art: Path | str | None) -> None:
+    """Copy the metadata from the source file to the destination file with cover art.
 
     Args:
         src: The path to the source file.
         dst: The path to the destination file.
         cover_art: The path to the cover art image.
     """
-    src_extension = os.path.splitext(src)[1].lower()
+    src, dst = Path(src), Path(dst)
+    src_extension = src.suffix.lower()
     src_meta: FLAC | MP4
     dst_meta: FLAC | MP4
 
     if src_extension == ".flac":
-        src_meta = FLAC(src)
-        dst_meta = FLAC(dst)
+        src_meta = FLAC(str(src))
+        dst_meta = FLAC(str(dst))
 
         if cover_art:
-            with open(cover_art, "rb") as img_file:
+            with Path(cover_art).open("rb") as img_file:
                 dst_meta.clear_pictures()
                 picture = Picture()
                 picture.data = img_file.read()
@@ -236,12 +247,12 @@ def copy_metadata(src: str, dst: str, cover_art: str) -> None:
 
         dst_meta.save()
 
-    elif src_extension in [".m4a"]:
-        src_meta = MP4(src)
-        dst_meta = MP4(dst)
+    elif src_extension == ".m4a":
+        src_meta = MP4(str(src))
+        dst_meta = MP4(str(dst))
 
         if cover_art:
-            with open(cover_art, "rb") as img_file:
+            with Path(cover_art).open("rb") as img_file:
                 dst_meta["covr"] = [MP4Cover(img_file.read(), MP4Cover.FORMAT_JPEG)]
 
         elif "covr" in src_meta:
@@ -256,10 +267,12 @@ def copy_metadata(src: str, dst: str, cover_art: str) -> None:
 
 
 def process_m4a_with_ffmpeg(
-    input_filepath: str, output_directory: str, cutoff_freq: int, cover_art: str
+    input_filepath: Path | str,
+    output_directory: Path | str,
+    cutoff_freq: int,
+    cover_art: Path | str | None,
 ) -> Callable:
-    """
-    Process an M4A audio file using ffmpeg.
+    """Process an M4A audio file using ffmpeg.
 
     Args:
         input_filepath: The path to the input file.
@@ -269,19 +282,17 @@ def process_m4a_with_ffmpeg(
 
     Returns:
         The path to the output file.
-
-    Raises:
-        CalledProcessError: If ffmpeg returns a non-zero exit code.
     """
-    filename = os.path.basename(input_filepath)
-    output_filepath = os.path.join(output_directory, filename)
-    os.makedirs(output_directory, exist_ok=True)
+    input_filepath = Path(input_filepath)
+    output_directory = Path(output_directory)
+    output_filepath = output_directory / input_filepath.name
+    output_directory.mkdir(parents=True, exist_ok=True)
 
     command = [
         "ffmpeg",
         "-y",
         "-i",
-        input_filepath,
+        str(input_filepath),
         "-map",
         "0:a",
         "-af",
@@ -292,23 +303,20 @@ def process_m4a_with_ffmpeg(
         "0:v?",
         "-c:v",
         "copy",
-        output_filepath,
+        str(output_filepath),
     ]
 
     def run_command() -> str:
         subprocess.run(command, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=True)
-        output_filepath_updated = os.path.join(output_directory, os.path.basename(input_filepath))
+        output_filepath_updated = output_directory / input_filepath.name
         copy_metadata(input_filepath, output_filepath_updated, cover_art)
-        return output_filepath_updated
+        return str(output_filepath_updated)
 
-    return run_with_spinner(
-        color(f"Processing {os.path.basename(input_filepath)}...", "cyan"), run_command
-    )
+    return run_with_spinner(color(f"Processing {input_filepath.name}...", "cyan"), run_command)
 
 
 def highpass_filter(data: np.ndarray, cutoff_freq: int, sample_rate: int) -> np.ndarray:
-    """
-    Apply a highpass filter to the input data.
+    """Apply a highpass filter to the input data.
 
     Args:
         data: The audio data.
@@ -323,13 +331,16 @@ def highpass_filter(data: np.ndarray, cutoff_freq: int, sample_rate: int) -> np.
 
 
 def process_file(
-    input_filepath: str, output_directory: str, cutoff_freq: int, cover_art: str
+    input_filepath: Path | str,
+    output_directory: Path | str,
+    cutoff_freq: int,
+    cover_art: Path | str | None,
 ) -> Callable:
-    """
-    Process an input file by applying a cutoff frequency to filter the audio data. If the file
-    extension is '.m4a', use the process_m4a_with_ffmpeg function to process the file and save it to
-    the output directory. Then, copy the metadata from the input file to the output file and add a
-    cover art if provided.
+    """Process an input file by applying a cutoff frequency to filter the audio data.
+
+    If the file extension is '.m4a', use the process_m4a_with_ffmpeg function to process the file
+    and save it to the output directory. Then, copy the metadata from the input file to the output
+    file and add a cover art if provided.
 
     Args:
         input_filepath: The path to the input file.
@@ -340,7 +351,9 @@ def process_file(
     Returns:
         The path to the output file.
     """
-    extension = os.path.splitext(input_filepath)[1].lower()
+    input_filepath = Path(input_filepath)
+    output_directory = Path(output_directory)
+    extension = input_filepath.suffix.lower()
 
     if extension == ".m4a":
         return process_m4a_with_ffmpeg(input_filepath, output_directory, cutoff_freq, cover_art)
@@ -354,11 +367,10 @@ def process_file(
         else:
             filtered_data = np.apply_along_axis(highpass_filter, 0, data, cutoff_freq, sample_rate)
 
-        os.makedirs(output_directory, exist_ok=True)
-        filename = os.path.basename(input_filepath)
-        basename, ext = os.path.splitext(filename)
-        filename_with_suffix = f"{basename} {SUFFIX}{ext}"
-        output_filepath = os.path.join(output_directory, filename_with_suffix)
+        output_directory.mkdir(parents=True, exist_ok=True)
+        basename = input_filepath.stem
+        filename_with_suffix = f"{basename} {SUFFIX}{extension}"
+        output_filepath = output_directory / filename_with_suffix
 
         write_audio_file(
             output_filepath,
@@ -368,17 +380,20 @@ def process_file(
             input_filepath,
             cover_art,
         )
-        return output_filepath
+        return str(output_filepath)
 
     return run_with_spinner(color(f"Processing {input_filepath}...", "cyan"), process)
 
 
 def process_all_files(
-    input_patterns: list, cutoff_freq: int, cover_art: str, output_folder: str | None = None
+    input_patterns: list,
+    cutoff_freq: int,
+    cover_art: Path | str | None,
+    output_folder: Path | str | None = None,
 ) -> None:
-    """
-    Process all files that match the given input patterns. Each file will be processed using the
-    `process_file` function with the specified cutoff frequency and cover_art.
+    """Process all files that match the given input patterns.
+
+    Each will be processed with the specified cutoff frequency and cover art.
 
     Args:
         input_patterns: A list of input file patterns.
@@ -387,39 +402,36 @@ def process_all_files(
         output_folder: The path to the output folder.
     """
     for input_pattern in input_patterns:
-        if os.path.isdir(input_pattern) and not glob.has_magic(input_pattern):
-            pattern = os.path.normpath(
-                input_pattern
-            )  # Remove trailing slash, then add /* for suggestion
-            suggestion = f"{pattern}/*"
+        input_path = Path(input_pattern)
+        if input_path.is_dir() and "*" not in str(input_pattern):
+            suggestion = str(input_path / "*")
             print_colored(
                 f"Warning: '{input_pattern}' is a directory. To process all files in this directory, use '{suggestion}' instead.",
                 "yellow",
             )
             continue
 
-        files = sorted(glob.glob(input_pattern))
+        files = sorted(input_path.parent.glob(input_path.name))
 
         if not files:
             print(f"No files match the pattern {input_pattern}.")
             continue
 
-        if output_folder:
-            output_directory = output_folder
-        else:
-            output_directory = os.path.join(os.path.dirname(files[0]), f"{SUFFIX}")
-        os.makedirs(output_directory, exist_ok=True)
+        first_file = Path(files[0])
+        output_directory = Path(output_folder) if output_folder else first_file.parent / SUFFIX
+        output_directory.mkdir(parents=True, exist_ok=True)
 
         for filepath in files:
-            if os.path.isdir(filepath):
+            filepath = Path(filepath)
+            if filepath.is_dir():
                 print(f"Skipping directory: {filepath}")
                 continue
             try:
                 process_file(filepath, output_directory, cutoff_freq, cover_art)
             except ValueError as e:
-                print(f"Error processing file {filepath}: {str(e)}")
-                print(f"File exists: {os.path.exists(filepath)}")
-                print(f"File size: {os.path.getsize(filepath)} bytes")
+                print(f"Error processing file {filepath}: {e!s}")
+                print(f"File exists: {filepath.exists()}")
+                print(f"File size: {filepath.stat().st_size} bytes")
                 continue
 
 

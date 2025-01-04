@@ -284,7 +284,7 @@ class DatabaseManager:
         """Force a refresh of the local cache from MySQL."""
         self.logger.debug("Forcing cache refresh from MySQL.")
         if Path(self.config.local_sqlite_db).exists():
-            Path.unlink(self.config.local_sqlite_db)
+            Path(self.config.local_sqlite_db).unlink()
         self.refresh_cache()
 
     def is_cache_stale(self) -> bool:

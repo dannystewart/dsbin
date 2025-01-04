@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Generate large files to fill the disk and free up purgeable space.
+"""Generate large files to fill the disk and free up purgeable space.
 
 This script will create dummy files in a specified location until the free space available
 on the drive is below a specified threshold, then delete the created files and check the
@@ -13,11 +12,11 @@ from __future__ import annotations
 
 import os
 import shutil
-
-from termcolor import colored
+from pathlib import Path
 
 from dsutil import configure_traceback
 from dsutil.progress import halo_progress
+from dsutil.text import color as colored
 
 configure_traceback()
 
@@ -67,7 +66,7 @@ def main():
                 end_message=f"File created (free space: {format_space(free_space_before)})",
             ) as spinner:
                 # Create a large file with urandom for speed and non-redundancy
-                with open(filename, "wb") as f:
+                with Path(filename).open("wb") as f:
                     f.write(os.urandom(FILE_SIZE))
                 os.sync()  # Flush the filesystem buffers
 
@@ -87,8 +86,9 @@ def main():
 
         # Now delete all temporary files
         for filepath in files_to_remove:
-            if os.path.exists(filepath):
-                os.remove(filepath)
+            path = Path(filepath)
+            if path.exists():
+                path.unlink()
         print(colored("All temporary files removed.", "green"))
 
         # Check the final amount of free space
@@ -103,8 +103,9 @@ def main():
 
     finally:  # Always clean up, even if something goes wrong
         for filepath in files_to_remove:
-            if os.path.exists(filepath):
-                os.remove(filepath)
+            path = Path(filepath)
+            if path.exists():
+                path.unlink()
         print(colored("Temporary files cleaned up.", "red"))
 
 

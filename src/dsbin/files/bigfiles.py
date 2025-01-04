@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Finds the top N file types in a directory by cumulative size.
+"""Finds the top N file types in a directory by cumulative size.
 
 This script analyzes a directory recursively to find the top N file types by cumulative size.
 """
@@ -9,19 +8,18 @@ This script analyzes a directory recursively to find the top N file types by cum
 from __future__ import annotations
 
 import argparse
-import os
+import operator
 from collections import defaultdict
-
-from termcolor import colored
+from pathlib import Path
 
 from dsutil import configure_traceback
+from dsutil.text import color as colored
 
 configure_traceback()
 
 
 def bytes_to_readable(size_in_bytes: float) -> str:
-    """
-    Convert a size in bytes to a human-readable format.
+    """Convert a size in bytes to a human-readable format.
 
     Args:
         size_in_bytes: The size in bytes to convert.
@@ -39,8 +37,7 @@ def bytes_to_readable(size_in_bytes: float) -> str:
 def get_top_file_types(
     directory: str, top_n: int = 10, exclude: list[str] | None = None, exclude_no_ext: bool = False
 ) -> list[tuple[str, int]]:
-    """
-    Analyze a directory recursively to find the top N file types by cumulative size.
+    """Analyze a directory recursively to find the top N file types by cumulative size.
 
     Args:
         directory: The directory to analyze.
@@ -60,20 +57,19 @@ def get_top_file_types(
     file_sizes: defaultdict = defaultdict(int)
 
     # Traverse the directory recursively and update file_sizes
-    for root, _, files in os.walk(directory):
-        for file in files:
-            file_path = os.path.join(root, file)
-            file_extension = os.path.splitext(file_path)[1]
+    for file_path in Path(directory).rglob("*"):
+        if file_path.is_file():
+            file_extension = file_path.suffix
             if not file_extension:
                 if exclude_no_ext:
                     continue  # Skip files with no extension if excluded
                 file_extension = "(no extension)"
             if file_extension in exclude:
                 continue  # Skip excluded file types
-            file_size = os.path.getsize(file_path)
+            file_size = file_path.stat().st_size
             file_sizes[file_extension] += file_size
 
-    return sorted(file_sizes.items(), key=lambda item: item[1], reverse=True)[:top_n]
+    return sorted(file_sizes.items(), key=operator.itemgetter(1), reverse=True)[:top_n]
 
 
 def parse_args() -> argparse.Namespace:

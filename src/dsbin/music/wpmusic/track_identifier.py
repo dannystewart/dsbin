@@ -1,15 +1,15 @@
 from __future__ import annotations
 
-import os
 import re
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import inquirer
-from termcolor import colored
 
 from .wp_config import Config, spinner
 
 from dsutil import LocalLogger
+from dsutil.text import color as colored
 
 if TYPE_CHECKING:
     from .audio_track import AudioTrack
@@ -27,7 +27,11 @@ class TrackIdentifier:
         )
 
     def identify_track(self, audio_track: AudioTrack) -> dict:
-        """Fetch track metadata based on the input file."""
+        """Fetch track metadata based on the input file.
+
+        Raises:
+            TypeError: If no track is selected from the fallback menu.
+        """
         spinner.start(colored("Fetching track metadata...", "cyan"))
 
         try:
@@ -41,13 +45,17 @@ class TrackIdentifier:
                 raise TypeError(msg) from e
 
     def _identify_by_name(self, audio_track: AudioTrack) -> dict:
-        """Identify the track by matching its upload filename against URLs in metadata."""
+        """Identify the track by matching its upload filename against URLs in metadata.
+
+        Raises:
+            ValueError: If no track is found in the metadata.
+        """
         self.logger.debug("Matching filename '%s' to track metadata...", audio_track.filename)
 
         # Remove "No Vocals" and strip the filename for comparison
-        formatted_file_name = os.path.splitext(
-            os.path.basename(audio_track.filename.replace(" No Vocals", "").replace("'", ""))
-        )[0]
+        formatted_file_name = Path(
+            audio_track.filename.replace(" No Vocals", "").replace("'", "")
+        ).stem
         formatted_file_name = re.sub(
             r" [0-9]+\.[0-9]+\.[0-9]+([._][0-9]+)?[a-z]*", "", formatted_file_name
         )
@@ -59,7 +67,7 @@ class TrackIdentifier:
                 re.sub(
                     r"[^a-zA-Z0-9-]",
                     "-",
-                    os.path.splitext(os.path.basename(track["file_url"].replace("'", "")))[0],
+                    Path(track["file_url"].replace("'", "")).stem,
                 )
                 .strip("-")
                 .lower()
@@ -77,7 +85,11 @@ class TrackIdentifier:
         raise ValueError(msg)
 
     def _identify_by_fallback_menu(self, audio_track: AudioTrack) -> dict:
-        """Given track data, display a menu to select a track and retrieve its metadata."""
+        """Given track data, display a menu to select a track and retrieve its metadata.
+
+        Raises:
+            ValueError: If no track is selected from the fallback menu.
+        """
         self.logger.debug("No track found for filename '%s'.", audio_track.filename)
 
         selected_track_name = self._get_fallback_selection(audio_track.tracks)
@@ -97,7 +109,11 @@ class TrackIdentifier:
         raise ValueError(msg)
 
     def _get_fallback_selection(self, tracks: list[dict[str, Any]]) -> str:
-        """Generate a fallback menu for selecting a track."""
+        """Generate a fallback menu for selecting a track.
+
+        Raises:
+            TypeError: If no track is selected from the fallback menu.
+        """
         choices = [
             *sorted([f"{track['track_name']}" for track in tracks]),
             "(skip adding metadata)",
@@ -120,7 +136,11 @@ class TrackIdentifier:
         return answers["track"]
 
     def _handle_skipped_metadata(self, audio_track: AudioTrack) -> dict:
-        """Handle the case where the user skips adding metadata."""
+        """Handle the case where the user skips adding metadata.
+
+        Raises:
+            TypeError: If no filename is confirmed.
+        """
         filename_question = [
             inquirer.Text(
                 "confirmed_filename",

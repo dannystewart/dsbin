@@ -4,22 +4,19 @@
 
 from __future__ import annotations
 
-import os
 import shutil
 from pathlib import Path
-
-from termcolor import colored
 
 from dsutil import configure_traceback
 from dsutil.files import sha256_checksum
 from dsutil.shell import confirm_action
+from dsutil.text import color as colored
 
 configure_traceback()
 
 
 def merge_folders(first_folder: str, second_folder: str, dry_run: bool = False) -> None:
-    """
-    Merges two folders, accounting for duplicates and name conflicts.
+    """Merges two folders, accounting for duplicates and name conflicts.
 
     Args:
         first_folder: The path to the first folder.
@@ -62,7 +59,7 @@ def main() -> None:
     first_folder = input("Enter the path to the first folder: ")
     second_folder = input("Enter the path to the second folder: ")
 
-    if not os.path.isdir(first_folder) or not os.path.isdir(second_folder):
+    if not Path(first_folder).is_dir() or not Path(second_folder).is_dir():
         print("One of the provided paths is not a directory!")
     else:
         print("Performing a dry run...")

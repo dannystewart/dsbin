@@ -5,14 +5,13 @@
 from __future__ import annotations
 
 import argparse
-import os
 import sys
-
-from termcolor import colored
+from pathlib import Path
 
 from dsutil import configure_traceback
 from dsutil.files import list_files
 from dsutil.media import ffmpeg_audio
+from dsutil.text import color as colored
 
 configure_traceback()
 
@@ -25,7 +24,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "path",
         nargs="?",
-        default=os.getcwd(),
+        default=str(Path.cwd()),
         help="File or directory of files to convert",
     )
     return parser.parse_args()
@@ -36,13 +35,14 @@ def main():
     args = parse_arguments()
     path = args.path
 
-    if os.path.isdir(path):
+    path = Path(path)
+    if path.is_dir():
         files_to_convert = list_files(
-            directory=path,
+            directory=str(path),
             extensions=allowed_extensions,
         )
-    elif os.path.isfile(path) and os.path.splitext(path)[1].lower() in allowed_extensions:
-        files_to_convert = [path]
+    elif path.is_file() and path.suffix.lower() in allowed_extensions:
+        files_to_convert = [str(path)]
     else:
         print(colored("Provided path is neither a supported file nor a directory.", "red"))
         sys.exit(1)

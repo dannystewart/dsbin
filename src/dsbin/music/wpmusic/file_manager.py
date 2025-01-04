@@ -8,13 +8,13 @@ import inquirer
 import paramiko  # type: ignore
 import pyperclip
 from scp import SCPClient
-from termcolor import colored
 
 from .wp_config import Config, spinner
 
 from dsutil import LocalLogger
 from dsutil.files import delete_files
 from dsutil.shell import handle_keyboard_interrupt
+from dsutil.text import color as colored
 
 if TYPE_CHECKING:
     from .audio_track import AudioTrack

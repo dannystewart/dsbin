@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-A script for sharing music bounces in a variety of formats.
+"""A script for sharing music bounces in a variety of formats.
 
 This script is designed to convert music bounces to WAV, FLAC, and MP3 files for easy
 sharing with people who need or prefer different formats or for uploading to different
@@ -11,23 +10,23 @@ platforms. Also includes bit depth conversion for 24-bit files.
 from __future__ import annotations
 
 import argparse
-import os
 import re
 import subprocess
 import sys
+from pathlib import Path
 
 import inquirer
-from termcolor import colored
 
 from dsutil import animation, configure_traceback
 from dsutil.media import find_bit_depth
 from dsutil.progress import halo_progress
 from dsutil.shell import handle_keyboard_interrupt
+from dsutil.text import color as colored
 
 configure_traceback()
 
-HOME_DIR = os.path.expanduser("~")
-OUTPUT_PATH = os.path.join(HOME_DIR, "Downloads")
+HOME_DIR = Path.home()
+OUTPUT_PATH = HOME_DIR / "Downloads"
 
 
 def show_format_options() -> dict[str, list[str]] | None:
@@ -50,9 +49,9 @@ def show_format_options() -> dict[str, list[str]] | None:
 
 
 def clean_filename(input_file: str, naming_format: str) -> str:
-    """
-    Generate sanitized and formatted filenames for the output files. Version numbers are removed, as
-    are parentheticals starting with "No" (e.g. No Vocals, No Drums).
+    """Generate sanitized and formatted filenames for the output files.
+
+    Removes version numbers and parentheticals starting with "No" (e.g. No Vocals, No Drums).
 
     Notes:
     - The WAV and FLAC files are formatted with hyphens instead of spaces.
@@ -62,7 +61,7 @@ def clean_filename(input_file: str, naming_format: str) -> str:
         input_file: The path to the input file.
         naming_format: The naming format to use (e.g. "Local", "For upload").
     """
-    filename_no_ext = os.path.splitext(os.path.basename(input_file))[0]
+    filename_no_ext = Path(input_file).stem
     clean_name_pattern = re.compile(
         r"( [0-9]+([._][0-9]+){2,3}([._][0-9]+)?[a-z]{0,2}$)|(\s*\(No [^)]*\))"
     )
@@ -77,8 +76,7 @@ def clean_filename(input_file: str, naming_format: str) -> str:
 def convert_file(
     input_file: str, output_path: str, conversion_option: dict, bit_depth: int
 ) -> tuple[bool, str]:
-    """
-    Perform an individual conversion.
+    """Perform an individual conversion.
 
     Args:
         input_file: The path to the input file.
@@ -90,7 +88,7 @@ def convert_file(
         A tuple (success, message) where success is a boolean indicating whether the conversion was
         successful, and message is a string with a success or error message.
     """
-    destination_path = os.path.join(output_path, conversion_option["filename"])
+    destination_path = Path(output_path) / conversion_option["filename"]
     required_bit_depth = conversion_option.get("requires")
     if required_bit_depth and bit_depth not in required_bit_depth:
         return (
@@ -126,7 +124,7 @@ def _get_conversion_options(
     bit_depth: int,
 ) -> dict[str, dict[str, str]]:
     """Construct the conversion options dictionary."""
-    base_name = os.path.join(output_path, output_filename)
+    base_name = Path(output_path) / output_filename
 
     # Determine if we need bit depth suffixes based on selected options
     needs_wav_suffix = (
@@ -145,7 +143,7 @@ def _get_conversion_options(
     mp3_name = _get_filename(base_name, "mp3")
 
     # Determine if input is WAV or needs conversion
-    input_ext = os.path.splitext(input_file)[1].lower()
+    input_ext = Path(input_file).suffix.lower()
     wav_command = (
         f'cp "{input_file}" "{wav_name}"'
         if input_ext == ".wav"
@@ -191,8 +189,7 @@ def _get_conversion_options(
 def perform_conversions(
     answers: dict, input_file: str, output_path: str, output_filename: str, bit_depth: int
 ) -> None:
-    """
-    Perform the conversions selected by the user based on a dictionary of conversion options.
+    """Perform the conversions selected by the user based on a dictionary of conversion options.
 
     Args:
         answers: The answers to the conversion options prompt.
@@ -228,9 +225,9 @@ def perform_conversions(
 
 
 def prompt_if_file_exists(output_file: str | None) -> tuple[str, str | None]:
-    """
-    Check if the output file exists with the exact same name and extension, and prompt the user to
-    choose between overwriting, providing a new name, or canceling.
+    """Check if the output file exists with the exact same name and extension.
+
+    Prompt the user to choose between overwriting, providing a new name, or canceling.
 
     Args:
         output_file: The path to the output file.
@@ -238,7 +235,7 @@ def prompt_if_file_exists(output_file: str | None) -> tuple[str, str | None]:
     Returns:
         A tuple (action, new_filename) where action is 'overwrite', 'new_name', or 'cancel'.
     """
-    if output_file is None or not os.path.isfile(output_file):
+    if output_file is None or not Path(output_file).is_file():
         return "none", None
     print(f"File {output_file} already exists.")
     action = inquirer.list_input(
@@ -279,7 +276,7 @@ def main() -> None:
         print("Please provide an input file.")
         sys.exit(1)
     input_file = sys.argv[1]
-    if not os.path.isfile(input_file):  # Check that input file exists
+    if not Path(input_file).is_file():  # Check that input file exists
         print(colored(f"The file {input_file} does not exist. Aborting.", "red"))
         sys.exit(1)
 

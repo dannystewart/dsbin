@@ -10,10 +10,9 @@ import sys
 import time
 from typing import Any
 
-from termcolor import colored
-
 from dsutil import configure_traceback
 from dsutil.shell import acquire_sudo, confirm_action
+from dsutil.text import color as colored
 
 configure_traceback()
 
@@ -21,8 +20,7 @@ IP_TO_PING = "9.9.9.9"
 
 
 def get_troubleshooting_steps(wifi_interface: str) -> list[dict[str, Any]]:
-    """
-    Get troubleshooting steps.
+    """Get troubleshooting steps.
 
     Args:
         wifi_interface: Wi-Fi interface.
@@ -99,13 +97,15 @@ def main() -> None:
 
             if isinstance(step["command"][0], list):
                 for cmd in step["command"]:
-                    subprocess.run(cmd)
+                    subprocess.run(cmd, check=False)
             else:
-                subprocess.run(step["command"])
+                subprocess.run(step["command"], check=False)
 
             if step.get("toggle_wifi_on"):
                 time.sleep(2)
-                subprocess.run(["networksetup", "-setairportpower", wifi_interface, "on"])
+                subprocess.run(
+                    ["networksetup", "-setairportpower", wifi_interface, "on"], check=False
+                )
 
             if check_connection():
                 print(colored("Internet is working fine.", "green"))

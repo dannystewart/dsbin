@@ -7,20 +7,21 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
 from requests import Session
 from requests.auth import HTTPBasicAuth
-from termcolor import colored
 
 from dsutil import configure_traceback
+from dsutil.text import color as colored
 
 configure_traceback()
 
 # Load environment variables
-script_directory = os.path.dirname(os.path.abspath(__file__))
-env_path = os.path.join(script_directory, ".env")
+script_directory = Path(__file__).resolve().parent
+env_path = script_directory / ".env"
 load_dotenv(dotenv_path=env_path)
 
 # Set WebDAV URL and user agent
@@ -45,24 +46,26 @@ def file_exists(
     session: Session, webdav_url: str, username: str, password: str, file_path: str
 ) -> bool:
     """Check if the file already exists in WebDAV."""
+    file_name = Path(file_path).name
     response = session.head(
-        webdav_url + os.path.basename(file_path),
+        webdav_url + file_name,
         auth=HTTPBasicAuth(username, password),
     )
     return response.status_code == 200
 
 
 def upload_file(
-    session: Session, webdav_url: str, username: str, password: str, file_path: str
+    session: Session, webdav_url: str, username: str, password: str, file_path: str | Path
 ) -> bool:
     """Upload the file to WebDAV."""
-    with open(file_path, "rb") as file:
+    file_path = Path(file_path)
+    with file_path.open("rb") as file:
         response = session.put(
-            webdav_url + os.path.basename(file_path),
+            webdav_url + file_path.name,
             data=file,
             auth=HTTPBasicAuth(username, password),
         )
-    return response.status_code in [200, 201, 204]
+    return response.status_code in {200, 201, 204}
 
 
 def main():

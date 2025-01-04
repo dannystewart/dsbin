@@ -26,17 +26,16 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import tempfile
 import warnings
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 import numpy as np
 import scipy.io.wavfile
-import soundfile as sf
 from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
-from pydub import AudioSegment
 
 from dsutil import configure_traceback
 from dsutil.text import color, print_colored
@@ -47,6 +46,7 @@ if TYPE_CHECKING:
 configure_traceback()
 
 warnings.filterwarnings("ignore", category=SyntaxWarning)
+warnings.filterwarnings("ignore", category=scipy.io.wavfile.WavFileWarning)
 
 # Default cutoff frequency if not specified
 DEFAULT_CUTOFF_FREQ = 100
@@ -157,15 +157,36 @@ def read_audio_file(filepath: Path | str) -> tuple[np.ndarray, int]:
 
     extension = filepath.suffix.lower()
 
-    if extension in {".wav", ".flac"}:
-        data, sample_rate = sf.read(str(filepath))
+    if extension == ".wav":
+        sample_rate, data = scipy.io.wavfile.read(str(filepath))
+        # Convert to float32 and normalize
+        if data.dtype == np.int16:
+            data = data.astype(np.float32) / 32767.0
+        elif data.dtype == np.int32:
+            data = data.astype(np.float32) / 2147483647.0
         return data, sample_rate
-    if extension == ".m4a":
-        audio = AudioSegment.from_file(str(filepath), format="m4a")
-        data = np.array(audio.get_array_of_samples())
-        if audio.channels == 2:
-            data = data.reshape((-1, 2))
-        return data, audio.frame_rate
+
+    if extension in {".flac", ".m4a"}:
+        # Create a temporary WAV file
+        with tempfile.NamedTemporaryFile(suffix=".wav") as temp_wav:
+            # Convert to WAV using ffmpeg
+            cmd = [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(filepath),
+                "-f",
+                "wav",
+                "-c:a",
+                "pcm_s16le",
+                temp_wav.name,
+            ]
+            subprocess.run(cmd, capture_output=True, check=True)
+
+            # Read the WAV file
+            sample_rate, data = scipy.io.wavfile.read(temp_wav.name)
+            data = data.astype(np.float32) / 32767.0
+            return data, sample_rate
 
     msg = f"Unsupported file format: {extension}"
     raise ValueError(msg)
@@ -175,7 +196,6 @@ def write_audio_file(
     filepath: Path | str,
     data: np.ndarray,
     sample_rate: int,
-    channels: int,
     original_file: Path | str,
     cover_art: Path | str | None,
 ) -> None:
@@ -187,7 +207,6 @@ def write_audio_file(
         filepath: The path to the output file.
         data: The audio data.
         sample_rate: The sample rate of the audio data.
-        channels: The number of channels in the audio data.
         original_file: The path to the original file.
         cover_art: The path to the cover art image.
 
@@ -196,16 +215,33 @@ def write_audio_file(
     """
     filepath = Path(filepath)
     extension = filepath.suffix.lower()
-    if extension in {".wav", ".flac"}:
-        sf.write(str(filepath), data, sample_rate)
-    elif extension == ".m4a":
-        if data.dtype == np.float32:
-            data = (data * 32767).astype(np.int16)
 
-        audio = AudioSegment(
-            data.tobytes(), frame_rate=sample_rate, sample_width=2, channels=channels
-        )
-        audio.export(str(filepath), format="ipod", codec="alac")
+    # Convert float32 to int16
+    data_int = (data * 32767).astype(np.int16)
+
+    if extension == ".wav":
+        scipy.io.wavfile.write(str(filepath), sample_rate, data_int)
+    elif extension in {".flac", ".m4a"}:
+        # Write to temporary WAV first
+        with tempfile.NamedTemporaryFile(suffix=".wav") as temp_wav:
+            scipy.io.wavfile.write(temp_wav.name, sample_rate, data_int)
+
+            # Convert to final format using ffmpeg
+            cmd = [
+                "ffmpeg",
+                "-y",
+                "-i",
+                temp_wav.name,
+            ]
+
+            if extension == ".flac":
+                cmd.extend(["-c:a", "flac"])
+            else:  # .m4a
+                cmd.extend(["-c:a", "alac"])
+
+            cmd.append(str(filepath))
+
+            subprocess.run(cmd, capture_output=True, check=True)
     else:
         msg = f"Unsupported file format: {extension}"
         raise ValueError(msg)
@@ -376,7 +412,6 @@ def process_file(
             output_filepath,
             filtered_data.astype(np.float32),
             sample_rate,
-            channels,
             input_filepath,
             cover_art,
         )

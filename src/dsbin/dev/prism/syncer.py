@@ -45,6 +45,7 @@ EXCLUDE_PATTERNS = [
     ".sync_cache.json",
     "*.pyc",
     "cache/",
+    "inactive_bots.toml",
     "inactive_bots.yaml",
     "logs/",
     "temp/",
@@ -234,7 +235,11 @@ def sync_workspace_files(source_root: Path) -> None:
 def get_changed_files(
     source_cache: DirectoryCache, target_cache: DirectoryCache
 ) -> Iterator[tuple[Path, Path]]:
-    """Get iterator of (source_path, target_path) pairs that need syncing."""
+    """Get iterator of (source_path, target_path) pairs that need syncing.
+
+    Yields:
+        (source_path, target_path): Tuple of source and target paths for files that need syncing.
+    """
     for rel_path, source_meta in source_cache.files.items():
         source_path = source_cache.root / rel_path
         target_path = target_cache.root / rel_path

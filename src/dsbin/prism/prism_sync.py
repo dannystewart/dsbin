@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 configure_traceback()
 
-logger = LocalLogger().get_logger(level="info", message_only=True)
+logger = LocalLogger().get_logger(level="info", simple=True)
 
 # Root directories
 PROD_ROOT = Path("/home/danny/docker/prism")

@@ -12,12 +12,12 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from dsbin.wpmusic.db_manager import DatabaseManager
-
 from dsutil import LocalLogger
 
+from dsbin.wpmusic.db_manager import DatabaseManager
+
 if TYPE_CHECKING:
-    from .wp_config import Config
+    from dsbin.wpmusic.wp_config import Config
 
 tz = ZoneInfo("America/New_York")
 
@@ -63,10 +63,10 @@ class UploadTracker:
         self.config = config
         self.table_config = TableConfig()
         self.db = DatabaseManager(config)
-        self.logger = LocalLogger.setup_logger(
+        self.logger = LocalLogger().get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
-            message_only=self.config.log_message_only,
+            simple=self.config.log_simple,
         )
 
         # Track the current set of uploads before recording them to the upload log

@@ -16,7 +16,7 @@ from dsutil.text import print_colored, progress
 if TYPE_CHECKING:
     import argparse
 
-logger = LocalLogger.setup_logger()
+logger = LocalLogger().get_logger()
 
 
 def parse_arguments() -> tuple[argparse.ArgumentParser, argparse.Namespace]:

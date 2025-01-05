@@ -1,5 +1,4 @@
-"""
-Sort files into folders based on filename suffix.
+"""Sort files into folders based on filename suffix.
 
 This script looks at filenames in the current folder to determine if they have a suffix, then allows
 the user to select suffixes that should be sorted into subfolders created based on the suffix.
@@ -12,17 +11,17 @@ from pathlib import Path
 
 import inquirer
 
-from dsbin.music.bounce_parser import Bounce, BounceParser
-
 from dsutil import LocalLogger, configure_traceback
 from dsutil.animation import walking_animation
 from dsutil.files import move_file
 from dsutil.progress import halo_progress
 from dsutil.text import color
 
+from dsbin.music.bounce_parser import Bounce, BounceParser
+
 configure_traceback()
 
-logger = LocalLogger.setup_logger("pyfiler", level="info", message_only=True, use_color=False)
+logger = LocalLogger.get_logger(level="info", simple=True, color=False)
 
 
 def get_unique_suffixes(bounces: list[Bounce]) -> list[str]:

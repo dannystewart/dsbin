@@ -61,7 +61,7 @@ def main():
             output_file,
         ]
 
-    subprocess.run(ffmpeg_command)
+    subprocess.run(ffmpeg_command, check=False)
     print(f"\nGIF conversion complete. Output file: {output_file}")
 
 

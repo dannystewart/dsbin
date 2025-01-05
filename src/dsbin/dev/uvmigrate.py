@@ -117,8 +117,7 @@ def _convert_regular_dependency(
     else:
         version = str(spec).replace("^", "")
 
-    if version.startswith(">="):
-        version = version[2:]
+    version = version.removeprefix(">=")
     return f"{name}>={version}"
 
 
@@ -243,7 +242,7 @@ def convert_pyproject(file_path: Path) -> None:
     backup_path = backup_file(file_path)
     print(f"Backup created at: {backup_path}")
 
-    with open(file_path) as f:
+    with open(file_path, encoding="utf-8") as f:
         pyproject = tomlkit.load(f)
 
     poetry_section = pyproject.get("tool", {}).get("poetry", {})
@@ -288,7 +287,7 @@ def convert_pyproject(file_path: Path) -> None:
     # Store original scripts section text
     scripts_text = ""
     if "scripts" in poetry_section:
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             content = f.read()
             # Find the [tool.poetry.scripts] section
             if "[tool.poetry.scripts]" in content:
@@ -297,12 +296,12 @@ def convert_pyproject(file_path: Path) -> None:
                 scripts_text = scripts_part.split("\n[")[0]
 
     # Write main configuration
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         tomlkit.dump(new_pyproject, f)
 
     # Add scripts section with original formatting if it exists
     if scripts_text:
-        with open(file_path, "a") as f:
+        with open(file_path, "a", encoding="utf-8") as f:
             f.write("\n[project.scripts]")
             f.write(scripts_text)
 
@@ -321,7 +320,7 @@ def parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     group.add_argument(
         "--path",
         type=Path,
-        default=Path("."),
+        default=Path(),
         help="directory to search for pyproject.toml files (default: current dir)",
     )
     group.add_argument("--file", type=Path, help="single pyproject.toml file to convert")

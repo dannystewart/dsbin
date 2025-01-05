@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Removes MP3 files if there is an AIFF or WAV file with the same name.
+"""Removes MP3 files if there is an AIFF or WAV file with the same name.
 
 This script removes MP3 files if there is an AIFF or WAV file with the same name. Used for
 cleaning up old Logic bounces, because MP3 sucks and if I still have the original bounce I
@@ -20,8 +19,7 @@ configure_traceback()
 
 
 def delete_mp3(directory: str, dry_run: bool = False) -> None:
-    """
-    Removes MP3 files if there is an AIFF or WAV file with the same name.
+    """Removes MP3 files if there is an AIFF or WAV file with the same name.
 
     Args:
         directory: The directory to search for MP3 files.

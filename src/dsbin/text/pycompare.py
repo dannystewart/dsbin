@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Compare two lists and output common/unique elements.
+"""Compare two lists and output common/unique elements.
 
 Takes two lists of elements and outputs common elements and elements unique to each list.
 It can ignore case sensitivity when comparing, and supports titles for each list.
@@ -28,8 +27,7 @@ def process_lists(
     title2: str = "second",
     comma_separated: bool = False,
 ) -> None:
-    """
-    Process two lists and compare them based on the specified case sensitivity. If case
+    """Process two lists and compare them based on the specified case sensitivity. If case
     sensitivity is enabled, also display a message indicating how many additional elements
     would match if case sensitivity were ignored.
 
@@ -68,8 +66,7 @@ def count_case_insensitive_matches(
     list2: list[str],
     common_elements: list[str],
 ) -> int:
-    """
-    Count the number of matches between two lists regardless of case (excluding common
+    """Count the number of matches between two lists regardless of case (excluding common
     elements). Used for reporting what the difference would be if case sensitivity were
     ignored, in case it affects the results.
 
@@ -87,8 +84,7 @@ def count_case_insensitive_matches(
 
 
 def input_until_sentinel(sentinel: str = ".") -> list[str]:
-    """
-    Take user input until a sentinel value is entered. Store each input line in a list.
+    """Take user input until a sentinel value is entered. Store each input line in a list.
 
     Args:
         sentinel: The sentinel value to stop taking input. Defaults to '.' (period).
@@ -111,8 +107,7 @@ def print_results(
     case_insensitive: bool,
     comma_separated: bool = False,
 ) -> None:
-    """
-    Print the results of a list of elements with an optional header.
+    """Print the results of a list of elements with an optional header.
 
     Args:
         header: The header to print.

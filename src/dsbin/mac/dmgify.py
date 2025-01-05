@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Creates DMG files from folders, with specific handling for Logic projects.
+"""Creates DMG files from folders, with specific handling for Logic projects.
 
 This script automates the creation of DMG (Apple Disk Image) files from directories for archival and
 backup. It has additional functionality to handle Logic Pro project folders with appropriate
@@ -79,8 +78,7 @@ def should_exclude(folder_name: str, exclude_list: list[str]) -> bool:
 def rsync_folder(
     source: str, destination: str, exclude_patterns: list[str], dry_run: bool = False
 ) -> None:
-    """
-    Use rsync to copy a folder.
+    """Use rsync to copy a folder.
 
     Args:
         source: The source folder.
@@ -105,8 +103,7 @@ def rsync_folder(
 
 @with_retries
 def create_sparseimage(folder_name: str, source: str) -> None:
-    """
-    Create a sparseimage for a folder.
+    """Create a sparseimage for a folder.
 
     Args:
         folder_name: The name of the folder to create a sparseimage for.
@@ -137,8 +134,7 @@ def create_sparseimage(folder_name: str, source: str) -> None:
 
 @with_retries
 def convert_sparseimage_to_dmg(folder_name: str, compression_format: str) -> None:
-    """
-    Convert a sparseimage to a DMG file.
+    """Convert a sparseimage to a DMG file.
 
     Args:
         folder_name: The name of the folder to convert.
@@ -172,8 +168,7 @@ def create_dmg(
     dry_run: bool = False,
     force_overwrite: bool = False,
 ) -> None:
-    """
-    Create a DMG file for a folder.
+    """Create a DMG file for a folder.
 
     Args:
         folder_name: The name of the folder to create a DMG for.
@@ -255,8 +250,7 @@ def process_folders(
     is_logic: bool,
     exclude_list: list[str],
 ) -> None:
-    """
-    Process folders in the specified directory for DMG creation.
+    """Process folders in the specified directory for DMG creation.
 
     Args:
         root_dir: The root directory that contains the folders to be processed.

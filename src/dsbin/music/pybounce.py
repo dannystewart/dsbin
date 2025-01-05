@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Uploads audio files to a Telegram channel.
+"""Uploads audio files to a Telegram channel.
 
 To have this run automatically via Hazel, call it as an embedded script like this:
     ❯ source ~/.zshrc && $(pyenv which python) -m dsbin.music.pybounce "$1"
@@ -57,7 +56,7 @@ args_for_logger = parse_arguments()
 
 # Set up logger based on debug flag and set log level
 log_level = "debug" if args_for_logger and args_for_logger.debug else "info"
-logger = LocalLogger.setup_logger(level=log_level)
+logger = LocalLogger().get_logger(level=log_level)
 logging.basicConfig(level=logging.WARNING)
 
 

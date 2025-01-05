@@ -21,17 +21,17 @@ import argparse
 import sys
 from pathlib import Path
 
+from dsutil import LocalLogger, configure_traceback
+from dsutil.media import ffmpeg_audio
+from dsutil.shell import handle_keyboard_interrupt
+from dsutil.text import color
+
 from dsbin.wpmusic.audio_track import AudioTrack
 from dsbin.wpmusic.file_manager import FileManager
 from dsbin.wpmusic.metadata_setter import MetadataSetter
 from dsbin.wpmusic.track_identifier import TrackIdentifier
 from dsbin.wpmusic.upload_tracker import UploadTracker
 from dsbin.wpmusic.wp_config import Config, spinner
-
-from dsutil import LocalLogger, configure_traceback
-from dsutil.media import ffmpeg_audio
-from dsutil.shell import handle_keyboard_interrupt
-from dsutil.text import color
 
 configure_traceback()
 
@@ -53,10 +53,10 @@ class WPMusic:
             debug=args.debug,
             no_cache=args.no_cache,
         )
-        self.logger = LocalLogger.setup_logger(
+        self.logger = LocalLogger().get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
-            message_only=self.config.log_message_only,
+            simple=self.config.log_simple,
         )
 
         # Only check for files if we're not doing history or DB operations

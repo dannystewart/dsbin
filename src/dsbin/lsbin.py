@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Lists executable files and their descriptions based on docstrings.
+"""Lists executable files and their descriptions based on docstrings.
 
 This script is designed to list executable files in this package and print their description a
 docstring block at the top of the file (like the one you're reading right now). Otherwise, It also
@@ -57,10 +56,10 @@ def get_module_or_function_docstring(module_path: str, function_name: str) -> st
         parts = module_path.split(".")
         file_path = Path(__file__).parent
         for part in parts[1:]:  # Skip 'dsbin'
-            file_path = file_path / part
+            file_path /= part
         file_path = file_path.with_suffix(".py")
 
-        with open(file_path) as f:
+        with open(file_path, encoding="utf-8") as f:
             module_ast = ast.parse(f.read())
 
         # First try to get module-level docstring
@@ -90,8 +89,7 @@ def is_likely_missing_description(description: str | None) -> bool:
 
 
 def display_list(scripts: list[tuple[str, str, str | None]], search_term: str = "") -> None:
-    """
-    Display the descriptions and types of executable files and list those without descriptions.
+    """Display the descriptions and types of executable files and list those without descriptions.
 
     Args:
         scripts: A list of tuples containing the file name, description, and description type.
@@ -138,8 +136,7 @@ def display_list(scripts: list[tuple[str, str, str | None]], search_term: str = 
 def filter_results(
     scripts: list[tuple[str, str, str | None]], search_term: str
 ) -> list[tuple[str, str, str | None]]:
-    """
-    Filter the results based on the search term.
+    """Filter the results based on the search term.
 
     Args:
         scripts: A list of tuples containing the script name, description, and description type.

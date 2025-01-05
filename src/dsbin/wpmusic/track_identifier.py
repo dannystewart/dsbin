@@ -6,10 +6,10 @@ from typing import TYPE_CHECKING, Any
 
 import inquirer
 
-from .wp_config import Config, spinner
-
 from dsutil import LocalLogger
 from dsutil.text import color as colored
+
+from dsbin.wpmusic.wp_config import Config, spinner
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack
@@ -20,10 +20,10 @@ class TrackIdentifier:
 
     def __init__(self, config: Config):
         self.config = config
-        self.logger = LocalLogger.setup_logger(
+        self.logger = LocalLogger().get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
-            message_only=self.config.log_message_only,
+            simple=self.config.log_simple,
         )
 
     def identify_track(self, audio_track: AudioTrack) -> dict:

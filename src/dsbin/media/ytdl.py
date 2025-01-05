@@ -1,7 +1,6 @@
 #! /usr/bin/env python3
 
-"""
-Custom yt-dlp command to ensure highest quality MP4.
+"""Custom yt-dlp command to ensure highest quality MP4.
 
 This script is a shortcut to download the highest quality video available and convert it
 to MP4 with H.264 and AAC audio. I wrote it because I wanted better quality than the
@@ -11,7 +10,6 @@ script strikes the best middle ground on average.
 
 from __future__ import annotations
 
-import re
 import subprocess
 import sys
 
@@ -30,19 +28,20 @@ def get_default_filename(url: str) -> str:
         ["yt-dlp", "--get-filename", "-o", "%(title)s.%(ext)s", url],
         stdout=subprocess.PIPE,
         text=True,
+        check=False,
     )
     return default_filename.stdout.strip()
 
 
 def download_video(url: str) -> None:
     """Use yt-dlp to download the video at the given URL with the highest quality available."""
-    subprocess.run(["yt-dlp", "-o", "%(title)s.%(ext)s", url])
+    subprocess.run(["yt-dlp", "-o", "%(title)s.%(ext)s", url], check=False)
 
 
 def sanitize_filename(filename: str) -> str:
     """Remove annoying characters yt-dlp uses to replace colons and apostrophes."""
-    filename = re.sub("：", " - ", filename)
-    return re.sub("´", "'", filename)
+    filename = filename.replace("：", " - ")
+    return filename.replace("´", "'")
 
 
 def main() -> None:

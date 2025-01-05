@@ -4,8 +4,8 @@ import subprocess
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from .plugin import DataSourcePlugin
-from .work_item import WorkItem
+from dsbin.workcalc.plugin import DataSourcePlugin
+from dsbin.workcalc.work_item import WorkItem
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

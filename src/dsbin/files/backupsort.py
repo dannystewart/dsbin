@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Sorts saved backup files by adding a timestamp suffix to the filename.
+"""Sorts saved backup files by adding a timestamp suffix to the filename.
 
 This script is designed to sort backup files by adding a timestamp suffix to the filename.
 This was originally created for dealing with a large number of SQL dumps and backups being
@@ -88,7 +87,7 @@ def clean_filename(filename: str, timestamp_count: int) -> str:
 
 def get_files_to_process(args: argparse.Namespace) -> list:
     """Get the list of files to process based on command line arguments."""
-    files_to_process = args.files if args.files else os.listdir(".")
+    files_to_process = args.files or os.listdir(".")
     expanded_files = []
     for file_pattern in files_to_process:
         expanded_files.extend(glob.glob(file_pattern))
@@ -163,11 +162,10 @@ def main() -> None:
     """Rename and move files based on the command-line arguments."""
     args = parse_arguments()
     files_to_process = get_files_to_process(args)
-    planned_changes = []
 
-    for filename in files_to_process:
-        if result := process_file(filename):
-            planned_changes.append(result)
+    planned_changes = [
+        result for filename in files_to_process if (result := process_file(filename))
+    ]
 
     perform_operations(planned_changes, args)
 

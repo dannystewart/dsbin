@@ -53,8 +53,7 @@ def update_hosts_file(old_hostname: str, new_hostname: str) -> None:
 
 
 def validate_hostname(old_hostname: str, new_hostname: str) -> bool:
-    """
-    Ensure that the new hostname is valid. The hostname must be between 1 and 253 characters long,
+    """Ensure that the new hostname is valid. The hostname must be between 1 and 253 characters long,
     must not contain any invalid characters, and must not start or end with a hyphen. The new
     hostname must also be different from the current hostname.
 

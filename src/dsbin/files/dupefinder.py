@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Find duplicate files in a directory.
+"""Find duplicate files in a directory.
 
 This script will find duplicate files in a directory and print them to the console.
 """

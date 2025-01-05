@@ -16,7 +16,7 @@ from dsutil.text import color
 
 configure_traceback()
 
-logger = LocalLogger.setup_logger("pkginst")
+logger = LocalLogger().get_logger("pkginst")
 
 
 def install_pkg(
@@ -26,8 +26,7 @@ def install_pkg(
     dmg_path: str | None = None,
     mount_point: str | None = None,
 ) -> bool:
-    """
-    Install a .pkg file or a list of .pkg files on macOS using the installer command-line utility.
+    """Install a .pkg file or a list of .pkg files on macOS using the installer command-line utility.
 
     Args:
         pkg_paths: Path to the .pkg file or list of paths to .pkg files to install.
@@ -68,8 +67,7 @@ def install_pkg(
 
 
 def install_pkg_from_dmg(dmg_path: str, pkg_name: str | None = None, target: str = "/") -> None:
-    """
-    Mount a DMG file, installs the specified PKG file from inside it, and then unmount the DMG. If
+    """Mount a DMG file, installs the specified PKG file from inside it, and then unmount the DMG. If
     no PKG name is specified, install the first PKG file found within the DMG.
 
     Args:
@@ -92,8 +90,7 @@ def install_pkg_from_dmg(dmg_path: str, pkg_name: str | None = None, target: str
 
 
 def find_pkg_in_dmg(mount_point: str, pkg_name: str | None = None) -> str | None:
-    """
-    Find the specified PKG file within the mounted DMG, or the first PKG file if no name is provided.
+    """Find the specified PKG file within the mounted DMG, or the first PKG file if no name is provided.
 
     Args:
         mount_point: The mount point of the DMG.
@@ -116,8 +113,7 @@ def find_pkg_in_dmg(mount_point: str, pkg_name: str | None = None) -> str | None
 
 
 def mount_dmg(dmg_path: str) -> str | None:
-    """
-    Mount a DMG file and return the mount point.
+    """Mount a DMG file and return the mount point.
 
     Args:
         dmg_path: Path to the .dmg file to mount.
@@ -147,8 +143,7 @@ def mount_dmg(dmg_path: str) -> str | None:
 
 
 def unmount_dmg(mount_point: str) -> None:
-    """
-    Unmount a DMG file.
+    """Unmount a DMG file.
 
     Args:
         mount_point: Mount point to unmount.

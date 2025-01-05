@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
 paths = DSPaths("dockermounter")
 LOG_FILE_PATH = paths.get_log_path("dockermounter.log")
 
-logger = LocalLogger.setup_logger(log_file=LOG_FILE_PATH)
+logger = LocalLogger().get_logger(log_file=LOG_FILE_PATH)
 
 POSSIBLE_SHARES = ["Danny", "Downloads", "Music", "Media", "Storage"]
 
@@ -87,7 +88,7 @@ class ShareManager:
 
         # Setup environment and notifications
         self.env = setup_env()
-        self.logger = LocalLogger.setup_logger()
+        self.logger = LocalLogger().get_logger()
 
         self.telegram = None
         if self.env.telegram_bot_token and self.env.telegram_chat_id:
@@ -262,4 +263,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

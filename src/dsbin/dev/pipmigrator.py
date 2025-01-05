@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Migrate Python packages between pyenv environments.
+"""Migrate Python packages between pyenv environments.
 
 This script exports the packages from a source pyenv environment and installs them in a
 target pyenv environment.
@@ -20,7 +19,7 @@ configure_traceback()
 
 def run_command(command: str, env: dict[str, str]) -> None:
     """Run a shell command with a specified environment."""
-    subprocess.run(command, shell=True, env=env)
+    subprocess.run(command, shell=True, env=env, check=False)
 
 
 def export_and_install_packages(source_env: str, target_env: str) -> None:

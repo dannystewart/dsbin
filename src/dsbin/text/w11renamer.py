@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Generates non-stupid filenames for Windows 11 ISO files from stupid ones.
+"""Generates non-stupid filenames for Windows 11 ISO files from stupid ones.
 
 Microsoft names files with a stupid incomprehensible meaningless name like
 `22631.3007.240102-1451.23H2_NI_RELEASE_SVC_PROD1_CLIENTPRO_OEMRET_X64FRE_EN-US.ISO`, so
@@ -21,7 +20,7 @@ from dsutil import LocalLogger, configure_traceback
 
 configure_traceback()
 
-logger = LocalLogger.setup_logger(message_only=True)
+logger = LocalLogger().get_logger(simple=True)
 
 
 def handle_naming(input_path: Path, rename: bool) -> None:

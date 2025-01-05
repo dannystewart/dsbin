@@ -9,14 +9,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-from .prism_config import Action, PrismConfig
-from .prism_sync import main as sync_instances
-
 from dsutil import LocalLogger, configure_traceback
+
+from dsbin.prism.prism_config import Action, PrismConfig
+from dsbin.prism.prism_sync import main as sync_instances
 
 configure_traceback()
 
-logger = LocalLogger.setup_logger(level="info")
+logger = LocalLogger().get_logger(level="info")
 
 # Program paths
 PROGRAM_PATH = "/home/danny/docker/prism"

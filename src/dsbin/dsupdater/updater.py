@@ -10,16 +10,16 @@ import shutil
 import time
 from typing import TYPE_CHECKING
 
-from dsbin.dsupdater import updaters
-from dsbin.dsupdater.privilege_helper import PrivilegeHelper
-from dsbin.dsupdater.update_manager import UpdateManager
-from dsbin.dsupdater.updaters.macos import MacOSSoftwareUpdate
-
 from dsutil.argparser import ArgParser
 from dsutil.log import LocalLogger
 from dsutil.shell import handle_keyboard_interrupt
 from dsutil.text import Text, color, print_colored
 from dsutil.tools import configure_traceback
+
+from dsbin.dsupdater import updaters
+from dsbin.dsupdater.privilege_helper import PrivilegeHelper
+from dsbin.dsupdater.update_manager import UpdateManager
+from dsbin.dsupdater.updaters.macos import MacOSSoftwareUpdate
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -32,7 +32,7 @@ class Updater:
 
     def __init__(self, args: Namespace | None = None) -> None:
         self.debug = args.debug if args else False
-        self.logger = LocalLogger.setup_logger(level="debug" if self.debug else "info")
+        self.logger = LocalLogger().get_logger(level="debug" if self.debug else "info")
 
         # Start measuring total update time
         self.start_time = time.time()

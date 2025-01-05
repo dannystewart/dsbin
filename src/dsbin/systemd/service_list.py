@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from .systemd import ServiceConfigBase, SystemdServiceTemplate, service_configs
+from dsbin.systemd.systemd import ServiceConfigBase, SystemdServiceTemplate, service_configs
 
 
 @service_configs(

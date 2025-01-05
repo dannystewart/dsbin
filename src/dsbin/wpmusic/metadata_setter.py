@@ -20,10 +20,10 @@ class MetadataSetter:
 
     def __init__(self, config: Config):
         self.config = config
-        self.logger = LocalLogger.setup_logger(
+        self.logger = LocalLogger().get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
-            message_only=self.config.log_message_only,
+            simple=self.config.log_simple,
         )
 
     def apply_metadata(self, audio_track: AudioTrack, audio_format: str, path: str) -> str:

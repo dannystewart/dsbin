@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Moves old Logic projects out of folders then deletes empty folders.
+"""Moves old Logic projects out of folders then deletes empty folders.
 
 Logic's "Save a Copy" behavior used to save a copy of the project file by itself rather
 than repackaging all its related files into a folder like a regular save, but a recent
@@ -55,7 +54,7 @@ def perform_operations(operations: dict, base_dir: str) -> None:
         print(f"{Fore.GREEN}✔ Moved {Style.RESET_ALL}{format_path(dest, base_dir)}")
 
     for del_path in operations["delete"]:
-        subprocess.run(["trash", del_path])
+        subprocess.run(["trash", del_path], check=False)
         print(f"{Fore.RED}✔ Deleted {Style.RESET_ALL}{format_path(del_path, base_dir)}")
 
 
@@ -87,7 +86,7 @@ def move_and_delete_logic_folders() -> None:
         else:
             print(Fore.RED + "\nNo .logicx folders found for moving." + Style.RESET_ALL)
     except Exception as e:
-        print(f"{Fore.RED}\nAn error occurred: {str(e)}{Style.RESET_ALL}")
+        print(f"{Fore.RED}\nAn error occurred: {e!s}{Style.RESET_ALL}")
 
 
 move_and_delete_logic_folders()

@@ -6,6 +6,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from dsutil import LocalLogger, Text, TimeAwareLogger, configure_traceback
+from dsutil.animation import walking_animation
+
 from dsbin.workcalc.bounce_plugin import BounceDataSource
 from dsbin.workcalc.git_plugin import GitDataSource
 from dsbin.workcalc.sessions import SessionAnalyzer
@@ -13,9 +16,6 @@ from dsbin.workcalc.stats import WorkStats
 from dsbin.workcalc.streaks import StreakAnalyzer
 from dsbin.workcalc.summary import SummaryAnalyzer
 from dsbin.workcalc.time import TimeAnalyzer, TimeSpan
-
-from dsutil import LocalLogger, Text, TimeAwareLogger, configure_traceback
-from dsutil.animation import walking_animation
 
 if TYPE_CHECKING:
     from datetime import date
@@ -62,7 +62,7 @@ class WorkCalculator:
         self.config = config
         self.item_name = self._get_item_name()
 
-        self.base_logger = LocalLogger.setup_logger("workcalc", message_only=True)
+        self.base_logger = LocalLogger().get_logger("workcalc", simple=True)
         self.logger = TimeAwareLogger(self.base_logger)
 
         if not self.data_source.validate_source():

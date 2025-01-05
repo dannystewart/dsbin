@@ -1,5 +1,4 @@
-"""
-Convert AIFF to WAV or WAV to AIFF, with optional Logic metadata.
+"""Convert AIFF to WAV or WAV to AIFF, with optional Logic metadata.
 
 This script converts AIFF files to WAV using ffmpeg, or vice versa. Optionally, Logic Pro metadata
 can be added to the AIFF files for cases when the original AIFF files may have had Logic metadata
@@ -28,8 +27,7 @@ AudioFormat = Literal["wav", "aif"]
 def convert_audio(
     file_path: str, target_format: AudioFormat, version: str | None = None, recursive: bool = False
 ) -> None:
-    """
-    Convert audio files between WAV and AIFF formats.
+    """Convert audio files between WAV and AIFF formats.
 
     Args:
         file_path: File or directory of audio files to convert.

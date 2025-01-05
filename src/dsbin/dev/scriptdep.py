@@ -15,18 +15,18 @@ from dsutil import configure_traceback
 configure_traceback()
 
 
-def run_tool(cmd: list, cwd: str = None) -> tuple[str, str]:
+def run_tool(cmd: list, cwd: str | None = None) -> tuple[str, str]:
     """Run a uv tool and return its output."""
     uvx_path = shutil.which("uvx")
     if not uvx_path:
         msg = "uvx not found in PATH"
         raise FileNotFoundError(msg)
-    uv_cmd = [uvx_path] + cmd
-    result = subprocess.run(uv_cmd, capture_output=True, text=True, cwd=cwd)
+    uv_cmd = [uvx_path, *cmd]
+    result = subprocess.run(uv_cmd, capture_output=True, text=True, cwd=cwd, check=False)
     return result.stdout, result.stderr
 
 
-def get_imports(path: Path, exclude_dirs: list[str] = None) -> dict:
+def get_imports(path: Path, exclude_dirs: list[str] | None = None) -> dict:
     """Get all imports from Python files in the given path, excluding specified directories."""
     imports_by_file = defaultdict(set)
 
@@ -35,7 +35,7 @@ def get_imports(path: Path, exclude_dirs: list[str] = None) -> dict:
         if any(excluded_dir in file.parts for excluded_dir in exclude_dirs):
             continue
 
-        with open(file) as f:
+        with open(file, encoding="utf-8") as f:
             try:
                 tree = ast.parse(f.read())
                 for node in ast.walk(tree):
@@ -143,10 +143,10 @@ def analyze_dependencies() -> None:
 
     exclude_dirs = [".venv", "tests", "build", "dist"]
     dsutil_imports = analyze_imports(Path("dsutil"), "dsutil", exclude_dirs)
-    scripts_imports = analyze_imports(Path("."), "scripts", exclude_dirs)
+    scripts_imports = analyze_imports(Path(), "scripts", exclude_dirs)
 
     dsutil_imports = analyze_imports(Path("dsutil"), "dsutil", exclude_dirs)
-    scripts_imports = analyze_imports(Path("."), "scripts", exclude_dirs)
+    scripts_imports = analyze_imports(Path(), "scripts", exclude_dirs)
 
     installed_packages = get_installed_packages()
 

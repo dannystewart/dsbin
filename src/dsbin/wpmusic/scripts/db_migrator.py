@@ -10,14 +10,14 @@ from typing import TYPE_CHECKING
 
 import mysql.connector
 
-from dsbin.wpmusic.wp_config import Config
-
 from dsutil import LocalLogger
+
+from dsbin.wpmusic.wp_config import Config
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-logger = LocalLogger.setup_logger()
+logger = LocalLogger().get_logger()
 
 
 def run(command: str) -> tuple[bool, str]:

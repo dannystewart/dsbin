@@ -4,11 +4,11 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from .plugin import DataSourcePlugin
-from .work_item import WorkItem
-
 from dsutil.files import list_files
 from dsutil.macos import get_timestamps
+
+from dsbin.workcalc.plugin import DataSourcePlugin
+from dsbin.workcalc.work_item import WorkItem
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

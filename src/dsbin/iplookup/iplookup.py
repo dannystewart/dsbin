@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-"""
-Does an IP lookup using multiple sources.
+"""Does an IP lookup using multiple sources.
 
 This script is designed to do an IP lookup using multiple sources. It can be used to get
 more information about an IP address, including the country, region, city, ISP, and
@@ -18,10 +17,10 @@ import json
 
 import requests
 
-from .ip_sources import IP_SOURCES
-
 from dsutil.shell import handle_keyboard_interrupt
 from dsutil.text import color
+
+from .ip_sources import IP_SOURCES
 
 TIMEOUT = 2
 MAX_RETRIES = 3
@@ -93,7 +92,7 @@ class IPLookup:
         """Print the IP data."""
         header = f"{color(f'[{source}]', 'blue')}"
         print(f"\n{header} {color('Location:', 'green')} {city}, {region}, {country}")
-        if isp and org and isp not in ["Unknown ISP", ""] and org not in ["Unknown Org", ""]:
+        if isp and org and isp not in {"Unknown ISP", ""} and org not in {"Unknown Org", ""}:
             print(f"{header} {color('ISP/Org:', 'green')} {isp} / {org}")
 
     @staticmethod

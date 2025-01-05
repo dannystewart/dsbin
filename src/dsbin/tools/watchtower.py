@@ -10,8 +10,7 @@ import inquirer
 
 
 def run_watchtower(run_once: bool, restart: bool, schedule: bool) -> None:
-    """
-    Run Watchtower for Docker.
+    """Run Watchtower for Docker.
 
     Args:
         run_once: Whether to run Watchtower once.
@@ -41,7 +40,7 @@ def run_watchtower(run_once: bool, restart: bool, schedule: bool) -> None:
     if schedule:
         cmd.extend(["--schedule", schedule])
 
-    subprocess.run(cmd)
+    subprocess.run(cmd, check=False)
 
 
 def main():

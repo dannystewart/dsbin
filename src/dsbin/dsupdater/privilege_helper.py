@@ -46,7 +46,7 @@ class PrivilegeHelper:
         """Check whether the script has sudo privileges in the active shell."""
         pipe = "/tmp/update_sudo_pipe"
         try:
-            with open(pipe) as pipe_file:
+            with open(pipe, encoding="utf-8") as pipe_file:
                 status = pipe_file.read().strip()
 
             if status == "sudo_available":

@@ -1,5 +1,4 @@
-"""
-Identifies and deletes AIFF files created within a specified time period (default 24 hours).
+"""Identifies and deletes AIFF files created within a specified time period (default 24 hours).
 
 This script is for audio files bounced in place within a Logic project. These files end up in the
 Audio Files folder, but if you decide to revert or save the project without keeping it, they're not

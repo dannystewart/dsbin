@@ -34,8 +34,7 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def move_dmg_files(source_dir: str, dest_dir: str, remove_source_files: bool = False) -> None:
-    """
-    Recursively moves nested DMG files to a desired location.
+    """Recursively moves nested DMG files to a desired location.
 
     Args:
         source_dir: The source directory.

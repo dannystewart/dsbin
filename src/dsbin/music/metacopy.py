@@ -13,7 +13,7 @@ from dsutil import LocalLogger, configure_traceback
 
 configure_traceback()
 
-logger = LocalLogger.setup_logger("metacopy")
+logger = LocalLogger().get_logger("metacopy")
 
 
 def copy_metadata(file: Path, metadata_source: Path | None, rename_flag: bool) -> None:
@@ -49,6 +49,7 @@ def copy_metadata(file: Path, metadata_source: Path | None, rename_flag: bool) -
         ],
         capture_output=True,
         text=True,
+        check=False,
     )
 
     if result.returncode == 0:
@@ -90,6 +91,7 @@ def get_metadata_value(file: Path, tag: str) -> str:
         ],
         capture_output=True,
         text=True,
+        check=False,
     )
     return result.stdout.strip()
 

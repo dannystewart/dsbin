@@ -1,5 +1,4 @@
-"""
-BounceParser is a utility for parsing and managing Logic bounces. It provides tools for parsing,
+"""BounceParser is a utility for parsing and managing Logic bounces. It provides tools for parsing,
 sorting, and grouping audio bounce files based on a specific naming convention.
 
 It's designed to work with filenames in the following format:
@@ -46,8 +45,7 @@ tz = ZoneInfo("America/New_York")
 
 @dataclass
 class Bounce:
-    """
-    Dataclass to store information about a bounce.
+    """Dataclass to store information about a bounce.
 
     Attributes:
         title: The title of the bounce.
@@ -95,12 +93,11 @@ class BounceParser:
 
     BOUNCE_PATTERN = r"(.+) (\d{2})\.(\d{1,2})\.(\d{1,2})_(\d+)([a-z]?)(?: (.+))?"
 
-    logger = LocalLogger.setup_logger("BounceParser")
+    logger = LocalLogger().get_logger("BounceParser")
 
     @classmethod
     def get_bounce(cls, file_path: str | Path) -> Bounce:
-        """
-        Parse a bounce filename and return a Bounce object.
+        """Parse a bounce filename and return a Bounce object.
 
         This method extracts information from the filename based on the expected pattern:
         "Title YY.MM.DD_Version[MinorVersion][Suffix].extension"
@@ -161,8 +158,7 @@ class BounceParser:
 
     @classmethod
     def find_bounces(cls, directory: str | Path, recursive: bool = False) -> list[Bounce]:
-        """
-        Find all bounce files in a directory and return a list of Bounce objects.
+        """Find all bounce files in a directory and return a list of Bounce objects.
 
         This method searches the given directory for files that match the bounce filename pattern.
 
@@ -206,8 +202,7 @@ class BounceParser:
 
     @classmethod
     def get_latest_bounce(cls, bounces: list[Bounce]) -> Bounce:
-        """
-        Get the latest bounce from a list of bounces.
+        """Get the latest bounce from a list of bounces.
 
         "Latest" is determined by sorting the bounces and returning the last one. The sorting is
         done by title, date, version, and minor version.
@@ -240,8 +235,7 @@ class BounceParser:
 
     @classmethod
     def get_from_day(cls, directory: str | Path, year: int, month: int, day: int) -> list[Bounce]:
-        """
-        Get bounces from a specific day in the given directory.
+        """Get bounces from a specific day in the given directory.
 
         This method finds all bounce files in the directory and filters them to include only those
         from the specified date.
@@ -278,8 +272,7 @@ class BounceParser:
 
     @classmethod
     def get_latest_per_day(cls, directory: str | Path) -> list[Bounce]:
-        """
-        Get the latest bounce per day from the given directory.
+        """Get the latest bounce per day from the given directory.
 
         This method considers the 'latest' bounce to be the one with the highest version number,
         regardless of the creation or modification time of the file. If there are multiple bounces
@@ -328,8 +321,7 @@ class BounceParser:
 
     @classmethod
     def sort_bounces(cls, bounces: list[Bounce]) -> list[Bounce]:
-        """
-        Sort bounces by title, date, version, and minor version.
+        """Sort bounces by title, date, version, and minor version.
 
         The sorting order is as follows:
         1. Title (alphabetically)
@@ -362,8 +354,7 @@ class BounceParser:
 
     @classmethod
     def group_bounces(cls, bounces: list[Bounce]) -> dict[tuple, dict[str, list[Bounce]]]:
-        """
-        Group bounces by title, date, major version, and suffix.
+        """Group bounces by title, date, major version, and suffix.
 
         This method creates a nested dictionary structure that groups Bounce objects first by their
         title, date, and major version, and then by their suffix.
@@ -418,8 +409,7 @@ class BounceParser:
 
     @classmethod
     def filter_by_suffix(cls, directory: str | Path, suffix: str) -> list[Bounce]:
-        """
-        Filter bounces by suffix.
+        """Filter bounces by suffix.
 
         This method is case-sensitive and matches the suffix exactly. If you need case-insensitive
         matching or partial matching, you'll need to implement that separately.
@@ -455,8 +445,7 @@ class BounceParser:
 
     @classmethod
     def filter_by_format(cls, directory: str | Path, file_format: str) -> list[Bounce]:
-        """
-        Filter bounces by file format.
+        """Filter bounces by file format.
 
         This method finds all bounce files in the directory and filters them to include only those
         with the specified file format.

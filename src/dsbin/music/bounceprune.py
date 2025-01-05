@@ -1,5 +1,4 @@
-"""
-Prunes and consolidates bounces from Logic projects.
+"""Prunes and consolidates bounces from Logic projects.
 
 This script is designed to prune and consolidate bounces from Logic projects. I have a
 specific naming scheme that I use to keep track of different versions. Part of that is for
@@ -25,19 +24,18 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from dsbin.music.bounce_parser import Bounce, BounceParser
-
 from dsutil import configure_traceback
 from dsutil.files import delete_files
 from dsutil.shell import confirm_action
 from dsutil.text import color, print_colored
 
+from dsbin.music.bounce_parser import Bounce, BounceParser
+
 configure_traceback()
 
 
 def determine_actions(bounce_groups: dict[tuple, dict[str, list[Bounce]]]) -> dict:
-    """
-    Given a dictionary of bounce groups, determine the actions to be taken on the bounces.
+    """Given a dictionary of bounce groups, determine the actions to be taken on the bounces.
 
     Args:
         bounce_groups: A dictionary of bounce groups where the keys are tuples representing the
@@ -68,8 +66,7 @@ def determine_actions(bounce_groups: dict[tuple, dict[str, list[Bounce]]]) -> di
 
 
 def print_actions(actions: dict) -> None:
-    """
-    Print the actions to be performed on files.
+    """Print the actions to be performed on files.
 
     Args:
         actions: A dictionary containing the actions to be performed on the files.
@@ -126,8 +123,7 @@ def execute_actions(actions: dict) -> None:
 
 
 def main() -> None:
-    """
-    Process audio files in the current working directory by finding the bounces, grouping them,
+    """Process audio files in the current working directory by finding the bounces, grouping them,
     determining and printing the actions to be taken, and then executing them.
     """
     directory = Path.cwd()

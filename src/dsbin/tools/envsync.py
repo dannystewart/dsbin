@@ -17,8 +17,7 @@ HOME_NAME = "Home .env"
 
 
 def read_env_file(file_path: str) -> OrderedDict[str, str]:
-    """
-    Read the content of a .env file and return it as an OrderedDict.
+    """Read the content of a .env file and return it as an OrderedDict.
 
     Args:
         file_path: The path to the .env file to be read.
@@ -28,7 +27,7 @@ def read_env_file(file_path: str) -> OrderedDict[str, str]:
     """
 
     env_dict = OrderedDict()
-    with open(file_path) as f:
+    with open(file_path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith("#"):
@@ -38,21 +37,19 @@ def read_env_file(file_path: str) -> OrderedDict[str, str]:
 
 
 def write_env_file(file_path: str, env_dict: OrderedDict[str, str]) -> None:
-    """
-    Write the content to a .env file.
+    """Write the content to a .env file.
 
     Args:
         file_path: The path to the .env file to be written.
         env_dict: An ordered dictionary containing the key-value pairs to be written.
     """
-    with open(file_path, "w") as f:
+    with open(file_path, "w", encoding="utf-8") as f:
         for key, value in env_dict.items():
             f.write(f"{key}={value}\n")
 
 
 def sync_env_files(chezmoi_env: OrderedDict[str, str], home_env: OrderedDict[str, str]) -> bool:
-    """
-    Synchronize two .env files by merging their content.
+    """Synchronize two .env files by merging their content.
 
     This function reads two .env files, merges their contents, resolves conflicts if necessary, and
     writes the merged content back to both files.
@@ -81,7 +78,7 @@ def sync_env_files(chezmoi_env: OrderedDict[str, str], home_env: OrderedDict[str
             if env1[key] != env2[key]:
                 choice = input(
                     f"Conflict for {key}:\n1: {env1[key]} (from {CHEZMOI_NAME})"
-                    "\n2: {env2[key]} (from {HOME_NAME})\nChoose 1 or 2: "
+                    f"\n2: {env2[key]} (from {HOME_NAME})\nChoose 1 or 2: "
                 )
                 merged_env[key] = env1[key] if choice == "1" else env2[key]
                 changes.append(
@@ -111,8 +108,7 @@ def sync_env_files(chezmoi_env: OrderedDict[str, str], home_env: OrderedDict[str
 
 
 def main() -> None:
-    """
-    Run the sync_env_files function with the paths to the .env files.
+    """Run the sync_env_files function with the paths to the .env files.
 
     This function sets up the paths for the Chezmoi and Home .env files, calls the sync_env_files
     function, and handles potential exceptions.

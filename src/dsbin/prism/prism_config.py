@@ -46,13 +46,10 @@ class PrismConfig:
             args: Set of lowercase argument strings.
             logger: Optional logger instance to use for internal logging.
 
-        Raises:
-            SystemExit: If invalid argument combinations are detected.
-
         Returns:
             Configured PrismConfig instance.
         """
-        logger = logger or LocalLogger.setup_logger()
+        logger = logger or LocalLogger().get_logger()
 
         # Define valid options
         actions = {name.lower() for name in Action.__members__}

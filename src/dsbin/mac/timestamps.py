@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 
-"""
-Quick and easy timestamp getting/setting for macOS.
+"""Quick and easy timestamp getting/setting for macOS.
 
 If only a filename is specified, it will print the timestamps for that file. If a -c/--creation
 and/or -m/--modification argument is provided, it will set those timestamps. If only one timestamp
@@ -90,8 +89,7 @@ def set_times(
     ctime_to_mtime: bool = False,
     mtime_to_ctime: bool = False,
 ) -> None:
-    """
-    Set one or both specified timestamps on the specified file.
+    """Set one or both specified timestamps on the specified file.
 
     Args:
         file: The file to set timestamps for.
@@ -123,8 +121,7 @@ def get_times(
     ctime: str | None = None,
     mtime: str | None = None,
 ) -> None:
-    """
-    Get and print timestamps for the specified file with a given message and color. If you supply a
+    """Get and print timestamps for the specified file with a given message and color. If you supply a
     ctime and mtime as arguments, it will just print with those times instead of checking the file.
 
     Args:
@@ -147,8 +144,7 @@ def get_times(
 
 @catch_errors()
 def copy_times(from_file: str, to_file: str) -> None:
-    """
-    Copy timestamps from one file to another.
+    """Copy timestamps from one file to another.
 
     Args:
         from_file: The file to copy timestamps from.
@@ -161,8 +157,7 @@ def copy_times(from_file: str, to_file: str) -> None:
 
 @catch_errors()
 def copy_times_between_directories(src_dir: str, dst_dir: str) -> None:
-    """
-    Copy timestamps from files in a directory to matching files in another directory with identical
+    """Copy timestamps from files in a directory to matching files in another directory with identical
     names (minus extension).
 
     Args:

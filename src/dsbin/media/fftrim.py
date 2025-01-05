@@ -38,7 +38,7 @@ def determine_output_file(input_file: str, output_file: str) -> tuple[str, str, 
         output_ext = input_ext
         output_file += input_ext
 
-    if output_ext == ".mp4" and input_ext == ".mp4" or output_ext != ".mp4":
+    if (output_ext == ".mp4" and input_ext == ".mp4") or output_ext != ".mp4":
         video_codec = "copy"
         audio_codec = "copy"
         metadata_flag = []
@@ -69,23 +69,21 @@ def main():
             args.input_file, output_file
         )
 
-        ffmpeg_command = (
-            [
-                "ffmpeg",
-                "-ss",
-                start_time,
-                "-to",
-                end_time,
-                "-i",
-                args.input_file,
-                "-c:v",
-                video_codec,
-                "-c:a",
-                audio_codec,
-            ]
-            + metadata_flag
-            + [output_file]
-        )
+        ffmpeg_command = [
+            "ffmpeg",
+            "-ss",
+            start_time,
+            "-to",
+            end_time,
+            "-i",
+            args.input_file,
+            "-c:v",
+            video_codec,
+            "-c:a",
+            audio_codec,
+            *metadata_flag,
+            output_file,
+        ]
 
         subprocess.run(ffmpeg_command, check=True)
     except subprocess.CalledProcessError as e:

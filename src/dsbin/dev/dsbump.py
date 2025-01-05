@@ -1,8 +1,8 @@
 """Version management tool for Python projects.
 
 Handles version bumping, pre-releases, development versions, and git operations following PEP 440.
-Supports major.minor.patch versioning with alpha/beta/rc pre-releases and .devN development versions.
-Works natively with Poetry, but also supports standard pyproject.toml version management.
+Supports major.minor.patch versioning with alpha/beta/rc and .devN development versions. Works
+natively with Poetry, but also supports standard pyproject.toml version management.
 
 Usage:
     # Regular version bumping
@@ -51,7 +51,7 @@ env = DSEnv()
 env.add_debug_var()
 
 log_level = "debug" if env.debug else "info"
-logger = LocalLogger.setup_logger(level=log_level, message_only=not env.debug)
+logger = LocalLogger().get_logger(level=log_level, simple=not env.debug)
 
 BumpType = Literal["major", "minor", "patch", "alpha", "beta", "rc"]
 
@@ -67,7 +67,7 @@ def check_git_state() -> None:
 
     # Check if we're on a branch (not in detached HEAD state)
     result = subprocess.run(
-        ["git", "symbolic-ref", "--short", "HEAD"], capture_output=True, text=True
+        ["git", "symbolic-ref", "--short", "HEAD"], capture_output=True, text=True, check=False
     )
     if result.returncode != 0:
         logger.error("Not on a git branch (detached HEAD state).")
@@ -109,9 +109,6 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
         Tuple of (major, minor, patch, pre-release type, pre-release number).
         Pre-release type can be "a", "b", "rc", "dev", or None.
         Pre-release number can be None if no pre-release.
-
-    Raises:
-        SystemExit: If version string is invalid.
     """
     # Handle dev suffix (.devN)
     if ".dev" in version:
@@ -162,14 +159,13 @@ def bump_version(bump_type: BumpType | str | None, current_version: str, dev: bo
     """
     if bump_type is None:
         base_version = current_version
-    else:  # Handle explicit version setting
-        if bump_type.count(".") >= 2:
-            _handle_explicit_version(bump_type)
-            base_version = bump_type
-        else:  # Parse current version
-            major, minor, patch, pre_type, pre_num = parse_version(current_version)
-            # Get base version without dev suffix
-            base_version = _get_base_version(bump_type, pre_type, major, minor, patch, pre_num)
+    elif bump_type.count(".") >= 2:
+        _handle_explicit_version(bump_type)
+        base_version = bump_type
+    else:  # Parse current version
+        major, minor, patch, pre_type, pre_num = parse_version(current_version)
+        # Get base version without dev suffix
+        base_version = _get_base_version(bump_type, pre_type, major, minor, patch, pre_num)
 
     if dev:  # If already a dev version, increment dev number
         if ".dev" in base_version:
@@ -191,11 +187,11 @@ def _get_base_version(
 ) -> str:
     """Calculate base version without dev suffix."""
     # Handle pre-release bumping
-    if bump_type in ("alpha", "beta", "rc"):
+    if bump_type in {"alpha", "beta", "rc"}:
         return _handle_prerelease_version(bump_type, pre_type, major, minor, patch, pre_num)
 
     # When moving from pre-release to release
-    if pre_type in ("a", "b", "rc") and bump_type == "patch":
+    if pre_type in {"a", "b", "rc"} and bump_type == "patch":
         return f"{major}.{minor}.{patch}"
 
     # Handle regular version bumping
@@ -212,7 +208,11 @@ def _get_base_version(
 
 
 def _handle_explicit_version(version: str) -> None:
-    """Validate explicit version number format."""
+    """Validate explicit version number format.
+
+    Raises:
+        ValueError: If version number is invalid.
+    """
     try:
         if "-" in version:
             version_part, _ = version.split("-", 1)
@@ -252,9 +252,6 @@ def _handle_prerelease_version(
 
     Returns:
         New version string.
-
-    Raises:
-        SystemExit: If attempting invalid pre-release transition.
     """
     prerelease_map = {"alpha": "a", "beta": "b", "rc": "rc"}
     new_prerelease = prerelease_map[bump_type]
@@ -262,7 +259,7 @@ def _handle_prerelease_version(
     if pre_type == new_prerelease:
         # Increment existing pre-release
         return f"{major}.{minor}.{patch}{new_prerelease}{pre_num + 1 if pre_num else 1}"
-    if pre_type in ("a", "b", "rc"):
+    if pre_type in {"a", "b", "rc"}:
         # Moving to next pre-release type
         if _sort_prerelease(new_prerelease) > _sort_prerelease(pre_type):
             return f"{major}.{minor}.{patch}{new_prerelease}1"
@@ -476,14 +473,13 @@ def _identify_tag_patterns(old_version: str, new_version: str) -> list[str]:
     prerelease_patterns = [".dev*", "a*", "b*", "rc*"]
     patterns = []
     if new_major > old_major:  # Major bump: clean all pre-release tags
-        for pattern in prerelease_patterns:
-            patterns.append(f"v{old_major}.*{pattern}")
+        patterns.extend(f"v{old_major}.*{pattern}" for pattern in prerelease_patterns)
     elif new_minor > old_minor:  # Minor bump: clean minor pre-releases
-        for pattern in prerelease_patterns:
-            patterns.append(f"v{old_major}.{old_minor}.*{pattern}")
+        patterns.extend(f"v{old_major}.{old_minor}.*{pattern}" for pattern in prerelease_patterns)
     else:  # Patch bump or explicit version
-        for pattern in prerelease_patterns:
-            patterns.append(f"v{new_major}.{new_minor}.{new_patch}{pattern}")
+        patterns.extend(
+            f"v{new_major}.{new_minor}.{new_patch}{pattern}" for pattern in prerelease_patterns
+        )
 
     return patterns
 
@@ -504,11 +500,11 @@ def _remove_found_tags(found_tags: set[str]) -> None:
         subprocess.run(["git", "tag", "-d", tag], check=True)
 
     # Remove remote tags if remote exists
-    remote_check = subprocess.run(["git", "remote"], capture_output=True, text=True)
+    remote_check = subprocess.run(["git", "remote"], capture_output=True, text=True, check=False)
     if remote_check.stdout.strip():
         logger.debug("Removing remote tags...")
         subprocess.run(
-            ["git", "push", "--delete", "origin"] + list(found_tags),
+            ["git", "push", "--delete", "origin", *list(found_tags)],
             capture_output=True,
             check=False,
         )
@@ -638,7 +634,7 @@ def drop_prerelease_commits(commits: list[str]) -> None:
         script = "".join(f"drop {commit}\n" for commit in commits)
         logger.debug("Rebase script:\n%s", script)
 
-        with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", delete=False, encoding="utf-8") as f:
             f.write(script)
             script_path = f.name
 
@@ -661,7 +657,7 @@ def drop_prerelease_commits(commits: list[str]) -> None:
             subprocess.run(["git", "push", "--force"], check=True)
 
         finally:
-            os.unlink(script_path)  # Clean up temp file
+            Path(script_path).unlink()  # Clean up temp file
 
     except Exception:  # If anything goes wrong, try to restore the state
         subprocess.run(["git", "stash", "pop"], check=False)
@@ -715,7 +711,10 @@ def handle_git_operations(
         cleanup_tags(current_version, new_version)
 
     # Check if tag already exists
-    if subprocess.run(["git", "rev-parse", tag_name], capture_output=True).returncode == 0:
+    if (
+        subprocess.run(["git", "rev-parse", tag_name], capture_output=True, check=False).returncode
+        == 0
+    ):
         logger.error("Tag %s already exists.", tag_name)
         sys.exit(1)
 

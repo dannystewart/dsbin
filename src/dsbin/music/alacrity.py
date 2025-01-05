@@ -1,5 +1,4 @@
-"""
-Converts files in a directory to ALAC, with additional formats and options.
+"""Converts files in a directory to ALAC, with additional formats and options.
 
 This script is designed to convert files in the current directory to ALAC, preserving
 creation and modification timestamps. Its primary use case is for converting old Logic
@@ -83,8 +82,7 @@ class ALACrity:
             delete_files(skipped_files, show_individual=False)
 
     def _gather_files(self, path: str) -> list[str]:
-        """
-        Gather the files or directories to process based on the given path. For directories, it uses
+        """Gather the files or directories to process based on the given path. For directories, it uses
         the specified file extensions to filter files.
 
         Args:
@@ -115,8 +113,7 @@ class ALACrity:
     def gather_and_process_files(
         self, files_to_process: list[str]
     ) -> tuple[list[str], list[str], list[str]]:
-        """
-        Convert the gathered files, track the conversion result for each file, and preserve the
+        """Convert the gathered files, track the conversion result for each file, and preserve the
         original timestamps for successfully converted files.
 
         Args:
@@ -147,8 +144,7 @@ class ALACrity:
         return converted_files, original_files, skipped_files
 
     def handle_file_conversion(self, input_path: str) -> tuple[str, str]:
-        """
-        Convert a single file to the specified format using ffmpeg_audio, including checking for
+        """Convert a single file to the specified format using ffmpeg_audio, including checking for
         existing files and preserving bit depth if specified.
 
         Args:
@@ -170,7 +166,7 @@ class ALACrity:
 
         if self.preserve_bit_depth:
             actual_bit_depth = find_bit_depth(input_path)
-            if actual_bit_depth in [24, 32]:
+            if actual_bit_depth in {24, 32}:
                 self.bit_depth = actual_bit_depth
 
         with conversion_list_context(output_filename):
@@ -192,8 +188,7 @@ class ALACrity:
 
     @staticmethod
     def _handle_existing_file(output_path: str) -> bool:
-        """
-        Check for an existing file and prompt to confirm whether to overwrite if needed.
+        """Check for an existing file and prompt to confirm whether to overwrite if needed.
 
         Args:
             output_path: The path where the converted file would be saved.
@@ -259,7 +254,7 @@ def parse_arguments() -> argparse.Namespace:
 
     for ext in ALLOWED_EXTS:
         ext_without_dot = ext.lstrip(".")
-        if ext_without_dot not in ["flac", "wav", "aiff"]:
+        if ext_without_dot not in {"flac", "wav", "aiff"}:
             parser.add_argument(
                 f"--{ext_without_dot}",
                 action="store_true",

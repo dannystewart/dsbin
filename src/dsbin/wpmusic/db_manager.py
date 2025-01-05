@@ -16,7 +16,7 @@ from dsutil import LocalLogger
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-    from .wp_config import Config
+    from dsbin.wpmusic.wp_config import Config
 
 
 class DatabaseManager:
@@ -24,10 +24,10 @@ class DatabaseManager:
 
     def __init__(self, config: Config):
         self.config = config
-        self.logger = LocalLogger.setup_logger(
+        self.logger = LocalLogger().get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
-            message_only=self.config.log_message_only,
+            simple=self.config.log_simple,
         )
 
     def _ensure_mysql_tunnel(self) -> None:

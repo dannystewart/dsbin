@@ -4,9 +4,9 @@ from __future__ import annotations
 
 import argparse
 import datetime
-import os
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 
 from dsutil import TZ, LocalLogger, TimeAwareLogger, configure_traceback
 from dsutil.animation import walking_animation
@@ -32,7 +32,11 @@ class WorkStats:
 
 
 def parse_timestamp(timestamp: str) -> datetime.datetime:
-    """Parse the timestamp string returned by get_timestamps."""
+    """Parse the timestamp string returned by get_timestamps.
+
+    Raises:
+        ValueError: If the timestamp can't be parsed.
+    """
     formats = [
         "%m/%d/%Y %I:%M:%S %p",  # Original expected format
         "%m/%d/%Y %H:%M:%S",  # 24-hour format without AM/PM
@@ -50,7 +54,11 @@ def parse_timestamp(timestamp: str) -> datetime.datetime:
 
 
 def parse_date(date_str: str) -> datetime.date:
-    """Parse the date string provided as an argument."""
+    """Parse the date string provided as an argument.
+
+    Raises:
+        ValueError: If the date can't be parsed.
+    """
     try:
         return datetime.datetime.strptime(date_str, "%m/%d/%Y").date()  # noqa: DTZ007
     except ValueError as e:
@@ -70,8 +78,7 @@ def calculate_work_time(
     start_date: datetime.date | None,
     end_date: datetime.date | None,
 ) -> WorkStats:
-    """
-    Calculate the total work time based on file creation timestamps.
+    """Calculate the total work time based on file creation timestamps.
 
     Args:
         directory: Path to the directory containing audio files.
@@ -95,7 +102,8 @@ def calculate_work_time(
         timestamps = []
         for file in audio_files:
             try:
-                ctime, _ = get_timestamps(os.path.join(directory, file))
+                path = Path(directory) / file
+                ctime, _ = get_timestamps(str(path))
                 timestamp = parse_timestamp(ctime)
 
                 # Apply date filtering
@@ -168,14 +176,14 @@ def main() -> None:
 
     args = parser.parse_args()
 
-    directory = os.path.abspath(args.directory)
+    directory = Path(args.directory).resolve()
     max_break_time = args.break_time
     recursive = args.recursive
 
     start_date = parse_date(args.start) if args.start else None
     end_date = parse_date(args.end) if args.end else None
 
-    if not os.path.isdir(directory):
+    if not directory.is_dir():
         logger.error("'%s' is not a valid directory.", directory)
         sys.exit(1)
 

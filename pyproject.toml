@@ -42,11 +42,17 @@ mypy = ">=1.14.1"
 ruff = ">=0.8.5"
 
 [tool.poetry.scripts]
-# Script to list all my scripts
+# Scripts to list all my scripts and check versions
 lsbin = "dsbin.lsbin:main"
-
-# Script to check my package versions
 dsver = "dsbin.dsver:main"
+
+# Dedicated utilities
+dsupdater = "dsbin.dsupdater.updater:main"
+dsupdater-install = "dsbin.dsupdater.install:main"
+iplookup = "dsbin.iplookup.iplookup:main"
+prism = "dsbin.prism.prism:main"
+workcalc = "dsbin.workcalc.main:main"
+wpmusic = "dsbin.wpmusic.main:main"
 
 # File management scripts
 backupsort = "dsbin.files.backupsort:main"
@@ -73,11 +79,9 @@ pybounce = "dsbin.music.pybounce:main"
 pyfiler = "dsbin.music.pyfiler:main"
 rmp3 = "dsbin.music.rmp3:main"
 wav2aif = "dsbin.music.awa:wav2aif"
-wpmusic = "dsbin.wpmusic.main:main"
 
 # Logic-specific scripts
 bipclean = "dsbin.logic.bipclean:main"
-calcbounce = "dsbin.logic.calcbounce:main"
 oldprojects = "dsbin.logic.oldprojects:main"
 
 # Mac-specific scripts
@@ -92,9 +96,7 @@ timestamps = "dsbin.mac.timestamps:main"
 # Development-related scripts
 dsbump = "dsbin.dev.dsbump:main"
 dsversion = "dsbin.dev.dsbump:main"
-gitcalc = "dsbin.gitcalc.main:main"
 pipmigrator = "dsbin.dev.pipmigrator:main"
-prism = "dsbin.prism.prism:main"
 pyenversioner = "dsbin.dev.pyenversioner:main"
 scriptdep = "dsbin.dev.scriptdep:main"
 tagreplace = "dsbin.dev.tag_replace:main"
@@ -103,14 +105,10 @@ uvmigrate = "dsbin.dev.uvmigrate:main"
 # System tools
 changehostname = "dsbin.tools.changehostname:main"
 dsservice = "dsbin.tools.dsservice:main"
-dsupdater = "dsbin.dsupdater.updater:main"
-dsupdater-install = "dsbin.dsupdater.install:main"
 dockermounter = "dsbin.tools.dockermounter:main"
 envsync = "dsbin.tools.envsync:main"
-iplookup = "dsbin.iplookup.iplookup:main"
 ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
 watchtower = "dsbin.tools.watchtower:main"
-workcalc = "dsbin.workcalc.main:main"
 
 # Text processing scripts
 pycompare = "dsbin.text.pycompare:main"

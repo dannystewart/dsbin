@@ -341,7 +341,7 @@ tzdata = {version = ">=2024.2", markers = "sys_platform == \"win32\""}
 type = "git"
 url = "https://gitlab.dannystewart.com/danny/dsutil.git"
 reference = "HEAD"
-resolved_reference = "bf963f9a1084262cfbafc0f06cb556145b25843d"
+resolved_reference = "4bb0053367956c9a435876a49718184d8d742f50"
 
 [[package]]
 name = "editor"

@@ -16,7 +16,11 @@ configure_traceback()
 
 
 def run_tool(cmd: list, cwd: str | None = None) -> tuple[str, str]:
-    """Run a uv tool and return its output."""
+    """Run a uv tool and return its output.
+
+    Raises:
+        FileNotFoundError: If the tool is not found in PATH.
+    """
     uvx_path = shutil.which("uvx")
     if not uvx_path:
         msg = "uvx not found in PATH"
@@ -29,25 +33,24 @@ def run_tool(cmd: list, cwd: str | None = None) -> tuple[str, str]:
 def get_imports(path: Path, exclude_dirs: list[str] | None = None) -> dict:
     """Get all imports from Python files in the given path, excluding specified directories."""
     imports_by_file = defaultdict(set)
+    exclude_dirs = exclude_dirs or []
 
     for file in path.rglob("*.py"):
-        # Check if the file is in an excluded directory
         if any(excluded_dir in file.parts for excluded_dir in exclude_dirs):
             continue
 
-        with open(file, encoding="utf-8") as f:
-            try:
-                tree = ast.parse(f.read())
-                for node in ast.walk(tree):
-                    if isinstance(node, ast.Import):
-                        for name in node.names:
-                            imports_by_file[file.relative_to(path)].add(name.name.split(".")[0])
-                    elif isinstance(node, ast.ImportFrom):
-                        if node.module:
-                            imports_by_file[file.relative_to(path)].add(node.module.split(".")[0])
-            except SyntaxError:
-                print(f"Syntax error in {file}")
-                continue
+        try:
+            tree = ast.parse(file.read_text(encoding="utf-8"))
+        except SyntaxError:
+            print(f"Syntax error in {file}")
+            continue
+
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                for name in node.names:
+                    imports_by_file[file.relative_to(path)].add(name.name.split(".")[0])
+            elif isinstance(node, ast.ImportFrom) and node.module:
+                imports_by_file[file.relative_to(path)].add(node.module.split(".")[0])
 
     return imports_by_file
 

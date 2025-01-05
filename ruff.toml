@@ -1,5 +1,5 @@
-# Ruff config version: 9
-# ----------------------
+# Ruff config version: 10
+# -----------------------
 
 # Files and directories to exclude
 exclude = [
@@ -177,7 +177,17 @@ docstring-quotes = "single"
 
 [lint.isort]
 required-imports = ["from __future__ import annotations"]
-forced-separate = ["dsutil"]
+section-order = [
+  "future",
+  "standard-library",
+  "third-party",
+  "personal",
+  "first-party",
+  "local-folder",
+]
+
+[lint.isort.sections]
+personal = ["dsutil"]
 
 [lint.mccabe]
 max-complexity = 10

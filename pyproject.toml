@@ -65,7 +65,6 @@ ytdl = "dsbin.media.ytdl:main"
 aif2wav = "dsbin.music.awa:aif2wav"
 alacrity = "dsbin.music.alacrity:main"
 bounceprune = "dsbin.music.bounceprune:main"
-calcbounce = "dsbin.music.calcbounce:main"
 hpfilter = "dsbin.music.hpfilter:main"
 metacopy = "dsbin.music.metacopy:main"
 mp3ify = "dsbin.music.mp3ify:main"
@@ -78,6 +77,7 @@ wpmusic = "dsbin.music.wpmusic.main:main"
 
 # Logic-specific scripts
 bipclean = "dsbin.logic.bipclean:main"
+calcbounce = "dsbin.logic.calcbounce:main"
 oldprojects = "dsbin.logic.oldprojects:main"
 
 # Mac-specific scripts

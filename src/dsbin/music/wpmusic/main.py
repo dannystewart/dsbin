@@ -1,5 +1,4 @@
-"""
-Uploads and replaces Evanescence remixes on WordPress.
+"""Uploads and replaces Evanescence remixes on WordPress.
 
 This is a sophisticated script to automate the process of converting and uploading my Evanescence
 remixes to my WordPress site. With frequent updates and revisions, ensuring consistent quality along
@@ -19,8 +18,8 @@ script also supports a `--skip-upload` argument that will convert but not upload
 from __future__ import annotations
 
 import argparse
-import os
 import sys
+from pathlib import Path
 
 from .audio_track import AudioTrack
 from .file_manager import FileManager
@@ -110,7 +109,7 @@ class WPMusic:
 
     def display_history(self) -> None:
         """Display upload history."""
-        track_name = self.args.history if self.args.history != "" else None
+        track_name = self.args.history or None
         self.upload_tracker.pretty_print_history(track_name)
 
     def process_file(self, file_path: str) -> None:
@@ -125,7 +124,11 @@ class WPMusic:
             self._process_single_file(instrumental_path, is_pair=True)
 
     def _process_single_file(self, file_path: str, is_pair: bool = False) -> None:
-        """Process a single audio file."""
+        """Process a single audio file.
+
+        Raises:
+            TypeError: If no track is selected from the fallback menu.
+        """
         audio_track = AudioTrack(file_path, append_text=self.args.append)
 
         try:
@@ -155,17 +158,19 @@ class WPMusic:
         except Exception as e:
             self.logger.error("An error occurred: %s", str(e))
 
-    def _find_instrumental_pair(self, file_path: str) -> str | None:
+    def _find_instrumental_pair(self, file_path: str | Path) -> Path | None:
         """Find a matching instrumental file for the given file path."""
-        base_path, ext = os.path.splitext(file_path)
+        path = Path(file_path)
+        base_path = path.stem
+        ext = path.suffix
 
         # Skip if this is already an instrumental file
         if base_path.endswith(" No Vocals"):
             return None
 
         # Check for instrumental pair
-        instrumental_path = f"{base_path} No Vocals{ext}"
-        return instrumental_path if os.path.exists(instrumental_path) else None
+        instrumental_path = path.with_name(f"{base_path} No Vocals{ext}")
+        return instrumental_path if instrumental_path.exists() else None
 
     def process_and_upload(self, audio_track: AudioTrack, output_filename: str) -> None:
         """Convert the files, apply metadata, and upload them to the web server."""
@@ -204,21 +209,27 @@ class WPMusic:
         else:
             spinner.succeed(color("Conversion complete! Files kept locally.", "green"))
 
-    def convert_file_to_format(self, input_file: str, format_name: str, base_filename: str) -> str:
-        """Convert the input file to a different format."""
+    def convert_file_to_format(
+        self, input_file: str | Path, format_name: str, base_filename: str
+    ) -> Path:
+        """Convert the input file to a different format.
+
+        Raises:
+            ValueError: If the file format is not supported.
+        """
         format_ext = self.config.formats.get(format_name)
 
         if not format_ext:
             msg = f"Unsupported file format: {format_name}"
             raise ValueError(msg)
 
-        output_file_path = os.path.join(self.config.file_save_path, f"{base_filename}{format_ext}")
-        self.logger.debug("Output file path for %s: %s", format_name.upper(), output_file_path)
+        output_file_path = Path(self.config.file_save_path) / f"{base_filename}{format_ext}"
+        self.logger.debug("Output file path for %s: %s", format_name.upper(), str(output_file_path))
 
         ffmpeg_audio(
-            input_files=input_file,
-            output_format=format_ext[1:],
-            output_file=output_file_path,
+            input_files=str(input_file),
+            output_format=format_ext[1:],  # Remove the leading dot
+            output_file=str(output_file_path),
             overwrite=True,
             show_output=False,
         )

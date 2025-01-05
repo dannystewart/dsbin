@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 from mutagen.flac import FLAC, Picture
 from mutagen.id3 import ID3
-from mutagen.id3._frames import APIC, TALB, TCON, TDRC, TIT2, TPE1, TRCK
+from mutagen.id3._frames import APIC, TALB, TCON, TDRC, TIT2, TPE1, TRCK  # noqa: PLC2701
 from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4, MP4Cover
 
@@ -27,7 +27,11 @@ class MetadataSetter:
         )
 
     def apply_metadata(self, audio_track: AudioTrack, audio_format: str, path: str) -> str:
-        """Prepare the metadata for the file based on its format."""
+        """Prepare the metadata for the file based on its format.
+
+        Raises:
+            ValueError: If the file format is not supported.
+        """
         self.logger.debug("Preparing %s file '%s'...", audio_format.upper(), path)
 
         audio: FLAC | MP4 | MP3

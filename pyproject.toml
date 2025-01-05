@@ -110,6 +110,7 @@ envsync = "dsbin.tools.envsync:main"
 iplookup = "dsbin.tools.iplookup.iplookup:main"
 ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
 watchtower = "dsbin.tools.watchtower:main"
+workcalc = "dsbin.tools.workcalc.main:main"
 
 # Text processing scripts
 pycompare = "dsbin.text.pycompare:main"

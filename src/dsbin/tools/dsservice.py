@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import argparse
 import subprocess
+import sys
 from pathlib import Path
 
-from .systemd.service_list import ServiceConfigs
-from .systemd.systemd import SystemdServiceTemplate
+from dsbin.systemd.service_list import ServiceConfigs
+from dsbin.systemd.systemd import SystemdServiceTemplate
 
 from dsutil.shell import is_root_user
 from dsutil.text import color, print_colored
@@ -23,7 +24,11 @@ class SystemdManager:
         self.systemd_path = Path("/etc/systemd/system")
 
     def install_service(self, config: SystemdServiceTemplate) -> bool:
-        """Install and enable a systemd service and timer. Returns success status."""
+        """Install and enable a systemd service and timer. Returns success status.
+
+        Raises:
+            RuntimeError: If the systemd directory is not found.
+        """
         if not self.systemd_path.exists():
             msg = "systemd directory not found."
             raise RuntimeError(msg)
@@ -122,7 +127,11 @@ def list_services(search_term: str = "") -> None:
 
 
 def handle_services(args: argparse.Namespace) -> int:
-    """Get available services and perform requested actions."""
+    """Get available services and perform requested actions.
+
+    Raises:
+        ValueError: If an unknown command is provided.
+    """
     manager = SystemdManager()
     configs = ServiceConfigs()
 
@@ -148,7 +157,8 @@ def handle_services(args: argparse.Namespace) -> int:
             print_colored(f"Successfully removed {args.service} service.", "green")
             return 0
         return 1
-    raise ValueError("Unknown command.")
+    msg = "Unknown command."
+    raise ValueError(msg)
 
 
 def parse_args() -> argparse.Namespace:
@@ -180,4 +190,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    exit(main())
+    sys.exit(main())

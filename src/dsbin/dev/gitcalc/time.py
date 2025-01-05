@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import operator
 from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
@@ -99,7 +100,7 @@ class TimeAnalyzer:
         most_active_hours = []
         for hour, commits in sorted(
             stats.commits_by_hour.items(),
-            key=lambda x: x[1],
+            key=operator.itemgetter(1),
             reverse=True,
         )[:3]:
             percentage = (commits / total_commits) * 100

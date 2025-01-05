@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import operator
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -25,8 +26,8 @@ class SessionAnalyzer:
     @staticmethod
     def calculate_session_stats(stats: WorkStats) -> SessionStats:
         """Calculate statistics about work sessions."""
-        most_commits_day = max(stats.commits_by_day.items(), key=lambda x: x[1])
-        most_time_day = max(stats.time_by_day.items(), key=lambda x: x[1])
+        most_commits_day = max(stats.commits_by_day.items(), key=operator.itemgetter(1))
+        most_time_day = max(stats.time_by_day.items(), key=operator.itemgetter(1))
 
         return SessionStats(
             count=stats.session_count,

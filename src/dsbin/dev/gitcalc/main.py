@@ -90,7 +90,11 @@ class GitCalculator:
         )
 
     def get_git_commits(self) -> list[datetime]:
-        """Get timestamps of all commits in the repository."""
+        """Get timestamps of all commits in the repository.
+
+        Raises:
+            RuntimeError: If the current directory is not a git repository.
+        """
         try:
             result = subprocess.run(
                 ["git", "log", "--format=%aI"],
@@ -202,7 +206,11 @@ class GitCalculator:
 
     @staticmethod
     def parse_date(date_str: str) -> date:
-        """Parse the date string provided as an argument."""
+        """Parse the date string provided as an argument.
+
+        Raises:
+            ValueError: If the date can't be parsed.
+        """
         try:
             return datetime.strptime(date_str, "%m/%d/%Y %z").date()
         except ValueError as e:

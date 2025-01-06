@@ -8,6 +8,7 @@ import socket
 import subprocess
 import sys
 from pathlib import Path
+from threading import Thread
 
 from dsutil import LocalLogger, configure_traceback
 
@@ -112,6 +113,22 @@ class PrismController:
         self.docker_compose_command("down", dev)
         logger.info("%s stopped and removed.", instance)
 
+    def restart_single_instance(self, dev: bool) -> None:
+        """Handle restart for a single instance.
+
+        Args:
+            dev: Whether this is the dev instance
+        """
+        instance = "dev" if dev else "prod"
+        logger.info("Restarting %s instance...", instance)
+        self.stop_and_remove_containers(dev)
+
+        if not dev:  # Only check nginx for prod instance
+            self.check_nginx()
+
+        self.start_prism(dev)
+        logger.info("%s instance restart completed.", instance.capitalize())
+
     def check_nginx(self) -> None:
         """Check if both Nginx containers are running."""
         command = 'docker ps --filter "name=nginx" --format "{{.Names}}"'
@@ -165,7 +182,11 @@ class PrismController:
 
     def handle_restart(self) -> None:
         """Handle 'restart' action."""
-        if not self.build_image(self.config.on_dev):
+        if self.config.on_all:
+            if not self.build_image(False) or not self.build_image(True):
+                logger.error("Image build failed. Exiting...")
+                sys.exit(1)
+        elif not self.build_image(self.config.on_dev):
             logger.error("Image build failed. Exiting...")
             sys.exit(1)
 
@@ -191,13 +212,23 @@ class PrismController:
         else:
             self.stop_and_remove_containers(dev=False)
 
-    def handle_all(self):
-        """Handle 'restart' action for both instances."""
-        self.stop_and_remove_containers(dev=False)
-        self.check_nginx()
-        self.start_prism(dev=False)
-        self.stop_and_remove_containers(dev=True)
-        self.start_prism(dev=True)
+    def handle_all(self) -> None:
+        """Handle 'restart' action for both instances using threads."""
+        # Create threads for both instances
+        prod_thread = Thread(target=self.restart_single_instance, args=(False,))
+        dev_thread = Thread(target=self.restart_single_instance, args=(True,))
+
+        # Start both threads
+        prod_thread.start()
+        dev_thread.start()
+
+        # Wait for both threads to complete
+        prod_thread.join()
+        dev_thread.join()
+
+        logger.info("All instances restarted successfully!")
+
+        # Follow logs after both restarts are complete
         self.follow_logs(self.config.on_dev)
 
     def follow_logs(self, dev: bool = False) -> None:

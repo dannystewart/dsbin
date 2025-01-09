@@ -110,7 +110,7 @@ class WPMusic:
     def display_history(self) -> None:
         """Display upload history."""
         track_name = self.args.history or None
-        self.upload_tracker.pretty_print_history(track_name)
+        self.upload_tracker.pretty_print_history(track_name, uploads_per_song=self.args.list)
 
     def process_file(self, file_path: str) -> None:
         """Process a single audio file and its potential instrumental pair."""
@@ -278,6 +278,12 @@ def parse_arguments() -> argparse.Namespace:
         nargs="?",
         const="",
         help="display upload history, optionally filtered by track name",
+    )
+    parser.add_argument(
+        "-l",
+        "--list",
+        type=int,
+        help="number of uploads to list per track (default: 3)",
     )
 
     # Database-related arguments

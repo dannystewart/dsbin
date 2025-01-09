@@ -48,11 +48,13 @@ class UploadTracker:
         self.db.record_upload_set_to_db(uploaded, self.current_upload_set)
         self.current_upload_set.clear()
 
-    def pretty_print_history(self, track_name: str | None = None) -> None:
+    def pretty_print_history(
+        self, track_name: str | None = None, uploads_per_song: int | None = None
+    ) -> None:
         """Print the upload history in a beautifully formatted display."""
         history = self.db.get_upload_history(track_name)
-        uploads_per_song = TableConfig().uploads_per_song
-        num_uploads = uploads_per_song if not track_name else None
+        uploads_to_show = uploads_per_song or TableConfig().uploads_per_song
+        num_uploads = uploads_to_show if not track_name else None
 
         # Create header with fixed width
         header_text = Text()

@@ -2,58 +2,23 @@ from __future__ import annotations
 
 import operator
 from collections import defaultdict
-from dataclasses import dataclass, field
 from datetime import datetime
 from typing import TYPE_CHECKING
-from zoneinfo import ZoneInfo
 
 from rich import box
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from dsutil import LocalLogger
+from dsutil import TZ, LocalLogger
 
 from dsbin.wpmusic.db_manager import DatabaseManager
+from dsbin.wpmusic.table_config import TableConfig
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.wp_config import Config
 
-tz = ZoneInfo("America/New_York")
-
 console = Console()
-
-
-@dataclass
-class TableConfig:
-    """Configuration for the upload history table."""
-
-    # Uploads per song when displaying all songs
-    uploads_per_song: int = 3
-
-    # Date format
-    date_format: str = "%a %m.%d.%Y %I:%M %p"
-
-    # Colors
-    header_color: str = "yellow"
-    track_color: str = "cyan"
-    indicator_color: str = "green"
-    timestamp_color: str = "white"
-    footer_color: str = "cyan"
-
-    # Column widths
-    file_col_width: int = 36
-    inst_col_width: int = 7
-    time_col_width: int = 23
-
-    # Instrumental indicator
-    inst_indicator: str = "✓"
-    space_before_indicator: int = 2
-    indicator_length: int = field(init=False)
-
-    def __post_init__(self):
-        self.indicator_length = len(self.inst_indicator)
-        self.inst_indicator = " " * self.space_before_indicator + self.inst_indicator
 
 
 class UploadTracker:
@@ -78,7 +43,7 @@ class UploadTracker:
             return
 
         # Get current time and format it for MySQL
-        uploaded = datetime.now(tz=tz).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S")
+        uploaded = datetime.now(tz=TZ).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S")
 
         self.db.record_upload_set_to_db(uploaded, self.current_upload_set)
         self.current_upload_set.clear()

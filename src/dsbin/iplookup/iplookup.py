@@ -117,30 +117,26 @@ class IPLookup:
             return country_code
 
 
-def parse_arguments() -> argparse.Namespace:
+def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="IP address lookup tool")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        "ip_address", type=str, nargs="?", default=None, help="the IP address to look up"
-    )
-    group.add_argument("--me", action="store_true", help="get your external IP address")
-    group.add_argument(
-        "--me-lookup", action="store_true", help="get lookup results for your IP address"
-    )
+    group.add_argument("ip_address", type=str, nargs="?", help="the IP address to look up")
+    group.add_argument("-m", "--me", action="store_true", help="get your external IP address")
+    group.add_argument("-l", "--lookup", action="store_true", help="get lookup for your IP address")
     return parser.parse_args()
 
 
 @handle_keyboard_interrupt()
 def main() -> None:
     """Main function."""
-    args = parse_arguments()
-    if args.me_lookup:
+    args = parse_args()
+    if args.lookup:
         args.me = True
 
     if args.me:
         ip_address = IPLookup.get_external_ip()
-        if not ip_address or not args.me_lookup:
+        if not args.lookup:
             return
     else:
         ip_address = args.ip_address or input("Please enter the IP address to look up: ")

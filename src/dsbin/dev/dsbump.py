@@ -74,6 +74,42 @@ def check_git_state() -> None:
 
 
 @handle_keyboard_interrupt()
+def detect_version_prefix() -> str:
+    """Detect whether versions are tagged with 'v' prefix based on existing tags.
+
+    Returns:
+        "v" if versions use v-prefix, "" if they use bare numbers
+    """
+    try:
+        # Get all tags sorted by version
+        result = subprocess.run(
+            ["git", "tag", "--sort=v:refname"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        tags = result.stdout.strip().split("\n")
+
+        # Filter out empty results
+        tags = [tag for tag in tags if tag]
+        if not tags:
+            # Default to "v" prefix for new projects
+            return "v"
+
+        # Look at the most recent tag that starts with either v or a number
+        for tag in reversed(tags):
+            if tag.startswith("v") or tag[0].isdigit():
+                return "v" if tag.startswith("v") else ""
+
+        # If no matching tags found, default to "v" prefix
+        return "v"
+
+    except subprocess.CalledProcessError:
+        # If git commands fail, default to "v" prefix
+        return "v"
+
+
+@handle_keyboard_interrupt()
 def get_version(pyproject_path: Path) -> str:
     """Get current version from pyproject.toml."""
     content = pyproject_path.read_text()
@@ -390,7 +426,8 @@ def _find_base_release_tag() -> str | None:
     """
     current_version = get_version(Path("pyproject.toml"))
     major, minor, patch, _, _ = parse_version(current_version)
-    base_version = f"v{major}.{minor}.{patch}"
+    version_prefix = detect_version_prefix()
+    base_version = f"{version_prefix}{major}.{minor}.{patch}"
 
     # Get all tags sorted by version
     result = subprocess.run(
@@ -455,16 +492,23 @@ def _identify_tag_patterns(old_version: str, new_version: str) -> list[str]:
     old_major, old_minor, _, _, _ = parse_version(old_version)
     new_major, new_minor, new_patch, _, _ = parse_version(new_version)
 
+    version_prefix = detect_version_prefix()
+
     # Define pattern components for each pre-release type
     prerelease_patterns = [".dev*", "a*", "b*", "rc*"]
     patterns = []
-    if new_major > old_major:  # Major bump: clean all pre-release tags
-        patterns.extend(f"v{old_major}.*{pattern}" for pattern in prerelease_patterns)
-    elif new_minor > old_minor:  # Minor bump: clean minor pre-releases
-        patterns.extend(f"v{old_major}.{old_minor}.*{pattern}" for pattern in prerelease_patterns)
-    else:  # Patch bump or explicit version
+    if new_major > old_major:
         patterns.extend(
-            f"v{new_major}.{new_minor}.{new_patch}{pattern}" for pattern in prerelease_patterns
+            f"{version_prefix}{old_major}.*{pattern}" for pattern in prerelease_patterns
+        )
+    elif new_minor > old_minor:
+        patterns.extend(
+            f"{version_prefix}{old_major}.{old_minor}.*{pattern}" for pattern in prerelease_patterns
+        )
+    else:
+        patterns.extend(
+            f"{version_prefix}{new_major}.{new_minor}.{new_patch}{pattern}"
+            for pattern in prerelease_patterns
         )
 
     return patterns
@@ -672,7 +716,8 @@ def handle_git_operations(
         tag_msg: Optional tag annotation message
         current_version: Previous version string
     """
-    tag_name = f"v{new_version}"
+    version_prefix = detect_version_prefix()
+    tag_name = f"{version_prefix}{new_version}"
 
     # Handle version bump commit if needed
     if bump_type is not None:

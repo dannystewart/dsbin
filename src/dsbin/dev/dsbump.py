@@ -1,8 +1,7 @@
 """Version management tool for Python projects.
 
 Handles version bumping, pre-releases, development versions, and git operations following PEP 440.
-Supports major.minor.patch versioning with alpha/beta/rc and .devN development versions. Works
-natively with Poetry, but also supports standard pyproject.toml version management.
+Supports major.minor.patch versioning with alpha/beta/rc and .devN development versions.
 
 Usage:
     # Regular version bumping
@@ -83,16 +82,10 @@ def get_version(pyproject_path: Path) -> str:
 
         data = tomllib.loads(content)
 
-        # Try standard format first
-        if "project" in data:
+        if "project" in data and "version" in data["project"]:
             return data["project"]["version"]
-        # Fall back to Poetry format
-        if "tool" in data and "poetry" in data["tool"]:
-            return data["tool"]["poetry"]["version"]
-        logger.error(
-            "Could not find version in pyproject.toml. "
-            "Expected either project.version or tool.poetry.version."
-        )
+
+        logger.error("Could not find version in pyproject.toml (project.version).")
         sys.exit(1)
     except tomllib.TOMLDecodeError:
         logger.error("Invalid TOML format in pyproject.toml")
@@ -340,7 +333,6 @@ def update_version(
         raise
 
 
-@handle_keyboard_interrupt()
 def _update_version_in_pyproject(pyproject: Path, new_version: str) -> None:
     """Update version in pyproject.toml while preserving formatting."""
     content = pyproject.read_text()
@@ -349,26 +341,20 @@ def _update_version_in_pyproject(pyproject: Path, new_version: str) -> None:
     # Find the version line
     version_line_idx = None
     in_project = False
-    in_poetry = False
 
     for i, line in enumerate(lines):
         stripped = line.strip()
         if stripped.startswith("[project]"):
             in_project = True
-            in_poetry = False
-        elif stripped.startswith("[tool.poetry]"):
-            in_project = False
-            in_poetry = True
         elif stripped.startswith("["):  # Any other section
             in_project = False
-            in_poetry = False
 
-        if (in_project or in_poetry) and stripped.startswith("version"):
+        if in_project and stripped.startswith("version"):
             version_line_idx = i
             break
 
     if version_line_idx is None:
-        logger.error("Could not find version field in pyproject.toml")
+        logger.error("Could not find version field in project section.")
         sys.exit(1)
 
     # Update the version line while preserving indentation

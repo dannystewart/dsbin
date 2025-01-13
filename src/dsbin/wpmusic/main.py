@@ -112,16 +112,16 @@ class WPMusic:
         track_name = self.args.history or None
         self.upload_tracker.pretty_print_history(track_name, uploads_per_song=self.args.list)
 
-    def process_file(self, file_path: str) -> None:
+    def process_file(self, file_path: str | Path) -> None:
         """Process a single audio file and its potential instrumental pair."""
         # Process the original file first
-        self._process_single_file(file_path)
+        self._process_single_file(str(file_path))
 
         # Check for and process matching instrumental file
         instrumental_path = self._find_instrumental_pair(file_path)
         if instrumental_path:
             self.logger.info("Found matching instrumental file: %s", instrumental_path)
-            self._process_single_file(instrumental_path, is_pair=True)
+            self._process_single_file(str(instrumental_path), is_pair=True)
 
     def _process_single_file(self, file_path: str, is_pair: bool = False) -> None:
         """Process a single audio file.

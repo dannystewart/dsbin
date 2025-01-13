@@ -115,16 +115,21 @@ class WPMusic:
     def process_file(self, file_path: str | Path) -> None:
         """Process a single audio file and its potential instrumental pair."""
         # Process the original file first
-        self._process_single_file(str(file_path))
+        file_path = Path(file_path)
+        self._process_single_file(file_path)
 
         # Check for and process matching instrumental file
         instrumental_path = self._find_instrumental_pair(file_path)
         if instrumental_path:
             self.logger.info("Found matching instrumental file: %s", instrumental_path)
-            self._process_single_file(str(instrumental_path), is_pair=True)
+            self._process_single_file(instrumental_path, is_pair=True)
 
-    def _process_single_file(self, file_path: str, is_pair: bool = False) -> None:
+    def _process_single_file(self, file_path: Path, is_pair: bool = False) -> None:
         """Process a single audio file.
+
+        Args:
+            file_path: Path to the audio file.
+            is_pair: Whether this is part of an instrumental pair.
 
         Raises:
             TypeError: If no track is selected from the fallback menu.
@@ -224,7 +229,7 @@ class WPMusic:
             raise ValueError(msg)
 
         output_file_path = Path(self.config.file_save_path) / f"{base_filename}{format_ext}"
-        self.logger.debug("Output file path for %s: %s", format_name.upper(), str(output_file_path))
+        self.logger.debug("Output file path for %s: %s", format_name.upper(), output_file_path)
 
         ffmpeg_audio(
             input_files=str(input_file),

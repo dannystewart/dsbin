@@ -32,10 +32,11 @@ class FileManager:
             level=self.config.log_level,
             simple=self.config.log_simple,
         )
+        self.file_save_path = Path(self.config.file_save_path)
 
     def format_filename(self, audio_track: AudioTrack) -> str:
         """Format filename for the converted file based on the metadata and any appended text."""
-        track_name = audio_track.track_name
+        track_name = str(audio_track.track_name)  # Convert to string for string operations
         self.logger.debug("Filename derived from track name: '%s'", track_name)
 
         # Remove apostrophes and replace spaces and other non-alphanumeric characters with hyphens
@@ -49,8 +50,8 @@ class FileManager:
             self.logger.debug("Filename for instrumental: %s", base_filename)
 
         # Construct output path
-        output_filename = Path(self.config.file_save_path) / f"{base_filename}.flac"
-        self.logger.debug("Output filename: %s", output_filename)
+        output_path = self.file_save_path / f"{base_filename}.flac"
+        self.logger.debug("Output filename: %s", output_path)
 
         if audio_track.append_text:
             spinner.stop()
@@ -87,20 +88,14 @@ class FileManager:
             output_filename: The base filename for the converted files.
         """
         files_to_process = [  # List of files to process based on requested formats
-            Path(self.config.file_save_path) / f"{output_filename}{self.config.formats[fmt]}"
+            self.file_save_path / f"{output_filename}{self.config.formats[fmt]}"
             for fmt in self.config.formats_to_convert
         ]
-
         if self.config.keep_files:  # If keeping files, rename to match the song name
             song_name = audio_track.track_title
             for fmt in self.config.formats_to_convert:
-                old_path = (
-                    Path(self.config.file_save_path)
-                    / f"{output_filename}{self.config.formats[fmt]}"
-                )
-                new_path = (
-                    Path(self.config.file_save_path) / f"{song_name}{self.config.formats[fmt]}"
-                )
+                old_path = self.file_save_path / f"{output_filename}{self.config.formats[fmt]}"
+                new_path = self.file_save_path / f"{song_name}{self.config.formats[fmt]}"
                 if old_path.exists():
                     old_path.rename(new_path)
                 else:
@@ -111,9 +106,10 @@ class FileManager:
         else:  # Otherwise, delete the files
             delete_files(files_to_process, show_output=False)
 
-    def upload_file_to_web_server(self, file_path: str, audio_track: AudioTrack) -> None:
+    def upload_file_to_web_server(self, file_path: str | Path, audio_track: AudioTrack) -> None:
         """Upload a file to my web server."""
-        final_filename = Path(file_path).name
+        file_path = Path(file_path)
+        final_filename = file_path.name
         try:
             with paramiko.SSHClient() as ssh:
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -127,7 +123,7 @@ class FileManager:
                 self.logger.debug("Uploading file '%s' as '%s'...", file_path, temp_filename)
 
                 with SCPClient(ssh.get_transport()) as scp:
-                    scp.put(file_path, f"{self.config.upload_path_prefix}{temp_filename}")
+                    scp.put(str(file_path), f"{self.config.upload_path_prefix}{temp_filename}")
 
                 # Rename the temporary file to the final filename on the remote server
                 self.logger.debug("Renaming '%s' to '%s'...", temp_filename, final_filename)
@@ -143,9 +139,9 @@ class FileManager:
                     return
 
                 # Log the successful upload
-                self.upload_tracker.current_upload_set[audio_track.track_name][
-                    audio_track.filename
-                ] = audio_track
+                self.upload_tracker.current_upload_set[audio_track.track_name][str(file_path)] = (
+                    audio_track
+                )
 
         except Exception as e:
             self.logger.error("SSH error: %s", str(e))

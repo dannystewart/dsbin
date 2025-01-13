@@ -13,7 +13,7 @@ from PIL import Image
 class AudioTrack:
     """Represent an audio file."""
 
-    filename: str
+    filename: str | Path
     metadata_url: str = "https://gitlab.dannystewart.com/danny/evremixes/raw/main/evtracks.json"
     append_text: str = ""
 
@@ -24,6 +24,7 @@ class AudioTrack:
     track_metadata: dict = field(init=False, default_factory=dict)
     cover_data: bytes | None = field(init=False, default=None)
     tracks: list = field(init=False, default_factory=list)
+    file_path: Path = field(init=False)
 
     # Album attributes
     artist_name: str = field(init=False)
@@ -42,11 +43,16 @@ class AudioTrack:
     inst_url: str = field(init=False, default="")
     url: str = field(init=False, default="")
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize the audio track."""
+        # Convert filename to Path and store it
+        self.file_path = Path(self.filename)
+        self.filename = str(self.file_path)
+
         # Get file attributes
-        self.is_instrumental = "No Vocals" in self.filename
-        self.file_extension = Path(self.filename).suffix[1:].lower()
+        filename_str = str(self.file_path.name)
+        self.is_instrumental = "No Vocals" in filename_str
+        self.file_extension = self.file_path.suffix[1:].lower()
         self.file_format = "alac" if self.file_extension == "m4a" else self.file_extension
 
         # Fetch and set metadata
@@ -81,6 +87,7 @@ class AudioTrack:
         """Retrieve and prepare metadata for the album and all tracks, and download cover art."""
         response = requests.get(self.metadata_url, timeout=10)
         all_metadata = json.loads(response.text)
+        cover_data = None
 
         if cover_art_url := all_metadata.get("metadata", {}).get("cover_art_url", ""):
             cover_data = self.download_cover_art(cover_art_url)

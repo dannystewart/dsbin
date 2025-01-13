@@ -53,9 +53,8 @@ class TrackIdentifier:
         self.logger.debug("Matching filename '%s' to track metadata...", audio_track.filename)
 
         # Remove "No Vocals" and strip the filename for comparison
-        formatted_file_name = Path(
-            audio_track.filename.replace(" No Vocals", "").replace("'", "")
-        ).stem
+        file_path = Path(audio_track.filename)
+        formatted_file_name = str(file_path.stem).replace(" No Vocals", "").replace("'", "")
         formatted_file_name = re.sub(
             r" [0-9]+\.[0-9]+\.[0-9]+([._][0-9]+)?[a-z]*", "", formatted_file_name
         )

@@ -35,12 +35,9 @@ import re
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
-from dsutil import LocalLogger
+from dsutil import TZ, LocalLogger
 from dsutil.macos import get_timestamps
-
-tz = ZoneInfo("America/New_York")
 
 
 @dataclass
@@ -80,7 +77,7 @@ class Bounce:
     @property
     def date(self) -> datetime:
         """Return the date of the bounce as a datetime object."""
-        return datetime(self.year + 2000, self.month, self.day, tzinfo=tz)
+        return datetime(self.year + 2000, self.month, self.day, tzinfo=TZ)
 
     @property
     def full_version(self) -> str:
@@ -91,9 +88,9 @@ class Bounce:
 class BounceParser:
     """Methods for parsing, finding, sorting, and grouping bounce files by naming convention."""
 
-    BOUNCE_PATTERN = r"(.+) (\d{2})\.(\d{1,2})\.(\d{1,2})_(\d+)([a-z]?)(?: (.+))?"
+    BOUNCE_PATTERN = r"(.+) (\d{2})\.(\d{1,2})\.(\d{1,2})(?:_(\d+)([a-z]?))?(?: (.+))?"
 
-    logger = LocalLogger().get_logger("BounceParser")
+    logger = LocalLogger().get_logger()
 
     @classmethod
     def get_bounce(cls, file_path: str | Path) -> Bounce:
@@ -147,11 +144,11 @@ class BounceParser:
             year=int(year),
             month=int(month),
             day=int(day),
-            version=int(version),
+            version=int(version) if version else 0,
             minor_version=minor_version or "",
             suffix=suffix,
-            created_at=datetime.strptime(ctime, "%m/%d/%Y %H:%M:%S").replace(tzinfo=tz),
-            modified_at=datetime.strptime(mtime, "%m/%d/%Y %H:%M:%S").replace(tzinfo=tz),
+            created_at=datetime.strptime(ctime, "%m/%d/%Y %H:%M:%S").replace(tzinfo=TZ),
+            modified_at=datetime.strptime(mtime, "%m/%d/%Y %H:%M:%S").replace(tzinfo=TZ),
             file_path=path,
             file_format=path.suffix.lower()[1:],
         )
@@ -192,12 +189,14 @@ class BounceParser:
         """
         path = Path(directory)
         glob_pattern = "**/*" if recursive else "*"
+        bounce_files = []
 
-        bounce_files = [
-            file
-            for file in path.glob(glob_pattern)
-            if file.is_file() and re.match(cls.BOUNCE_PATTERN, file.name)
-        ]
+        for file in path.glob(glob_pattern):
+            if not file.is_file():
+                continue
+            if file.is_file() and re.match(cls.BOUNCE_PATTERN, file.stem):
+                bounce_files.append(file)
+
         return [cls.get_bounce(file) for file in bounce_files]
 
     @classmethod
@@ -264,7 +263,7 @@ class BounceParser:
             - If no bounces are found for the specified day, an empty list is returned.
         """
         bounces = cls.find_bounces(directory)
-        target_date = datetime(year + 2000, month, day, tzinfo=tz)
+        target_date = datetime(year + 2000, month, day, tzinfo=TZ)
         return [bounce for bounce in bounces if bounce.date == target_date]
 
     @classmethod

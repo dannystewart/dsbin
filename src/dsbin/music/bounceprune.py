@@ -74,25 +74,32 @@ def determine_actions(
 
 
 def handle_major(by_date: dict[tuple[str, datetime], list[Bounce]], actions: dict) -> None:
-    """Keep only one bounce per day (_0, _1, etc. renamed to _0)."""
+    """Keep only one bounce per day per suffix, removing version numbers entirely."""
+    # Regroup bounces by title, date, and suffix
+    by_date_and_suffix: dict[tuple[str, datetime, str | None], list[Bounce]] = {}
     for bounces in by_date.values():
-        if len(bounces) <= 1:
-            continue
+        for bounce in bounces:
+            key = (bounce.title, bounce.date, bounce.suffix)
+            if key not in by_date_and_suffix:
+                by_date_and_suffix[key] = []
+            by_date_and_suffix[key].append(bounce)
 
+    for bounces in by_date_and_suffix.values():
         sorted_bounces = BounceParser.sort_bounces(bounces)
         latest = sorted_bounces[-1]
 
-        # Trash all but the latest
-        actions["trash"].extend(b.file_path for b in sorted_bounces[:-1])
+        # For multiple bounces, trash all but the latest of this suffix variant
+        if len(bounces) > 1:
+            actions["trash"].extend(b.file_path for b in sorted_bounces[:-1])
 
-        # Rename the latest to version 0
-        new_name = latest.file_path.with_stem(
-            f"{latest.title} {latest.date.strftime('%y.%-m.%-d')}"
-        )
+        # Always check if the file needs renaming to remove version
+        current_stem = latest.file_path.stem
+        new_stem = f"{latest.title} {latest.date.strftime('%y.%-m.%-d')}"
         if latest.suffix:
-            new_name = new_name.with_stem(f"{new_name.stem} {latest.suffix}")
+            new_stem = f"{new_stem} {latest.suffix}"
 
-        if latest.version != 0 or latest.minor_version:
+        if current_stem != new_stem:
+            new_name = latest.file_path.with_stem(new_stem)
             actions["rename"].append((latest.file_path, new_name))
 
 
@@ -183,6 +190,9 @@ def print_actions(trash_files: list[str], rename_files: list[str]) -> None:
 
 def execute_actions(actions: dict[str, list]) -> None:
     """Execute a series of actions on a given directory."""
+    if not actions["trash"] and not actions["rename"]:
+        return
+
     if confirm_action("Proceed with these actions?", default_to_yes=False):
         successful_deletions, failed_deletions = delete_files(actions["trash"], show_output=False)
 

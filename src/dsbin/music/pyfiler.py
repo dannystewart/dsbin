@@ -14,8 +14,8 @@ import inquirer
 from dsutil import LocalLogger, configure_traceback
 from dsutil.animation import walking_animation
 from dsutil.env import DSEnv
-from dsutil.files import move_file
-from dsutil.progress import halo_progress
+from dsutil.files import delete_files, move_file
+from dsutil.shell import confirm_action
 from dsutil.text import color
 
 from dsbin.music.bounce_parser import Bounce, BounceParser
@@ -56,6 +56,8 @@ def prompt_user_for_suffixes(suffixes: list[str]) -> list[str]:
 
 def sort_bounces(bounces: list[Bounce], selected_suffixes: list[str]) -> None:
     """Sort bounce files into folders based on selected suffixes."""
+    duplicates: list[Path] = []
+
     for suffix in selected_suffixes:
         if matching_bounces := [bounce for bounce in bounces if bounce.suffix == suffix]:
             destination_folder = Path(suffix)
@@ -72,6 +74,7 @@ def sort_bounces(bounces: list[Bounce], selected_suffixes: list[str]) -> None:
                         color(source.name, "cyan"),
                         color(suffix, "cyan"),
                     )
+                    duplicates.append(source)
                     continue
 
                 if move_file(source, destination, overwrite=False, show_output=False):
@@ -82,6 +85,28 @@ def sort_bounces(bounces: list[Bounce], selected_suffixes: list[str]) -> None:
                     )
                 else:
                     logger.warning("Failed to move %s to %s.", source.name, destination)
+
+    if duplicates:
+        handle_duplicates(duplicates)
+
+
+def handle_duplicates(duplicates: list[Path]) -> None:
+    """Handle duplicate files that are already sorted."""
+    print("\nFound duplicate files that are already sorted:")
+    for file in duplicates:
+        print(color(f"✖ {file.name}", "yellow"))
+
+    if confirm_action("\nDelete duplicate source files?", default_to_yes=False):
+        successful, failed = delete_files(duplicates, show_output=False)
+        if successful:
+            print(
+                color(
+                    f"\n{successful} duplicate{'s' if successful != 1 else ''} deleted.",
+                    "green",
+                )
+            )
+        if failed:
+            print(color(f"{failed} deletion{'s' if failed != 1 else ''} failed.", "red"))
 
 
 def scan_bounces() -> tuple[list[Bounce], list[str]]:
@@ -113,10 +138,9 @@ def main() -> None:
 
     if common_suffixes:
         if selected_suffixes := prompt_user_for_suffixes(common_suffixes):
-            with halo_progress(
-                start_message="Sorting bounce files", end_message="Bounce files sorted successfully"
-            ):
-                sort_bounces(bounces, selected_suffixes)
+            print("\nSorting bounce files...")
+            sort_bounces(bounces, selected_suffixes)
+            print(color("\nBounce files sorted successfully.", "green"))
         else:
             logger.info("No suffixes selected. Exiting the script.")
     else:

@@ -28,6 +28,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from dsutil import configure_traceback
+from dsutil.animation import walking_animation
 from dsutil.files import delete_files
 from dsutil.shell import confirm_action
 from dsutil.text import color, print_colored
@@ -121,29 +122,59 @@ def handle_minor(by_date: dict[tuple[str, datetime], list[Bounce]], actions: dic
                     actions["rename"].append((latest.file_path, new_name))
 
 
-def print_actions(actions: dict[str, list]) -> None:
-    """Print the actions to be performed on files.
+def prepare_output(actions: dict[str, list]) -> tuple[list[str], list[str]]:
+    """Prepare the sorted lists of files for output.
 
     Args:
         actions: A dictionary containing the actions to be performed on the files.
+
+    Returns:
+        A tuple of (trash_files, rename_files) where each is a list of formatted strings
+        ready to be printed.
     """
     if not actions["trash"] and not actions["rename"]:
+        return [], []
+
+    # Sort and prepare trash files
+    trash_files = []
+    if actions["trash"]:
+        sorted_trash = sorted(actions["trash"], key=lambda x: BounceParser.get_bounce(x).date)
+        trash_files = [f"✖ {file.name}" for file in sorted_trash]
+
+    # Sort and prepare rename files
+    rename_files = []
+    if actions["rename"]:
+        sorted_rename = sorted(actions["rename"], key=lambda x: BounceParser.get_bounce(x[0]).date)
+        rename_files = [
+            f"{old_path.name} → {new_path.name}" for old_path, new_path in sorted_rename
+        ]
+
+    return trash_files, rename_files
+
+
+def print_actions(trash_files: list[str], rename_files: list[str]) -> None:
+    """Print the actions to be performed on files.
+
+    Args:
+        trash_files: List of formatted strings for files to be trashed.
+        rename_files: List of formatted strings for files to be renamed.
+    """
+    if not trash_files and not rename_files:
         print_colored("No actions to perform.", "green")
         return
 
-    if actions["trash"]:
+    if trash_files:
         print_colored("Files to Trash:", "red")
-        sorted_trash = sorted(actions["trash"], key=lambda x: BounceParser.get_bounce(x).date)
-        for file in sorted_trash:
-            print_colored(f"✖ {file.name}", "red")
+        for line in trash_files:
+            print_colored(line, "red")
     else:
         print_colored("No files to trash.", "green")
 
-    if actions["rename"]:
+    if rename_files:
         print_colored("\nFiles to Rename:", "yellow")
-        sorted_rename = sorted(actions["rename"], key=lambda x: BounceParser.get_bounce(x[0]).date)
-        for old_path, new_path in sorted_rename:
-            print(old_path.name + color(" → ", "yellow") + color(new_path.name, "green"))
+        for line in rename_files:
+            old_name, new_name = line.split(" → ")
+            print(old_name + color(" → ", "yellow") + color(new_name, "green"))
     else:
         print_colored("No files to rename.", "green")
 
@@ -177,7 +208,7 @@ def execute_actions(actions: dict[str, list]) -> None:
         completion_message = ", ".join(completion_message_parts) + "."
         print_colored(completion_message, "green")
     else:
-        print_colored("Actions cancelled.", "red")
+        print_colored("Actions canceled.", "red")
 
 
 def main() -> None:
@@ -193,10 +224,14 @@ def main() -> None:
     args = parser.parse_args()
 
     directory = Path.cwd()
-    bounces = BounceParser.find_bounces(directory)
-    bounce_groups = BounceParser.group_bounces(bounces)
-    actions = determine_actions(bounce_groups, major_only=args.major)
-    print_actions(actions)
+
+    with walking_animation("Analyzing bounce files...", "cyan"):
+        bounces = BounceParser.find_bounces(directory)
+        bounce_groups = BounceParser.group_bounces(bounces)
+        actions = determine_actions(bounce_groups, major_only=args.major)
+        trash_files, rename_files = prepare_output(actions)
+
+    print_actions(trash_files, rename_files)
     execute_actions(actions)
 
 

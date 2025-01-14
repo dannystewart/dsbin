@@ -119,9 +119,11 @@ def scan_bounces() -> tuple[list[Bounce], list[str]]:
     with walking_animation("Scanning bounce files...", "cyan"):
         directory = Path.cwd()
 
+        # Get all bounces
         all_bounces = BounceParser.find_bounces(directory)
         logger.debug("All bounces found: %s", len(all_bounces))
 
+        # Get unique suffixes
         unique_suffixes = get_unique_suffixes(all_bounces)
         logger.debug("Unique suffixes found: %s", unique_suffixes)
 
@@ -129,10 +131,8 @@ def scan_bounces() -> tuple[list[Bounce], list[str]]:
             logger.debug("No suffixes found in bounce list.")
             return [], []
 
-        suffixed_bounces = []
-        for suffix in unique_suffixes:
-            filtered = BounceParser.filter_by_suffix(directory, suffix)
-            suffixed_bounces.extend(filtered)
+        # Filter the bounces
+        suffixed_bounces = [bounce for bounce in all_bounces if bounce.suffix in unique_suffixes]
 
         return suffixed_bounces, unique_suffixes
 

@@ -186,9 +186,9 @@ class BounceParser:
 
         Note:
             - This method will not return files that don't match the bounce filename pattern.
-            - By default, only searches the specified directory. Set recursive=True to include subdirectories.
-            - Be cautious when using recursive search in directories with many subdirectories, as it may be
-                slower and include unwanted files.
+            - By default, only searches specified directory. Set recursive=True for subdirectories.
+            - Be cautious when using recursive search in directories with many subdirectories, as it
+                may be slower and include unwanted files.
         """
         path = Path(directory)
         glob_pattern = "**/*" if recursive else "*"
@@ -212,9 +212,6 @@ class BounceParser:
 
         Returns:
             The latest Bounce object from the list.
-
-        Raises:
-            IndexError: If the input list is empty.
 
         Example:
             bounces = [
@@ -298,9 +295,9 @@ class BounceParser:
 
             # Result will be a list of Bounce objects:
             # [
-            #     Bounce(title="Song A", year=24, month=5, day=15, version=1, minor_version="a", ...),
-            #     Bounce(title="Song B", year=24, month=5, day=16, version=1, minor_version="", ...),
-            #     Bounce(title="Song A", year=24, month=5, day=17, version=0, minor_version="", ...)
+            #     Bounce(title="Song A", year=24, month=5, day=1, version=1, minor_version="a" ...),
+            #     Bounce(title="Song B", year=24, month=5, day=2, version=1, minor_version="" ...),
+            #     Bounce(title="Song A", year=24, month=5, day=3, version=0, minor_version="" ...)
             # ]
 
         Note:
@@ -379,9 +376,9 @@ class BounceParser:
 
         Example:
             bounces = [
-                Bounce(title="Song A", year=24, month=5, day=15, version=1, suffix="No Vocals", ...),
-                Bounce(title="Song A", year=24, month=5, day=15, version=1, suffix=None, ...),
-                Bounce(title="Song B", year=24, month=5, day=16, version=2, suffix=None, ...)
+               Bounce(title="Song A", year=24, month=5, day=1, version=1, suffix="No Vocals", ...),
+               Bounce(title="Song A", year=24, month=5, day=1, version=1, suffix=None, ...),
+               Bounce(title="Song B", year=24, month=5, day=2, version=2, suffix=None, ...)
             ]
             grouped_bounces = BounceParser.group_bounces(bounces)
 
@@ -432,8 +429,8 @@ class BounceParser:
 
             # Result will be a list of Bounce objects:
             # [
-            #     Bounce(title="Song A", year=24, month=5, day=15, version=0, suffix="No Vocals", ...),
-            #     Bounce(title="Song B", year=24, month=5, day=16, version=1, suffix="No Vocals", ...)
+            #    Bounce(title="Song A", year=24, month=5, day=1, version=0, suffix="No Vocals" ...),
+            #    Bounce(title="Song B", year=24, month=5, day=2, version=1, suffix="No Vocals" ...)
             # ]
 
         Note:

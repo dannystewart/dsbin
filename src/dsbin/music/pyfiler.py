@@ -61,8 +61,13 @@ def sort_bounces(bounces: list[Bounce], selected_suffixes: list[str]) -> None:
     for suffix in selected_suffixes:
         if matching_bounces := [bounce for bounce in bounces if bounce.suffix == suffix]:
             destination_folder = Path(suffix)
-            destination_folder.mkdir(exist_ok=True)
-            logger.info("\nCreated folder: %s", suffix)
+
+            # Check if folder exists before trying to create it
+            if not destination_folder.exists():
+                destination_folder.mkdir()
+                logger.info("\nCreated folder: %s", suffix)
+            else:
+                logger.debug("\nUsing existing folder: %s", suffix)
 
             for bounce in matching_bounces:
                 source = bounce.file_path

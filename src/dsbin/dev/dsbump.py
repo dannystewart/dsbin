@@ -274,22 +274,45 @@ def _handle_prerelease_version(
             return f"{major}.{minor}.{patch}.dev{pre_num + 1}"
         return f"{major}.{minor}.{patch + 1}.dev1"
 
-    # Handle other pre-release types
-    prerelease_map = {"alpha": "a", "beta": "b", "rc": "rc"}
+    # Map full names to version string components
+    prerelease_map = {"dev": "dev", "alpha": "a", "beta": "b", "rc": "rc"}
     new_prerelease = prerelease_map[bump_type]
 
-    if pre_type == new_prerelease:
-        # Increment existing pre-release
-        return f"{major}.{minor}.{patch}{new_prerelease}{pre_num + 1 if pre_num else 1}"
-    if pre_type in {"a", "b", "rc"}:
-        # Moving to next pre-release type
-        if _sort_prerelease(new_prerelease) > _sort_prerelease(pre_type):
-            return f"{major}.{minor}.{patch}{new_prerelease}1"
-        # Moving backwards not allowed
-        logger.error("Cannot move from %s to %s.", pre_type, new_prerelease)
-        sys.exit(1)
-    # Start new pre-release series
-    return f"{major}.{minor}.{patch + 1}{new_prerelease}1"
+    # If we have an existing pre-release type, check progression
+    if pre_type:
+        new_sort = _sort_prerelease(new_prerelease)
+        current_sort = _sort_prerelease(pre_type)
+
+        if new_sort < current_sort:
+            logger.error(
+                "Can't go backwards from %s to %s, idiot. Version progression is: dev -> alpha -> beta -> rc",
+                pre_type,
+                new_prerelease,
+            )
+            sys.exit(1)
+
+        # Moving forward in pre-release chain, maintain version number
+        if new_sort > current_sort:
+            return (
+                f"{major}.{minor}.{patch}.{new_prerelease}1"
+                if bump_type == "dev"
+                else f"{major}.{minor}.{patch}{new_prerelease}1"
+            )
+
+    # Handle incrementing same type
+    if pre_num and pre_type == new_prerelease:
+        return (
+            f"{major}.{minor}.{patch}.dev{pre_num + 1}"
+            if bump_type == "dev"
+            else f"{major}.{minor}.{patch}{new_prerelease}{pre_num + 1}"
+        )
+
+    # Starting new pre-release series (no previous pre-release)
+    return (
+        f"{major}.{minor}.{patch + 1}.dev1"
+        if bump_type == "dev"
+        else f"{major}.{minor}.{patch + 1}{new_prerelease}1"
+    )
 
 
 def _sort_prerelease(pre_type: str) -> int:
@@ -301,7 +324,7 @@ def _sort_prerelease(pre_type: str) -> int:
     Returns:
         Integer representing sort order (a=0, b=1, rc=2).
     """
-    order = {"a": 0, "b": 1, "rc": 2}
+    order = {"dev": -1, "a": 0, "b": 1, "rc": 2}
     return order.get(pre_type, -1)
 
 

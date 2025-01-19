@@ -21,7 +21,7 @@ Usage:
     dsbump -t "Release notes: Fixed critical issues"
 
     # Drop pre-release commits when finalizing
-    dsbump patch --drop-commits
+    dsbump patch --drop-commits  # Tags are always dropped
 
 All operations include git tagging and pushing changes to remote repository.
 """

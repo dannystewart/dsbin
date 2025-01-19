@@ -206,7 +206,7 @@ def _get_base_version(
         return _handle_prerelease_version(bump_type, pre_type, major, minor, patch, pre_num)
 
     # When moving from pre-release to release
-    if pre_type in {"a", "b", "rc"} and bump_type == "patch":
+    if pre_type in {"dev", "a", "b", "rc"} and bump_type == "patch":
         return f"{major}.{minor}.{patch}"
 
     # Handle regular version bumping

@@ -788,6 +788,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="drop pre-release commits when finalizing version (dangerous!)",
     )
+    parser.add_argument(
+        "--preview",
+        action="store_true",
+        help="show what the new version would be without making changes",
+    )
     return parser.parse_args()
 
 
@@ -797,13 +802,27 @@ def main() -> None:
     args = parse_args()
 
     try:
-        update_version(
-            bump_type=args.type,
-            commit_msg=args.message,
-            tag_msg=args.tag_message,
-            drop_commits=args.drop_commits,
-            dev=args.dev,
-        )
+        if args.preview:
+            pyproject = Path("pyproject.toml")
+            if not pyproject.exists():
+                logger.error("No pyproject.toml found in current directory.")
+                sys.exit(1)
+
+            current_version = get_version(pyproject)
+            new_version = bump_version(args.type, current_version, args.dev)
+
+            logger.info("Current version: %s", current_version)
+            logger.info("Would bump to:   %s", new_version)
+            if args.drop_commits and any(x in current_version for x in ("a", "b", "rc", ".dev")):
+                logger.info("Would attempt to drop pre-release commits")
+        else:
+            update_version(
+                bump_type=args.type,
+                commit_msg=args.message,
+                tag_msg=args.tag_message,
+                drop_commits=args.drop_commits,
+                dev=args.dev,
+            )
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)

@@ -1,12 +1,11 @@
 """Converts files in a directory to ALAC, with additional formats and options.
 
-This script is designed to convert files in the current directory to ALAC, preserving
-creation and modification timestamps. Its primary use case is for converting old Logic
-bounces into smaller files while preserving the original timestamps, which are important
-for referring back to project version history.
+This script is designed to convert files in the current directory to ALAC, preserving creation and
+modification timestamps. Its primary use case is for converting old Logic bounces into smaller files
+while preserving the original timestamps, which are important for referring back to project history.
 
-The script can also convert files to FLAC, AIFF, or WAV, and can be used to convert
-individual files as well as directories.
+The script can also convert files to FLAC, AIFF, or WAV, and can be used to convert individual files
+as well as directories.
 """
 
 from __future__ import annotations

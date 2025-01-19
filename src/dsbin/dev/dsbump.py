@@ -735,6 +735,15 @@ def handle_git_operations(
 
     # Handle version bump commit if needed
     if bump_type is not None:
+        # Check for uncommitted changes
+        result = subprocess.run(
+            ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+        )
+        has_other_changes = any(
+            not line.endswith("pyproject.toml") for line in result.stdout.splitlines()
+        )
+
+        # Stage only pyproject.toml
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
 
         if commit_msg:
@@ -743,6 +752,13 @@ def handle_git_operations(
             msg = f"Bump version to {new_version}"
 
         subprocess.run(["git", "commit", "-m", msg], check=True)
+
+        if has_other_changes:
+            logger.warning(
+                "Found uncommitted changes in working directory. "
+                "Only pyproject.toml was committed with the version bump. "
+                "Your other changes remain safe and unchanged!"
+            )
 
     # Clean up pre-release tags when moving to a release version
     if (

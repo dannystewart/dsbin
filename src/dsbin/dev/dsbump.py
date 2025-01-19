@@ -36,8 +36,9 @@ import os
 import subprocess
 import sys
 import tempfile
+from enum import StrEnum
+from functools import total_ordering
 from pathlib import Path
-from typing import Literal, get_args
 
 from dsutil import configure_traceback
 from dsutil.env import DSEnv
@@ -52,7 +53,91 @@ env.add_debug_var()
 log_level = "debug" if env.debug else "info"
 logger = LocalLogger().get_logger(level=log_level, simple=not env.debug)
 
-BumpType = Literal["dev", "alpha", "beta", "rc", "patch", "minor", "major", "post"]
+
+@total_ordering
+class BumpType(StrEnum):
+    """Version bump types following PEP 440.
+
+    Progression:
+    - Pre-release: dev -> alpha -> beta -> rc
+    - Release: patch -> minor -> major
+    - Post-release: post (only after final release)
+    """
+
+    DEV = "dev"
+    ALPHA = "alpha"
+    BETA = "beta"
+    RC = "rc"
+    POST = "post"
+    PATCH = "patch"
+    MINOR = "minor"
+    MAJOR = "major"
+
+    @property
+    def is_prerelease(self) -> bool:
+        """Whether this is a pre-release version type."""
+        return self in {self.DEV, self.ALPHA, self.BETA, self.RC}
+
+    @property
+    def is_release(self) -> bool:
+        """Whether this is a regular release version type."""
+        return self in {self.PATCH, self.MINOR, self.MAJOR}
+
+    @property
+    def version_suffix(self) -> str:
+        """Get the suffix used in version strings."""
+        match self:
+            case self.DEV:
+                return ".dev"
+            case self.ALPHA:
+                return "a"
+            case self.BETA:
+                return "b"
+            case self.RC:
+                return "rc"
+            case self.POST:
+                return ".post"
+            case _:
+                return ""
+
+    def sort_value(self) -> int:
+        """Get numeric sort value for comparison."""
+        order = {
+            self.DEV: -1,
+            self.ALPHA: 0,
+            self.BETA: 1,
+            self.RC: 2,
+            self.POST: 10,
+            self.PATCH: 3,
+            self.MINOR: 4,
+            self.MAJOR: 5,
+        }
+        return order[self]
+
+    def __lt__(self, other: BumpType | str) -> bool:
+        """Compare bump types for ordering."""
+        try:
+            other = BumpType(other)
+        except ValueError:
+            return NotImplemented
+        return self.sort_value() < other.sort_value()
+
+    def can_progress_to(self, other: BumpType) -> bool:
+        """Check if this version type can progress to another."""
+        # Can't go backwards in pre-release chain
+        if self.is_prerelease and other.is_prerelease:
+            return self.sort_value() < other.sort_value()
+
+        # Can't add post-release to pre-release
+        if self.is_prerelease and other == self.POST:
+            return False
+
+        # Can always go to a release version
+        if other.is_release:
+            return True
+
+        # Can add post-release to release versions
+        return bool(self.is_release and other == self.POST)
 
 
 @handle_keyboard_interrupt()
@@ -150,7 +235,7 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
             logger.error("Invalid post-release number: %s", post_num)
             sys.exit(1)
         major, minor, patch = map(int, version_part.split("."))
-        return major, minor, patch, "post", pre_num
+        return major, minor, patch, BumpType.POST, pre_num
 
     # Handle dev suffix (.devN)
     if ".dev" in version:
@@ -160,27 +245,24 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
         except ValueError:
             logger.error("Invalid dev number: %s", dev_num)
             sys.exit(1)
-        pre_type = "dev"
+        major, minor, patch = map(int, version_part.split("."))
+        return major, minor, patch, BumpType.DEV, pre_num
+
     # Handle pre-release suffixes (aN, bN, rcN)
-    elif any(x in version for x in ("a", "b", "rc")):
-        for prerelease in ("a", "b", "rc"):
-            if prerelease in version:
-                version_part, pre_num = version.rsplit(prerelease, 1)
-                try:
-                    pre_num = int(pre_num)
-                except ValueError:
-                    logger.error("Invalid pre-release number: %s", pre_num)
-                    sys.exit(1)
-                pre_type = prerelease
-                break
-    else:
-        version_part = version
-        pre_type = None
-        pre_num = None
+    suffix_map = {"a": BumpType.ALPHA, "b": BumpType.BETA, "rc": BumpType.RC}
+    for suffix, bump_type in suffix_map.items():
+        if suffix in version:
+            version_part, pre_num = version.rsplit(suffix, 1)
+            try:
+                major, minor, patch = map(int, version_part.split("."))
+                return major, minor, patch, bump_type, int(pre_num)
+            except ValueError:
+                logger.error("Invalid pre-release number: %s", pre_num)
+                sys.exit(1)
 
     try:  # Parse version numbers
-        major, minor, patch = map(int, version_part.split("."))
-        return major, minor, patch, pre_type, pre_num
+        major, minor, patch = map(int, version.split("."))
+        return major, minor, patch, None, None
     except ValueError:
         logger.error("Invalid version format: %s. Numbers go left to right, champ.", version)
         sys.exit(1)
@@ -199,13 +281,10 @@ def bump_version(bump_type: BumpType | str, current_version: str) -> str:
     """
     if bump_type.count(".") >= 2:
         _handle_explicit_version(bump_type)
-        base_version = bump_type
-    elif bump_type:  # Parse current version
-        major, minor, patch, pre_type, pre_num = parse_version(current_version)
-        # Get base version without dev suffix
-        base_version = _get_base_version(bump_type, pre_type, major, minor, patch, pre_num)
+        return bump_type
 
-    return base_version or current_version
+    major, minor, patch, pre_type, pre_num = parse_version(current_version)
+    return _get_base_version(bump_type, pre_type, major, minor, patch, pre_num)
 
 
 def _get_base_version(
@@ -217,21 +296,27 @@ def _get_base_version(
     pre_num: int | None,
 ) -> str:
     """Calculate base version without dev suffix."""
+    if bump_type.count(".") >= 2:
+        return bump_type
+
+    # Now we know it's a BumpType
+    bump_type = BumpType(bump_type)  # Convert string to enum if it isn't already
+
     # Handle pre-release bumping
-    if bump_type in {"dev", "alpha", "beta", "rc", "post"}:
+    if bump_type.is_prerelease or bump_type == BumpType.POST:
         return _handle_version_modifier(bump_type, pre_type, major, minor, patch, pre_num)
 
     # When moving from pre-release to release
-    if pre_type in {"dev", "a", "b", "rc"} and bump_type == "patch":
+    if pre_type in {"dev", "a", "b", "rc"} and bump_type == BumpType.PATCH:
         return f"{major}.{minor}.{patch}"
 
     # Handle regular version bumping
     match bump_type:
-        case "major":
+        case BumpType.MAJOR:
             return f"{major + 1}.0.0"
-        case "minor":
+        case BumpType.MINOR:
             return f"{major}.{minor + 1}.0"
-        case "patch":
+        case BumpType.PATCH:
             return f"{major}.{minor}.{patch + 1}"
         case _:
             logger.error("Invalid bump type: %s", bump_type)
@@ -284,8 +369,8 @@ def _handle_version_modifier(
     Returns:
         New version string.
     """
-    # Handle post-release versions
-    if bump_type == "post":
+    # Handle post-release versions first
+    if bump_type == BumpType.POST:
         if pre_type == "post" and pre_num:
             return f"{major}.{minor}.{patch}.post{pre_num + 1}"
         if pre_type in {"dev", "a", "b", "rc"}:
@@ -300,50 +385,38 @@ def _handle_version_modifier(
         return f"{major}.{minor}.{patch}.post1"
 
     # Handle dev versions separately since they use dot notation
-    if bump_type == "dev":
+    if bump_type == BumpType.DEV:
         if pre_type == "dev" and pre_num:
             return f"{major}.{minor}.{patch}.dev{pre_num + 1}"
         return f"{major}.{minor}.{patch + 1}.dev1"
 
     # Map full names to version string components
-    prerelease_map = {"dev": "dev", "alpha": "a", "beta": "b", "rc": "rc"}
-    new_prerelease = prerelease_map[bump_type]
+    bump_type = BumpType(bump_type)
+    new_suffix = bump_type.version_suffix
 
     # If we have an existing pre-release type, check progression
     if pre_type:
-        new_sort = _sort_prerelease(new_prerelease)
+        new_sort = _sort_prerelease(new_suffix)
         current_sort = _sort_prerelease(pre_type)
 
         if new_sort < current_sort:
             logger.error(
                 "Can't go backwards from %s to %s, idiot. Version progression is: dev -> alpha -> beta -> rc",
                 pre_type,
-                new_prerelease,
+                new_suffix,
             )
             sys.exit(1)
 
         # Moving forward in pre-release chain, maintain version number
         if new_sort > current_sort:
-            return (
-                f"{major}.{minor}.{patch}.{new_prerelease}1"
-                if bump_type == "dev"
-                else f"{major}.{minor}.{patch}{new_prerelease}1"
-            )
+            return f"{major}.{minor}.{patch}{new_suffix}1"
 
     # Handle incrementing same type
-    if pre_num and pre_type == new_prerelease:
-        return (
-            f"{major}.{minor}.{patch}.dev{pre_num + 1}"
-            if bump_type == "dev"
-            else f"{major}.{minor}.{patch}{new_prerelease}{pre_num + 1}"
-        )
+    if pre_num and pre_type == new_suffix:
+        return f"{major}.{minor}.{patch}{new_suffix}{pre_num + 1}"
 
     # Starting new pre-release series (no previous pre-release)
-    return (
-        f"{major}.{minor}.{patch + 1}.dev1"
-        if bump_type == "dev"
-        else f"{major}.{minor}.{patch + 1}{new_prerelease}1"
-    )
+    return f"{major}.{minor}.{patch + 1}{new_suffix}1"
 
 
 def _sort_prerelease(pre_type: str) -> int:
@@ -785,22 +858,18 @@ def handle_git_operations(
         subprocess.run(["git", "commit", "-m", msg], check=True)
 
         if has_other_changes:
-            logger.warning(
-                "Found uncommitted changes in working directory. "
-                "Only pyproject.toml was committed with the version bump. "
-                "Your other changes remain safe and unchanged!"
+            logger.info(
+                "Committed pyproject.toml with the version bump. "
+                "Other changes in the working directory were skipped and preserved."
             )
 
     # Clean up pre-release tags when moving to a release version
-    if (
-        bump_type in get_args(BumpType)
-        and not any(x in new_version for x in (".dev", "a", "b", "rc"))
-    ) or (
-        bump_type
-        and bump_type.count(".") >= 2
-        and not any(x in bump_type for x in (".dev", "a", "b", "rc"))
-    ):
-        cleanup_tags(current_version, new_version)
+    if isinstance(bump_type, BumpType):
+        if not bump_type.is_prerelease:
+            cleanup_tags(current_version, new_version)
+        elif bump_type.count(".") >= 2:  # explicit version
+            if not any(x in bump_type for x in (".dev", "a", "b", "rc")):
+                cleanup_tags(current_version, new_version)
 
     # Check if tag already exists
     if (
@@ -826,8 +895,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "type",
         nargs="?",
-        default="patch",
-        help="version bump type: major, minor, patch, alpha, beta, rc, or x.y.z",
+        default=BumpType.PATCH,
+        choices=[t.value for t in BumpType],
+        help="version bump type: major, minor, patch, dev, alpha, beta, rc, post, or x.y.z",
     )
     parser.add_argument(
         "-m",
@@ -858,6 +928,9 @@ def main() -> None:
     args = parse_args()
 
     try:
+        # Convert to enum if it's not an explicit version
+        bump_type = args.type if args.type.count(".") >= 2 else BumpType(args.type)
+
         if args.preview:
             pyproject = Path("pyproject.toml")
             if not pyproject.exists():
@@ -865,7 +938,7 @@ def main() -> None:
                 sys.exit(1)
 
             current_version = get_version(pyproject)
-            new_version = bump_version(args.type, current_version)
+            new_version = bump_version(bump_type, current_version)
 
             logger.info("Current version: %s", current_version)
             logger.info("Would bump to:   %s", new_version)

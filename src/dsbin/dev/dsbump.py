@@ -1,7 +1,7 @@
 """Version management tool for Python projects.
 
 Handles version bumping, pre-releases, development versions, and git operations following PEP 440.
-Supports major.minor.patch versioning with alpha/beta/rc and .devN development versions.
+Supports major.minor.patch versioning with dev/alpha/beta/rc pre-release versions.
 
 Usage:
     # Regular version bumping
@@ -10,14 +10,11 @@ Usage:
     dsbump major          # 1.2.3 -> 2.0.0
 
     # Pre-release versions
+    dsbump dev            # 1.2.3 -> 1.2.4.dev1
     dsbump alpha          # 1.2.3 -> 1.2.4a1
     dsbump beta           # 1.2.4a1 -> 1.2.4b1
     dsbump rc             # 1.2.4b1 -> 1.2.4rc1
     dsbump patch          # 1.2.4rc1 -> 1.2.4
-
-    # Development versions
-    dsbump --dev          # 1.2.3 -> 1.2.4.dev1
-    dsbump alpha --dev    # 1.2.3 -> 1.2.4a1.dev1
 
     # Custom messages
     dsbump -m "New feature"
@@ -52,7 +49,7 @@ env.add_debug_var()
 log_level = "debug" if env.debug else "info"
 logger = LocalLogger().get_logger(level=log_level, simple=not env.debug)
 
-BumpType = Literal["major", "minor", "patch", "alpha", "beta", "rc"]
+BumpType = Literal["dev", "alpha", "beta", "rc", "patch", "minor", "major"]
 
 
 @handle_keyboard_interrupt()
@@ -174,41 +171,30 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
 
 
 @handle_keyboard_interrupt()
-def bump_version(bump_type: BumpType | str | None, current_version: str, dev: bool = False) -> str:
+def bump_version(bump_type: BumpType | str, current_version: str) -> str:
     """Calculate new version number based on bump type and current version.
 
     Args:
         bump_type: Version bump type (major/minor/patch/alpha/beta/rc) or specific version.
         current_version: Current version string.
-        dev: Whether to create/increment a development version.
-            If True, appends/increments .devN suffix to version.
 
     Returns:
         New version string.
     """
-    if bump_type is None:
-        base_version = current_version
-    elif bump_type.count(".") >= 2:
+    if bump_type.count(".") >= 2:
         _handle_explicit_version(bump_type)
         base_version = bump_type
-    else:  # Parse current version
+    elif bump_type:  # Parse current version
         major, minor, patch, pre_type, pre_num = parse_version(current_version)
         # Get base version without dev suffix
         base_version = _get_base_version(bump_type, pre_type, major, minor, patch, pre_num)
 
-    if dev:  # If already a dev version, increment dev number
-        if ".dev" in base_version:
-            base, dev_num = base_version.rsplit(".dev", 1)
-            return f"{base}.dev{int(dev_num) + 1}"
-        # Otherwise add .dev1
-        return f"{base_version}.dev1"
-
-    return base_version
+    return base_version or current_version
 
 
 def _get_base_version(
     bump_type: BumpType | str,
-    pre_type: str,
+    pre_type: str | None,
     major: int,
     minor: int,
     patch: int,
@@ -216,7 +202,7 @@ def _get_base_version(
 ) -> str:
     """Calculate base version without dev suffix."""
     # Handle pre-release bumping
-    if bump_type in {"alpha", "beta", "rc"}:
+    if bump_type in {"dev", "alpha", "beta", "rc"}:
         return _handle_prerelease_version(bump_type, pre_type, major, minor, patch, pre_num)
 
     # When moving from pre-release to release
@@ -260,7 +246,7 @@ def _handle_explicit_version(version: str) -> None:
 
 def _handle_prerelease_version(
     bump_type: BumpType | str,
-    pre_type: str,
+    pre_type: str | None,
     major: int,
     minor: int,
     patch: int,
@@ -272,8 +258,8 @@ def _handle_prerelease_version(
     same pre-release type (alpha1 -> alpha2). Starts new pre-release series at 1 (1.2.3 -> 1.2.4a1).
 
     Args:
-        bump_type: Target pre-release type (alpha/beta/rc).
-        pre_type: Current pre-release type (a/b/rc or None).
+        bump_type: Target pre-release type (dev/alpha/beta/rc).
+        pre_type: Current pre-release type (.dev/a/b/rc or None).
         major: Major version number.
         minor: Minor version number.
         patch: Patch version number.
@@ -282,6 +268,13 @@ def _handle_prerelease_version(
     Returns:
         New version string.
     """
+    # Handle dev versions separately since they use dot notation
+    if bump_type == "dev":
+        if pre_type == "dev" and pre_num:
+            return f"{major}.{minor}.{patch}.dev{pre_num + 1}"
+        return f"{major}.{minor}.{patch + 1}.dev1"
+
+    # Handle other pre-release types
     prerelease_map = {"alpha": "a", "beta": "b", "rc": "rc"}
     new_prerelease = prerelease_map[bump_type]
 
@@ -318,7 +311,6 @@ def update_version(
     commit_msg: str | None = None,
     tag_msg: str | None = None,
     drop_commits: bool = False,
-    dev: bool = False,
 ) -> None:
     """Update version, create git tag, and push changes.
 
@@ -327,7 +319,6 @@ def update_version(
         commit_msg: Optional custom commit message.
         tag_msg: Optional tag annotation message.
         drop_commits: Whether to drop pre-release commits when finalizing version.
-        dev: Whether to create/increment a development version.
     """
     pyproject = Path("pyproject.toml")
     if not pyproject.exists():
@@ -337,7 +328,7 @@ def update_version(
     try:  # Verify git state before we do anything
         check_git_state()
         current_version = get_version(pyproject)
-        new_version = bump_version(bump_type, current_version, dev)
+        new_version = bump_version(bump_type, current_version)
 
         # If dropping commits is requested and we're moving from pre-release to release
         if (
@@ -779,11 +770,6 @@ def parse_args() -> argparse.Namespace:
         help="custom tag annotation message",
     )
     parser.add_argument(
-        "--dev",
-        action="store_true",
-        help="create or increment development version (.devN suffix)",
-    )
-    parser.add_argument(
         "--drop-commits",
         action="store_true",
         help="drop pre-release commits when finalizing version (dangerous!)",
@@ -809,7 +795,7 @@ def main() -> None:
                 sys.exit(1)
 
             current_version = get_version(pyproject)
-            new_version = bump_version(args.type, current_version, args.dev)
+            new_version = bump_version(args.type, current_version)
 
             logger.info("Current version: %s", current_version)
             logger.info("Would bump to:   %s", new_version)
@@ -821,7 +807,6 @@ def main() -> None:
                 commit_msg=args.message,
                 tag_msg=args.tag_message,
                 drop_commits=args.drop_commits,
-                dev=args.dev,
             )
     except Exception as e:
         logger.error(str(e))

@@ -1,7 +1,7 @@
 """Version management tool for Python projects.
 
 Handles version bumping, pre-releases, development versions, and git operations following PEP 440.
-Supports major.minor.patch versioning with dev/alpha/beta/rc pre-release versions.
+Supports major.minor.patch versioning with dev/alpha/beta/rc prerelease (and post-release) versions.
 
 Usage:
     # Regular version bumping
@@ -15,6 +15,9 @@ Usage:
     dsbump beta           # 1.2.4a1 -> 1.2.4b1
     dsbump rc             # 1.2.4b1 -> 1.2.4rc1
     dsbump patch          # 1.2.4rc1 -> 1.2.4
+
+    # Post-release version
+    dsbump post           # 1.2.4 -> 1.2.4.post1
 
     # Custom messages
     dsbump -m "New feature"
@@ -49,7 +52,7 @@ env.add_debug_var()
 log_level = "debug" if env.debug else "info"
 logger = LocalLogger().get_logger(level=log_level, simple=not env.debug)
 
-BumpType = Literal["dev", "alpha", "beta", "rc", "patch", "minor", "major"]
+BumpType = Literal["dev", "alpha", "beta", "rc", "patch", "minor", "major", "post"]
 
 
 @handle_keyboard_interrupt()
@@ -121,7 +124,9 @@ def get_version(pyproject_path: Path) -> str:
         logger.error("Could not find version in pyproject.toml (project.version).")
         sys.exit(1)
     except tomllib.TOMLDecodeError:
-        logger.error("Invalid TOML format in pyproject.toml")
+        logger.error(
+            "Invalid TOML format in pyproject.toml. Do you even know how to use a text editor?"
+        )
         sys.exit(1)
 
 
@@ -129,13 +134,24 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
     """Parse version string into components.
 
     Args:
-        version: Version string (e.g., "1.2.3", "1.2.3a1", "1.2.3.dev1").
+        version: Version string (e.g., "1.2.3", "1.2.3a1", "1.2.3.post1").
 
     Returns:
         Tuple of (major, minor, patch, pre-release type, pre-release number).
-        Pre-release type can be "a", "b", "rc", "dev", or None.
+        Pre-release type can be "a", "b", "rc", "dev", "post", or None.
         Pre-release number can be None if no pre-release.
     """
+    # Handle post suffix (.postN)
+    if ".post" in version:
+        version_part, post_num = version.rsplit(".post", 1)
+        try:
+            pre_num = int(post_num)
+        except ValueError:
+            logger.error("Invalid post-release number: %s", post_num)
+            sys.exit(1)
+        major, minor, patch = map(int, version_part.split("."))
+        return major, minor, patch, "post", pre_num
+
     # Handle dev suffix (.devN)
     if ".dev" in version:
         version_part, dev_num = version.rsplit(".dev", 1)
@@ -166,7 +182,7 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
         major, minor, patch = map(int, version_part.split("."))
         return major, minor, patch, pre_type, pre_num
     except ValueError:
-        logger.error("Invalid version format: %s", version)
+        logger.error("Invalid version format: %s. Numbers go left to right, champ.", version)
         sys.exit(1)
 
 
@@ -202,8 +218,8 @@ def _get_base_version(
 ) -> str:
     """Calculate base version without dev suffix."""
     # Handle pre-release bumping
-    if bump_type in {"dev", "alpha", "beta", "rc"}:
-        return _handle_prerelease_version(bump_type, pre_type, major, minor, patch, pre_num)
+    if bump_type in {"dev", "alpha", "beta", "rc", "post"}:
+        return _handle_version_modifier(bump_type, pre_type, major, minor, patch, pre_num)
 
     # When moving from pre-release to release
     if pre_type in {"dev", "a", "b", "rc"} and bump_type == "patch":
@@ -244,7 +260,7 @@ def _handle_explicit_version(version: str) -> None:
         sys.exit(1)
 
 
-def _handle_prerelease_version(
+def _handle_version_modifier(
     bump_type: BumpType | str,
     pre_type: str | None,
     major: int,
@@ -268,6 +284,21 @@ def _handle_prerelease_version(
     Returns:
         New version string.
     """
+    # Handle post-release versions
+    if bump_type == "post":
+        if pre_type == "post" and pre_num:
+            return f"{major}.{minor}.{patch}.post{pre_num + 1}"
+        if pre_type in {"dev", "a", "b", "rc"}:
+            logger.error(
+                "Can't add post-release to %s%s, genius. "
+                "How can you post-release something that isn't released? "
+                "Finalize the version first.",
+                pre_type,
+                pre_num,
+            )
+            sys.exit(1)
+        return f"{major}.{minor}.{patch}.post1"
+
     # Handle dev versions separately since they use dot notation
     if bump_type == "dev":
         if pre_type == "dev" and pre_num:
@@ -578,7 +609,7 @@ def check_if_commits_safe_to_drop() -> tuple[bool, list[str]]:
     # Check what files would be affected
     affected_files = _check_affected_files(commits)
     if affected_files - {"pyproject.toml"}:
-        logger.error("Cannot safely drop commits as it would affect the following files:")
+        logger.error("Nice try, hotshot. Can't drop commits with files other than pyproject.toml:")
         for file in sorted(affected_files - {"pyproject.toml"}):
             logger.error("  %s", file)
         return False, []

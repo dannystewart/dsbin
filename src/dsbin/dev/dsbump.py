@@ -24,7 +24,7 @@ Usage:
     dsbump -t "Release notes: Fixed critical issues"
 
     # Drop pre-release commits when finalizing
-    dsbump patch --drop-commits  # Tags are always dropped
+    dsbump patch --drop   # Note: Tags are always dropped
 
 All operations include git tagging and pushing changes to remote repository.
 """
@@ -910,7 +910,7 @@ def parse_args() -> argparse.Namespace:
         help="custom tag annotation message",
     )
     parser.add_argument(
-        "--drop-commits",
+        "--drop",
         action="store_true",
         help="drop pre-release commits when finalizing version (dangerous!)",
     )
@@ -942,14 +942,14 @@ def main() -> None:
 
             logger.info("Current version: %s", current_version)
             logger.info("Would bump to:   %s", new_version)
-            if args.drop_commits and any(x in current_version for x in ("a", "b", "rc", ".dev")):
+            if args.drop and any(x in current_version for x in ("a", "b", "rc", ".dev")):
                 logger.info("Would attempt to drop pre-release commits")
         else:
             update_version(
                 bump_type=args.type,
                 commit_msg=args.message,
                 tag_msg=args.tag_message,
-                drop_commits=args.drop_commits,
+                drop_commits=args.drop,
             )
     except Exception as e:
         logger.error(str(e))

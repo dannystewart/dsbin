@@ -3,9 +3,7 @@
 
 from __future__ import annotations
 
-import argparse
 import subprocess
-import sys
 from dataclasses import dataclass
 from importlib import metadata
 
@@ -13,7 +11,7 @@ from dsutil.text import color
 
 
 @dataclass
-class PackageInfo:
+class PackageVersions:
     """Package version information."""
 
     name: str
@@ -31,19 +29,19 @@ def get_latest_version(package: str) -> str | None:
             text=True,
             check=True,
         )
+
         # Get all version tags, sort them, take the last one
         tags = [
             ref.split("/")[-1]
             for ref in result.stdout.splitlines()
             if ref.split("/")[-1].startswith("v")
-            and not any(x in ref for x in ("dev", "a", "b", "rc"))  # Ignore pre-releases
         ]
         return tags[-1].lstrip("v") if tags else None
     except subprocess.CalledProcessError:
         return None
 
 
-def get_package_info(package: str, check_latest: bool = False) -> PackageInfo:
+def get_package_info(package: str, check_latest: bool = False) -> PackageVersions:
     """Get package version information."""
     try:
         current = metadata.version(package)
@@ -51,35 +49,22 @@ def get_package_info(package: str, check_latest: bool = False) -> PackageInfo:
         current = None
 
     latest = get_latest_version(package) if check_latest else None
-    return PackageInfo(package, current, latest)
+    return PackageVersions(package, current, latest)
 
 
-def update_package(package: str) -> bool:
-    """Update package from GitLab."""
-    gitlab_base = "https://gitlab.dannystewart.com/danny"
-    try:
-        subprocess.run(
-            ["pip", "install", "-U", f"git+{gitlab_base}/{package}.git"],
-            check=True,
-        )
-        return True
-    except subprocess.CalledProcessError:
-        return False
-
-
-def format_status(info: PackageInfo) -> tuple[str, str]:
+def format_version_info(versions: PackageVersions) -> tuple[str, str]:
     """Format package status and version display."""
-    current_version = color(f"{info.current}", "green")
-    latest_version = color(f"{info.latest}", "yellow")
+    current_version = color(f"{versions.current}", "green")
+    latest_version = color(f"{versions.latest}", "yellow")
 
-    if not info.current:
+    if not versions.current:
         symbol = color("✗", "red", attrs=["bold"])
         version = color("Not installed", "red")
-        if info.latest:
+        if versions.latest:
             version = f"{version}\n     Latest version: {latest_version}"
         return symbol, version
 
-    if info.latest and info.latest > info.current:
+    if versions.latest and versions.latest > versions.current:
         symbol = color("⚠", "yellow", attrs=["bold"])
         version = f"{current_version} ({latest_version} available)"
         return symbol, version
@@ -90,38 +75,18 @@ def format_status(info: PackageInfo) -> tuple[str, str]:
 
 def main() -> None:
     """Show versions of DS packages."""
-    parser = argparse.ArgumentParser(description="Show DS package versions")
-    parser.add_argument(
-        "--update",
-        action="store_true",
-        help="update packages to latest version",
-    )
-    args = parser.parse_args()
-
     packages = ["dsbin", "dsutil"]
     any_updates = False
 
     for package in packages:
-        info = get_package_info(package, check_latest=True)
+        versions = get_package_info(package, check_latest=True)
         name = color(f"{package}:", "cyan", attrs=["bold"])
-        symbol, version = format_status(info)
+        symbol, version = format_version_info(versions)
 
         print(f"{symbol} {name} {version}")
         any_updates = any_updates or (
-            info.latest and (not info.current or info.latest > info.current)
+            versions.latest and (not versions.current or versions.latest > versions.current)
         )
-
-    if args.update and any_updates:
-        print(f"\n{format_status('Updating packages...', 'info')}")
-        for package in packages:
-            info = get_package_info(package, check_latest=True)
-            if info.latest and (not info.current or info.latest > info.current):
-                print(f"\n{format_status(f'Updating {package}...', 'info')}")
-                if update_package(package):
-                    print(format_status(f"{package} updated successfully", "success"))
-                else:
-                    print(format_status(f"Failed to update {package}", "error"))
-                    sys.exit(1)
 
 
 if __name__ == "__main__":

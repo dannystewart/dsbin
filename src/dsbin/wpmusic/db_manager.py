@@ -8,13 +8,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import mysql.connector
-from mysql.connector.abstracts import MySQLConnectionAbstract
-from mysql.connector.pooling import PooledMySQLConnection
 
 from dsutil import LocalLogger
+from dsutil.db import MySQLConfig, MySQLHelper, SQLiteConfig, SQLiteHelper
 
 if TYPE_CHECKING:
     from collections.abc import Generator
+
+    from mysql.connector.abstracts import MySQLConnectionAbstract
+    from mysql.connector.pooling import PooledMySQLConnection
 
     from dsbin.wpmusic.wp_config import Config
 
@@ -29,6 +31,19 @@ class DatabaseManager:
             level=self.config.log_level,
             simple=self.config.log_simple,
         )
+
+        mysql_config = MySQLConfig(
+            host=self.config.db_host,
+            database=self.config.db_name,
+            user=self.config.db_user,
+            password=self.config.db_password,
+            charset="utf8mb3",
+            collation="utf8mb3_general_ci",
+        )
+        self.mysql = MySQLHelper(mysql_config)
+
+        sqlite_config = SQLiteConfig(database=self.config.local_sqlite_db)
+        self.sqlite = SQLiteHelper(sqlite_config)
 
     def _ensure_mysql_tunnel(self) -> None:
         """Ensure MySQL SSH tunnel exists and is working.
@@ -77,56 +92,32 @@ class DatabaseManager:
             if "conn" in locals():
                 conn.close()
 
-    @contextmanager
-    def get_read_connection(
-        self,
-    ) -> Generator[
-        sqlite3.Connection | MySQLConnectionAbstract | PooledMySQLConnection, None, None
-    ]:
-        """Get a connection for reading, using local cache if available.
-
-        Raises:
-            DatabaseError: If the database connection fails.
-
-        Yields:
-            The database connection.
-        """
-        if self.config.no_cache:  # If cache is disabled, use MySQL
+    def get_read_connection(self) -> MySQLHelper | SQLiteHelper:
+        """Get a connection for reading, using local cache if available."""
+        if self.config.no_cache:
+            self._ensure_mysql_tunnel()
             self.logger.debug("Cache disabled, using MySQL directly.")
-            with self.get_mysql_connection() as conn:
-                yield conn
-            return
+            return self.mysql
 
-        try:  # Otherwise, use the cache if it exists, or create it if it doesn't
-            if not Path(self.config.local_sqlite_db).exists():
-                self.logger.info("No local cache found, creating from MySQL.")
-                self.refresh_cache()
-            else:
-                self.logger.debug("Using local SQLite cache.")
-
-            with sqlite3.connect(self.config.local_sqlite_db) as conn:
-                yield conn
-        except Exception as e:
-            msg = f"Failed to connect to MySQL or SQLite database: {e!s}"
-            raise DatabaseError(msg) from e
+        if not Path(self.config.local_sqlite_db).exists():
+            self.logger.info("No local cache found, creating from MySQL.")
+            self.refresh_cache()
+        else:
+            self.logger.debug("Using local SQLite cache.")
+        return self.sqlite
 
     def check_database(self) -> None:
         """Check database connection and log track and upload counts."""
-        with self.get_mysql_connection() as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM tracks")
-            result = cursor.fetchone()
-            track_count = result[0] if result else 0
+        self._ensure_mysql_tunnel()
 
-            cursor.execute("SELECT COUNT(*) FROM uploads")
-            result = cursor.fetchone()
-            upload_count = result[0] if result else 0
+        track_count = self.mysql.fetch_one("SELECT COUNT(*) as count FROM tracks")["count"]
+        upload_count = self.mysql.fetch_one("SELECT COUNT(*) as count FROM uploads")["count"]
 
-            self.logger.info(
-                "Database connection successful! Found %s tracks and %s uploads.",
-                track_count,
-                upload_count,
-            )
+        self.logger.info(
+            "Database connection successful! Found %s tracks and %s uploads.",
+            track_count,
+            upload_count,
+        )
 
     def force_db_refresh(self, force_refresh: bool = False, refresh_only: bool = False) -> bool:
         """Force a refresh of the local cache from MySQL."""
@@ -139,46 +130,42 @@ class DatabaseManager:
         return False
 
     def record_upload_set_to_db(self, uploaded: str, current_upload_set: dict) -> None:
-        """Record the current upload set to the database.
+        """Record the current upload set to the database."""
+        self._ensure_mysql_tunnel()
 
-        Raises:
-            DatabaseError: If the database operation fails.
-        """
-        with self.get_mysql_connection() as conn:
-            cursor = conn.cursor()
+        with self.mysql.transaction() as conn:
             for track_name, audio_tracks in current_upload_set.items():
-                cursor.execute("INSERT IGNORE INTO tracks (name) VALUES (%s)", (track_name,))
-                cursor.execute("SELECT id FROM tracks WHERE name = %s", (track_name,))
-                result = cursor.fetchone()
-                if not result:
-                    msg = f"Failed to get track ID for {track_name}"
-                    raise DatabaseError(msg)
+                # Insert track if it doesn't exist
+                conn.execute("INSERT IGNORE INTO tracks (name) VALUES (%s)", (track_name,))
 
-                track_id = result[0]
+                # Get track ID
+                result = self.mysql.fetch_one(
+                    "SELECT id FROM tracks WHERE name = %s", (track_name,)
+                )
+                track_id = result["id"]
 
+                # Insert uploads
                 for track in audio_tracks.values():
-                    cursor.execute(
+                    exists = self.mysql.fetch_one(
                         """
-                        SELECT COUNT(*) FROM uploads
-                        WHERE track_id = %s AND filename = %s AND instrumental = %s AND uploaded = %s
-                        """,
+                        SELECT COUNT(*) as count FROM uploads
+                        WHERE track_id = %s AND filename = %s
+                        AND instrumental = %s AND uploaded = %s
+                    """,
                         (track_id, track.filename, track.is_instrumental, uploaded),
                     )
 
-                    result = cursor.fetchone()
-                    if result and result[0] == 0:
-                        cursor.execute(
+                    if exists["count"] == 0:
+                        conn.execute(
                             """
                             INSERT INTO uploads (track_id, filename, instrumental, uploaded)
                             VALUES (%s, %s, %s, %s)
-                            """,
+                        """,
                             (track_id, track.filename, track.is_instrumental, uploaded),
                         )
 
-            conn.commit()
-
-            # Refresh the local cache after successful write
-            self.refresh_cache()
+        # Refresh cache after successful write
+        self.refresh_cache()
 
     def get_upload_history(self, track_name: str | None = None) -> list[dict]:
         """Retrieve upload history from local cache, optionally filtered by track name."""
@@ -188,97 +175,95 @@ class DatabaseManager:
             self.logger.debug("Retrieving upload history from local cache.")
 
         history = []
-        with self.get_read_connection() as conn:
-            if isinstance(conn, sqlite3.Connection):
-                conn.row_factory = sqlite3.Row
-                param_placeholder = "?"
-                case_insensitive_func = "LOWER"
-            else:
-                param_placeholder = "%s"
-                case_insensitive_func = "LOWER"
+        db = self.get_read_connection()
 
-            cursor = (
-                conn.cursor(dictionary=True)
-                if isinstance(conn, MySQLConnectionAbstract | PooledMySQLConnection)
-                else conn.cursor()
+        query = """
+            SELECT t.name as track_name, u.filename, u.instrumental, u.uploaded
+            FROM tracks t
+            JOIN uploads u ON t.id = u.track_id
+        """
+
+        if track_name:
+            query += (
+                " WHERE LOWER(t.name) = LOWER(?)"
+                if isinstance(db, SQLiteHelper)
+                else " WHERE LOWER(t.name) = LOWER(%s)"
+            )
+            query += " ORDER BY u.uploaded DESC"
+            results = db.fetch_many(query, (track_name,))
+        else:
+            query += " ORDER BY t.name, u.uploaded DESC"
+            results = db.fetch_many(query)
+
+        # Process results into the required format
+        history = []
+        current_track = None
+
+        for row in results:
+            if current_track is None or current_track["track_name"] != row["track_name"]:
+                if current_track is not None:
+                    history.append(current_track)
+                current_track = {"track_name": row["track_name"], "uploads": []}
+
+            uploaded = row["uploaded"]
+            if isinstance(uploaded, datetime):
+                uploaded = uploaded.isoformat()
+
+            current_track["uploads"].append(
+                {
+                    "filename": row["filename"],
+                    "instrumental": row["instrumental"],
+                    "uploaded": uploaded,
+                }
             )
 
-            if track_name:
-                cursor.execute(
-                    f"""
-                    SELECT t.name as track_name, u.filename, u.instrumental, u.uploaded
-                    FROM tracks t
-                    JOIN uploads u ON t.id = u.track_id
-                    WHERE {case_insensitive_func}(t.name) = {case_insensitive_func}({param_placeholder})
-                    ORDER BY u.uploaded DESC
-                    """,
-                    (track_name,),
-                )
-            else:
-                cursor.execute("""
-                    SELECT t.name as track_name, u.filename, u.instrumental, u.uploaded
-                    FROM tracks t
-                    JOIN uploads u ON t.id = u.track_id
-                    ORDER BY t.name, u.uploaded DESC
-                    """)
-
-            rows = cursor.fetchall()
-            current_track = None
-            for row in rows:
-                # Handle both SQLite.Row and MySQL dict formats
-                row_data = dict(row) if isinstance(conn, sqlite3.Connection) else row
-
-                # Convert datetime to ISO string if it's a datetime object
-                uploaded = row_data["uploaded"]
-                if isinstance(uploaded, datetime):
-                    uploaded = uploaded.isoformat()
-
-                if current_track is None or current_track["track_name"] != row_data["track_name"]:
-                    if current_track is not None:
-                        history.append(current_track)
-                    current_track = {"track_name": row_data["track_name"], "uploads": []}
-                current_track["uploads"].append(
-                    {
-                        "filename": row_data["filename"],
-                        "instrumental": row_data["instrumental"],
-                        "uploaded": uploaded,
-                    }
-                )
-
-            if current_track is not None:
-                history.append(current_track)
+        if current_track is not None:
+            history.append(current_track)
 
         return history
 
     def refresh_cache(self) -> None:
         """Refresh the local SQLite cache from MySQL."""
-        with (
-            self.get_mysql_connection() as mysql_conn,
-            sqlite3.connect(self.config.local_sqlite_db) as sqlite_conn,
-        ):
-            # Create tables
-            self._init_sqlite_schema(sqlite_conn)
+        self._ensure_mysql_tunnel()
 
-            # Copy data from MySQL
-            mysql_cursor = mysql_conn.cursor()
-            sqlite_cursor = sqlite_conn.cursor()
+        # Initialize schema
+        self.sqlite.execute("""
+            CREATE TABLE IF NOT EXISTS tracks (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL UNIQUE
+            )
+        """)
+        self.sqlite.execute("""
+            CREATE TABLE IF NOT EXISTS uploads (
+                id INTEGER PRIMARY KEY,
+                track_id INTEGER NOT NULL,
+                filename TEXT NOT NULL,
+                instrumental BOOLEAN NOT NULL,
+                uploaded TIMESTAMP NOT NULL,
+                FOREIGN KEY (track_id) REFERENCES tracks(id)
+            )
+        """)
 
-            # Copy tracks
-            mysql_cursor.execute("SELECT * FROM tracks")
-            tracks = mysql_cursor.fetchall()
-            sqlite_cursor.executemany(
-                "INSERT OR REPLACE INTO tracks (id, name) VALUES (?, ?)", tracks
+        # Copy data
+        tracks = self.mysql.fetch_many("SELECT * FROM tracks")
+        for track in tracks:
+            self.sqlite.execute(
+                "INSERT OR REPLACE INTO tracks (id, name) VALUES (?, ?)",
+                (track["id"], track["name"]),
             )
 
-            # Copy uploads
-            mysql_cursor.execute("SELECT * FROM uploads")
-            uploads = mysql_cursor.fetchall()
-            sqlite_cursor.executemany(
+        uploads = self.mysql.fetch_many("SELECT * FROM uploads")
+        for upload in uploads:
+            self.sqlite.execute(
                 "INSERT OR REPLACE INTO uploads (id, track_id, filename, instrumental, uploaded) VALUES (?, ?, ?, ?, ?)",
-                uploads,
+                (
+                    upload["id"],
+                    upload["track_id"],
+                    upload["filename"],
+                    upload["instrumental"],
+                    upload["uploaded"],
+                ),
             )
-
-            sqlite_conn.commit()
 
     def force_refresh(self) -> None:
         """Force a refresh of the local cache from MySQL."""

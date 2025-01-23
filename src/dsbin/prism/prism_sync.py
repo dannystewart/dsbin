@@ -8,12 +8,12 @@ from json import dumps as json_dumps
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from halo import Halo
 from json5 import loads as json5_loads
 
 from dsutil import LocalLogger, configure_traceback
-from dsutil.animation import start_animation, stop_animation
 from dsutil.diff import show_diff
-from dsutil.env import DSEnv
+from dsutil.paths import DSPaths
 from dsutil.shell import confirm_action, handle_keyboard_interrupt
 
 if TYPE_CHECKING:
@@ -71,25 +71,14 @@ class FileMetadata:
 class DirectoryCache:
     """Cache for directory contents."""
 
-    def __init__(self, root: Path, env: DSEnv):
+    def __init__(self, root: Path):
         self.root = root
-        self.env = env
-
-        # Set up cache directory and file
-        env.add_var(
-            "CACHE_DIR",
-            required=False,
-            default=str(Path.home() / ".cache" / "prism"),
-            description="Directory for cache files",
-        )
-
-        cache_dir = Path(env.cache_dir)
-        cache_dir.mkdir(parents=True, exist_ok=True)
+        self.paths = DSPaths("prism")
 
         # Use a cache filename based on the directory path
+        cache_dir = Path(self.paths.get_cache_path())
         dir_hash = hash(str(root.resolve()))
-        self.cache_file = cache_dir / f"sync_cache_{dir_hash}.json"
-
+        self.cache_file = cache_dir / f"cache_{dir_hash}.json"
         self.files: dict[str, FileMetadata] = {}
 
     def scan_directory(self, dir_path: Path) -> None:
@@ -129,9 +118,11 @@ class DirectoryCache:
 
 
 def should_exclude(path: Path) -> bool:
-    """Check if a path should be excluded based on patterns. Handles both file patterns (*.pyc)
-    and directory patterns (logs/). Directory patterns should end with a forward slash and will
-    match directories recursively, so "logs/" will exclude all logs directories regardless of depth.
+    """Check if a path should be excluded based on patterns.
+
+    Handles both file patterns (*.pyc) and directory patterns (logs/). Directory patterns should end
+    with a forward slash and will match directories recursively, so "logs/" will exclude all logs
+    directories regardless of depth.
     """
     name = str(path)
     if path.is_dir():
@@ -305,22 +296,19 @@ def sync_file(source: Path, target: Path) -> bool:
 
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
-def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv) -> list[str]:
+def sync_directory(source_dir: Path, target_dir: Path) -> list[str]:
     """Sync a directory, returning list of changed files."""
     changed_files = []
 
     # Initialize caches with environment
-    source_cache = DirectoryCache(source_dir.parent, env)
-    target_cache = DirectoryCache(target_dir.parent, env)
+    source_cache = DirectoryCache(source_dir.parent)
+    target_cache = DirectoryCache(target_dir.parent)
 
-    animation_thread = start_animation(f"Scanning {source_dir.name}...", "blue")
-
-    try:
-        # Try to load existing caches
+    with Halo(text=f"Syncing {source_dir.name}", spinner="dots", color="cyan") as spinner:
+        # Load/scan directories
         source_cache_valid = source_cache.load()
         target_cache_valid = target_cache.load()
 
-        # Scan directories if cache is invalid
         if not source_cache_valid:
             source_cache.scan_directory(source_dir)
             source_cache.save()
@@ -328,24 +316,15 @@ def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv) -> list[str]:
             target_cache.scan_directory(target_dir)
             target_cache.save()
 
-        stop_animation(animation_thread)
-        animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
-
         # Create target directory if it doesn't exist
         target_dir.mkdir(parents=True, exist_ok=True)
 
         # Process changed files
         for source_path, target_path in get_changed_files(source_cache, target_cache):
-            stop_animation(animation_thread)
-            print()  # Clear the animation line
-
+            spinner.stop()
             if sync_file(source_path, target_path):
                 changed_files.append(str(source_path.relative_to(source_dir)))
-
-            animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
-
-    finally:
-        stop_animation(animation_thread)
+            spinner.start()
 
     return changed_files
 
@@ -353,9 +332,6 @@ def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv) -> list[str]:
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
 def sync_instances(source_root: Path, target_root: Path) -> None:
     """Sync specified directories and files between instances."""
-    # Initialize environment
-    env = DSEnv()
-
     changes_made = []
 
     # Sync workspace files first
@@ -370,7 +346,7 @@ def sync_instances(source_root: Path, target_root: Path) -> None:
             logger.warning("Source directory does not exist: %s", source_dir)
             continue
 
-        changed = sync_directory(source_dir, target_dir, env)
+        changed = sync_directory(source_dir, target_dir)
         changes_made.extend(f"{dir_name}/{file}" for file in changed)
 
     # Sync individual files

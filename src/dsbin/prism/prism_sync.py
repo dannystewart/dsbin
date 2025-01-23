@@ -8,11 +8,10 @@ from json import dumps as json_dumps
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import rich
 from json5 import loads as json5_loads
-from rich.progress import Progress, SpinnerColumn, TextColumn
 
 from dsutil import LocalLogger, configure_traceback
+from dsutil.animation import start_animation, stop_animation
 from dsutil.diff import show_diff
 from dsutil.env import DSEnv
 from dsutil.shell import confirm_action, handle_keyboard_interrupt
@@ -255,7 +254,7 @@ def get_changed_files(
 
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
-def sync_file(source: Path, target: Path, progress: Progress | None = None) -> bool:
+def sync_file(source: Path, target: Path) -> bool:
     """Sync a single file, showing diff if text file."""
     if not source.exists():
         logger.warning("Source file does not exist: %s", source)
@@ -263,47 +262,19 @@ def sync_file(source: Path, target: Path, progress: Progress | None = None) -> b
 
     # New file
     if not target.exists():
-        return _handle_new_file(source, target, progress)
+        logger.warning("New file: %s", source.name)
+        logger.info("  Source: %s", source)
+        logger.info("  Size: %s bytes", source.stat().st_size)
+        if confirm_action("Create new file?", prompt_color="yellow"):
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source, target)
+            return True
+        return False
 
     # Existing file
     if filecmp.cmp(source, target, shallow=False):
         return False
 
-    _handle_existing_file(source, target)
-
-    if progress:
-        progress.stop()
-    result = confirm_action(f"Update {target.name}?", prompt_color="yellow")
-    if progress:
-        progress.start()
-
-    if result:
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
-        return True
-
-    return False
-
-
-def _handle_new_file(source: Path, target: Path, progress: Progress | None = None) -> bool:
-    logger.warning("New file: %s", source.name)
-    logger.info("  Source: %s", source)
-    logger.info("  Size: %s bytes", source.stat().st_size)
-
-    if progress:
-        progress.stop()
-    result = confirm_action("Create new file?", prompt_color="yellow")
-    if progress:
-        progress.start()
-
-    if result:
-        target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(source, target)
-        return True
-    return False
-
-
-def _handle_existing_file(source: Path, target: Path):
     try:  # Try to treat as text file
         current = target.read_text()
         new = source.read_text()
@@ -325,9 +296,16 @@ def _handle_existing_file(source: Path, target: Path):
         logger.info("  Target: %s", target)
         logger.info("  Size: %s -> %s bytes", target.stat().st_size, source.stat().st_size)
 
+    if confirm_action(f"Update {target.name}?", prompt_color="yellow"):
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+        return True
+
+    return False
+
 
 @handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
-def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv, progress: Progress) -> list[str]:
+def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv) -> list[str]:
     """Sync a directory, returning list of changed files."""
     changed_files = []
 
@@ -335,42 +313,40 @@ def sync_directory(source_dir: Path, target_dir: Path, env: DSEnv, progress: Pro
     source_cache = DirectoryCache(source_dir.parent, env)
     target_cache = DirectoryCache(target_dir.parent, env)
 
-    # Add tasks for this directory
-    scan_task = progress.add_task(f"Scanning {source_dir.name}...", total=None)
+    animation_thread = start_animation(f"Scanning {source_dir.name}...", "blue")
 
-    # Try to load existing caches
-    source_cache_valid = source_cache.load()
-    target_cache_valid = target_cache.load()
+    try:
+        # Try to load existing caches
+        source_cache_valid = source_cache.load()
+        target_cache_valid = target_cache.load()
 
-    # Scan directories if cache is invalid
-    if not source_cache_valid:
-        source_cache.scan_directory(source_dir)
-        source_cache.save()
-    if not target_cache_valid:
-        target_cache.scan_directory(target_dir)
-        target_cache.save()
+        # Scan directories if cache is invalid
+        if not source_cache_valid:
+            source_cache.scan_directory(source_dir)
+            source_cache.save()
+        if not target_cache_valid:
+            target_cache.scan_directory(target_dir)
+            target_cache.save()
 
-    progress.remove_task(scan_task)
+        stop_animation(animation_thread)
+        animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
 
-    # Create target directory if it doesn't exist
-    target_dir.mkdir(parents=True, exist_ok=True)
+        # Create target directory if it doesn't exist
+        target_dir.mkdir(parents=True, exist_ok=True)
 
-    # Get all files that need syncing first
-    files_to_sync = list(get_changed_files(source_cache, target_cache))
+        # Process changed files
+        for source_path, target_path in get_changed_files(source_cache, target_cache):
+            stop_animation(animation_thread)
+            print()  # Clear the animation line
 
-    if not files_to_sync:
-        return changed_files
+            if sync_file(source_path, target_path):
+                changed_files.append(str(source_path.relative_to(source_dir)))
 
-    # Add a task for syncing files
-    sync_task = progress.add_task(f"Syncing {source_dir.name}...", total=len(files_to_sync))
+            animation_thread = start_animation(f"Syncing {source_dir.name}...", "blue")
 
-    # Process changed files
-    for source_path, target_path in files_to_sync:
-        if sync_file(source_path, target_path):
-            changed_files.append(str(source_path.relative_to(source_dir)))
-        progress.advance(sync_task)
+    finally:
+        stop_animation(animation_thread)
 
-    progress.remove_task(sync_task)
     return changed_files
 
 
@@ -379,48 +355,31 @@ def sync_instances(source_root: Path, target_root: Path) -> None:
     """Sync specified directories and files between instances."""
     # Initialize environment
     env = DSEnv()
+
     changes_made = []
 
-    # Create a console that will be shared between Progress and print statements
-    console = rich.console.Console()
+    # Sync workspace files first
+    sync_workspace_files(source_root)
 
-    with Progress(
-        SpinnerColumn(), TextColumn("[blue]{task.description}"), console=console, transient=True
-    ) as progress:
-        # First task for workspace files
-        workspace_task = progress.add_task("Syncing workspace files...")
+    # Sync directories
+    for dir_name in SYNC_DIRS:
+        source_dir = source_root / dir_name
+        target_dir = target_root / dir_name
 
-        # Temporarily hide the progress display
-        progress.stop()
-        sync_workspace_files(source_root)
-        progress.start()
+        if not source_dir.exists():
+            logger.warning("Source directory does not exist: %s", source_dir)
+            continue
 
-        progress.remove_task(workspace_task)
+        changed = sync_directory(source_dir, target_dir, env)
+        changes_made.extend(f"{dir_name}/{file}" for file in changed)
 
-        # Sync directories
-        for dir_name in SYNC_DIRS:
-            source_dir = source_root / dir_name
-            target_dir = target_root / dir_name
+    # Sync individual files
+    for file_path in SYNC_FILES:
+        source_file = source_root / file_path
+        target_file = target_root / file_path
 
-            if not source_dir.exists():
-                logger.warning("Source directory does not exist: %s", source_dir)
-                continue
-
-            changed = sync_directory(source_dir, target_dir, env, progress)
-            changes_made.extend(f"{dir_name}/{file}" for file in changed)
-
-        # Add a task for individual files
-        file_task = progress.add_task("Syncing individual files...", total=len(SYNC_FILES))
-
-        # Sync individual files
-        for file_path in SYNC_FILES:
-            progress.update(file_task, description=f"Syncing {file_path}...")
-            source_file = source_root / file_path
-            target_file = target_root / file_path
-
-            if sync_file(source_file, target_file):
-                changes_made.append(file_path)
-            progress.advance(file_task)
+        if sync_file(source_file, target_file):
+            changes_made.append(file_path)
 
     if changes_made:
         logger.info("Synced files:\n  %s", "\n  ".join(changes_made))

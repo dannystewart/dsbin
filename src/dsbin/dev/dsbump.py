@@ -215,7 +215,7 @@ def get_version(pyproject_path: Path) -> str:
         sys.exit(1)
 
 
-def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
+def parse_version(version: str) -> tuple[int, int, int, BumpType | None, int | None]:
     """Parse version string into components.
 
     Args:
@@ -223,7 +223,7 @@ def parse_version(version: str) -> tuple[int, int, int, str | None, int | None]:
 
     Returns:
         Tuple of (major, minor, patch, pre-release type, pre-release number).
-        Pre-release type can be "a", "b", "rc", "dev", "post", or None.
+        Pre-release type is BumpType.DEV/ALPHA/BETA/RC/POST or None.
         Pre-release number can be None if no pre-release.
     """
     # Handle post suffix (.postN)
@@ -307,7 +307,7 @@ def _get_base_version(
         return _handle_version_modifier(bump_type, pre_type, major, minor, patch, pre_num)
 
     # When moving from pre-release to release
-    if pre_type in {"dev", "a", "b", "rc"} and bump_type == BumpType.PATCH:
+    if pre_type and bump_type == BumpType.PATCH:
         return f"{major}.{minor}.{patch}"
 
     # Handle regular version bumping
@@ -347,7 +347,7 @@ def _handle_explicit_version(version: str) -> None:
 
 def _handle_version_modifier(
     bump_type: BumpType | str,
-    pre_type: str | None,
+    pre_type: BumpType | None,
     major: int,
     minor: int,
     patch: int,
@@ -371,9 +371,9 @@ def _handle_version_modifier(
     """
     # Handle post-release versions first
     if bump_type == BumpType.POST:
-        if pre_type == "post" and pre_num:
+        if pre_type == BumpType.POST and pre_num:
             return f"{major}.{minor}.{patch}.post{pre_num + 1}"
-        if pre_type in {"dev", "a", "b", "rc"}:
+        if pre_type and pre_type.is_prerelease:
             logger.error(
                 "Can't add post-release to %s%s, genius. "
                 "How can you post-release something that isn't released? "
@@ -396,20 +396,13 @@ def _handle_version_modifier(
 
     # If we have an existing pre-release type, check progression
     if pre_type:
-        new_sort = _sort_prerelease(new_suffix)
-        current_sort = _sort_prerelease(pre_type)
-
-        if new_sort < current_sort:
+        if pre_type.sort_value() > bump_type.sort_value():
             logger.error(
                 "Can't go backwards from %s to %s, idiot. Version progression is: dev -> alpha -> beta -> rc",
-                pre_type,
+                pre_type.version_suffix,
                 new_suffix,
             )
             sys.exit(1)
-
-        # Moving forward in pre-release chain, maintain version number
-        if new_sort > current_sort:
-            return f"{major}.{minor}.{patch}{new_suffix}1"
 
     # Handle incrementing same type
     if pre_num and pre_type == new_suffix:
@@ -417,19 +410,6 @@ def _handle_version_modifier(
 
     # Starting new pre-release series (no previous pre-release)
     return f"{major}.{minor}.{patch + 1}{new_suffix}1"
-
-
-def _sort_prerelease(pre_type: str) -> int:
-    """Get sort order for pre-release types.
-
-    Defines progression: alpha (a) -> beta (b) -> release candidate (rc). Used to prevent backwards
-    transitions (can't go from beta to alpha).
-
-    Returns:
-        Integer representing sort order (a=0, b=1, rc=2).
-    """
-    order = {"dev": -1, "a": 0, "b": 1, "rc": 2}
-    return order.get(pre_type, -1)
 
 
 @handle_keyboard_interrupt()
@@ -442,7 +422,7 @@ def update_version(
     """Update version, create git tag, and push changes.
 
     Args:
-        bump_type: Version bump type (major/minor/patch/alpha/beta/rc) or specific version.
+        bump_type: Version bump type (BumpType) or specific version string.
         commit_msg: Optional custom commit message.
         tag_msg: Optional tag annotation message.
         drop_commits: Whether to drop pre-release commits when finalizing version.
@@ -452,17 +432,17 @@ def update_version(
         logger.error("No pyproject.toml found in current directory.")
         sys.exit(1)
 
-    try:  # Verify git state before we do anything
+    try:
         check_git_state()
         current_version = get_version(pyproject)
         new_version = bump_version(bump_type, current_version)
 
+        # Parse versions to check pre-release status
+        _, _, _, current_pre_type, _ = parse_version(current_version)
+        _, _, _, new_pre_type, _ = parse_version(new_version)
+
         # If dropping commits is requested and we're moving from pre-release to release
-        if (
-            drop_commits
-            and (".dev" in current_version or any(x in current_version for x in ("a", "b", "rc")))
-            and not any(x in new_version for x in (".dev", "a", "b", "rc"))
-        ):
+        if drop_commits and current_pre_type and not new_pre_type:
             safe_to_drop, commits = check_if_commits_safe_to_drop()
             if not safe_to_drop:
                 logger.error("Cannot safely drop pre-release commits without conflicts. Aborting.")
@@ -557,7 +537,11 @@ def _find_base_release_tag() -> str | None:
         (
             tag
             for tag in result.stdout.strip().split("\n")
-            if tag.startswith(base_version) and any(x in tag for x in ("a", "b", "rc"))
+            if tag.startswith(base_version)
+            and any(
+                t.version_suffix in tag
+                for t in [BumpType.DEV, BumpType.ALPHA, BumpType.BETA, BumpType.RC]
+            )
         ),
         None,
     )
@@ -612,8 +596,10 @@ def _identify_tag_patterns(old_version: str, new_version: str) -> list[str]:
 
     version_prefix = detect_version_prefix()
 
-    # Define pattern components for each pre-release type
-    prerelease_patterns = [".dev*", "a*", "b*", "rc*"]
+    prerelease_patterns = [
+        t.version_suffix + "*" for t in [BumpType.DEV, BumpType.ALPHA, BumpType.BETA, BumpType.RC]
+    ]
+
     patterns = []
     if new_major > old_major:
         patterns.extend(
@@ -745,7 +731,11 @@ def _find_commits_to_drop() -> list[str]:
     prerelease_tags = [
         tag
         for tag in result.stdout.strip().split("\n")
-        if tag.startswith(base_version) and any(x in tag for x in ("a", "b", "rc"))
+        if tag.startswith(base_version)
+        and any(
+            t.version_suffix in tag
+            for t in [BumpType.DEV, BumpType.ALPHA, BumpType.BETA, BumpType.RC]
+        )
     ]
 
     if not prerelease_tags:
@@ -865,11 +855,15 @@ def handle_git_operations(
 
     # Clean up pre-release tags when moving to a release version
     if isinstance(bump_type, BumpType):
-        if not bump_type.is_prerelease:
+        _, _, _, pre_type, _ = parse_version(new_version)
+        if not pre_type:  # If new version is a release version
             cleanup_tags(current_version, new_version)
-        elif bump_type.count(".") >= 2:  # explicit version
-            if not any(x in bump_type for x in (".dev", "a", "b", "rc")):
-                cleanup_tags(current_version, new_version)
+    elif bump_type and bump_type.count(".") >= 2:  # explicit version
+        if not any(
+            t.version_suffix in bump_type
+            for t in [BumpType.DEV, BumpType.ALPHA, BumpType.BETA, BumpType.RC]
+        ):
+            cleanup_tags(current_version, new_version)
 
     # Check if tag already exists
     if (
@@ -942,7 +936,10 @@ def main() -> None:
 
             logger.info("Current version: %s", current_version)
             logger.info("Would bump to:   %s", new_version)
-            if args.drop and any(x in current_version for x in ("a", "b", "rc", ".dev")):
+
+            # Check if current version is a pre-release
+            _, _, _, pre_type, _ = parse_version(current_version)
+            if args.drop and pre_type:
                 logger.info("Would attempt to drop pre-release commits")
         else:
             update_version(

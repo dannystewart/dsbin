@@ -777,9 +777,19 @@ def _find_commits_to_drop() -> list[str]:
 
 @handle_keyboard_interrupt()
 def drop_prerelease_commits(commits: list[str]) -> None:
-    """Drop pre-release commits by removing them from history via rebase."""
-    # Save current state
-    subprocess.run(["git", "stash", "push", "-m", "temp_save_final_state"], check=True)
+    """Drop pre-release commits by removing them from history via rebase.
+
+    Raises:
+        RuntimeError: If conflicts occur while restoring changes.
+    """
+    # Save current state and check if anything was actually stashed
+    result = subprocess.run(
+        ["git", "stash", "push", "-m", "temp_save_final_state"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    had_changes = "No local changes to save" not in result.stdout
 
     try:
         # Create rebase script to drop version bump commits
@@ -790,15 +800,27 @@ def drop_prerelease_commits(commits: list[str]) -> None:
             f.write(script)
             script_path = f.name
 
-        try:  # Set up environment to use our script
+        try:
             env = os.environ.copy()
             env["GIT_SEQUENCE_EDITOR"] = f"cat {script_path} >"
 
             # Run rebase
             subprocess.run(["git", "rebase", "-i", f"HEAD~{len(commits)}"], env=env, check=True)
 
-            # Pop the saved state back
-            subprocess.run(["git", "stash", "pop"], check=True)
+            # Try to pop the saved state back
+            if had_changes:
+                try:
+                    subprocess.run(["git", "stash", "pop"], check=True)
+                except subprocess.CalledProcessError as e:
+                    # If pop fails due to conflicts, apply and drop instead
+                    logger.warning(
+                        "Conflicts occurred while restoring your changes. "
+                        "The changes have been applied but need manual resolution."
+                    )
+                    subprocess.run(["git", "stash", "apply"], check=True)
+                    subprocess.run(["git", "stash", "drop"], check=True)
+                    msg = "Please resolve conflicts and commit your changes before proceeding."
+                    raise RuntimeError(msg) from e
 
             logger.info("Successfully dropped %d commits:", len(commits))
             for commit in commits:
@@ -811,8 +833,16 @@ def drop_prerelease_commits(commits: list[str]) -> None:
         finally:
             Path(script_path).unlink()  # Clean up temp file
 
-    except Exception:  # If anything goes wrong, try to restore the state
-        subprocess.run(["git", "stash", "pop"], check=False)
+    except Exception:
+        # Only try to restore state if we actually stashed something
+        if had_changes:
+            try:
+                subprocess.run(["git", "stash", "pop"], check=False)
+            except subprocess.CalledProcessError:
+                logger.warning(
+                    "Could not automatically restore your changes. "
+                    "They remain in the stash for manual recovery."
+                )
         raise
 
 

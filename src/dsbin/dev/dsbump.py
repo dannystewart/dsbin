@@ -19,10 +19,6 @@ Usage:
     # Post-release version
     dsbump post           # 1.2.4 -> 1.2.4.post1
 
-    # Custom messages
-    dsbump -m "New feature"
-    dsbump -t "Release notes: Fixed critical issues"
-
 All operations include git tagging and pushing changes to remote repository.
 """
 
@@ -408,17 +404,11 @@ def _handle_version_modifier(
 
 
 @handle_keyboard_interrupt()
-def update_version(
-    bump_type: BumpType | str | None,
-    commit_msg: str | None = None,
-    tag_msg: str | None = None,
-) -> None:
+def update_version(bump_type: BumpType | str | None) -> None:
     """Update version, create git tag, and push changes.
 
     Args:
         bump_type: Version bump type (BumpType) or specific version string.
-        commit_msg: Optional custom commit message.
-        tag_msg: Optional tag annotation message.
     """
     pyproject = Path("pyproject.toml")
     if not pyproject.exists():
@@ -433,7 +423,7 @@ def update_version(
         # Update version
         if bump_type is not None:
             _update_version_in_pyproject(pyproject, new_version)
-        handle_git_operations(new_version, bump_type, commit_msg, tag_msg, current_version)
+        handle_git_operations(new_version, bump_type, current_version)
         logger.info(
             "Successfully %s v%s!", "tagged" if bump_type is None else "updated to", new_version
         )
@@ -592,11 +582,7 @@ def _remove_found_tags(found_tags: set[str]) -> None:
 
 @handle_keyboard_interrupt()
 def handle_git_operations(
-    new_version: str,
-    bump_type: BumpType | str | None,
-    commit_msg: str | None,
-    tag_msg: str | None,
-    current_version: str,
+    new_version: str, bump_type: BumpType | str | None, current_version: str
 ) -> None:
     """Handle git commit, tag, and push operations.
 
@@ -608,8 +594,6 @@ def handle_git_operations(
     Args:
         new_version: The version string to tag with.
         bump_type: The type of version bump performed.
-        commit_msg: An optional custom commit message.
-        tag_msg: An optional tag annotation message.
         current_version: The previous version string.
     """
     version_prefix = detect_version_prefix()
@@ -627,13 +611,7 @@ def handle_git_operations(
 
         # Stage only pyproject.toml
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
-
-        if commit_msg:
-            msg = f"{commit_msg}\n\nBump version to {new_version}"
-        else:
-            msg = f"Bump version to {new_version}"
-
-        subprocess.run(["git", "commit", "-m", msg], check=True)
+        subprocess.run(["git", "commit", "-m", f"Bump version to {new_version}"], check=True)
 
         if has_other_changes:
             logger.info(
@@ -662,11 +640,7 @@ def handle_git_operations(
         sys.exit(1)
 
     # Create tag and push
-    if tag_msg:
-        subprocess.run(["git", "tag", "-a", tag_name, "-m", tag_msg], check=True)
-    else:
-        subprocess.run(["git", "tag", tag_name], check=True)
-
+    subprocess.run(["git", "tag", tag_name], check=True)
     subprocess.run(["git", "push"], check=True)
     subprocess.run(["git", "push", "--tags"], check=True)
 
@@ -680,16 +654,6 @@ def parse_args() -> argparse.Namespace:
         default=BumpType.PATCH,
         choices=[t.value for t in BumpType],
         help="version bump type: major, minor, patch, dev, alpha, beta, rc, post, or x.y.z",
-    )
-    parser.add_argument(
-        "-m",
-        "--message",
-        help="custom commit message (default: 'Bump version to x.y.z')",
-    )
-    parser.add_argument(
-        "-t",
-        "--tag-message",
-        help="custom tag annotation message",
     )
     parser.add_argument(
         "--preview",
@@ -720,7 +684,7 @@ def main() -> None:
             logger.info("Current version: %s", current_version)
             logger.info("Would bump to:   %s", new_version)
         else:
-            update_version(bump_type=args.type, commit_msg=args.message, tag_msg=args.tag_message)
+            update_version(bump_type=args.type)
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)

@@ -23,19 +23,14 @@ Usage:
     dsbump -m "New feature"
     dsbump -t "Release notes: Fixed critical issues"
 
-    # Drop pre-release commits when finalizing
-    dsbump patch --drop   # Note: Tags are always dropped
-
 All operations include git tagging and pushing changes to remote repository.
 """
 
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
 import sys
-import tempfile
 from enum import StrEnum
 from functools import total_ordering
 from pathlib import Path
@@ -43,7 +38,7 @@ from pathlib import Path
 from dsutil import configure_traceback
 from dsutil.env import DSEnv
 from dsutil.log import LocalLogger
-from dsutil.shell import confirm_action, handle_keyboard_interrupt
+from dsutil.shell import handle_keyboard_interrupt
 
 configure_traceback()
 
@@ -417,7 +412,6 @@ def update_version(
     bump_type: BumpType | str | None,
     commit_msg: str | None = None,
     tag_msg: str | None = None,
-    drop_commits: bool = False,
 ) -> None:
     """Update version, create git tag, and push changes.
 
@@ -425,7 +419,6 @@ def update_version(
         bump_type: Version bump type (BumpType) or specific version string.
         commit_msg: Optional custom commit message.
         tag_msg: Optional tag annotation message.
-        drop_commits: Whether to drop pre-release commits when finalizing version.
     """
     pyproject = Path("pyproject.toml")
     if not pyproject.exists():
@@ -436,23 +429,6 @@ def update_version(
         check_git_state()
         current_version = get_version(pyproject)
         new_version = bump_version(bump_type, current_version)
-
-        # Parse versions to check pre-release status
-        _, _, _, current_pre_type, _ = parse_version(current_version)
-        _, _, _, new_pre_type, _ = parse_version(new_version)
-
-        # If dropping commits is requested and we're moving from pre-release to release
-        if drop_commits and current_pre_type and not new_pre_type:
-            safe_to_drop, commits = check_if_commits_safe_to_drop()
-            if not safe_to_drop:
-                logger.error("Cannot safely drop pre-release commits without conflicts. Aborting.")
-                sys.exit(1)
-            if commits and confirm_action(
-                "Are you sure you want to drop these commits and force push?",
-                default_to_yes=False,
-                prompt_color="yellow",
-            ):
-                drop_prerelease_commits(commits)
 
         # Update version
         if bump_type is not None:
@@ -515,36 +491,6 @@ def _update_version_in_pyproject(pyproject: Path, new_version: str) -> None:
     if get_version(pyproject) != new_version:
         logger.error("Version update failed verification.")
         sys.exit(1)
-
-
-def _find_base_release_tag() -> str | None:
-    """Find the last release tag before current pre-release series.
-
-    If we're at 1.3.6b1, find v1.3.5 or the last from before the pre-releases began.
-    """
-    current_version = get_version(Path("pyproject.toml"))
-    major, minor, patch, _, _ = parse_version(current_version)
-    version_prefix = detect_version_prefix()
-    base_version = f"{version_prefix}{major}.{minor}.{patch}"
-
-    # Get all tags sorted by version
-    result = subprocess.run(
-        ["git", "tag", "--sort=v:refname"], capture_output=True, text=True, check=True
-    )
-
-    # Find first pre-release tag of this version
-    return next(
-        (
-            tag
-            for tag in result.stdout.strip().split("\n")
-            if tag.startswith(base_version)
-            and any(
-                t.version_suffix in tag
-                for t in [BumpType.DEV, BumpType.ALPHA, BumpType.BETA, BumpType.RC]
-            )
-        ),
-        None,
-    )
 
 
 @handle_keyboard_interrupt()
@@ -645,208 +591,6 @@ def _remove_found_tags(found_tags: set[str]) -> None:
 
 
 @handle_keyboard_interrupt()
-def check_if_commits_safe_to_drop() -> tuple[bool, list[str]]:
-    """Check if pre-release commits can be safely dropped.
-
-    A commit is considered safe to drop if it only modifies pyproject.toml. This ensures we only
-    drop version bump commits and don't inadvertently lose other work.
-
-    Returns:
-        Tuple of (safe_to_drop, commits). safe_to_drop is False if non-version files are modified.
-    """
-    # First check if we have uncommitted changes
-    result = subprocess.run(
-        ["git", "status", "--porcelain"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    if result.stdout.strip():
-        logger.error(
-            "Cannot drop commits while you have uncommitted changes. "
-            "Please commit or stash your changes first."
-        )
-        return False, []
-
-    logger.debug("Checking if pre-release commits can be safely dropped.")
-    first_prerelease = _find_base_release_tag()
-    if not first_prerelease:
-        logger.error("No pre-release tags found for current version series.")
-        return False, []
-
-    # Get commits that would be dropped
-    commits = _find_commits_to_drop()
-    if not commits:
-        return True, []
-
-    # Check what files would be affected
-    affected_files = _check_affected_files(commits)
-    if affected_files - {"pyproject.toml"}:
-        logger.error("Nice try, hotshot. Can't drop commits with files other than pyproject.toml:")
-        for file in sorted(affected_files - {"pyproject.toml"}):
-            logger.error("  %s", file)
-        return False, []
-
-    # Get commits that would be dropped
-    commits = _find_commits_to_drop()
-    if commits:
-        logger.info("Found %d commits to drop:", len(commits))
-        for commit in commits:
-            logger.info("  %s", commit)
-
-    return True, commits
-
-
-@handle_keyboard_interrupt()
-def _check_affected_files(commits: list[str]) -> set[str]:
-    """Check which files would be affected by dropping commits.
-
-    Examines changes between first pre-release tag and HEAD.
-
-    Returns:
-        Set of file paths that would be modified.
-    """
-    affected_files = set()
-    commit_hashes = [commit.split()[0] for commit in commits]
-
-    for commit in commit_hashes:
-        result = subprocess.run(
-            ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", f"{commit}^..{commit}"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        files = set(result.stdout.strip().split("\n"))
-        logger.debug("Files in commit %s: %s", commit, files)
-        affected_files.update(files)
-
-    return affected_files
-
-
-@handle_keyboard_interrupt()
-def _find_commits_to_drop() -> list[str]:
-    """Get list of commits that would be dropped.
-
-    Lists all commits between first pre-release tag and HEAD.
-
-    Returns:
-        List of commit descriptions in oneline format.
-    """
-    # Get all tags in the current pre-release series
-    result = subprocess.run(
-        ["git", "tag", "--sort=v:refname"], capture_output=True, text=True, check=True
-    )
-
-    current_version = get_version(Path("pyproject.toml"))
-    major, minor, patch, _, _ = parse_version(current_version)
-    base_version = f"v{major}.{minor}.{patch}"
-
-    # Filter tags to only include those in current pre-release series
-    prerelease_tags = [
-        tag
-        for tag in result.stdout.strip().split("\n")
-        if tag.startswith(base_version)
-        and any(
-            t.version_suffix in tag
-            for t in [BumpType.DEV, BumpType.ALPHA, BumpType.BETA, BumpType.RC]
-        )
-    ]
-
-    if not prerelease_tags:
-        return []
-
-    # Find commits that created these tags
-    version_commits = []
-    for tag in prerelease_tags:
-        result = subprocess.run(
-            ["git", "rev-list", "-n", "1", tag], capture_output=True, text=True, check=True
-        )
-        commit_hash = result.stdout.strip()
-
-        # Get the commit message/description
-        result = subprocess.run(
-            ["git", "log", "--oneline", "-n", "1", commit_hash],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        version_commits.append(result.stdout.strip())
-
-    return version_commits
-
-
-@handle_keyboard_interrupt()
-def drop_prerelease_commits(commits: list[str]) -> None:
-    """Drop pre-release commits by removing them from history via rebase.
-
-    Raises:
-        RuntimeError: If conflicts occur while restoring changes.
-    """
-    # Save current state and check if anything was actually stashed
-    result = subprocess.run(
-        ["git", "stash", "push", "-m", "temp_save_final_state"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-    had_changes = "No local changes to save" not in result.stdout
-
-    try:
-        # Create rebase script to drop version bump commits
-        script = "".join(f"drop {commit}\n" for commit in commits)
-        logger.debug("Rebase script:\n%s", script)
-
-        with tempfile.NamedTemporaryFile(mode="w", delete=False, encoding="utf-8") as f:
-            f.write(script)
-            script_path = f.name
-
-        try:
-            env = os.environ.copy()
-            env["GIT_SEQUENCE_EDITOR"] = f"cat {script_path} >"
-
-            # Run rebase
-            subprocess.run(["git", "rebase", "-i", f"HEAD~{len(commits)}"], env=env, check=True)
-
-            # Try to pop the saved state back
-            if had_changes:
-                try:
-                    subprocess.run(["git", "stash", "pop"], check=True)
-                except subprocess.CalledProcessError as e:
-                    # If pop fails due to conflicts, apply and drop instead
-                    logger.warning(
-                        "Conflicts occurred while restoring your changes. "
-                        "The changes have been applied but need manual resolution."
-                    )
-                    subprocess.run(["git", "stash", "apply"], check=True)
-                    subprocess.run(["git", "stash", "drop"], check=True)
-                    msg = "Please resolve conflicts and commit your changes before proceeding."
-                    raise RuntimeError(msg) from e
-
-            logger.info("Successfully dropped %d commits:", len(commits))
-            for commit in commits:
-                logger.info("  %s", commit)
-
-            # Force push the rewritten history
-            logger.warning("Force pushing changes - this will rewrite history!")
-            subprocess.run(["git", "push", "--force"], check=True)
-
-        finally:
-            Path(script_path).unlink()  # Clean up temp file
-
-    except Exception:
-        # Only try to restore state if we actually stashed something
-        if had_changes:
-            try:
-                subprocess.run(["git", "stash", "pop"], check=False)
-            except subprocess.CalledProcessError:
-                logger.warning(
-                    "Could not automatically restore your changes. "
-                    "They remain in the stash for manual recovery."
-                )
-        raise
-
-
-@handle_keyboard_interrupt()
 def handle_git_operations(
     new_version: str,
     bump_type: BumpType | str | None,
@@ -856,17 +600,17 @@ def handle_git_operations(
 ) -> None:
     """Handle git commit, tag, and push operations.
 
-    1. Creates version bump commit if needed
-    2. Cleans up pre-release tags when finalizing version
-    3. Creates new version tag
-    4. Pushes changes and tags to remote
+    1. Creates version bump commit if needed.
+    2. Cleans up pre-release tags when finalizing version.
+    3. Creates new version tag.
+    4. Pushes changes and tags to remote.
 
     Args:
-        new_version: Version string to tag with
-        bump_type: Type of version bump performed
-        commit_msg: Optional custom commit message
-        tag_msg: Optional tag annotation message
-        current_version: Previous version string
+        new_version: The version string to tag with.
+        bump_type: The type of version bump performed.
+        commit_msg: An optional custom commit message.
+        tag_msg: An optional tag annotation message.
+        current_version: The previous version string.
     """
     version_prefix = detect_version_prefix()
     tag_name = f"{version_prefix}{new_version}"
@@ -948,11 +692,6 @@ def parse_args() -> argparse.Namespace:
         help="custom tag annotation message",
     )
     parser.add_argument(
-        "--drop",
-        action="store_true",
-        help="drop pre-release commits when finalizing version (dangerous!)",
-    )
-    parser.add_argument(
         "--preview",
         action="store_true",
         help="show what the new version would be without making changes",
@@ -980,18 +719,8 @@ def main() -> None:
 
             logger.info("Current version: %s", current_version)
             logger.info("Would bump to:   %s", new_version)
-
-            # Check if current version is a pre-release
-            _, _, _, pre_type, _ = parse_version(current_version)
-            if args.drop and pre_type:
-                logger.info("Would attempt to drop pre-release commits")
         else:
-            update_version(
-                bump_type=args.type,
-                commit_msg=args.message,
-                tag_msg=args.tag_message,
-                drop_commits=args.drop,
-            )
+            update_version(bump_type=args.type, commit_msg=args.message, tag_msg=args.tag_message)
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)

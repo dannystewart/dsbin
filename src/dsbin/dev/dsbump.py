@@ -654,6 +654,20 @@ def check_if_commits_safe_to_drop() -> tuple[bool, list[str]]:
     Returns:
         Tuple of (safe_to_drop, commits). safe_to_drop is False if non-version files are modified.
     """
+    # First check if we have uncommitted changes
+    result = subprocess.run(
+        ["git", "status", "--porcelain"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    if result.stdout.strip():
+        logger.error(
+            "Cannot drop commits while you have uncommitted changes. "
+            "Please commit or stash your changes first."
+        )
+        return False, []
+
     logger.debug("Checking if pre-release commits can be safely dropped.")
     first_prerelease = _find_base_release_tag()
     if not first_prerelease:

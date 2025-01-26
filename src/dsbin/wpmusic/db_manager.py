@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 import mysql.connector
 
 from dsutil import LocalLogger
-from dsutil.db import MySQLConfig, MySQLHelper, SQLiteConfig, SQLiteHelper
+from dsutil.db import MySQLHelper, SQLiteHelper
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -32,16 +32,13 @@ class DatabaseManager:
             simple=self.config.log_simple,
         )
 
-        mysql_config = MySQLConfig(
+        self.mysql = MySQLHelper(
             host=self.config.db_host,
             database=self.config.db_name,
             user=self.config.db_user,
             password=self.config.db_password,
         )
-        self.mysql = MySQLHelper(mysql_config)
-
-        sqlite_config = SQLiteConfig(database=self.config.local_sqlite_db)
-        self.sqlite = SQLiteHelper(sqlite_config)
+        self.sqlite = SQLiteHelper(self.config.local_sqlite_db)
 
     def _ensure_mysql_tunnel(self) -> None:
         """Ensure MySQL SSH tunnel exists and is working.
@@ -129,37 +126,36 @@ class DatabaseManager:
         """Record the current upload set to the database."""
         self._ensure_mysql_tunnel()
 
-        with self.mysql.transaction() as conn:
+        conn = self.mysql.pool.get_connection()
+        try:
             cursor = conn.cursor()
             for track_name, audio_tracks in current_upload_set.items():
-                # Insert track if it doesn't exist
                 cursor.execute("INSERT IGNORE INTO tracks (name) VALUES (%s)", (track_name,))
+                cursor.execute("SELECT id FROM tracks WHERE name = %s", (track_name,))
+                result = cursor.fetchone()
+                track_id = result[0]
 
-                # Get track ID
-                result = self.mysql.fetch_one(
-                    "SELECT id FROM tracks WHERE name = %s", (track_name,)
-                )
-                track_id = result["id"]
-
-                # Insert uploads
                 for track in audio_tracks.values():
-                    exists = self.mysql.fetch_one(
+                    cursor.execute(
                         """
-                        SELECT COUNT(*) as count FROM uploads
-                        WHERE track_id = %s AND filename = %s
-                        AND instrumental = %s AND uploaded = %s
-                    """,
+                        SELECT COUNT(*) FROM uploads
+                        WHERE track_id = %s AND filename = %s AND instrumental = %s AND uploaded = %s
+                        """,
                         (track_id, track.filename, track.is_instrumental, uploaded),
                     )
 
-                    if exists["count"] == 0:
+                    result = cursor.fetchone()
+                    if result and result[0] == 0:
                         cursor.execute(
                             """
                             INSERT INTO uploads (track_id, filename, instrumental, uploaded)
                             VALUES (%s, %s, %s, %s)
-                        """,
+                            """,
                             (track_id, track.filename, track.is_instrumental, uploaded),
                         )
+            conn.commit()
+        finally:
+            conn.close()
 
         # Refresh cache after successful write
         self.refresh_cache()

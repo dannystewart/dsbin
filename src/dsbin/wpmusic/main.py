@@ -50,7 +50,6 @@ class WPMusic:
         self.config = Config(
             skip_upload=args.skip_upload,
             keep_files=should_keep,
-            debug=args.debug,
             no_cache=args.no_cache,
         )
         self.logger = LocalLogger().get_logger(
@@ -272,11 +271,6 @@ def parse_arguments() -> argparse.Namespace:
         "--doc",
         action="store_true",
         help="show the full documentation and exit",
-    )
-    parser.add_argument(
-        "--debug",
-        action="store_true",
-        help="show debug logging",
     )
     parser.add_argument(
         "--history",

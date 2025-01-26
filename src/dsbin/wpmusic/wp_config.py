@@ -30,7 +30,6 @@ class Config:
 
     skip_upload: bool
     keep_files: bool
-    debug: bool
     log_level: str = field(init=False)
     log_simple: bool = True
 
@@ -62,7 +61,7 @@ class Config:
         self.initialize_env_vars()
 
         # Configure log level based on debug setting
-        self.log_level = "debug" if self.debug else "info"
+        self.log_level = "debug" if self.env.debug else "info"
 
         # Set up paths
         self.file_save_path = self.paths.downloads_dir
@@ -77,6 +76,7 @@ class Config:
         self.env = DSEnv()
 
         # Set up required environment variables
+        self.env.add_debug_var()
         self.env.add_var(
             "SSH_PASSPHRASE",
             description="SSH key passphrase",

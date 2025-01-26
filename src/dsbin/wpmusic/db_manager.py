@@ -37,8 +37,6 @@ class DatabaseManager:
             database=self.config.db_name,
             user=self.config.db_user,
             password=self.config.db_password,
-            charset="utf8mb3",
-            collation="utf8mb3_general_ci",
         )
         self.mysql = MySQLHelper(mysql_config)
 
@@ -84,8 +82,6 @@ class DatabaseManager:
                 database=self.config.db_name,
                 user=self.config.db_user,
                 password=self.config.db_password,
-                collation="utf8mb3_general_ci",
-                charset="utf8mb3",
             )
             yield conn
         finally:
@@ -134,9 +130,10 @@ class DatabaseManager:
         self._ensure_mysql_tunnel()
 
         with self.mysql.transaction() as conn:
+            cursor = conn.cursor()
             for track_name, audio_tracks in current_upload_set.items():
                 # Insert track if it doesn't exist
-                conn.execute("INSERT IGNORE INTO tracks (name) VALUES (%s)", (track_name,))
+                cursor.execute("INSERT IGNORE INTO tracks (name) VALUES (%s)", (track_name,))
 
                 # Get track ID
                 result = self.mysql.fetch_one(
@@ -156,7 +153,7 @@ class DatabaseManager:
                     )
 
                     if exists["count"] == 0:
-                        conn.execute(
+                        cursor.execute(
                             """
                             INSERT INTO uploads (track_id, filename, instrumental, uploaded)
                             VALUES (%s, %s, %s, %s)

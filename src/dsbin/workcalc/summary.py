@@ -4,9 +4,9 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from dsbin.workcalc.stats import FormattedTime
-
 from dsutil import Text
+
+from dsbin.workcalc.stats import FormattedTime
 
 if TYPE_CHECKING:
     from datetime import date, datetime
@@ -82,5 +82,5 @@ class SummaryAnalyzer:
             f"Total {Text.plural(item_name, stats.total_items, with_count=True)}",
             f"Active {Text.plural('day', stats.active_days, with_count=True)}",
             f"Average {Text.plural(item_name, stats.total_items)} per active day: {stats.avg_items_per_day:.1f}",
-            f"Total work time: {formatted_time}",
+            f"\nTotal work time: {formatted_time}",
         ]

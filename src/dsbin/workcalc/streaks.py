@@ -33,6 +33,7 @@ class StreakStats:
     longest_length: int = 0
     current_start: date | None = None
     current_length: int = 0
+    today_completed: bool = False
 
 
 class StreakAnalyzer:
@@ -69,6 +70,7 @@ class StreakAnalyzer:
         if days_since_last <= 1:  # Consider today and yesterday as continuing the streak
             streaks.current_start = current_streak_start
             streaks.current_length = current_streak
+            streaks.today_completed = last_active == today
 
         streaks.longest_start = longest_streak_start
         streaks.longest_length = longest_streak
@@ -88,9 +90,10 @@ class StreakAnalyzer:
             )
 
         if stats.current_length > 0:
+            post_status = "including today" if stats.today_completed else " ⚠️ NOT completed today"
             messages.append(
                 f"Current {item_name} streak: {Text.plural('day', stats.current_length, with_count=True)} "
-                f"(since {stats.current_start:%B %-d, %Y})"
+                f"(since {stats.current_start:%B %-d, %Y}) {post_status}"
             )
 
         return messages

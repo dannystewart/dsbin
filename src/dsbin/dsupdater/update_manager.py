@@ -4,9 +4,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbin.dsupdater.shell_helper import ShellHelper
-
 from dsutil.shell import handle_keyboard_interrupt
+
+from dsbin.dsupdater.shell_helper import ShellHelper
 
 if TYPE_CHECKING:
     from logging import Logger

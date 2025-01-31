@@ -3,6 +3,7 @@ from __future__ import annotations
 import contextlib
 import subprocess
 import sys
+from pathlib import Path
 from typing import TYPE_CHECKING
 
 from dsutil.shell import handle_keyboard_interrupt
@@ -44,10 +45,9 @@ class PrivilegeHelper:
 
     def check_for_sudo_in_active_shell(self) -> None:
         """Check whether the script has sudo privileges in the active shell."""
-        pipe = "/tmp/update_sudo_pipe"
+        pipe = Path("/tmp/update_sudo_pipe")
         try:
-            with open(pipe, encoding="utf-8") as pipe_file:
-                status = pipe_file.read().strip()
+            status = pipe.read_text().strip()
 
             if status == "sudo_available":
                 self.has_sudo = True

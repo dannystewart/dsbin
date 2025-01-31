@@ -35,8 +35,8 @@ After={after}
 Type=oneshot
 ExecStart={command}
 User={self.user}
-Environment=PYENV_ROOT={os.environ.get('PYENV_ROOT', '')}
-Environment=PATH={os.environ.get('PATH')}
+Environment=PYENV_ROOT={os.environ.get("PYENV_ROOT", "")}
+Environment=PATH={os.environ.get("PATH")}
 
 [Install]
 WantedBy=multi-user.target
@@ -102,7 +102,7 @@ def service_configs(*services: SystemdServiceTemplate) -> Callable[[type[T]], ty
         # Create the fields using default_factory
         for service in services:
             # Create a factory function that returns this specific service
-            def factory(s=service) -> SystemdServiceTemplate:
+            def factory(s: SystemdServiceTemplate = service) -> SystemdServiceTemplate:
                 return s
 
             setattr(cls, service.name, field(default_factory=factory, init=False))

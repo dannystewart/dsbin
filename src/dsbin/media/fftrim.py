@@ -5,8 +5,8 @@
 from __future__ import annotations
 
 import argparse
-import os
 import subprocess
+from pathlib import Path
 
 from dsutil import configure_traceback
 
@@ -14,7 +14,11 @@ configure_traceback()
 
 
 def convert_to_hhmmss(time_str: str) -> str:
-    """Convert MM:SS or HH:MM:SS format to HH:MM:SS."""
+    """Convert MM:SS or HH:MM:SS format to HH:MM:SS.
+
+    Raises:
+        ValueError: If the time format is invalid.
+    """
     if time_str == "0":  # '0' should begin at the beginning
         return "00:00:00"
 
@@ -31,8 +35,8 @@ def convert_to_hhmmss(time_str: str) -> str:
 
 def determine_output_file(input_file: str, output_file: str) -> tuple[str, str, str, list[str]]:
     """Determine the correct output file extension and codec."""
-    input_ext = os.path.splitext(input_file)[1].lower()
-    output_ext = os.path.splitext(output_file)[1].lower()
+    input_ext = Path(input_file).suffix.lower()
+    output_ext = Path(output_file).suffix.lower()
 
     if not output_ext:
         output_ext = input_ext
@@ -46,6 +50,7 @@ def determine_output_file(input_file: str, output_file: str) -> tuple[str, str, 
         video_codec = "libx264"
         audio_codec = "aac"
         metadata_flag = ["-map_metadata", "-1"]
+
     return output_file, video_codec, audio_codec, metadata_flag
 
 

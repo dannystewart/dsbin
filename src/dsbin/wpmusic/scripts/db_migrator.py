@@ -145,11 +145,11 @@ def migrate_data(config: Config) -> None:
                 # Get and print some stats
                 mysql_cursor.execute("SELECT COUNT(*) FROM tracks")
                 result = mysql_cursor.fetchone()
-                track_count = result[0] if result else 0
+                track_count = result or 0
 
                 mysql_cursor.execute("SELECT COUNT(*) FROM uploads")
                 result = mysql_cursor.fetchone()
-                upload_count = result[0] if result else 0
+                upload_count = result or 0
 
                 logger.info("Migrated %s tracks and %s uploads.", track_count, upload_count)
 
@@ -172,7 +172,7 @@ def main() -> None:
     args = parser.parse_args()
 
     try:
-        config = Config(skip_upload=True, keep_files=True, debug=True)
+        config = Config(skip_upload=True, keep_files=True)
 
         if args.test_only:
             with create_tunnel():
@@ -188,7 +188,7 @@ def main() -> None:
                     cursor = mysql_conn.cursor()
                     cursor.execute("SELECT COUNT(*) FROM tracks")
                     result = cursor.fetchone()
-                    track_count = result[0] if result else 0
+                    track_count = result or 0
                     logger.info("Connection successful! Found %s tracks.", track_count)
                 finally:
                     mysql_conn.close()

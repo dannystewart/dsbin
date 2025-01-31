@@ -90,7 +90,7 @@ class StreakAnalyzer:
             )
 
         if stats.current_length > 0:
-            post_status = "including today" if stats.today_completed else " ⚠️ NOT completed today"
+            post_status = "including today" if stats.today_completed else "• not completed today"
             messages.append(
                 f"Current {item_name} streak: {Text.plural('day', stats.current_length, with_count=True)} "
                 f"(since {stats.current_start:%B %-d, %Y}) {post_status}"

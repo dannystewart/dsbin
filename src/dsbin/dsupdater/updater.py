@@ -42,8 +42,9 @@ class Updater:
 
         # Initialize PrivilegeHelper and updater lists
         self.privileges = PrivilegeHelper(args, self.logger)
-        self.system_updaters = []
-        self.updaters = []
+        self.system_updaters: list[UpdateManager] = []
+        self.updaters: list[UpdateManager] = []
+        self.updater_classes: list[type[UpdateManager]] = []
 
         # Get all available updaters
         self.discover_updaters()
@@ -91,7 +92,7 @@ class Updater:
 
         print_colored("\nAvailable updaters:", "green")
         for updater_class in available:
-            print(f"- {color(updater_class.display_name, "green")}: {updater_class.description}")
+            print(f"- {color(updater_class.display_name, 'green')}: {updater_class.description}")
 
         if unavailable:
             print("\n" + color("Additional updaters (unavailable on this system):", "grey"))
@@ -105,7 +106,7 @@ class Updater:
         print_colored("`updater <name>`", "cyan")
 
     def initialize_updaters(self) -> None:
-        """Initialize all updaters."""
+        """Initialize all updaters and add them to the appropriate update list."""
         system_updaters = []
         other_updaters = []
 
@@ -115,24 +116,30 @@ class Updater:
                     self.add_updater_to_run(updater_class, system_updaters)
                 else:
                     self.add_updater_to_run(updater_class, other_updaters)
+
         self.system_updaters = system_updaters
         self.updaters = other_updaters
 
         # Check if any updaters require sudo
         self.privileges.needs_sudo = any(updater.requires_sudo for updater in self.system_updaters)
 
-    def add_updater_to_run(self, updater_class: type[UpdateManager], updater_list: list) -> None:
+    def add_updater_to_run(
+        self, updater_class: type[UpdateManager], updater_list: list[UpdateManager]
+    ) -> None:
         """Add an updater to the list for this run if its prerequisite is met."""
         if updater_class.prerequisite is None or shutil.which(updater_class.prerequisite):
-            updater = updater_class(self)
-            if not updater.skip_auto_add:  # Check instance-specific skip_auto_add
+            updater = self._create_updater(updater_class)
+
+            # Check instance-specific skip_auto_add
+            if not updater.skip_auto_add:
                 updater_list.append(updater)
 
     @handle_keyboard_interrupt()
-    def run_updater_list(self, updater_list: list) -> None:
+    def run_updater_list(self, updater_list: list[UpdateManager]) -> None:
         """Run the provided list of updaters."""
         for updater in updater_list:
             updater.update()
+
             if updater.update_successful:
                 self.anything_updated = True
 
@@ -141,15 +148,18 @@ class Updater:
         """Run a specific individual updater by name."""
         for updater_class in self.updater_classes:
             if updater_class.display_name.lower() == updater_name.lower():
-                updater = updater_class(self)
+                updater = self._create_updater(updater_class)
+
                 if issubclass(updater_class, updaters.MacOSSoftwareUpdate):
                     self.run_softwareupdate_on_macos(manual=True)
                     return
+
                 if updater.prerequisite is None or shutil.which(updater.prerequisite):
                     updater.update()
                     if updater.update_successful:
                         self.logger.info("[%s] Update complete!", updater.display_name)
                     return
+
                 self.logger.error(
                     "Prerequisite command '%s' not found for updater '%s'.",
                     updater_class.prerequisite,
@@ -163,21 +173,30 @@ class Updater:
         """Handle softwareupdate on macOS separately."""
         if platform.system() == "Darwin" and shutil.which("softwareupdate"):
             macos_updater = MacOSSoftwareUpdate(self)
-            if manual:  # Force install all available updates if requested manually
+
+            # Force install all available updates if requested manually
+            if manual:
                 macos_updater.force_install_now()
-            elif self.privileges.has_sudo:  # Otherwise run in the background, if we've got sudo
+
+            # Otherwise run in the background, if we've got sudo
+            elif self.privileges.has_sudo:
                 macos_updater.update()
+
             self.anything_updated = True
 
-    def _get_updaters_by_availability(self) -> tuple[list, list]:
+    def _get_updaters_by_availability(
+        self,
+    ) -> tuple[list[type[UpdateManager]], list[type[UpdateManager]]]:
         """Get updaters in available and unavailable lists based on prerequisite checks."""
         available = []
         unavailable = []
+
         for updater_class in sorted(self.updater_classes, key=lambda x: x.display_name.lower()):
             if self._check_updater_availability(updater_class):
                 available.append(updater_class)
             else:
                 unavailable.append(updater_class)
+
         return available, unavailable
 
     def _check_updater_availability(self, updater_class: type[UpdateManager]) -> bool:
@@ -186,16 +205,20 @@ class Updater:
             or shutil.which(updater_class.prerequisite) is not None
         )
 
-    def _log_completion_status(self) -> None:
-        if not self.anything_updated:
-            self.logger.error("No updates were performed. Either OS or tools are not supported.")
-        else:
-            self.logger.info("All updates completed in %s!", self._get_elapsed_time())
+    def _create_updater(self, updater_class: type[UpdateManager]) -> UpdateManager:
+        """Create an updater instance from its class."""
+        return updater_class(self)  # type: ignore
 
     def _get_elapsed_time(self) -> str:
         elapsed_time = time.time() - self.start_time
         minutes, seconds = divmod(int(elapsed_time), 60)
         return Text.format_duration(0, minutes, seconds)
+
+    def _log_completion_status(self) -> None:
+        if not self.anything_updated:
+            self.logger.error("No updates were performed. Either OS or tools are not supported.")
+        else:
+            self.logger.info("All updates completed in %s!", self._get_elapsed_time())
 
 
 def parse_arguments() -> Namespace:

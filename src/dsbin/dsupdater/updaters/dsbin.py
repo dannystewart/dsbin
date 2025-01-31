@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import subprocess
 from dataclasses import dataclass
 from typing import ClassVar
+
+from packaging import version
 
 from dsutil.shell import handle_keyboard_interrupt
 
@@ -33,8 +36,50 @@ class DSPackageUpdater(UpdateManager):
         ),
     }
 
+    def _get_latest_version(self, package: str) -> str | None:
+        """Get latest version from GitLab."""
+        gitlab_base = "https://gitlab.dannystewart.com/danny"
+        try:
+            result = subprocess.run(
+                ["git", "ls-remote", "--tags", f"{gitlab_base}/{package}.git"],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+
+            # Get all version tags and clean them up
+            versions = []
+            for ref in result.stdout.splitlines():
+                tag = ref.split("/")[-1]
+                if tag.startswith("v"):
+                    # Clean up Git ref notation and parse version
+                    clean_tag = tag.split("^")[0]
+                    try:
+                        versions.append(version.parse(clean_tag))
+                    except version.InvalidVersion:
+                        continue
+
+            # Sort with packaging.version comparison
+            if versions:
+                return str(max(versions))
+            return None
+
+        except subprocess.CalledProcessError:
+            return None
+
     @handle_keyboard_interrupt()
     def perform_update_stages(self) -> None:
         """Update pip itself, then update all installed packages."""
         self.run_stage("uninstall")
+
+        # Get latest package version numbers
+        dsbin_version = self._get_latest_version("dsbin")
+        dsutil_version = self._get_latest_version("dsutil")
+
+        # Formulate end message with available version numbers
+        dsbin_str = f"dsbin v{dsbin_version}" if dsbin_version else "dsbin"
+        dsutil_str = f" and dsutil v{dsutil_version}" if dsutil_version else ""
+        end_message = f"{dsbin_str}{dsutil_str} installed successfully!"
+
+        self.update_stages["install"].end_message = end_message
         self.run_stage("install")

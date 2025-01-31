@@ -270,11 +270,23 @@ def bump_version(bump_type: BumpType | str, current_version: str) -> str:
     Returns:
         New version string.
     """
+    # Handle explicit version numbers
     if bump_type.count(".") >= 2:
         _handle_explicit_version(bump_type)
         return bump_type
 
     major, minor, patch, pre_type, pre_num = parse_version(current_version)
+
+    # If we're on a post-release and doing a regular bump, increment patch
+    if pre_type == BumpType.POST:
+        bump_type = BumpType(bump_type)
+        if bump_type == BumpType.PATCH:
+            return f"{major}.{minor}.{patch + 1}"
+        if bump_type == BumpType.MINOR:
+            return f"{major}.{minor + 1}.0"
+        if bump_type == BumpType.MAJOR:
+            return f"{major + 1}.0.0"
+
     return _get_base_version(bump_type, pre_type, major, minor, patch, pre_num)
 
 
@@ -652,7 +664,6 @@ def parse_args() -> argparse.Namespace:
         "type",
         nargs="?",
         default=BumpType.PATCH,
-        choices=[t.value for t in BumpType],
         help="version bump type: major, minor, patch, dev, alpha, beta, rc, post, or x.y.z",
     )
     parser.add_argument(
@@ -663,14 +674,24 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-@handle_keyboard_interrupt()
 def main() -> None:
     """Perform version bump."""
     args = parse_args()
 
     try:
-        # Convert to enum if it's not an explicit version
-        bump_type = args.type if args.type.count(".") >= 2 else BumpType(args.type)
+        # Only convert to enum if it's a known bump type
+        if hasattr(BumpType, args.type.upper()):
+            bump_type = BumpType(args.type)
+        else:
+            # Validate version number format
+            if args.type.count(".") < 2:
+                logger.error(
+                    "Invalid argument: %s. Must be a bump type (%s) or version number (x.y.z)",
+                    args.type,
+                    ", ".join(t.value for t in BumpType),
+                )
+                sys.exit(1)
+            bump_type = args.type
 
         if args.preview:
             pyproject = Path("pyproject.toml")
@@ -684,7 +705,7 @@ def main() -> None:
             logger.info("Current version: %s", current_version)
             logger.info("Would bump to:   %s", new_version)
         else:
-            update_version(bump_type=args.type)
+            update_version(bump_type=bump_type)
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)

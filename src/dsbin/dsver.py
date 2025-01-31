@@ -7,6 +7,8 @@ import subprocess
 from dataclasses import dataclass
 from importlib import metadata
 
+from packaging import version
+
 from dsutil.text import color
 
 
@@ -30,13 +32,23 @@ def get_latest_version(package: str) -> str | None:
             check=True,
         )
 
-        # Get all version tags, sort them, take the last one
-        tags = [
-            ref.split("/")[-1]
-            for ref in result.stdout.splitlines()
-            if ref.split("/")[-1].startswith("v")
-        ]
-        return tags[-1].lstrip("v") if tags else None
+        # Get all version tags and clean them up
+        versions = []
+        for ref in result.stdout.splitlines():
+            tag = ref.split("/")[-1]
+            if tag.startswith("v"):
+                # Clean up Git ref notation and parse version
+                clean_tag = tag.split("^")[0].lstrip("v")
+                try:
+                    versions.append(version.parse(clean_tag))
+                except version.InvalidVersion:
+                    continue
+
+        # Sort with packaging.version comparison
+        if versions:
+            return str(max(versions))
+        return None
+
     except subprocess.CalledProcessError:
         return None
 
@@ -59,15 +71,15 @@ def format_version_info(versions: PackageVersions) -> tuple[str, str]:
 
     if not versions.current:
         symbol = color("✗", "red", attrs=["bold"])
-        version = color("Not installed", "red")
+        ver = color("Not installed", "red")
         if versions.latest:
-            version = f"{version}\n     Latest version: {latest_version}"
-        return symbol, version
+            ver = f"{ver}\n     Latest version: {latest_version}"
+        return symbol, ver
 
-    if versions.latest and versions.latest > versions.current:
+    if versions.latest and version.parse(versions.latest) > version.parse(versions.current):
         symbol = color("⚠", "yellow", attrs=["bold"])
-        version = f"{current_version} ({latest_version} available)"
-        return symbol, version
+        ver = f"{current_version} ({latest_version} available)"
+        return symbol, ver
 
     symbol = color("✓", "green", attrs=["bold"])
     return symbol, current_version

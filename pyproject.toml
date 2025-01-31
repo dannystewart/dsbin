@@ -18,6 +18,7 @@ dependencies = [
     "mysql-connector-python>=9.1.0",
     "natsort>=8.4.0",
     "numpy>=2.2.1",
+    "packaging (>=24.2)",
     "paramiko>=3.5.0",
     "pexpect>=4.9.0",
     "pillow>=11.1.0",

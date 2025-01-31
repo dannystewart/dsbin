@@ -1,12 +1,17 @@
 from __future__ import annotations
 
 FILTER_PHRASES: list[str] = [
+    "-",
+    "/",
+    "\\",
+    "|",
     "Already up to date",
     "Building wheel for ",
     "Building wheels for collected packages: ",
     "Cloning ",
     "Collecting",
     "Created wheel for ",
+    "done",
     "dulwich",
     "Everything up-to-date",
     "Fetching submodule",

@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import contextlib
 import os
 import re
 import subprocess
@@ -9,9 +8,9 @@ from typing import TYPE_CHECKING, Literal
 
 import pexpect
 
-from dsbin.dsupdater.output_processor import OutputProcessor
-
 from dsutil.shell import handle_keyboard_interrupt
+
+from dsbin.dsupdater.output_processor import OutputProcessor
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -149,12 +148,50 @@ class ShellHelper:
     def _handle_interactive_prompt(self, child: pexpect.spawn, processor: OutputProcessor) -> None:
         """Handle an interactive prompt by switching to interactive mode."""
         self.logger.debug("Process appears to be waiting for input.")
-        with contextlib.suppress(Exception):
-            if current := child.read_nonblocking(size=1024, timeout=0):
-                cleaned = processor.clean_control_sequences(current.decode("utf-8"))
-                sys.stdout.write(cleaned)
-                sys.stdout.flush()
-        child.interact()
+        self.logger.debug("Process info - pid: %s, command: %s", child.pid, child.args)
+
+        while True:
+            try:
+                current = self._read_interactive_output(child)
+                if not current:
+                    continue
+
+                self.logger.debug("Raw interactive output: %r", current)
+                cleaned = processor.clean_control_sequences(current)
+                self.logger.debug("Cleaned interactive output: %r", cleaned)
+
+                self._process_interactive_output(cleaned, processor)
+
+            except pexpect.EOF:
+                break
+            except Exception as e:
+                self.logger.debug("Interactive mode error: %s", str(e))
+                break
+
+    def _read_interactive_output(self, child: pexpect.spawn) -> str | None:
+        """Read output from an interactive process."""
+        try:
+            # Increase buffer size and timeout to try to get complete lines
+            output = child.read_nonblocking(size=4096, timeout=0.5)
+            if isinstance(output, bytes):
+                return output.decode("utf-8")
+            return output
+        except pexpect.TIMEOUT:
+            return None
+
+    def _process_interactive_output(self, cleaned: str, processor: OutputProcessor) -> None:
+        """Process and optionally filter interactive output."""
+        # Only process complete lines
+        lines = [line for line in cleaned.splitlines() if line.strip()]
+        if not lines:
+            return
+
+        if processor.filter_output:
+            for line in lines:
+                processor.process_line(line)
+        else:
+            sys.stdout.write(cleaned)
+            sys.stdout.flush()
 
     def _get_command_result(
         self, processor: OutputProcessor, success: bool

@@ -31,13 +31,16 @@ class OutputProcessor:
             r"\x1b\][^\x07\x1b]*[\x07\x1b\\]",  # OSC sequences
             r"\x1b[()][AB012]",  # Other escape sequences
             r"\x1b[^a-zA-Z]*[a-zA-Z]",  # Catch any other escape sequences
+            r"[^\x08]\x08",  # Single backspace sequences
+            r"\x08 \x08.",  # Spinner backspace sequences
         ]
 
         cleaned = text
         for pattern in patterns:
             cleaned = re.sub(pattern, "", cleaned)
 
-        return cleaned
+        # Clean up any remaining backspaces at the start
+        return cleaned.lstrip("\x08")
 
     def process_line(self, line: str) -> None:
         """Process a single line of output."""

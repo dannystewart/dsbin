@@ -70,6 +70,74 @@ signal.signal(signal.SIGTERM, signal_handler)
 logger = LocalLogger().get_logger(simple=True)
 
 
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = ArgParser(
+        description="Creates DMG files from folders, with specific handling for Logic project folders.",
+        arg_width=36,
+    )
+    parser.add_argument(
+        "folder",
+        nargs="?",
+        default=".",
+        help="Folder to process (default is current directory)",
+    )
+    parser.add_argument(
+        "--logic",
+        action="store_true",
+        help="Indicate that the folder is a Logic project",
+    )
+    parser.add_argument(
+        "-d",
+        "--dry-run",
+        action="store_true",
+        help="Dry run: list files that would be created",
+    )
+    parser.add_argument(
+        "-e",
+        "--exclude",
+        help="Comma-separated list of folder names to exclude",
+    )
+    parser.add_argument(
+        "-f",
+        "--force",
+        action="store_true",
+        help="Overwrite DMGs that already exist",
+    )
+    parser.add_argument(
+        "--date",
+        action="store_true",
+        help="Append current date to the DMG file name",
+    )
+    parser.add_argument(
+        "--lzma",
+        action="store_true",
+        help="Use LZMA compression for the DMG (better but slower)",
+    )
+    parser.add_argument(
+        "--backup",
+        action="store_true",
+        help="Use LZMA compression and append date",
+    )
+    return parser.parse_args()
+
+
+def cleanup_resources(is_cancel: bool = False) -> None:
+    """Cleanup the resources_for_cleanup if they exist."""
+    temp_dmg_directory = resources_for_cleanup.get("temp_dmg")
+    current_sparsebundle = resources_for_cleanup.get("current_sparsebundle")
+
+    if temp_dmg_directory and temp_dmg_directory.is_dir():
+        delete_files(temp_dmg_directory, show_output=False)
+
+    if current_sparsebundle and current_sparsebundle.is_dir():
+        delete_files(current_sparsebundle, show_output=False)
+
+    if is_cancel:
+        logger.error("Program interrupted. Temp files cleaned up.")
+        sys.exit(1)
+
+
 def should_exclude(folder_name: str, exclude_list: list[str]) -> bool:
     """Check if a folder should be excluded."""
     return folder_name in exclude_list
@@ -295,72 +363,52 @@ def process_folders(
         )
 
 
-def cleanup_resources(is_cancel: bool = False) -> None:
-    """Cleanup the resources_for_cleanup if they exist."""
-    temp_dmg_directory = resources_for_cleanup.get("temp_dmg")
-    current_sparsebundle = resources_for_cleanup.get("current_sparsebundle")
+def handle_current_dir(args: argparse.Namespace, original_folder: Path) -> None:
+    """Handle the current directory as a Logic project or regular folder."""
+    dmg_name = Path(original_folder).name
+    if args.date or args.backup:
+        today = datetime.now(tz=tz).strftime("%y.%m.%d")
+        dmg_name += f" {today}"
+    dmg_path = Path(original_folder).parent / f"{dmg_name}.dmg"
+    if args.dry_run:
+        print(f"Dry run: Would create {dmg_path}")
+    else:
+        create_dmg(
+            Path(original_folder).name,
+            original_folder,
+            dmg_path,
+            args.lzma or args.backup,
+            args.logic,
+            args.dry_run,
+            args.force,
+        )
 
-    if temp_dmg_directory and temp_dmg_directory.is_dir():
-        delete_files(temp_dmg_directory, show_output=False)
 
-    if current_sparsebundle and current_sparsebundle.is_dir():
-        delete_files(current_sparsebundle, show_output=False)
-
-    if is_cancel:
-        logger.error("Program interrupted. Temp files cleaned up.")
-        sys.exit(1)
-
-
-def parse_arguments() -> argparse.Namespace:
-    """Parse command-line arguments."""
-    parser = ArgParser(
-        description="Creates DMG files from folders, with specific handling for Logic project folders.",
-        arg_width=36,
-    )
-    parser.add_argument(
-        "folder",
-        nargs="?",
-        default=".",
-        help="Folder to process (default is current directory)",
-    )
-    parser.add_argument(
-        "--logic",
-        action="store_true",
-        help="Indicate that the folder is a Logic project",
-    )
-    parser.add_argument(
-        "-d",
-        "--dry-run",
-        action="store_true",
-        help="Dry run: list files that would be created",
-    )
-    parser.add_argument(
-        "-e",
-        "--exclude",
-        help="Comma-separated list of folder names to exclude",
-    )
-    parser.add_argument(
-        "-f",
-        "--force",
-        action="store_true",
-        help="Overwrite DMGs that already exist",
-    )
-    parser.add_argument(
-        "--date",
-        action="store_true",
-        help="Append current date to the DMG file name",
-    )
-    parser.add_argument(
-        "--lzma",
-        action="store_true",
-        help="Use LZMA compression for the DMG (better but slower)",
-    )
-    parser.add_argument(
-        "--backup",
-        action="store_true",
-        help="Use LZMA compression and append date",
-    )
-    return parser.parse_args()
+def handle_logic_project_dir(args: argparse.Namespace, original_folder: Path) -> bool:
+    """Handle a Logic project directory."""
+    if args.logic:
+        logic_extensions = {".logic", ".logicx"}
+        if any(Path(file).suffix in logic_extensions for file in list_files(original_folder)):
+            dmg_name = original_folder.name
+            if args.date or args.backup:
+                today = datetime.now(tz=tz).strftime("%y.%m.%d")
+                dmg_name += f" {today}"
+            dmg_path = original_folder.parent / f"{dmg_name}.dmg"
+            if args.dry_run:
+                logger.warning("Dry run: Would create %s", str(dmg_path))
+            else:
+                create_dmg(
+                    original_folder.name,
+                    original_folder,
+                    dmg_path,
+                    args.lzma or args.backup,
+                    True,
+                    args.dry_run,
+                    args.force,
+                )
+            logger.info("Process completed!")
+            return True
+    return False
 
 
 def main() -> None:
@@ -387,24 +435,13 @@ def main() -> None:
             Path(top_level_temp_dmg_directory).mkdir(parents=True, exist_ok=True)
 
         if not is_current_directory:
-            dmg_name = Path(original_folder).name
-            if args.date or args.backup:
-                today = datetime.now(tz=tz).strftime("%y.%m.%d")
-                dmg_name += f" {today}"
-            dmg_path = Path(original_folder).parent / f"{dmg_name}.dmg"
-            if args.dry_run:
-                print(f"Dry run: Would create {dmg_path}")
-            else:
-                create_dmg(
-                    Path(original_folder).name,
-                    original_folder,
-                    dmg_path,
-                    args.lzma or args.backup,
-                    args.logic,
-                    args.dry_run,
-                    args.force,
-                )
+            handle_current_dir(args, original_folder)
         else:
+            # If --logic is specified, first check if current directory is a Logic project
+            if handle_logic_project_dir(args, original_folder):
+                return
+
+            # If we get here, either --logic wasn't specified or directory isn't a Logic project
             process_folders(
                 original_folder,
                 args.dry_run,

@@ -3,19 +3,19 @@
 """Creates DMG files from folders, with specific handling for Logic projects.
 
 This script automates the creation of DMG (Apple Disk Image) files from directories for archival and
-backup. It has additional functionality to handle Logic Pro project folders with appropriate
+backup. It has additional functionality to handle Logic project folders with appropriate
 exclusions and compression options to optimize the disk images for storage.
 
 Features:
 
 - Processes individual directories or batch processes all directories within a specified path.
-- Handles directories as Logic Pro projects with the `--logic` flag, excluding non-essential subfolders.
+- Handles directories as Logic projects with the `--logic` flag, excluding non-essential subfolders.
 - Offers LZMA compression with the `--lzma` flag for smaller but slower-to-create DMGs.
 - Allows datestamping of DMG filenames with the `--date` flag, useful for versioning.
 - Supports the `--backup` flag, combining LZMA compression and date appending in one option.
-- Excludes specified directories from DMG creation with the `--exclude` flag, taking a comma-separated list.
-- Overwrites existing DMG files if the `--force` option is specified, otherwise skips existing files.
-- Performs a dry run with the `--dry-run` flag, which will output expected filenames without generating them.
+- Excludes specified directories with the `--exclude` flag, taking a comma-separated list.
+- Overwrites existing DMG files if `--force` is specified, otherwise skips existing files.
+- Performs a dry run with `--dry-run`, which will output expected filenames without generating them.
 
 The script ensures a clean state by creating a temporary folder to store interim files
 during the creation process and performs cleanup of these resources on completion or failure.
@@ -175,7 +175,7 @@ def create_dmg(
         source_folder: The source folder.
         dmg_path: The path to the DMG file to create.
         lzma_compression: If True, will use LZMA compression for the DMG (better but slower).
-        is_logic: If True, treats the folder as a Logic Pro project with specific handling.
+        is_logic: If True, treats the folder as a Logic project with specific handling.
         dry_run: If True, will list the DMG files that would be created without actually creating them.
         force_overwrite: If True, will overwrite any existing DMG files.
     """
@@ -258,7 +258,7 @@ def process_folders(
         force_overwrite: If True, will overwrite any existing DMG files.
         append_date: If True, will append the current date to the DMG file name.
         lzma_compression: If True, will use LZMA compression for the DMG.
-        is_logic: If True, treats the folder as a Logic Pro project with specific handling.
+        is_logic: If True, treats the folder as a Logic project with specific handling.
         exclude_list: A list of folders to exclude from processing.
     """
     for folder in list_files(root_dir, include_hidden=False):
@@ -358,7 +358,16 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def main() -> None:
-    """Run the DMG creation."""
+    """Run the DMG creation.
+
+    Raises:
+        SystemExit: If the user provides invalid arguments.
+    """
+    try:
+        args = parse_arguments()
+    except SystemExit:
+        return
+
     top_level_temp_dmg_directory = None
 
     try:
@@ -404,6 +413,8 @@ def main() -> None:
 
         print_colored("Process completed!", "green")
 
+    except SystemExit:
+        raise
     except KeyboardInterrupt:
         cleanup_resources()
         print_colored("Cleanup completed. Program interrupted by user.", "red")
@@ -413,7 +424,8 @@ def main() -> None:
     finally:
         cleanup_resources()
         if (
-            not args.dry_run
+            args
+            and not args.dry_run
             and top_level_temp_dmg_directory
             and os.path.exists(top_level_temp_dmg_directory)
         ):

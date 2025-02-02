@@ -30,21 +30,21 @@ behavior, or use `--help` to view all available options.
 
 from __future__ import annotations
 
-import argparse
-import os
 import signal
 import subprocess
 import sys
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-from dsutil import configure_traceback
+from dsutil import LocalLogger, configure_traceback
+from dsutil.argparser import ArgParser
 from dsutil.files import delete_files, list_files, move_file
 from dsutil.progress import halo_progress, with_retries
-from dsutil.text import print_colored
 
 if TYPE_CHECKING:
+    import argparse
     import types
 
 configure_traceback()
@@ -53,7 +53,7 @@ tz = ZoneInfo("America/New_York")
 
 LOGIC_EXCLUSIONS = ["Bounces", "Old Bounces", "Movie Files", "Stems"]
 
-resources_for_cleanup: dict[str, str | None] = {
+resources_for_cleanup: dict[str, Path | None] = {
     "temp_dmg": None,
     "current_sparsebundle": None,
 }
@@ -61,13 +61,13 @@ resources_for_cleanup: dict[str, str | None] = {
 
 def signal_handler(signum: int | None = None, frame: types.FrameType | None = None) -> None:  # noqa: ARG001
     """Handle signals and cleanup resources."""
-    cleanup_resources()
-    print_colored("Cleanup completed. Program interrupted.", "red")
-    sys.exit(1)
+    cleanup_resources(is_cancel=True)
 
 
 signal.signal(signal.SIGINT, signal_handler)
 signal.signal(signal.SIGTERM, signal_handler)
+
+logger = LocalLogger().get_logger(simple=True)
 
 
 def should_exclude(folder_name: str, exclude_list: list[str]) -> bool:
@@ -76,7 +76,7 @@ def should_exclude(folder_name: str, exclude_list: list[str]) -> bool:
 
 
 def rsync_folder(
-    source: str, destination: str, exclude_patterns: list[str], dry_run: bool = False
+    source: Path, destination: Path, exclude_patterns: list[str], dry_run: bool = False
 ) -> None:
     """Use rsync to copy a folder.
 
@@ -84,9 +84,9 @@ def rsync_folder(
         source: The source folder.
         destination: The destination folder.
         exclude_patterns: A list of patterns to exclude.
-        dry_run: If True, will list the files that would be copied without actually copying them.
+        dry_run: If True, list the files that would be copied without actually copying them.
     """
-    source = source.rstrip("/")
+    source = Path(str(source).rstrip("/"))
     rsync_command = [
         "rsync",
         "-aE",
@@ -102,7 +102,7 @@ def rsync_folder(
 
 
 @with_retries
-def create_sparseimage(folder_name: str, source: str) -> None:
+def create_sparseimage(folder_name: str, source: Path) -> None:
     """Create a sparseimage for a folder.
 
     Args:
@@ -113,7 +113,7 @@ def create_sparseimage(folder_name: str, source: str) -> None:
     resources_for_cleanup["current_sparsebundle"] = sparsebundle_path
 
     # Remove the sparsebundle if it already exists
-    if os.path.exists(sparsebundle_path):
+    if Path(sparsebundle_path).exists():
         delete_files(sparsebundle_path, show_output=False)
 
     hdiutil_command = [
@@ -143,7 +143,7 @@ def convert_sparseimage_to_dmg(folder_name: str, compression_format: str) -> Non
     output_dmg = f"{folder_name}.dmg"
 
     # Remove the output DMG if it already exists
-    if os.path.exists(output_dmg):
+    if Path(output_dmg).exists():
         delete_files(output_dmg, show_output=False)
 
     hdiutil_command = [
@@ -161,8 +161,8 @@ def convert_sparseimage_to_dmg(folder_name: str, compression_format: str) -> Non
 
 def create_dmg(
     folder_name: str,
-    source_folder: str,
-    dmg_path: str,
+    source_folder: Path,
+    dmg_path: Path,
     lzma_compression: bool,
     is_logic: bool,
     dry_run: bool = False,
@@ -174,38 +174,39 @@ def create_dmg(
         folder_name: The name of the folder to create a DMG for.
         source_folder: The source folder.
         dmg_path: The path to the DMG file to create.
-        lzma_compression: If True, will use LZMA compression for the DMG (better but slower).
-        is_logic: If True, treats the folder as a Logic project with specific handling.
-        dry_run: If True, will list the DMG files that would be created without actually creating them.
-        force_overwrite: If True, will overwrite any existing DMG files.
+        lzma_compression: If True, use LZMA compression for the DMG (better but slower).
+        is_logic: If True, treat the folder as a Logic project with specific handling.
+        dry_run: If True, list the DMG files that would be created without actually creating them.
+        force_overwrite: If True, overwrite any existing DMG files.
     """
     if dry_run:
-        print_colored(
-            f"Dry run: Would create DMG {dmg_path} with {'LZMA' if lzma_compression else 'standard'} compression",
-            "yellow",
+        logger.warning(
+            "Dry run: Would create DMG %s with %s compression",
+            dmg_path,
+            "LZMA" if lzma_compression else "standard",
         )
         return
 
-    if os.path.exists(dmg_path):
+    if Path(dmg_path).exists():
         if force_overwrite:
-            print_colored(f"DMG exists for {folder_name}, overwriting...", "yellow")
+            logger.warning("DMG exists for %s, overwriting...", folder_name)
             delete_files(dmg_path, show_output=False)
         else:
-            print_colored(f"DMG already exists for {folder_name}, skipping.", "yellow")
+            logger.warning("DMG already exists for %s, skipping.", folder_name)
             return
 
     temp_dmg_directory = "./temp_dmg"
     resources_for_cleanup["temp_dmg"] = temp_dmg_directory
-    intermediary_folder = os.path.join(temp_dmg_directory, folder_name)
-    os.makedirs(intermediary_folder, exist_ok=True)
+    intermediary_folder = Path(temp_dmg_directory) / folder_name
+    Path(intermediary_folder).mkdir(parents=True, exist_ok=True)
 
     exclusions = LOGIC_EXCLUSIONS if is_logic else []
 
     with halo_progress(
-        filename=os.path.basename(source_folder),
-        start_message="rsyncing",
-        end_message="rsynced",
-        fail_message="Failed to rsync",
+        filename=Path(source_folder).name,
+        start_message="Creating temporary copy of",
+        end_message="Copied",
+        fail_message="Failed to copy",
     ):
         rsync_folder(source_folder, intermediary_folder, exclusions, dry_run=dry_run)
 
@@ -214,35 +215,35 @@ def create_dmg(
 
     try:
         with halo_progress(
-            filename=os.path.basename(folder_name),
-            start_message="creating sparseimage for",
-            end_message="created sparseimage for",
-            fail_message="failed to create sparseimage for",
+            filename=Path(folder_name).name,
+            start_message="Creating sparseimage for",
+            end_message="Created sparseimage for",
+            fail_message="Failed to create sparseimage for",
         ):
             create_sparseimage(folder_name=folder_name, source=intermediary_folder)
 
         with halo_progress(
-            filename=os.path.basename(folder_name),
-            start_message="creating DMG for",
-            end_message="created DMG for",
-            fail_message="failed to create DMG for",
+            filename=Path(folder_name).name,
+            start_message="Creating DMG for",
+            end_message="Created DMG for",
+            fail_message="Failed to create DMG for",
         ):
             convert_sparseimage_to_dmg(
                 folder_name=folder_name, compression_format=compression_format
             )
 
-        temp_dmg_path = f"{folder_name}.dmg"
+        temp_dmg_path = Path(f"{folder_name}.dmg")
         if dmg_path != temp_dmg_path:
             move_file(temp_dmg_path, dmg_path, overwrite=True)
     finally:
         delete_files(intermediary_folder, show_output=False)
         delete_files(sparsebundle_path, show_output=False)
 
-    print_colored(f"{folder_name} DMG created successfully!", "green")
+    logger.info("%s DMG created successfully!", folder_name)
 
 
 def process_folders(
-    root_dir: str,
+    root_dir: Path,
     dry_run: bool,
     force_overwrite: bool,
     append_date: bool,
@@ -254,16 +255,16 @@ def process_folders(
 
     Args:
         root_dir: The root directory that contains the folders to be processed.
-        dry_run: If True, will list the DMG files that would be created without actually creating them.
-        force_overwrite: If True, will overwrite any existing DMG files.
-        append_date: If True, will append the current date to the DMG file name.
-        lzma_compression: If True, will use LZMA compression for the DMG.
+        dry_run: If True, list the DMG files that would be created without actually creating them.
+        force_overwrite: If True, overwrite any existing DMG files.
+        append_date: If True, append the current date to the DMG file name.
+        lzma_compression: If True, use LZMA compression for the DMG.
         is_logic: If True, treats the folder as a Logic project with specific handling.
         exclude_list: A list of folders to exclude from processing.
     """
     for folder in list_files(root_dir, include_hidden=False):
-        folder_path = os.path.join(root_dir, folder)
-        if not os.path.isdir(folder_path) or should_exclude(folder, exclude_list):
+        folder_path = root_dir / folder
+        if not Path(folder_path).is_dir() or should_exclude(folder, exclude_list):
             continue
 
         dmg_name = folder
@@ -274,19 +275,19 @@ def process_folders(
         if is_logic:
             logic_extensions = {".logic", ".logicx"}
             is_logic_project = any(
-                file.endswith(tuple(logic_extensions)) for file in os.listdir(folder_path)
+                Path(file).suffix in logic_extensions for file in list_files(folder_path)
             )
             if not is_logic_project:
                 continue
 
-        dmg_path = os.path.join(root_dir, f"{dmg_name}.dmg")
+        dmg_path = Path(root_dir) / f"{dmg_name}.dmg"
 
         if dry_run:
             print(f"Dry run: Would create {dmg_path}")
             continue
 
-        if os.path.exists(dmg_path) and not force_overwrite:
-            print_colored(f"DMG already exists for {folder}, skipping.", "yellow")
+        if Path(dmg_path).exists() and not force_overwrite:
+            logger.warning("DMG already exists for %s, skipping.", folder)
             continue
 
         create_dmg(
@@ -294,22 +295,27 @@ def process_folders(
         )
 
 
-def cleanup_resources() -> None:
+def cleanup_resources(is_cancel: bool = False) -> None:
     """Cleanup the resources_for_cleanup if they exist."""
     temp_dmg_directory = resources_for_cleanup.get("temp_dmg")
     current_sparsebundle = resources_for_cleanup.get("current_sparsebundle")
 
-    if temp_dmg_directory and os.path.isdir(temp_dmg_directory):
+    if temp_dmg_directory and Path(temp_dmg_directory).is_dir():
         delete_files(temp_dmg_directory, show_output=False)
 
-    if current_sparsebundle and os.path.isdir(current_sparsebundle):
+    if current_sparsebundle and Path(current_sparsebundle).is_dir():
         delete_files(current_sparsebundle, show_output=False)
+
+    if is_cancel:
+        logger.error("Program interrupted. Temp files cleaned up.")
+        sys.exit(1)
 
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Creates DMG files from folders, with specific handling for Logic project folders."
+    parser = ArgParser(
+        description="Creates DMG files from folders, with specific handling for Logic project folders.",
+        arg_width=36,
     )
     parser.add_argument(
         "folder",
@@ -371,28 +377,26 @@ def main() -> None:
     top_level_temp_dmg_directory = None
 
     try:
-        args = parse_arguments()
-
-        original_folder = os.path.abspath(args.folder)
+        original_folder = Path(args.folder).resolve()
         exclude_list = args.exclude.split(",") if args.exclude else []
 
-        is_current_directory = original_folder == os.path.abspath(".")
+        is_current_directory = original_folder == Path.cwd()
 
-        top_level_temp_dmg_directory = os.path.join(original_folder, "temp_dmg")
+        top_level_temp_dmg_directory = Path(original_folder) / "temp_dmg"
         if not args.dry_run:
-            os.makedirs(top_level_temp_dmg_directory, exist_ok=True)
+            Path(top_level_temp_dmg_directory).mkdir(parents=True, exist_ok=True)
 
         if not is_current_directory:
-            dmg_name = os.path.basename(original_folder)
+            dmg_name = Path(original_folder).name
             if args.date or args.backup:
                 today = datetime.now(tz=tz).strftime("%y.%m.%d")
                 dmg_name += f" {today}"
-            dmg_path = os.path.join(os.path.dirname(original_folder), f"{dmg_name}.dmg")
+            dmg_path = Path(original_folder).parent / f"{dmg_name}.dmg"
             if args.dry_run:
                 print(f"Dry run: Would create {dmg_path}")
             else:
                 create_dmg(
-                    os.path.basename(original_folder),
+                    Path(original_folder).name,
                     original_folder,
                     dmg_path,
                     args.lzma or args.backup,
@@ -411,23 +415,21 @@ def main() -> None:
                 exclude_list,
             )
 
-        print_colored("Process completed!", "green")
+        logger.info("Process completed!")
 
     except SystemExit:
         raise
     except KeyboardInterrupt:
-        cleanup_resources()
-        print_colored("Cleanup completed. Program interrupted by user.", "red")
-        sys.exit(1)
+        cleanup_resources(is_cancel=True)
     except Exception as e:
-        print_colored(f"An error occurred: {e}", "red")
+        logger.error("An error occurred: %s", str(e))
     finally:
         cleanup_resources()
         if (
             args
             and not args.dry_run
             and top_level_temp_dmg_directory
-            and os.path.exists(top_level_temp_dmg_directory)
+            and Path(top_level_temp_dmg_directory).exists()
         ):
             delete_files(top_level_temp_dmg_directory, show_output=False)
 

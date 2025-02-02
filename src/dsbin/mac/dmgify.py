@@ -110,7 +110,7 @@ def create_sparseimage(folder_name: str, source: Path) -> None:
         source: The source folder.
     """
     sparsebundle_path = f"{folder_name}.sparsebundle"
-    resources_for_cleanup["current_sparsebundle"] = sparsebundle_path
+    resources_for_cleanup["current_sparsebundle"] = Path(sparsebundle_path)
 
     # Remove the sparsebundle if it already exists
     if Path(sparsebundle_path).exists():
@@ -196,7 +196,7 @@ def create_dmg(
             return
 
     temp_dmg_directory = "./temp_dmg"
-    resources_for_cleanup["temp_dmg"] = temp_dmg_directory
+    resources_for_cleanup["temp_dmg"] = Path(temp_dmg_directory)
     intermediary_folder = Path(temp_dmg_directory) / folder_name
     Path(intermediary_folder).mkdir(parents=True, exist_ok=True)
 
@@ -300,10 +300,10 @@ def cleanup_resources(is_cancel: bool = False) -> None:
     temp_dmg_directory = resources_for_cleanup.get("temp_dmg")
     current_sparsebundle = resources_for_cleanup.get("current_sparsebundle")
 
-    if temp_dmg_directory and Path(temp_dmg_directory).is_dir():
+    if temp_dmg_directory and temp_dmg_directory.is_dir():
         delete_files(temp_dmg_directory, show_output=False)
 
-    if current_sparsebundle and Path(current_sparsebundle).is_dir():
+    if current_sparsebundle and current_sparsebundle.is_dir():
         delete_files(current_sparsebundle, show_output=False)
 
     if is_cancel:

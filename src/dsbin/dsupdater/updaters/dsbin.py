@@ -77,8 +77,8 @@ class DSPackageUpdater(UpdateManager):
         dsutil_version = self._get_latest_version("dsutil")
 
         # Formulate end message with available version numbers
-        dsbin_str = f"dsbin v{dsbin_version}" if dsbin_version else "dsbin"
-        dsutil_str = f" and dsutil v{dsutil_version}" if dsutil_version else ""
+        dsbin_str = f"dsbin {dsbin_version}" if dsbin_version else "dsbin"
+        dsutil_str = f" and dsutil {dsutil_version}" if dsutil_version else ""
         end_message = f"{dsbin_str}{dsutil_str} installed successfully!"
 
         self.update_stages["install"].end_message = end_message

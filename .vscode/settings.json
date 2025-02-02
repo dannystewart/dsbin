@@ -5,6 +5,7 @@
         "**/.git": true,
         "**/.hg": false,
         "**/.idea": true,
+        "**/.mypy_cache": true,
         "**/.pytest_cache": true,
         "**/.ruff_cache": true,
         "**/.svn": false,

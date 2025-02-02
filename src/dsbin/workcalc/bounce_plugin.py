@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
+from dsutil import LocalLogger
 from dsutil.files import list_files
 from dsutil.macos import get_timestamps
 
@@ -12,15 +14,21 @@ from dsbin.workcalc.work_item import WorkItem
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
+    from logging import Logger
 
 
+@dataclass
 class BounceDataSource(DataSourcePlugin):
     """Logic Pro bounce file data source."""
 
     BOUNCE_EXTENSIONS: ClassVar[list[str]] = ["wav", "m4a"]
 
-    def __init__(self, directory: Path) -> None:
-        self.directory = directory
+    bounce_dir: str | Path
+    logger: Logger = field(init=False)
+
+    def __post_init__(self):
+        self.directory = Path(self.bounce_dir)
+        self.logger = LocalLogger().get_logger()
 
     @property
     def source_name(self) -> str:
@@ -60,9 +68,8 @@ class BounceDataSource(DataSourcePlugin):
                         "size": file_path.stat().st_size,
                     },
                 )
-            except (ValueError, OSError) as e:
-                # Log error but continue processing other files
-                print(f"Error processing {file_path}: {e}")  # TODO: Use logger
+            except (ValueError, OSError) as e:  # Log error but continue
+                self.logger.error("Error processing %s: %s", file_path, str(e))
                 continue
 
     def _find_audio_files(self) -> Iterator[Path]:

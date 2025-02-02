@@ -1,22 +1,31 @@
 from __future__ import annotations
 
 import subprocess
+from dataclasses import dataclass, field
 from datetime import datetime
+from pathlib import Path
 from typing import TYPE_CHECKING
+
+from dsutil import LocalLogger
 
 from dsbin.workcalc.plugin import DataSourcePlugin
 from dsbin.workcalc.work_item import WorkItem
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
-    from pathlib import Path
+    from logging import Logger
 
 
+@dataclass
 class GitDataSource(DataSourcePlugin):
     """Git repository data source."""
 
-    def __init__(self, repo_path: Path) -> None:
-        self.repo_path = repo_path
+    repo_dir: str | Path
+    logger: Logger = field(init=False)
+
+    def __post_init__(self):
+        self.repo_path = Path(self.repo_dir)
+        self.logger = LocalLogger().get_logger()
 
     @property
     def source_name(self) -> str:
@@ -78,7 +87,6 @@ class GitDataSource(DataSourcePlugin):
                         "hash": commit_hash,
                     },
                 )
-            except ValueError as e:
-                # Log error but continue processing other commits
-                print(f"Error parsing commit: {e}")  # TODO: Use logger
+            except ValueError as e:  # Log error but continue
+                self.logger.error("Error parsing commit: %s", str(e))
                 continue

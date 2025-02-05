@@ -11,7 +11,9 @@ script is a workaround to force it to clean up without having to reboot.
 from __future__ import annotations
 
 import os
+import platform
 import shutil
+import sys
 from pathlib import Path
 
 from dsutil import configure_traceback
@@ -49,6 +51,10 @@ def format_space(amount: int) -> str:
 
 def main():
     """Main function."""
+    if platform.system() != "Darwin":
+        print(colored("This script can only be run on macOS.", "red"))
+        sys.exit(1)
+
     try:
         free_space_before = check_disk_usage(FS_TO_CHECK)
         print(f"Initial free space: {format_space(free_space_before)}")
@@ -68,7 +74,7 @@ def main():
                 # Create a large file with urandom for speed and non-redundancy
                 with Path(filename).open("wb") as f:
                     f.write(os.urandom(FILE_SIZE))
-                os.sync()  # Flush the filesystem buffers
+                os.sync()  # Flush the filesystem buffers  # type: ignore
 
                 free_space_before = check_disk_usage(FS_TO_CHECK)
                 spinner.text = f"File created. (Free space: {format_space(free_space_before)})"

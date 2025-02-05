@@ -21,8 +21,8 @@ def log_message(message: str) -> None:
         subprocess.run(["logger", "-p", "user.info", message], check=False)
 
 
-if os.uname().sysname != "Darwin":
-    log_message("This script is intended only for macOS. Aborting.")
+if os.uname().sysname != "Darwin":  # type: ignore
+    log_message("This can only be run on macOS. Aborting.")
     sys.exit(1)
 
 output = subprocess.getoutput("pmset -g batt")

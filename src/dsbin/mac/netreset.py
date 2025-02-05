@@ -115,7 +115,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    if os.uname().sysname != "Darwin":
+    if os.uname().sysname != "Darwin":  # type: ignore
         print(colored("This script is intended only for macOS. Aborting.", "red"))
         sys.exit(1)
 

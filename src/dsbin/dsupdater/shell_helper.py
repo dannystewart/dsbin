@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import platform
 import re
 import subprocess
 import sys
@@ -35,6 +36,7 @@ class ShellHelper:
         sudo: bool = False,
         capture_output: bool = False,
         filter_output: bool = False,
+        raise_error: bool = False,
     ) -> tuple[str | None, bool]:
         """Run a shell command and return its output and success status.
 
@@ -45,6 +47,7 @@ class ShellHelper:
                 output to the console.
             filter_output: If True, filter the command output to remove any lines that contain
                 phrases defined in FILTER_PHRASES.
+            raise_error: If True, don't print the error to the log, since it will be raised.
 
         Returns:
             A tuple containing the output of the command (if capture_output is True) and a boolean
@@ -53,13 +56,13 @@ class ShellHelper:
         self.logger.debug("Running shell command: %s", command)
         self.logger.debug("capture_output: %s, filter_output: %s", capture_output, filter_output)
 
-        if sudo and os.geteuid() != 0:
+        if platform.system() != "Windows" and sudo and os.geteuid() != 0:  # type: ignore
             self.updater.privileges.acquire_sudo_if_needed()
             command_parts = command.split("&&")
             command = " && ".join(f"sudo {part.strip()}" for part in command_parts)
 
         try:
-            if not capture_output and not filter_output:
+            if platform.system() == "Windows" or (not capture_output and not filter_output):
                 return self._run_simple_command(command)
 
             processor = OutputProcessor(
@@ -68,7 +71,8 @@ class ShellHelper:
             return self._run_processed_command(command, processor)
 
         except Exception as e:
-            self.logger.error("Command failed: %s", str(e))
+            if not raise_error:
+                self.logger.error("Command failed: %s", str(e))
             return str(e), False
 
     def _run_simple_command(self, command: str) -> tuple[None, bool]:
@@ -175,9 +179,7 @@ class ShellHelper:
         try:
             # Increase buffer size and timeout to try to get complete lines
             output = child.read_nonblocking(size=4096, timeout=0.5)
-            if isinstance(output, bytes):
-                return output.decode("utf-8")
-            return output
+            return output.decode("utf-8") if isinstance(output, bytes) else output
         except pexpect.TIMEOUT:
             return None
 

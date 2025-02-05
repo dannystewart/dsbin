@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import platform
 from dataclasses import dataclass
 from typing import ClassVar
 
@@ -43,10 +44,17 @@ class PythonPipUpdater(UpdateManager):
         # First upgrade pip itself
         self.run_stage("upgrade-pip")
 
+        # Stop here on Windows
+        if platform.system() == "Windows":
+            self.logger.warning(
+                "[%s] Python package updates are not supported on Windows.", self.display_name
+            )
+            return
+
         # Get list of installed packages
         success, output = self.run_stage("list-packages")
         if not success or not output:
-            self.logger.error("[%s] Failed to get list of installed packages", self.display_name)
+            self.logger.error("[%s] Failed to get list of installed packages.", self.display_name)
             return
 
         # Process the package list
@@ -60,7 +68,7 @@ class PythonPipUpdater(UpdateManager):
             packages.append(package)
 
         if not packages:
-            self.logger.info("[%s] No packages to update", self.display_name)
+            self.logger.info("[%s] No packages to update.", self.display_name)
             return
 
         # Update the command in the update stage with our package list

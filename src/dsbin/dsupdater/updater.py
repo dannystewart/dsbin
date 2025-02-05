@@ -72,6 +72,9 @@ class Updater:
 
     def discover_updaters(self) -> None:
         """Dynamically discover all updater classes."""
+        if platform.system() == "Windows":
+            self.logger.warning("Output filtering is not supported on Windows.")
+
         self.updater_classes = []
 
         # Import all modules from updaters package

@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import platform
 from dataclasses import dataclass
 from typing import ClassVar
 
 from dsutil.shell import handle_keyboard_interrupt
 
-from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage
+from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage, UpdateStageFailedError
 
 
 @dataclass
@@ -23,10 +24,22 @@ class ChezmoiPackageManager(UpdateManager):
             start_message="Updating dotfiles...",
             error_message="Failed to update dotfiles: %s",
             filter_output=True,
+            raise_error=True,
         ),
     }
 
     @handle_keyboard_interrupt()
     def perform_update_stages(self) -> None:
         """Update dotfiles using Chezmoi."""
-        self.run_stage("update")
+        try:
+            self.run_stage("update")
+        except UpdateStageFailedError as e:
+            if platform.system() == "Windows":
+                # Errors are to be expected on Windows, so treat them as warnings
+                self.logger.warning(
+                    "[%s] Chezmoi encountered an error and is not fully supported on Windows.",
+                    self.display_name,
+                )
+                self.logger.warning("[%s] %s", self.display_name, str(e))
+            else:
+                self.logger.error("[%s] %s", self.display_name, str(e))

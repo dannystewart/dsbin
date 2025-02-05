@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import platform
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
@@ -40,7 +41,14 @@ class UpdateStage:
     raise_error: bool = False
 
     def __post_init__(self):
-        if self.raise_error:  # Output must be captured for this to work
+        # Windows doesn't support pexpect properly, so we can't do much with output
+        if platform.system() == "Windows":
+            self.requires_sudo = False
+            self.capture_output = False
+            self.filter_output = False
+
+        # Output must be captured to raise errors
+        if self.raise_error:
             self.capture_output = True
 
 
@@ -147,6 +155,11 @@ class UpdateManager(ABC):
             A tuple containing a boolean indicating whether the command was successful, and the
             output of the command if capture_output is True (otherwise None).
         """
+        # Disable output processing on Windows
+        if platform.system() == "Windows":
+            capture_output = False
+            filter_output = False
+
         # Identify the appropriate stage to be run and ensure it exists
         stage = self.update_stages.get(stage_name)
         if not stage:
@@ -166,6 +179,7 @@ class UpdateManager(ABC):
             sudo=stage.requires_sudo,
             capture_output=capture_output or stage.capture_output,
             filter_output=filter_output or stage.filter_output,
+            raise_error=raise_error or stage.raise_error,
         )
         self.logger.debug("Command output: %s", output)
 

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import platform
 import subprocess
 import sys
 from pathlib import Path
@@ -37,6 +38,9 @@ class PrivilegeHelper:
 
     def handle_startup(self) -> None:
         """Handle sudo requirements on startup."""
+        if platform.system() == "Windows":
+            return
+
         if self.check_sudo_only:  # Exit and return whether sudo is needed
             self.return_whether_sudo_is_needed_then_exit()
         else:  # Otherwise check for sudo and run the updater

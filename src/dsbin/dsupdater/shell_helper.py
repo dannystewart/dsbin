@@ -4,7 +4,7 @@ import os
 import re
 import subprocess
 import sys
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import pexpect
 
@@ -94,7 +94,7 @@ class ShellHelper:
             self.logger.debug("Command error: %s", str(e))
             return str(e), False
 
-    def _spawn_process(self, command: str) -> pexpect.spawn:
+    def _spawn_process(self, command: str) -> pexpect.spawn[Any]:
         """Create and return a pexpect spawn instance."""
         return pexpect.spawn(
             "/bin/sh",
@@ -103,7 +103,7 @@ class ShellHelper:
             maxread=1024,
         )
 
-    def _process_output(self, child: pexpect.spawn, processor: OutputProcessor) -> bool:
+    def _process_output(self, child: pexpect.spawn[Any], processor: OutputProcessor) -> bool:
         """Process output from the child process, handling interactive prompts."""
         output_seen = False
         consecutive_timeouts = 0
@@ -128,13 +128,13 @@ class ShellHelper:
         child.close(force=True)
         return (child.exitstatus or 0) == 0
 
-    def _handle_output(self, child: pexpect.spawn, processor: OutputProcessor) -> bool:
+    def _handle_output(self, child: pexpect.spawn[Any], processor: OutputProcessor) -> bool:
         """Handle a single chunk of output. Returns True if output was processed."""
         index = child.expect(["\r\n", "\n", pexpect.EOF], timeout=0.5)
 
         if child.before:
             cleaned = processor.clean_control_sequences(child.before)
-            processor.process_raw_output(cleaned, child.after, index == 2)
+            processor.process_raw_output(cleaned, child.after, index == 2)  # type: ignore
             return True
 
         if index == 2:  # EOF
@@ -145,7 +145,9 @@ class ShellHelper:
 
         return True
 
-    def _handle_interactive_prompt(self, child: pexpect.spawn, processor: OutputProcessor) -> None:
+    def _handle_interactive_prompt(
+        self, child: pexpect.spawn[Any], processor: OutputProcessor
+    ) -> None:
         """Handle an interactive prompt by switching to interactive mode."""
         self.logger.debug("Process appears to be waiting for input.")
         self.logger.debug("Process info - pid: %s, command: %s", child.pid, child.args)
@@ -168,7 +170,7 @@ class ShellHelper:
                 self.logger.debug("Interactive mode error: %s", str(e))
                 break
 
-    def _read_interactive_output(self, child: pexpect.spawn) -> str | None:
+    def _read_interactive_output(self, child: pexpect.spawn[Any]) -> str | None:
         """Read output from an interactive process."""
         try:
             # Increase buffer size and timeout to try to get complete lines

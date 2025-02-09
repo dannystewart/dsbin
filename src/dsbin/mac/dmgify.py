@@ -25,7 +25,7 @@ import subprocess
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from dsutil import LocalLogger, configure_traceback
 from dsutil.argparser import ArgParser
@@ -39,12 +39,192 @@ if TYPE_CHECKING:
 configure_traceback()
 logger = LocalLogger().get_logger(simple=True)
 
-LOGIC_EXCLUSIONS = [
-    "Bounces",
-    "Old Bounces",
-    "Movie Files",
-    "Stems",
-]
+
+@contextmanager
+def temp_workspace() -> Iterator[Path]:
+    """Create a temporary workspace for DMG creation.
+
+    Yields:
+        Path to the temporary workspace that will be automatically cleaned up.
+    """
+    with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        try:
+            yield temp_path
+        finally:
+            if temp_path.exists():
+                delete_files(temp_path, show_output=False)
+
+
+class DMGCreator:
+    """Creates DMG files from folders."""
+
+    LOGIC_EXCLUSIONS: ClassVar[list[str]] = ["Bounces", "Old Bounces", "Movie Files", "Stems"]
+
+    def __init__(
+        self,
+        dry_run: bool = False,
+        force_overwrite: bool = False,
+        is_logic: bool = False,
+        exclude_list: list[str] | None = None,
+        output_name: str | None = None,
+    ) -> None:
+        """Initialize DMG creator with configuration options."""
+        self.dry_run = dry_run
+        self.force_overwrite = force_overwrite
+        self.is_logic = is_logic
+        self.exclude_list = exclude_list or []
+        self.output_name = output_name
+
+    def rsync_folder(self, source: Path, destination: Path) -> None:
+        """Create a temporary copy of a folder."""
+        source = Path(str(source).rstrip("/"))
+        exclusions = self.LOGIC_EXCLUSIONS if self.is_logic else []
+
+        rsync_command = [
+            "rsync",
+            "-aE",
+            "--delete",
+            *(f"--exclude={pattern}" for pattern in exclusions),
+            f"{source}/",
+            destination,
+        ]
+        if not self.dry_run:
+            subprocess.run(rsync_command, check=True)
+        else:
+            logger.warning(
+                "Dry run: rsyncing '%s' to '%s'%s",
+                source,
+                destination,
+                f" with exclusions: {exclusions}" if exclusions else "",
+            )
+
+    def create_dmg(self, folder_path: Path) -> None:
+        """Create a DMG file for a folder."""
+        folder_name = folder_path.name
+        dmg_name = self.output_name or folder_name
+        dmg_path = folder_path.parent / f"{dmg_name}.dmg"
+
+        if self.dry_run:
+            logger.warning("Dry run: Would create DMG %s", dmg_path)
+            return
+
+        if dmg_path.exists():
+            if self.force_overwrite:
+                logger.warning("%s already exists, but forcing overwrite.", dmg_path.name)
+                delete_files(dmg_path, show_output=False)
+            else:
+                logger.warning("%s already exists, skipping.", dmg_path.name)
+                return
+
+        with temp_workspace() as workspace:
+            intermediary_folder = workspace / folder_name
+            intermediary_folder.mkdir()
+
+            with halo_progress(
+                filename=folder_path.name,
+                start_message="Creating temporary copy of folder:",
+                end_message="Created temporary copy of folder:",
+                fail_message="Failed to copy folder:",
+            ):
+                self.rsync_folder(folder_path, intermediary_folder)
+
+            with halo_progress(
+                filename=folder_name,
+                start_message="Creating sparseimage for",
+                end_message="Created sparseimage for",
+                fail_message="Failed to create sparseimage for",
+            ):
+                self._create_sparseimage(folder_name, intermediary_folder)
+
+            with halo_progress(
+                filename=folder_name,
+                start_message="Creating DMG for",
+                end_message="Created DMG for",
+                fail_message="Failed to create DMG for",
+            ):
+                self._convert_sparseimage_to_dmg(folder_name)
+
+            temp_dmg = Path(f"{folder_name}.dmg")
+            if dmg_path != temp_dmg:
+                move_file(temp_dmg, dmg_path, overwrite=True, show_output=False)
+
+        logger.info("Successfully created DMG: %s", dmg_path.name)
+
+    @with_retries
+    def _create_sparseimage(self, folder_name: str, source: Path) -> None:
+        sparsebundle_path = f"{folder_name}.sparsebundle"
+        if Path(sparsebundle_path).exists():
+            delete_files(sparsebundle_path, show_output=False)
+
+        subprocess.run(
+            [
+                "hdiutil",
+                "create",
+                "-srcfolder",
+                source,
+                "-volname",
+                folder_name,
+                "-fs",
+                "APFS",
+                "-format",
+                "UDSB",
+                sparsebundle_path,
+            ],
+            check=True,
+        )
+
+    @with_retries
+    def _convert_sparseimage_to_dmg(self, folder_name: str) -> None:
+        output_dmg = f"{folder_name}.dmg"
+        if Path(output_dmg).exists():
+            delete_files(output_dmg, show_output=False)
+
+        subprocess.run(
+            [
+                "hdiutil",
+                "convert",
+                f"{folder_name}.sparsebundle",
+                "-format",
+                "ULMO",
+                "-o",
+                output_dmg,
+            ],
+            check=True,
+        )
+        delete_files(f"{folder_name}.sparsebundle", show_output=False)
+
+    def process_folders(self, folders: list[str]) -> None:
+        """Process multiple folders for DMG creation."""
+        for folder in folders:
+            folder_path = Path(folder).resolve()
+
+            if folder_path == Path.cwd():
+                # Process all subdirectories in current directory
+                for subfolder in folder_path.iterdir():
+                    if not subfolder.name.startswith("."):
+                        self.process_folder(subfolder)
+            else:  # Process single folder
+                self.process_folder(folder_path)
+
+    def process_folder(self, folder_path: Path) -> None:
+        """Process a folder for DMG creation."""
+        if not folder_path.is_dir() or self._should_exclude(folder_path.name):
+            return
+
+        if self.is_logic and not self._is_logic_project(folder_path):
+            logger.warning("'%s' is not a Logic project, skipping.", folder_path.name)
+            return
+
+        self.create_dmg(folder_path)
+
+    def _should_exclude(self, folder_name: str) -> bool:
+        return folder_name in self.exclude_list
+
+    @staticmethod
+    def _is_logic_project(folder_path: Path) -> bool:
+        logic_extensions = {".logic", ".logicx"}
+        return any(f.suffix in logic_extensions for f in folder_path.iterdir())
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -89,245 +269,22 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def should_exclude(folder_name: str, exclude_list: list[str]) -> bool:
-    """Check if a folder should be excluded."""
-    return folder_name in exclude_list
-
-
-def is_logic_project(folder_path: Path) -> bool:
-    """Check if a folder is a Logic project."""
-    logic_extensions = {".logic", ".logicx"}
-    return any(f.suffix in logic_extensions for f in folder_path.iterdir())
-
-
-@contextmanager
-def temp_workspace() -> Iterator[Path]:
-    """Create a temporary workspace for DMG creation.
-
-    Yields:
-        Path to the temporary workspace that will be automatically cleaned up.
-    """
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_path = Path(temp_dir)
-        try:
-            yield temp_path
-        finally:
-            if temp_path.exists():
-                delete_files(temp_path, show_output=False)
-
-
-def rsync_folder(
-    source: Path, destination: Path, exclude_patterns: list[str], dry_run: bool = False
-) -> None:
-    """Use rsync to create a temporary copy of a folder before creating a disk image from it.
-
-    Args:
-        source: The source folder.
-        destination: The destination folder.
-        exclude_patterns: A list of patterns to exclude.
-        dry_run: If True, list the files that would be copied without actually copying them.
-    """
-    source = Path(str(source).rstrip("/"))
-    rsync_command = [
-        "rsync",
-        "-aE",
-        "--delete",
-        *(f"--exclude={pattern}" for pattern in exclude_patterns),
-        f"{source}/",
-        destination,
-    ]
-    if not dry_run:
-        subprocess.run(rsync_command, check=True)
-    else:
-        logger.warning(
-            "Dry run: rsync %s to %s with exclusions %s.", source, destination, exclude_patterns
-        )
-
-
-@with_retries
-def create_sparseimage(folder_name: str, source: Path) -> None:
-    """Create a sparseimage for a folder.
-
-    Args:
-        folder_name: The name of the folder to create a sparseimage for.
-        source: The source folder.
-    """
-    sparsebundle_path = f"{folder_name}.sparsebundle"
-
-    # Remove the sparsebundle if it already exists
-    if Path(sparsebundle_path).exists():
-        delete_files(sparsebundle_path, show_output=False)
-
-    hdiutil_command = [
-        "hdiutil",
-        "create",
-        "-srcfolder",
-        source,
-        "-volname",
-        folder_name,
-        "-fs",
-        "APFS",
-        "-format",
-        "UDSB",
-        sparsebundle_path,
-    ]
-    subprocess.run(hdiutil_command, check=True)
-
-
-@with_retries
-def convert_sparseimage_to_dmg(folder_name: str) -> None:
-    """Convert a sparseimage to a DMG file."""
-    output_dmg = f"{folder_name}.dmg"
-
-    # Remove the output DMG if it already exists
-    if Path(output_dmg).exists():
-        delete_files(output_dmg, show_output=False)
-
-    hdiutil_command = [
-        "hdiutil",
-        "convert",
-        f"{folder_name}.sparsebundle",
-        "-format",
-        "ULMO",
-        "-o",
-        output_dmg,
-    ]
-    subprocess.run(hdiutil_command, check=True)
-    delete_files(f"{folder_name}.sparsebundle", show_output=False)
-
-
-def create_dmg(
-    folder_name: str,
-    source_folder: Path,
-    dmg_path: Path,
-    is_logic: bool,
-    dry_run: bool = False,
-    force_overwrite: bool = False,
-) -> None:
-    """Create a DMG file for a folder.
-
-    Args:
-        folder_name: The name of the folder to create a DMG for.
-        source_folder: The source folder.
-        dmg_path: The path to the DMG file to create.
-        is_logic: If True, treat the folder as a Logic project with specific handling.
-        dry_run: If True, list the DMG files that would be created without actually creating them.
-        force_overwrite: If True, overwrite any existing DMG files.
-    """
-    if dry_run:
-        logger.warning("Dry run: Would create DMG %s.", dmg_path)
-        return
-
-    if dmg_path.exists():
-        if force_overwrite:
-            logger.warning("DMG exists for %s, overwriting...", folder_name)
-            delete_files(dmg_path, show_output=False)
-        else:
-            logger.warning("DMG already exists for %s, skipping.", folder_name)
-            return
-
-    # Create a clean copy of the source
-    with temp_workspace() as workspace:
-        intermediary_folder = workspace / folder_name
-        intermediary_folder.mkdir()
-
-        exclusions = LOGIC_EXCLUSIONS if is_logic else []
-
-        with halo_progress(
-            filename=source_folder.name,
-            start_message="Creating temporary copy of",
-            end_message="Created temporary copy of",
-            fail_message="Failed to copy",
-        ):
-            rsync_folder(source_folder, intermediary_folder, exclusions, dry_run=dry_run)
-
-        with halo_progress(
-            filename=folder_name,
-            start_message="Creating sparseimage for",
-            end_message="Created sparseimage for",
-            fail_message="Failed to create sparseimage for",
-        ):
-            create_sparseimage(folder_name=folder_name, source=intermediary_folder)
-
-        with halo_progress(
-            filename=folder_name,
-            start_message="Creating DMG for",
-            end_message="Created DMG for",
-            fail_message="Failed to create DMG for",
-        ):
-            convert_sparseimage_to_dmg(folder_name=folder_name)
-
-        temp_dmg = Path(f"{folder_name}.dmg")
-        if dmg_path != temp_dmg:
-            move_file(temp_dmg, dmg_path, overwrite=True)
-
-    logger.info("%s DMG created successfully!", folder_name)
-
-
-def process_folder(
-    root_dir: Path,
-    dry_run: bool,
-    force_overwrite: bool,
-    is_logic: bool,
-    exclude_list: list[str],
-    output_name: str | None = None,
-) -> None:
-    """Process the specified folder for DMG creation.
-
-    Args:
-        root_dir: The root directory that contains the folders to be processed.
-        dry_run: If True, list the DMG files that would be created without actually creating them.
-        force_overwrite: If True, overwrite any existing DMG files.
-        is_logic: If True, treats the folder as a Logic project with specific handling.
-        exclude_list: A list of folders to exclude from processing.
-        output_name: An optional output filename for the DMG file.
-    """
-    # Return early if not a directory or should be excluded
-    if not root_dir.is_dir() or should_exclude(root_dir.name, exclude_list):
-        return
-
-    if is_logic and not is_logic_project(root_dir):
-        logger.warning("%s is not a Logic project, skipping.", root_dir.name)
-        return
-
-    dmg_name = output_name or root_dir.name
-    dmg_path = root_dir.parent / f"{dmg_name}.dmg"
-
-    create_dmg(root_dir.name, root_dir, dmg_path, is_logic, dry_run, force_overwrite)
-
-
 def main() -> None:
     """Run the DMG creation process."""
     try:
         args = parse_arguments()
-        exclude_list = args.exclude.split(",") if args.exclude else []
+        exclude_list = args.exclude.split(",") if args.exclude else None
 
-        for folder in args.folders:
-            folder_path = Path(folder).resolve()
+        creator = DMGCreator(
+            dry_run=args.dry_run,
+            force_overwrite=args.force,
+            is_logic=args.logic,
+            exclude_list=exclude_list,
+            output_name=args.output,
+        )
 
-            if folder_path == Path.cwd():
-                # Process all subdirectories in current directory
-                for subfolder in folder_path.iterdir():
-                    if not subfolder.name.startswith("."):
-                        process_folder(
-                            root_dir=subfolder,
-                            dry_run=args.dry_run,
-                            force_overwrite=args.force,
-                            is_logic=args.logic,
-                            exclude_list=exclude_list,
-                            output_name=args.output,
-                        )
-            else:  # Process single folder
-                process_folder(
-                    root_dir=folder_path,
-                    dry_run=args.dry_run,
-                    force_overwrite=args.force,
-                    is_logic=args.logic,
-                    exclude_list=exclude_list,
-                    output_name=args.output,
-                )
-
-        logger.info("DMG creation completed!")
+        creator.process_folders(args.folders)
+        logger.info("Processing complete!")
 
     except KeyboardInterrupt:
         logger.error("Process interrupted by user.")

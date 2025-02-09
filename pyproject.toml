@@ -19,7 +19,7 @@ dependencies = [
     "natsort>=8.4.0",
     "numpy (>=2.2.2)",
     "packaging (>=24.2)",
-    "paramiko>=3.5.0",
+    "paramiko (>=3.5.1)",
     "pexpect>=4.9.0",
     "pillow>=11.1.0",
     "pycountry>=24.6.1",
@@ -38,14 +38,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["mypy>=1.14.1", "ruff (>=0.9.4)"]
+dev = ["mypy (>=1.15.0)", "ruff (>=0.9.5)"]
 
 [tool.poetry]
 packages = [{ include = "dsbin", from = "src" }]
 
 [tool.poetry.group.dev.dependencies]
-mypy = ">=1.14.1"
-ruff = ">=0.9.4"
+mypy = ">=1.15.0"
+ruff = ">=0.9.5"
 
 [project.scripts]
 # Scripts to list all my scripts and check versions

@@ -65,7 +65,19 @@ def temp_workspace() -> Iterator[Path]:
 class DMGCreator:
     """Creates DMG files from folders."""
 
-    LOGIC_EXCLUSIONS: ClassVar[list[str]] = ["Bounces", "Old Bounces", "Movie Files", "Stems"]
+    DEFAULT_EXCLUSIONS: ClassVar[list[str]] = [
+        ".DS_Store",
+        "._*",
+        ".Spotlight-V*",
+        ".fseventsd",
+        ".Trashes",
+    ]
+    LOGIC_EXCLUSIONS: ClassVar[list[str]] = [
+        "Bounces",
+        "Old Bounces",
+        "Movie Files",
+        "Stems",
+    ]
 
     def __init__(
         self,
@@ -87,7 +99,9 @@ class DMGCreator:
     def rsync_folder(self, source: Path, destination: Path) -> None:
         """Create a temporary copy of a folder."""
         source = Path(str(source).rstrip("/"))
-        exclusions = self.LOGIC_EXCLUSIONS if self.is_logic else []
+        exclusions = [*self.DEFAULT_EXCLUSIONS]  # Start with default exclusions
+        if self.is_logic:
+            exclusions.extend(self.LOGIC_EXCLUSIONS)  # Add Logic exclusions if needed
 
         # If preserving the top level folder, copy to a subdirectory
         target = destination / source.name if self.preserve_folder else destination

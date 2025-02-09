@@ -6,11 +6,17 @@ This script creates compressed, read-only DMG (Apple Disk Image) files that pres
 metadata, making them ideal for archival and cloud storage. It can process individual folders
 or multiple folders at once, with special handling for Logic projects.
 
+By default, it will store the contents of the folder directly at the root of the DMG. However, you
+can preserve the top level folder by using the `-p` or `--preserve-folder` option. This stores the
+entire contents within a named subfolder on the disk image, which makes copying easier.
+
 Features:
 - Creates DMGs that preserve all file metadata (timestamps, permissions, etc.)
 - Handles multiple folders: `dmgify *` or `dmgify "Folder A" "Folder B"`
 - Processes Logic projects with appropriate exclusions using `--logic`
 - Supports custom output names with `-o` or `--output`
+- Can overwrite existing DMGs with `-f` or `--force`
+- Can preserve the top level folder in the DMG with `p` or `--preserve-folder`
 - Previews operations with `--dry-run` before making changes
 
 Examples:
@@ -68,6 +74,7 @@ class DMGCreator:
         is_logic: bool = False,
         exclude_list: list[str] | None = None,
         output_name: str | None = None,
+        preserve_folder: bool = False,
     ) -> None:
         """Initialize DMG creator with configuration options."""
         self.dry_run = dry_run
@@ -75,11 +82,18 @@ class DMGCreator:
         self.is_logic = is_logic
         self.exclude_list = exclude_list or []
         self.output_name = output_name
+        self.preserve_folder = preserve_folder
 
     def rsync_folder(self, source: Path, destination: Path) -> None:
         """Create a temporary copy of a folder."""
         source = Path(str(source).rstrip("/"))
         exclusions = self.LOGIC_EXCLUSIONS if self.is_logic else []
+
+        # If preserving the top level folder, copy to a subdirectory
+        target = destination / source.name if self.preserve_folder else destination
+
+        if self.preserve_folder:
+            target.mkdir(parents=True)
 
         rsync_command = [
             "rsync",
@@ -87,7 +101,7 @@ class DMGCreator:
             "--delete",
             *(f"--exclude={pattern}" for pattern in exclusions),
             f"{source}/",
-            destination,
+            target,
         ]
         if not self.dry_run:
             subprocess.run(rsync_command, check=True)
@@ -95,7 +109,7 @@ class DMGCreator:
             logger.warning(
                 "Dry run: rsyncing '%s' to '%s'%s",
                 source,
-                destination,
+                target,
                 f" with exclusions: {exclusions}" if exclusions else "",
             )
 
@@ -261,6 +275,12 @@ def parse_arguments() -> argparse.Namespace:
         help="Comma-separated list of folders to exclude",
     )
     parser.add_argument(
+        "-p",
+        "--preserve-folder",
+        action="store_true",
+        help="Keep the top-level folder in the DMG (default is to flatten)",
+    )
+    parser.add_argument(
         "-d",
         "--dry-run",
         action="store_true",
@@ -281,6 +301,7 @@ def main() -> None:
             is_logic=args.logic,
             exclude_list=exclude_list,
             output_name=args.output,
+            preserve_folder=args.preserve_folder,
         )
 
         creator.process_folders(args.folders)

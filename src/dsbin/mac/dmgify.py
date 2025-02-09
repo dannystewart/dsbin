@@ -10,15 +10,13 @@ Features:
 - Creates DMGs that preserve all file metadata (timestamps, permissions, etc.)
 - Handles multiple folders: `dmgify *` or `dmgify "Folder A" "Folder B"`
 - Processes Logic projects with appropriate exclusions using `--logic`
-- Offers LZMA compression for smaller files with `--lzma`
 - Supports custom output names with `-o` or `--output`
 - Previews operations with `--dry-run` before making changes
 
 Examples:
-    dmgify "My Project"           # Create DMG from a single folder
-    dmgify *                      # Process all folders in current directory
-    dmgify --logic "Song.logicx"  # Process a Logic project (excludes temporary files)
-    dmgify --lzma *               # Create compressed DMGs for all folders
+    dmgify "My Project"            # Create DMG from a single folder
+    dmgify *                       # Process all folders in current directory
+    dmgify --logic "Song.logicx"   # Process a Logic project (excludes transient files)
 """
 
 from __future__ import annotations
@@ -26,7 +24,6 @@ from __future__ import annotations
 import subprocess
 import tempfile
 from contextlib import contextmanager
-from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -40,16 +37,7 @@ if TYPE_CHECKING:
     from collections.abc import Iterator
 
 configure_traceback()
-
 logger = LocalLogger().get_logger(simple=True)
-
-
-class CompressionFormat(StrEnum):
-    """Compression formats for DMG files."""
-
-    LZMA = "ULMO"
-    STANDARD = "UDZO"
-
 
 LOGIC_EXCLUSIONS = [
     "Bounces",
@@ -80,11 +68,6 @@ def parse_arguments() -> argparse.Namespace:
         "--logic",
         action="store_true",
         help="Process as Logic project (excludes Bounces, Movie Files, etc.)",
-    )
-    parser.add_argument(
-        "--lzma",
-        action="store_true",
-        help="Use LZMA compression (smaller but slower)",
     )
     parser.add_argument(
         "-f",
@@ -192,13 +175,8 @@ def create_sparseimage(folder_name: str, source: Path) -> None:
 
 
 @with_retries
-def convert_sparseimage_to_dmg(folder_name: str, compression_format: CompressionFormat) -> None:
-    """Convert a sparseimage to a DMG file.
-
-    Args:
-        folder_name: The name of the folder to convert.
-        compression_format: The compression format to use: 'ULMO' (LZMA) or 'UDZO' (standard).
-    """
+def convert_sparseimage_to_dmg(folder_name: str) -> None:
+    """Convert a sparseimage to a DMG file."""
     output_dmg = f"{folder_name}.dmg"
 
     # Remove the output DMG if it already exists
@@ -210,7 +188,7 @@ def convert_sparseimage_to_dmg(folder_name: str, compression_format: Compression
         "convert",
         f"{folder_name}.sparsebundle",
         "-format",
-        compression_format.value,
+        "ULMO",
         "-o",
         output_dmg,
     ]
@@ -222,7 +200,6 @@ def create_dmg(
     folder_name: str,
     source_folder: Path,
     dmg_path: Path,
-    lzma_compression: bool,
     is_logic: bool,
     dry_run: bool = False,
     force_overwrite: bool = False,
@@ -233,17 +210,12 @@ def create_dmg(
         folder_name: The name of the folder to create a DMG for.
         source_folder: The source folder.
         dmg_path: The path to the DMG file to create.
-        lzma_compression: If True, use LZMA compression for the DMG (better but slower).
         is_logic: If True, treat the folder as a Logic project with specific handling.
         dry_run: If True, list the DMG files that would be created without actually creating them.
         force_overwrite: If True, overwrite any existing DMG files.
     """
     if dry_run:
-        logger.warning(
-            "Dry run: Would create DMG %s with %s compression.",
-            dmg_path,
-            "LZMA" if lzma_compression else "standard",
-        )
+        logger.warning("Dry run: Would create DMG %s.", dmg_path)
         return
 
     if dmg_path.exists():
@@ -269,10 +241,6 @@ def create_dmg(
         ):
             rsync_folder(source_folder, intermediary_folder, exclusions, dry_run=dry_run)
 
-        compression_format = (
-            CompressionFormat.LZMA if lzma_compression else CompressionFormat.STANDARD
-        )
-
         with halo_progress(
             filename=folder_name,
             start_message="Creating sparseimage for",
@@ -287,9 +255,7 @@ def create_dmg(
             end_message="Created DMG for",
             fail_message="Failed to create DMG for",
         ):
-            convert_sparseimage_to_dmg(
-                folder_name=folder_name, compression_format=compression_format
-            )
+            convert_sparseimage_to_dmg(folder_name=folder_name)
 
         temp_dmg = Path(f"{folder_name}.dmg")
         if dmg_path != temp_dmg:
@@ -302,7 +268,6 @@ def process_folder(
     root_dir: Path,
     dry_run: bool,
     force_overwrite: bool,
-    lzma_compression: bool,
     is_logic: bool,
     exclude_list: list[str],
     output_name: str | None = None,
@@ -313,7 +278,6 @@ def process_folder(
         root_dir: The root directory that contains the folders to be processed.
         dry_run: If True, list the DMG files that would be created without actually creating them.
         force_overwrite: If True, overwrite any existing DMG files.
-        lzma_compression: If True, use LZMA compression for the DMG.
         is_logic: If True, treats the folder as a Logic project with specific handling.
         exclude_list: A list of folders to exclude from processing.
         output_name: An optional output filename for the DMG file.
@@ -329,15 +293,7 @@ def process_folder(
     dmg_name = output_name or root_dir.name
     dmg_path = root_dir.parent / f"{dmg_name}.dmg"
 
-    create_dmg(
-        root_dir.name,
-        root_dir,
-        dmg_path,
-        lzma_compression,
-        is_logic,
-        dry_run,
-        force_overwrite,
-    )
+    create_dmg(root_dir.name, root_dir, dmg_path, is_logic, dry_run, force_overwrite)
 
 
 def main() -> None:
@@ -357,7 +313,6 @@ def main() -> None:
                             root_dir=subfolder,
                             dry_run=args.dry_run,
                             force_overwrite=args.force,
-                            lzma_compression=args.lzma,
                             is_logic=args.logic,
                             exclude_list=exclude_list,
                             output_name=args.output,
@@ -367,7 +322,6 @@ def main() -> None:
                     root_dir=folder_path,
                     dry_run=args.dry_run,
                     force_overwrite=args.force,
-                    lzma_compression=args.lzma,
                     is_logic=args.logic,
                     exclude_list=exclude_list,
                     output_name=args.output,

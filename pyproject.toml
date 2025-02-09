@@ -91,6 +91,7 @@ bipclean = "dsbin.logic.bipclean:main"
 oldprojects = "dsbin.logic.oldprojects:main"
 
 # Mac-specific scripts
+dmg-encrypt = "dsbin.mac.dmg_encrypt:main"
 dmgify = "dsbin.mac.dmgify:main"
 mvdmg = "dsbin.mac.mvdmg:main"
 netreset = "dsbin.mac.netreset:main"

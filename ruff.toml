@@ -1,4 +1,4 @@
-# Ruff config version: 10
+# Ruff config version: 12
 # -----------------------
 
 # Files and directories to exclude
@@ -102,6 +102,7 @@ ignore = [
     "COM812",  # Trailing comma missing
     "COM819",  # Trailing comma prohibited (redundant with Ruff formatter)
     "DOC201",  # Return is not documented in docstring
+    "DOC402",  # Yield is not documented in docstring
     "D100",    # Missing docstring in public module
     "D104",    # Missing docstring in public package
     "D105",    # Missing docstring in magic method
@@ -154,11 +155,13 @@ ignore = [
     "W293",    # Blank line contains whitespace
 ]
 
-# Allow fix for all enabled rules (when `--fix`) is provided.
+# Allow fix for all enabled rules (when `--fix`) is provided
 fixable = ["ALL"]
-unfixable = []
 
-# Allow unused variables when underscore-prefixed.
+# Prevent removal of unused variables (to avoid removing while working)
+unfixable = ["F841"]
+
+# Allow unused variables when underscore-prefixed
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
 
 [lint.per-file-ignores]

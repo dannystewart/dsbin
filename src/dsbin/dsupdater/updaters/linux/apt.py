@@ -29,6 +29,11 @@ class APTPackageManager(UpdateManager):
             start_message="Updating packages...",
             requires_sudo=True,
         ),
+        "autoremove": UpdateStage(
+            command="apt autoremove -y",
+            start_message="Removing unneeded packages...",
+            requires_sudo=True,
+        ),
     }
 
     @handle_keyboard_interrupt()
@@ -36,3 +41,4 @@ class APTPackageManager(UpdateManager):
         """Update packages using APT."""
         self.run_stage("update")
         self.run_stage("upgrade")
+        self.run_stage("autoremove")

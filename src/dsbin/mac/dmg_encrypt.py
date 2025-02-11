@@ -47,16 +47,27 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="overwrite output file if it exists",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--replace",
+        action="store_true",
+        help="replace the original DMG file with the encrypted version",
+    )
+    args = parser.parse_args()
+
+    if args.replace and args.output:
+        parser.error("Cannot specify both --replace and --output.")
+
+    return args
 
 
-def encrypt_dmg(source_dmg: Path, output_dmg: Path, passphrase: str) -> None:
+def encrypt_dmg(source_dmg: Path, output_dmg: Path, passphrase: str, replace: bool) -> None:
     """Create an encrypted copy of a DMG file.
 
     Args:
         source_dmg: Path to the source DMG file.
         output_dmg: Path where the encrypted DMG should be created.
         passphrase: Password for the encrypted DMG.
+        replace: Whether the original DMG is being replaced. For logging only.
 
     Raises:
         subprocess.CalledProcessError: If a command fails.
@@ -68,9 +79,9 @@ def encrypt_dmg(source_dmg: Path, output_dmg: Path, passphrase: str) -> None:
 
         with halo_progress(
             filename=source_dmg.name,
-            start_message="Mounting DMG",
-            end_message="Mounted DMG",
-            fail_message="Failed to mount DMG",
+            start_message="Mounting DMG:",
+            end_message="Mounted DMG:",
+            fail_message="Failed to mount DMG:",
         ):
             subprocess.run(
                 [
@@ -87,8 +98,8 @@ def encrypt_dmg(source_dmg: Path, output_dmg: Path, passphrase: str) -> None:
         try:
             with halo_progress(
                 filename=output_dmg.name,
-                start_message="Creating encrypted DMG",
-                end_message="Created encrypted DMG",
+                start_message="Encrypting DMG:" if replace else "Creating encrypted DMG:",
+                end_message="Encrypted DMG:" if replace else "Created encrypted DMG:",
                 fail_message="Failed to create encrypted DMG",
             ):
                 # Create process with both stdin and stdout pipes
@@ -121,15 +132,35 @@ def encrypt_dmg(source_dmg: Path, output_dmg: Path, passphrase: str) -> None:
 
         finally:
             with halo_progress(
-                filename=source_dmg.name,
-                start_message="Unmounting DMG",
-                end_message="Unmounted DMG",
+                filename=output_dmg.name if replace else source_dmg.name,
+                start_message="Unmounting DMG:",
+                end_message="Unmounted DMG:",
                 fail_message="Failed to unmount DMG",
             ):
                 subprocess.run(
                     ["hdiutil", "detach", mount_point, "-force"],
                     check=True,
                 )
+
+
+def get_password() -> str:
+    """Get password securely.
+
+    Raises:
+        ValueError: If passwords do not match or are empty.
+    """
+    password = getpass.getpass("Enter password for encrypted DMG: ")
+    verify = getpass.getpass("Verify password: ")
+
+    if password != verify:
+        msg = "Passwords do not match"
+        raise ValueError(msg)
+
+    if not password:
+        msg = "Password cannot be empty"
+        raise ValueError(msg)
+
+    return password
 
 
 def main() -> None:
@@ -141,6 +172,9 @@ def main() -> None:
         if not source_dmg.exists():
             logger.error("DMG file not found: %s", source_dmg)
             return
+
+        if args.replace:
+            logger.info("Replacing original DMG with encrypted version.")
 
         output_dmg = (
             Path(args.output)
@@ -156,20 +190,14 @@ def main() -> None:
                 logger.error("Output file already exists: %s", output_dmg)
                 return
 
-        # Get password securely
-        password = getpass.getpass("Enter password for encrypted DMG: ")
-        verify = getpass.getpass("Verify password: ")
-
-        if password != verify:
-            logger.error("Passwords do not match.")
-            return
-
-        if not password:
-            logger.error("Password cannot be empty.")
-            return
-
-        encrypt_dmg(source_dmg, output_dmg, password)
+        password = get_password()
+        encrypt_dmg(source_dmg, output_dmg, password, args.replace)
         logger.info("Successfully created encrypted DMG: %s", output_dmg.name)
+
+        if args.replace:
+            source_dmg.unlink()
+            output_dmg.rename(source_dmg)
+            logger.info("Replaced DMG with encrypted version: %s", source_dmg.name)
 
     except KeyboardInterrupt:
         logger.error("Process interrupted by user.")

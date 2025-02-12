@@ -23,25 +23,29 @@ configure_traceback()
 logger = LocalLogger().get_logger(simple=True)
 
 
-def handle_naming(input_path: Path, rename: bool) -> None:
+def handle_naming(input_name: str | Path, rename: bool = False) -> None:
     """Handle generating the new name and optionally performing the rename."""
+    # Convert to string if it's a Path
+    original_name = input_name.name if isinstance(input_name, Path) else input_name
+
     # Get the new name and add the .iso extension back if the original had it
-    new_name = destupify_filename(input_path.name)
-    if input_path.name.upper().endswith(".ISO"):
+    new_name = destupify_filename(original_name)
+    if original_name.upper().endswith(".ISO"):
         new_name = f"{new_name}.iso"
 
     print()
-    if rename:
+    if rename and isinstance(input_name, Path):
         try:  # Rename the file
-            input_path.rename(input_path.parent / new_name)
-            logger.info("Renamed: %s → %s", input_path.name, new_name)
+            input_name.rename(input_name.parent / new_name)
+            logger.info("Renamed: %s → %s", original_name, new_name)
         except OSError as e:
             logger.error("Could not rename file: %s", str(e))
             sys.exit(1)
     else:  # Strip .iso for output if we're just displaying
         if new_name.lower().endswith(".iso"):
             new_name = new_name[:-4]
-        logger.debug("NOTE: Name is only displayed. Use `--rename` to actually rename.")
+        if rename:
+            logger.debug("NOTE: Cannot rename when processing input as text only.")
         logger.info("New filename: %s", new_name)
 
 
@@ -70,17 +74,17 @@ def destupify_filename(filename: str) -> str:
 def parse_args() -> argparse.ArgumentParser:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Turn stupid Windows 11 ISO names into non-stupid ones"
+        description="Turns stupid Windows 11 ISO names into non-stupid ones."
     )
     parser.add_argument(
         "filename",
         nargs="?",
-        help="Windows 11 ISO filename to process",
+        help="Windows 11 ISO filename or string to process",
     )
     parser.add_argument(
         "--rename",
         action="store_true",
-        help="rename the file instead of just showing the new name",
+        help="rename the file if it exists",
     )
     return parser
 
@@ -95,11 +99,12 @@ def main() -> None:
         return
 
     input_path = Path(args.filename)
-    if not input_path.exists():
-        logger.error("File not found: %s", input_path)
-        sys.exit(1)
 
-    handle_naming(input_path, args.rename)
+    # If it's a real file, process it as such, otherwise treat as string
+    if input_path.exists():
+        handle_naming(input_path, args.rename)
+    else:
+        handle_naming(args.filename, False)
 
 
 if __name__ == "__main__":

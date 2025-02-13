@@ -1,6 +1,45 @@
 #!/usr/bin/env python3
 
-"""Checks to see if mount points are mounted, and act accordingly."""
+"""Checks to see if mount points are mounted, and act accordingly.
+
+To have this run automatically, create the service and timer:
+
+# /etc/systemd/system/dockermounter.service
+[Unit]
+Description=Check and fix Docker mount points
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/danny/.pyenv/shims/dockermounter --auto
+User=root
+Environment=PYENV_ROOT=/home/YOUR_USERNAME/.pyenv
+Environment=PATH=/home/YOUR_USERNAME/.pyenv/shims:/home/YOUR_USERNAME/.pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+[Install]
+WantedBy=multi-user.target
+
+# /etc/systemd/system/dockermounter.timer
+[Unit]
+Description=Run Docker mount checker periodically
+
+[Timer]
+# Run every 15 minutes
+OnBootSec=5min
+OnUnitActiveSec=15min
+
+[Install]
+WantedBy=timers.target
+
+Then install the service and timer:
+
+> sudo cp dockermounter.py /home/danny/.pyenv/shims/dockermounter
+> sudo chmod +x /home/danny/.pyenv/shims/dockermounter
+> sudo systemctl daemon-reload
+> sudo systemctl enable dockermounter.timer
+> sudo systemctl start dockermounter.timer
+
+"""
 
 from __future__ import annotations
 
@@ -75,7 +114,11 @@ class ShareManager:
     logger: Logger = field(init=False)
 
     def __post_init__(self) -> None:
-        """Initialize environment and optional Telegram notification."""
+        """Initialize environment and optional Telegram notification.
+
+        Raises:
+            ValueError: If mount_root or docker_compose does not exist.
+        """
         # Validate mount_root
         if not self.mount_root.is_dir():
             msg = f"Mount root directory does not exist: {self.mount_root}"
@@ -180,7 +223,7 @@ class ShareManager:
             return False
 
     def check_shares(self) -> tuple[list[Path], list[Path]]:
-        """Check all shares and return a tuple of (unmounted shares with contents, all unmounted shares)."""
+        """Check shares and return tuple of (unmounted with contents, all unmounted)."""
         unmounted_with_content = []
         unmounted = []
 

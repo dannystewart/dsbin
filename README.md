@@ -1,87 +1,82 @@
-# Bin Scripts
+# DS Bin Scripts
 
 This is my personal collection of scripts and utilities.
 
-## Tool-Specific Documentation
+## List of Scripts
 
-### dockermounter
+**NOTE:** This list is infrequently updated and may lag behind what's actually available. Check `pyproject.toml` for the actual list as used by the package.
 
-To have this run automatically on a schedule, first create `/etc/systemd/system/dockermounter.service`:
+Descriptions will be added at some point in the future.
 
-```bash
-[Unit]
-Description=Check and fix Docker mount points
-After=network.target
+#### Scripts to list all my scripts and check versions
+- `lsbin`
+- `dsver`
 
-[Service]
-Type=oneshot
-ExecStart=/home/danny/.pyenv/shims/dockermounter --auto
-User=root
-Environment=PYENV_ROOT=/home/YOUR_USERNAME/.pyenv
-Environment=PATH=/home/YOUR_USERNAME/.pyenv/shims:/home/YOUR_USERNAME/.pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+#### Dedicated utilities
+- `dsupdater`
+- `iplookup`
+- `prism`
+- `workcalc`
+- `wpmusic`
 
-[Install]
-WantedBy=multi-user.target
-```
+#### File management scripts
+- `backupsort`
+- `bigfiles`
+- `dupefinder`
+- `fml`
+- `foldermerge`
+- `rsyncer`
 
-Then create `/etc/systemd/system/dockermounter.timer`:
+#### Media scripts
+- `ffgif`
+- `fftrim`
+- `ytdl`
 
-```bash
-[Unit]
-Description=Run Docker mount checker periodically
+#### Music scripts
+- `aif2wav`
+- `alacrity`
+- `bounceprune`
+- `hpfilter`
+- `metacopy`
+- `mp3ify`
+- `mshare`
+- `pybounce`
+- `pyfiler`
+- `rmp3`
+- `wav2aif`
 
-[Timer]
-# Run every 15 minutes
-OnBootSec=5min
-OnUnitActiveSec=15min
+#### Logic-specific scripts
+- `bipclean`
+- `oldprojects`
 
-[Install]
-WantedBy=timers.target
-```
+#### Mac-specific scripts
+- `dmg-encrypt`
+- `dmgify`
+- `mvdmg`
+- `netreset`
+- `pkginst`
+- `setmag`
+- `spacepurger`
+- `timestamps`
 
-Then install:
+#### Development-related scripts
+- `dsbump`
+- `dsversion`
+- `pipmigrator`
+- `poetry-migrate`
+- `pyenversioner`
+- `scriptdep`
+- `tagreplace`
+- `uvmigrate`
 
-```bash
-sudo cp dockermounter.py /home/danny/.pyenv/shims/dockermounter
-sudo chmod +x /home/danny/.pyenv/shims/dockermounter
-```
+#### System tools
+- `changehostname`
+- `dsservice`
+- `dockermounter`
+- `envsync`
+- `ssh-tunnel`
+- `watchtower`
 
-To do this in an easy one-shot:
-
-```bash
-sudo tee /etc/systemd/system/dockermounter.service << 'EOF'
-[Unit]
-Description=Check and fix Docker mount points
-After=network.target
-
-[Service]
-Type=oneshot
-ExecStart=/home/danny/.pyenv/shims/dockermounter --auto
-User=root
-Environment=PYENV_ROOT=/home/YOUR_USERNAME/.pyenv
-Environment=PATH=/home/YOUR_USERNAME/.pyenv/shims:/home/YOUR_USERNAME/.pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-sudo tee /etc/systemd/system/dockermounter.timer << 'EOF'
-[Unit]
-Description=Run Docker mount checker periodically
-
-[Timer]
-OnBootSec=5min
-OnUnitActiveSec=15min
-
-[Install]
-WantedBy=timers.target
-EOF
-```
-
-Then enable and start the timer:
-
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable dockermounter.timer
-sudo systemctl start dockermounter.timer
-```
+#### Text processing scripts
+- `pycompare`
+- `w11renamer`

@@ -100,13 +100,13 @@ class DMGCreator:
     def __post_init__(self):
         self.logger = LocalLogger().get_logger(simple=True)
 
-        if self.preserve_folder:
-            self.logger.info("Preserving top-level folder in DMG.")
-
         # Always preserve top-level folder for Logic projects
         if self.is_logic:
+            self.logger.info("* Processing as Logic project.")
             self.preserve_folder = True
-            self.logger.info("Processing as Logic project.")
+
+        if self.preserve_folder:
+            self.logger.info("* Preserving top-level folder.")
 
         # Build exclusion list based on DMG type
         self.exclusions = [*self.DEFAULT_EXCLUSIONS]

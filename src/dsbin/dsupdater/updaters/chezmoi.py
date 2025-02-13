@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 import platform
-from dataclasses import dataclass
-from typing import ClassVar
+from dataclasses import dataclass, field
+from typing import TYPE_CHECKING, ClassVar
 
+from dsutil import LocalLogger
 from dsutil.shell import handle_keyboard_interrupt
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage, UpdateStageFailedError
+
+if TYPE_CHECKING:
+    from logging import Logger
 
 
 @dataclass
@@ -18,6 +22,8 @@ class ChezmoiPackageManager(UpdateManager):
     prerequisite: str | None = "chezmoi"
     sort_order = 10
 
+    logger: Logger = field(init=False)
+
     update_stages: ClassVar[dict[str, UpdateStage]] = {
         "update": UpdateStage(
             command="chezmoi update",
@@ -27,6 +33,9 @@ class ChezmoiPackageManager(UpdateManager):
             raise_error=True,
         ),
     }
+
+    def __post_init__(self) -> None:
+        self.logger = LocalLogger().get_logger()
 
     @handle_keyboard_interrupt()
     def perform_update_stages(self) -> None:

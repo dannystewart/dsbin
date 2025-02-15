@@ -4,7 +4,6 @@ import platform
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from dsutil import LocalLogger
 from dsutil.shell import handle_keyboard_interrupt
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage, UpdateStageFailedError
@@ -34,9 +33,6 @@ class ChezmoiPackageManager(UpdateManager):
         ),
     }
 
-    def __post_init__(self) -> None:
-        self.logger = LocalLogger().get_logger()
-
     @handle_keyboard_interrupt()
     def perform_update_stages(self) -> None:
         """Update dotfiles using Chezmoi."""
@@ -45,10 +41,10 @@ class ChezmoiPackageManager(UpdateManager):
         except UpdateStageFailedError as e:
             if platform.system() == "Windows":
                 # Errors are to be expected on Windows, so treat them as warnings
-                self.logger.warning(
+                self.updater.logger.warning(
                     "[%s] Chezmoi encountered an error and is not fully supported on Windows.",
                     self.display_name,
                 )
-                self.logger.warning("[%s] %s", self.display_name, str(e))
+                self.updater.logger.warning("[%s] %s", self.display_name, str(e))
             else:
-                self.logger.error("[%s] %s", self.display_name, str(e))
+                self.updater.logger.error("[%s] %s", self.display_name, str(e))

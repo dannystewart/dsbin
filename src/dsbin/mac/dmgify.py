@@ -8,7 +8,7 @@ or multiple folders at once, with special handling for Logic projects.
 
 By default, it will store the contents of the folder directly at the root of the DMG. However, you
 can preserve the top level folder by using the `-p` or `--preserve-folder` option. This stores the
-entire contents within a named subfolder on the disk image, which makes copying easier.
+full contents within a named subfolder on the disk image, which makes it easier to copy everything.
 
 Features:
 - Creates DMGs that preserve all file metadata (timestamps, permissions, etc.)
@@ -17,7 +17,6 @@ Features:
 - Supports custom output names with `-o` or `--output`
 - Can overwrite existing DMGs with `-f` or `--force`
 - Can preserve the top level folder in the DMG with `p` or `--preserve-folder`
-- Previews operations with `--dry-run` before making changes
 
 Examples:
     dmgify "My Project"            # Create DMG from a single folder
@@ -65,7 +64,6 @@ class DMGCreator:
     """Creates DMG files from folders.
 
     Args:
-        dry_run: Show what would be done without actually performing the operation.
         force_overwrite: Overwrite existing DMG files if they exist.
         is_logic: Treat as a Logic project (excludes folders listed in LOGIC_EXCLUSIONS).
         exclude_list: Comma-separated list of folders to exclude.
@@ -87,7 +85,6 @@ class DMGCreator:
         "Stems",
     ]
 
-    dry_run: bool = False
     force_overwrite: bool = False
     is_logic: bool = False
     exclude_list: list[str] = field(default_factory=list)
@@ -118,10 +115,6 @@ class DMGCreator:
         folder_name = folder_path.name
         dmg_name = self.output_name or folder_name
         dmg_path = folder_path.parent / f"{dmg_name}.dmg"
-
-        if self.dry_run:
-            self.logger.warning("Dry run: Would create DMG %s", dmg_path)
-            return
 
         if dmg_path.exists():
             if self.force_overwrite:
@@ -182,15 +175,7 @@ class DMGCreator:
             f"{source}/",
             target,
         ]
-        if not self.dry_run:
-            subprocess.run(rsync_command, check=True)
-        else:
-            self.logger.warning(
-                "Dry run: rsyncing '%s' to '%s'%s",
-                source,
-                target,
-                f" with exclusions: {self.exclusions}" if self.exclusions else "",
-            )
+        subprocess.run(rsync_command, check=True)
 
     @with_retries
     def _create_sparseimage(self, folder_name: str, source: Path) -> None:
@@ -297,17 +282,14 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="handle as Logic project (exclude Bounces, Movie Files, Stems)",
     )
-    parser.add_argument("-f", "--force", action="store_true", help="overwrite existing files")
-    parser.add_argument("-e", "--exclude", help="comma-separated list of folders to exclude")
     parser.add_argument(
         "-p",
         "--preserve-folder",
         action="store_true",
         help="preserve top-level folder at root (flattens by default)",
     )
-    parser.add_argument(
-        "-d", "--dry-run", action="store_true", help="show results without performing actions"
-    )
+    parser.add_argument("-e", "--exclude", help="comma-separated list of folders to exclude")
+    parser.add_argument("-f", "--force", action="store_true", help="overwrite existing files")
     return parser.parse_args()
 
 
@@ -318,14 +300,12 @@ def main() -> None:
     exclude_list: list[str] = args.exclude.split(",") if args.exclude else []
 
     creator = DMGCreator(
-        dry_run=args.dry_run,
         force_overwrite=args.force,
         is_logic=args.logic,
         exclude_list=exclude_list,
         output_name=args.output,
         preserve_folder=args.preserve_folder,
     )
-
     creator.process_folders(args.folders)
 
 

@@ -17,7 +17,7 @@ dependencies = [
     "mutagen>=1.47.0",
     "mysql-connector-python (>=9.2.0)",
     "natsort>=8.4.0",
-    "numpy (>=2.2.2)",
+    "numpy (>=2.2.3)",
     "packaging (>=24.2)",
     "paramiko (>=3.5.1)",
     "pexpect>=4.9.0",
@@ -38,14 +38,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["mypy (>=1.15.0)", "ruff (>=0.9.5)"]
+dev = ["mypy (>=1.15.0)", "ruff (>=0.9.6)"]
 
 [tool.poetry]
 packages = [{ include = "dsbin", from = "src" }]
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.15.0"
-ruff = ">=0.9.5"
+ruff = ">=0.9.6"
 
 [project.scripts]
 # Scripts to list all my scripts and check versions

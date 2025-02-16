@@ -115,20 +115,28 @@ class WPMusic:
         """Process a single audio file and its potential instrumental pair."""
         # Process the original file first
         file_path = Path(file_path)
-        self._process_single_file(file_path)
+        track_metadata = self._process_single_file(file_path)
 
         # Check for and process matching instrumental file
         instrumental_path = self._find_instrumental_pair(file_path)
         if instrumental_path:
             self.logger.info("Found matching instrumental file: %s", instrumental_path)
-            self._process_single_file(instrumental_path, is_pair=True)
+            self._process_single_file(
+                instrumental_path, is_pair=True, track_metadata=track_metadata
+            )
 
-    def _process_single_file(self, file_path: Path, is_pair: bool = False) -> None:
+    def _process_single_file(
+        self,
+        file_path: Path,
+        is_pair: bool = False,
+        track_metadata: dict[str, AudioTrack] | None = None,
+    ) -> dict[str, AudioTrack]:
         """Process a single audio file.
 
         Args:
             file_path: Path to the audio file.
             is_pair: Whether this is part of an instrumental pair.
+            track_metadata: Metadata of the original track, if already identified as part of a pair.
 
         Raises:
             TypeError: If no track is selected from the fallback menu.
@@ -136,8 +144,12 @@ class WPMusic:
         audio_track = AudioTrack(str(file_path), append_text=self.args.append)
 
         try:
-            track_metadata = self.track_identifier.identify_track(audio_track)
-            audio_track.set_track_metadata(track_metadata)
+            if not track_metadata:  # Identify the original track
+                track_metadata = self.track_identifier.identify_track(audio_track)
+                audio_track.set_track_metadata(track_metadata)
+            else:  # If we already have metadata, it's the instrumental for the original track
+                audio_track.set_track_metadata(track_metadata)
+                audio_track.is_instrumental = True
 
             self.logger.info(
                 "%s %s%s...",
@@ -159,8 +171,11 @@ class WPMusic:
             if not self.config.keep_files:
                 self.file_manager.cleanup_files_after_upload(audio_track, output_filename)
 
+            return track_metadata
+
         except Exception as e:
             self.logger.error("An error occurred: %s", str(e))
+            return {}
 
     def _find_instrumental_pair(self, file_path: Path) -> Path | None:
         """Find a matching instrumental file for the given file path."""

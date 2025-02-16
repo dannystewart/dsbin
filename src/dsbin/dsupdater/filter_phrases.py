@@ -6,6 +6,7 @@ FILTER_PHRASES: list[str] = [
     "\\",
     "|",
     "Already up to date",
+    "Attempting uninstall",
     "Building wheel for ",
     "Building wheels for collected packages: ",
     "Cloning ",

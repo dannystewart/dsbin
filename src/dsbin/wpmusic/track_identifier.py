@@ -100,8 +100,6 @@ class TrackIdentifier:
 
         for track in audio_track.tracks:
             if track["track_name"] == selected_track_name:
-                if audio_track.is_instrumental:
-                    track["track_name"] += " (Instrumental)"
                 return track
 
         msg = "No track selected."

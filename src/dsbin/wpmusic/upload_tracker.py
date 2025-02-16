@@ -3,7 +3,7 @@ from __future__ import annotations
 import operator
 from collections import defaultdict
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from rich import box
 from rich.console import Console
@@ -96,13 +96,15 @@ class UploadTracker:
                 more_count = len(processed_uploads) - num_uploads
                 console.print(
                     Text(
-                        f" ...and {more_count} more. Use --history \"{entry['track_name']}\" to see all.",
+                        f' ...and {more_count} more. Use --history "{entry["track_name"]}" to see all.',
                         style="dim italic",
                     ),
                     width=80,
                 )
 
-    def _prepare_rows_for_display(self, data: list[dict]) -> list[tuple[dict, bool]]:
+    def _prepare_rows_for_display(
+        self, data: list[dict[str, Any]]
+    ) -> list[tuple[dict[str, Any], bool]]:
         """Process rows to combine main tracks with their instrumentals and skip duplicates."""
         # First pass: Handle instrumental pairing
         paired_rows = []

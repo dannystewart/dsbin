@@ -26,7 +26,7 @@ class TrackIdentifier:
             simple=self.config.log_simple,
         )
 
-    def identify_track(self, audio_track: AudioTrack) -> dict:
+    def identify_track(self, audio_track: AudioTrack) -> dict[str, AudioTrack]:
         """Fetch track metadata based on the input file.
 
         Raises:
@@ -44,7 +44,7 @@ class TrackIdentifier:
                 msg = "No track selected. Aborting."
                 raise TypeError(msg) from e
 
-    def _identify_by_name(self, audio_track: AudioTrack) -> dict:
+    def _identify_by_name(self, audio_track: AudioTrack) -> dict[str, AudioTrack]:
         """Identify the track by matching its upload filename against URLs in metadata.
 
         Raises:
@@ -83,7 +83,7 @@ class TrackIdentifier:
         msg = "No track found in metadata."
         raise ValueError(msg)
 
-    def _identify_by_fallback_menu(self, audio_track: AudioTrack) -> dict:
+    def _identify_by_fallback_menu(self, audio_track: AudioTrack) -> dict[str, AudioTrack]:
         """Given track data, display a menu to select a track and retrieve its metadata.
 
         Raises:
@@ -132,7 +132,7 @@ class TrackIdentifier:
         self.logger.debug("Selected track: %s", answers["track"])
         return answers["track"]
 
-    def _handle_skipped_metadata(self, audio_track: AudioTrack) -> dict:
+    def _handle_skipped_metadata(self, audio_track: AudioTrack) -> dict[str, Any]:
         """Handle the case where the user skips adding metadata.
 
         Raises:

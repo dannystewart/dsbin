@@ -111,7 +111,7 @@ class WPMusic:
         track_name = self.args.history or None
         self.upload_tracker.pretty_print_history(track_name, uploads_per_song=self.args.list)
 
-    def process_file(self, file_path: str | Path) -> None:
+    def process_file(self, file_path: Path) -> None:
         """Process a single audio file and its potential instrumental pair."""
         # Process the original file first
         file_path = Path(file_path)
@@ -133,7 +133,7 @@ class WPMusic:
         Raises:
             TypeError: If no track is selected from the fallback menu.
         """
-        audio_track = AudioTrack(file_path, append_text=self.args.append)
+        audio_track = AudioTrack(str(file_path), append_text=self.args.append)
 
         try:
             track_metadata = self.track_identifier.identify_track(audio_track)
@@ -162,18 +162,17 @@ class WPMusic:
         except Exception as e:
             self.logger.error("An error occurred: %s", str(e))
 
-    def _find_instrumental_pair(self, file_path: str | Path) -> Path | None:
+    def _find_instrumental_pair(self, file_path: Path) -> Path | None:
         """Find a matching instrumental file for the given file path."""
-        path = Path(file_path)
-        base_path = path.stem
-        ext = path.suffix
+        base_path = file_path.stem
+        ext = file_path.suffix
 
         # Skip if this is already an instrumental file
         if base_path.endswith(" No Vocals"):
             return None
 
         # Check for instrumental pair
-        instrumental_path = path.with_name(f"{base_path} No Vocals{ext}")
+        instrumental_path = file_path.with_name(f"{base_path} No Vocals{ext}")
         return instrumental_path if instrumental_path.exists() else None
 
     def process_and_upload(self, audio_track: AudioTrack, output_filename: str) -> None:
@@ -213,9 +212,7 @@ class WPMusic:
         else:
             spinner.succeed(color("Conversion complete! Files kept locally.", "green"))
 
-    def convert_file_to_format(
-        self, input_file: str | Path, format_name: str, base_filename: str
-    ) -> Path:
+    def convert_file_to_format(self, input_file: str, format_name: str, base_filename: str) -> Path:
         """Convert the input file to a different format.
 
         Raises:

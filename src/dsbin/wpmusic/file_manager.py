@@ -106,9 +106,8 @@ class FileManager:
         else:  # Otherwise, delete the files
             delete_files(files_to_process, show_output=False)
 
-    def upload_file_to_web_server(self, file_path: str | Path, audio_track: AudioTrack) -> None:
+    def upload_file_to_web_server(self, file_path: Path, audio_track: AudioTrack) -> None:
         """Upload a file to my web server."""
-        file_path = Path(file_path)
         final_filename = file_path.name
         try:
             with paramiko.SSHClient() as ssh:
@@ -122,7 +121,7 @@ class FileManager:
                 temp_filename = f"tmp-{final_filename}"
                 self.logger.debug("Uploading file '%s' as '%s'...", file_path, temp_filename)
 
-                with SCPClient(ssh.get_transport()) as scp:
+                with SCPClient(ssh.get_transport()) as scp:  # type: ignore
                     scp.put(str(file_path), f"{self.config.upload_path_prefix}{temp_filename}")
 
                 # Rename the temporary file to the final filename on the remote server

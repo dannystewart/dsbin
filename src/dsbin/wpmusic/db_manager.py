@@ -5,7 +5,7 @@ import subprocess
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import mysql.connector
 
@@ -31,7 +31,6 @@ class DatabaseManager:
             level=self.config.log_level,
             simple=self.config.log_simple,
         )
-
         self.mysql = MySQLHelper(
             host=self.config.db_host,
             database=self.config.db_name,
@@ -122,7 +121,7 @@ class DatabaseManager:
                 return True
         return False
 
-    def record_upload_set_to_db(self, uploaded: str, current_upload_set: dict) -> None:
+    def record_upload_set_to_db(self, uploaded: str, current_upload_set: dict[str, Any]) -> None:
         """Record the current upload set to the database."""
         self._ensure_mysql_tunnel()
 
@@ -160,7 +159,7 @@ class DatabaseManager:
         # Refresh cache after successful write
         self.refresh_cache()
 
-    def get_upload_history(self, track_name: str | None = None) -> list[dict]:
+    def get_upload_history(self, track_name: str | None = None) -> list[dict[str, Any]]:
         """Retrieve upload history from local cache, optionally filtered by track name."""
         if self.config.no_cache:
             self.logger.debug("Retrieving upload history from MySQL.")
@@ -277,14 +276,14 @@ class DatabaseManager:
             with self.get_mysql_connection() as mysql_conn:
                 mysql_cursor = mysql_conn.cursor()
                 mysql_cursor.execute("SELECT COUNT(*) FROM uploads")
-                result = mysql_cursor.fetchone()
-                mysql_count = result[0] if result else 0
+                res = mysql_cursor.fetchone()
+                mysql_count = self._get_result_count(res)
 
                 with sqlite3.connect(self.config.local_sqlite_db) as sqlite_conn:
                     sqlite_cursor = sqlite_conn.cursor()
                     sqlite_cursor.execute("SELECT COUNT(*) FROM uploads")
-                    result = sqlite_cursor.fetchone()
-                    sqlite_count = result[0] if result else 0
+                    res = sqlite_cursor.fetchone()
+                    sqlite_count = self._get_result_count(res)
 
                 is_stale = mysql_count != sqlite_count
                 self.logger.debug(
@@ -298,6 +297,11 @@ class DatabaseManager:
         except Exception as e:
             self.logger.warning("Failed to check cache staleness: %s", str(e))
             return True
+
+    @staticmethod
+    def _get_result_count(result: Any) -> int:
+        """Get the count from a database result."""
+        return result[0] if result and isinstance(result, tuple | list) and len(result) > 0 else 0
 
     @staticmethod
     def _init_sqlite_schema(conn: sqlite3.Connection) -> None:

@@ -4,6 +4,7 @@ import json
 from dataclasses import dataclass, field
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import requests
 from PIL import Image
@@ -13,17 +14,17 @@ from PIL import Image
 class AudioTrack:
     """Represent an audio file."""
 
-    filename: str | Path
+    filename: str
     metadata_url: str = "https://gitlab.dannystewart.com/danny/evremixes/raw/main/evtracks.json"
     append_text: str = ""
 
     # Automatically extracted attributes
     is_instrumental: bool = field(init=False)
-    all_metadata: dict = field(init=False, default_factory=dict)
-    album_metadata: dict = field(init=False, default_factory=dict)
-    track_metadata: dict = field(init=False, default_factory=dict)
+    all_metadata: dict[str, Any] = field(init=False, default_factory=dict)
+    album_metadata: dict[str, Any] = field(init=False, default_factory=dict)
+    track_metadata: dict[str, Any] = field(init=False, default_factory=dict)
     cover_data: bytes | None = field(init=False, default=None)
-    tracks: list = field(init=False, default_factory=list)
+    tracks: list[Any] = field(init=False, default_factory=list)
     file_path: Path = field(init=False)
 
     # Album attributes
@@ -59,7 +60,7 @@ class AudioTrack:
         self.all_metadata, self.cover_data = self.download_all_metadata()
         self.tracks = self.all_metadata.get("tracks", [])
 
-    def set_track_metadata(self, track_metadata: dict) -> None:
+    def set_track_metadata(self, track_metadata: dict[str, Any]) -> None:
         """Set the track metadata and extract relevant attributes."""
         self.track_metadata = track_metadata
 
@@ -83,7 +84,7 @@ class AudioTrack:
         if self.is_instrumental:
             self.track_title += " (Instrumental)"
 
-    def download_all_metadata(self) -> tuple[dict, bytes | None]:
+    def download_all_metadata(self) -> tuple[dict[str, Any], bytes | None]:
         """Retrieve and prepare metadata for the album and all tracks, and download cover art."""
         response = requests.get(self.metadata_url, timeout=10)
         all_metadata = json.loads(response.text)

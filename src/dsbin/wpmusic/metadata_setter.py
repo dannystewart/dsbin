@@ -11,6 +11,8 @@ from mutagen.mp4 import MP4, MP4Cover
 from dsutil import LocalLogger
 
 if TYPE_CHECKING:
+    from pathlib import Path
+
     from dsbin.wpmusic.audio_track import AudioTrack
     from dsbin.wpmusic.wp_config import Config
 
@@ -26,7 +28,7 @@ class MetadataSetter:
             simple=self.config.log_simple,
         )
 
-    def apply_metadata(self, audio_track: AudioTrack, audio_format: str, path: str) -> str:
+    def apply_metadata(self, audio_track: AudioTrack, audio_format: str, path: Path) -> Path:
         """Prepare the metadata for the file based on its format.
 
         Raises:
@@ -53,7 +55,7 @@ class MetadataSetter:
         return path
 
     @staticmethod
-    def apply_flac_metadata(file_path: str, audio_track: AudioTrack) -> FLAC:
+    def apply_flac_metadata(file_path: Path, audio_track: AudioTrack) -> FLAC:
         """Set metadata for FLAC files."""
         audio = FLAC(file_path)
         audio["title"] = audio_track.track_title
@@ -76,7 +78,7 @@ class MetadataSetter:
         return audio
 
     @staticmethod
-    def apply_alac_metadata(file_path: str, audio_track: AudioTrack) -> MP4:
+    def apply_alac_metadata(file_path: Path, audio_track: AudioTrack) -> MP4:
         """Set metadata for ALAC files."""
         audio = MP4(file_path)
         audio["\xa9nam"] = audio_track.track_title
@@ -94,7 +96,7 @@ class MetadataSetter:
         return audio
 
     @staticmethod
-    def apply_mp3_metadata(file_path: str, audio_track: AudioTrack) -> MP3:
+    def apply_mp3_metadata(file_path: Path, audio_track: AudioTrack) -> MP3:
         """Set metadata for MP3 files."""
         audio = MP3(file_path, ID3=ID3)
 

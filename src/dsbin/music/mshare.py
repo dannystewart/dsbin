@@ -293,7 +293,7 @@ def main() -> None:
 
     # MP3 shame
     if "Convert to MP3" in formats["options"]:
-        print(colored("MP3 is bad and you should feel bad.\n", "yellow"))
+        print(colored("MP3 is bad and you should feel bad.\n", "cyan"))
 
     # Generate filename and perform conversions
     new_filename = clean_filename(input_file, "upload" if args.upload else "local")

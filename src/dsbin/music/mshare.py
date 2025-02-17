@@ -2,9 +2,9 @@
 
 """A script for sharing music bounces in a variety of formats.
 
-This script is designed to convert music bounces to WAV, FLAC, and MP3 files for easy
-sharing with people who need or prefer different formats or for uploading to different
-platforms. Also includes bit depth conversion for 24-bit files.
+This script is designed to convert music bounces to WAV, FLAC, and MP3 files for easy sharing with
+people who need or prefer different formats or for uploading to different platforms. Also includes
+bit depth conversion for 24-bit files.
 """
 
 from __future__ import annotations
@@ -13,6 +13,7 @@ import argparse
 import re
 import subprocess
 import sys
+from dataclasses import dataclass, field
 from pathlib import Path
 
 import inquirer
@@ -27,6 +28,25 @@ configure_traceback()
 
 HOME_DIR = Path.home()
 OUTPUT_PATH = HOME_DIR / "Downloads"
+
+
+@dataclass
+class ConversionSettings:
+    """Settings for a specific conversion operation.
+
+    Args:
+        filename: The output filename.
+        command: The ffmpeg command to execute.
+        message: The message to show during conversion.
+        completed_message: The message to show after successful conversion.
+        available_bit_depths: List of acceptable input bit depths.
+    """
+
+    filename: Path
+    command: str
+    message: str
+    completed_message: str
+    available_bit_depths: list[int] = field(default_factory=lambda: [16, 24, 32])
 
 
 def show_format_options() -> dict[str, list[str]] | None:
@@ -48,7 +68,7 @@ def show_format_options() -> dict[str, list[str]] | None:
     return inquirer.prompt(questions)
 
 
-def clean_filename(input_file: str, naming_format: str) -> str:
+def clean_filename(input_file: Path, naming_format: str) -> Path:
     """Generate sanitized and formatted filenames for the output files.
 
     Removes version numbers and parentheticals starting with "No" (e.g. No Vocals, No Drums).
@@ -61,7 +81,7 @@ def clean_filename(input_file: str, naming_format: str) -> str:
         input_file: The path to the input file.
         naming_format: The naming format to use (e.g. "Local", "For upload").
     """
-    filename_no_ext = Path(input_file).stem
+    filename_no_ext = input_file.stem
     clean_name_pattern = re.compile(
         r"( [0-9]+([._][0-9]+){2,3}([._][0-9]+)?[a-z]{0,2}$)|(\s*\(No [^)]*\))"
     )
@@ -70,34 +90,31 @@ def clean_filename(input_file: str, naming_format: str) -> str:
     if naming_format == "upload":
         clean_name = clean_name.replace(" ", "-").replace("'", "")
 
-    return clean_name
+    return Path(clean_name)
 
 
 def convert_file(
-    input_file: str, output_path: str, conversion_option: dict, bit_depth: int
+    input_file: Path, output_path: Path, settings: ConversionSettings, bit_depth: int
 ) -> tuple[bool, str]:
     """Perform an individual conversion.
 
     Args:
         input_file: The path to the input file.
         output_path: The path to the output directory.
-        conversion_option: The details of the conversion option.
+        settings: The settings for the conversion.
         bit_depth: The bit depth of the input file.
 
     Returns:
-        A tuple (success, message) where success is a boolean indicating whether the conversion was
-        successful, and message is a string with a success or error message.
+        A tuple of whether the operation was successful and the success/error message to use.
     """
-    destination_path = Path(output_path) / conversion_option["filename"]
-    required_bit_depth = conversion_option.get("requires")
-    if required_bit_depth and bit_depth not in required_bit_depth:
+    destination_path = output_path / settings.filename
+
+    if bit_depth not in settings.available_bit_depths:
         return (
             False,
-            f"The conversion requires {required_bit_depth} bit depth but the input is {bit_depth} bit.",
+            f"Requires {settings.available_bit_depths} bit depth but the input is {bit_depth} bit.",
         )
-    command = conversion_option["command"].format(
-        input_file=input_file, destination_path=destination_path
-    )
+    command = settings.command.format(input_file=input_file, destination_path=destination_path)
 
     try:
         subprocess.check_call(
@@ -111,28 +128,27 @@ def convert_file(
         return False, str(e)
 
 
-def _get_filename(base_name: str, extension: str, suffix: str = "") -> str:
+def _get_filename(base_name: Path, extension: str, suffix: str = "") -> Path:
     """Generate a filename with an optional suffix."""
-    return f"{base_name}{suffix}.{extension}"
+    return Path(f"{base_name}{suffix}.{extension}")
 
 
-def _get_conversion_options(
-    input_file: str,
-    output_path: str,
-    output_filename: str,
-    selected_options: list[str],
+def get_conversion_settings(
+    input_file: Path,
+    output_path: Path,
+    output_filename: Path,
+    selections: list[str],
     bit_depth: int,
-) -> dict[str, dict[str, str]]:
+) -> dict[str, ConversionSettings]:
     """Construct the conversion options dictionary."""
-    base_name = Path(output_path) / output_filename
+    base_name = output_path / output_filename
 
     # Determine if we need bit depth suffixes based on selected options
     needs_wav_suffix = (
-        "Convert to 16-bit WAV" in selected_options and "Copy original as WAV" in selected_options
+        "Convert to 16-bit WAV" in selections and "Copy original as WAV" in selections
     )
     needs_flac_suffix = (
-        "Convert to 16-bit FLAC" in selected_options
-        and "Convert to 24-bit FLAC" in selected_options
+        "Convert to 16-bit FLAC" in selections and "Convert to 24-bit FLAC" in selections
     )
 
     # Generate filenames with conditional suffixes
@@ -143,51 +159,55 @@ def _get_conversion_options(
     mp3_name = _get_filename(base_name, "mp3")
 
     # Determine if input is WAV or needs conversion
-    input_ext = Path(input_file).suffix.lower()
+    input_ext = input_file.suffix.lower()
+    is_wav = input_ext == ".wav"
     wav_command = (
         f'cp "{input_file}" "{wav_name}"'
-        if input_ext == ".wav"
+        if is_wav
         else f'ffmpeg -i "{input_file}" -y -acodec pcm_s{bit_depth}le "{wav_name}"'
     )
-    wav_message = "Copying" if input_ext == ".wav" else "Converting to WAV"
-    wav_completed = "Copied:" if input_ext == ".wav" else "Converted to WAV:"
 
     return {
-        "Copy original as WAV": {
-            "filename": wav_name,
-            "message": wav_message,
-            "completed_message": wav_completed,
-            "command": wav_command,
-        },
-        "Convert to 16-bit WAV": {
-            "filename": wav_16_bit_name,
-            "message": "Converting to 16-bit WAV",
-            "completed_message": "Converted to 16-bit WAV:",
-            "command": f'ffmpeg -i "{input_file}" -y -acodec pcm_s16le "{wav_16_bit_name}"',
-        },
-        "Convert to 16-bit FLAC": {
-            "filename": flac_16_bit_name,
-            "message": "Converting to 16-bit FLAC",
-            "completed_message": "Converted to 16-bit FLAC:",
-            "command": f'ffmpeg -i "{input_file}" -y -acodec flac -sample_fmt s16 "{flac_16_bit_name}"',
-        },
-        "Convert to 24-bit FLAC": {
-            "filename": flac_24_bit_name,
-            "message": "Converting to 24-bit FLAC",
-            "completed_message": "Converted to 24-bit FLAC:",
-            "command": f'ffmpeg -i "{input_file}" -y -acodec flac -sample_fmt s32 -bits_per_raw_sample 24 "{flac_24_bit_name}"',
-        },
-        "Convert to MP3": {
-            "filename": mp3_name,
-            "message": "Converting to MP3",
-            "completed_message": "Converted to MP3:",
-            "command": f'ffmpeg -i "{input_file}" -y -b:a 320k "{mp3_name}"',
-        },
+        "Copy original as WAV": ConversionSettings(
+            filename=wav_name,
+            command=wav_command,
+            message="Copying" if is_wav else "Converting to WAV",
+            completed_message="Copied:" if is_wav else "Converted to WAV:",
+        ),
+        "Convert to 16-bit WAV": ConversionSettings(
+            filename=wav_16_bit_name,
+            command=f'ffmpeg -i "{input_file}" -y -acodec pcm_s16le "{wav_16_bit_name}"',
+            message="Converting to 16-bit WAV",
+            completed_message="Converted to 16-bit WAV:",
+            available_bit_depths=[16],
+        ),
+        "Convert to 16-bit FLAC": ConversionSettings(
+            filename=flac_16_bit_name,
+            command=f'ffmpeg -i "{input_file}" -y -acodec flac -sample_fmt s16 "{flac_16_bit_name}"',
+            message="Converting to 16-bit FLAC",
+            completed_message="Converted to 16-bit FLAC:",
+        ),
+        "Convert to 24-bit FLAC": ConversionSettings(
+            filename=flac_24_bit_name,
+            command=f'ffmpeg -i "{input_file}" -y -acodec flac -sample_fmt s32 -bits_per_raw_sample 24 "{flac_24_bit_name}"',
+            message="Converting to 24-bit FLAC",
+            completed_message="Converted to 24-bit FLAC:",
+        ),
+        "Convert to MP3": ConversionSettings(
+            filename=mp3_name,
+            command=f'ffmpeg -i "{input_file}" -y -b:a 320k "{mp3_name}"',
+            message="Converting to MP3",
+            completed_message="Converted to MP3:",
+        ),
     }
 
 
 def perform_conversions(
-    answers: dict, input_file: str, output_path: str, output_filename: str, bit_depth: int
+    answers: dict[str, list[str]],
+    input_file: Path,
+    output_path: Path,
+    output_filename: Path,
+    bit_depth: int,
 ) -> None:
     """Perform the conversions selected by the user based on a dictionary of conversion options.
 
@@ -198,33 +218,33 @@ def perform_conversions(
         output_filename: The clean base filename for the output file.
         bit_depth: The bit depth of the input file.
     """
-    conversion_options = _get_conversion_options(
+    conversion_options = get_conversion_settings(
         input_file, output_path, output_filename, answers["options"], bit_depth
     )
 
-    for option, details in conversion_options.items():
+    for option, settings in conversion_options.items():
         if option in answers["options"]:
-            action, new_filename = prompt_if_file_exists(details["filename"])
+            action, new_filename = prompt_if_file_exists(settings.filename)
             if action == "cancel":
                 print(colored("Conversion canceled by user.", "yellow"))
                 continue
             if action == "new_name" and new_filename is not None:
-                details["filename"] = new_filename
+                settings.filename = new_filename
 
             with halo_progress(
-                filename=details["filename"],
-                start_message=details["message"],
-                end_message=details["completed_message"],
+                filename=str(settings.filename),
+                start_message=settings.message,
+                end_message=settings.completed_message,
                 fail_message="Failed",
             ) as spinner:
-                success, message = convert_file(input_file, output_path, details, bit_depth)
+                success, message = convert_file(input_file, output_path, settings, bit_depth)
                 if not success:
                     spinner.fail(message)
 
     print(colored("\nAll conversions complete!", "green"))
 
 
-def prompt_if_file_exists(output_file: str | None) -> tuple[str, str | None]:
+def prompt_if_file_exists(output_file: Path | None) -> tuple[str, Path | None]:
     """Check if the output file exists with the exact same name and extension.
 
     Prompt the user to choose between overwriting, providing a new name, or canceling.
@@ -235,7 +255,7 @@ def prompt_if_file_exists(output_file: str | None) -> tuple[str, str | None]:
     Returns:
         A tuple (action, new_filename) where action is 'overwrite', 'new_name', or 'cancel'.
     """
-    if output_file is None or not Path(output_file).is_file():
+    if output_file is None or not output_file.is_file():
         return "none", None
     print(f"File {output_file} already exists.")
     action = inquirer.list_input(
@@ -244,7 +264,7 @@ def prompt_if_file_exists(output_file: str | None) -> tuple[str, str | None]:
     )
     if action == "Provide a new name":
         new_filename = input("Enter the new filename: ")
-        return "new_name", new_filename
+        return "new_name", Path(new_filename)
     return ("overwrite", None) if action == "Overwrite" else ("cancel", None)
 
 
@@ -254,11 +274,7 @@ def parse_arguments() -> argparse.Namespace:
         description="A script for sharing music bounces in a variety of formats."
     )
     parser.add_argument("input_file", help="The audio file to convert")
-    parser.add_argument(
-        "--upload",
-        action="store_true",
-        help="Use naming suitable for upload, stripping spaces and apostrophes",
-    )
+    parser.add_argument("--upload", action="store_true", help="use URL-safe filename for uploading")
     return parser.parse_args()
 
 
@@ -270,23 +286,19 @@ def main() -> None:
 
     # Parse command-line arguments
     args = parse_arguments()
-    input_file = args.input_file
+    input_file = Path(args.input_file)
 
-    if len(sys.argv) < 2:  # Check for input file
-        print("Please provide an input file.")
-        sys.exit(1)
-    input_file = sys.argv[1]
-    if not Path(input_file).is_file():  # Check that input file exists
+    if not input_file.is_file():
         print(colored(f"The file {input_file} does not exist. Aborting.", "red"))
         sys.exit(1)
 
-    # Determine bit depth
-    bit_depth = find_bit_depth(input_file)
+    # Determine the bit depth so we know what options to show
+    bit_depth = find_bit_depth(str(input_file))
 
-    # Stop the animation
+    # Stop the animation once we have the bit depth
     animation.stop_animation(animation_thread)
 
-    # Prompt for conversion options, exit if aborted
+    # Prompt for conversion options, or exit if aborted
     formats = show_format_options()
     if formats is None:
         sys.exit(1)
@@ -295,10 +307,10 @@ def main() -> None:
     if "Convert to MP3" in formats["options"]:
         print(colored("MP3 is bad and you should feel bad.\n", "cyan"))
 
-    # Generate filename and perform conversions
+    # Generate the output filename and perform the conversions
     new_filename = clean_filename(input_file, "upload" if args.upload else "local")
 
-    # Call the new file_exists_prompt function before performing conversions
+    # Check if file exists before performing conversions
     action, _ = prompt_if_file_exists(new_filename)
     if action == "cancel":
         print(colored("Conversion aborted because of existing file.", "yellow"))

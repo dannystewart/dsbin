@@ -42,14 +42,14 @@ configure_traceback()
 
 
 def determine_actions(
-    bounce_groups: dict[tuple, dict[str, list[Bounce]]], major_only: bool = False
+    bounce_groups: dict[tuple[str, datetime, str], dict[str, list[Bounce]]], daily: bool = False
 ) -> dict:
     """Given a dictionary of bounce groups, determine the actions to be taken on the bounces.
 
     Args:
         bounce_groups: A dictionary of bounce groups where the keys are tuples representing the
                        bounce attributes and the values are lists of Bounce objects.
-        major_only: If True, consolidate to one bounce per day, renumbering to version 0.
+        daily: If True, keep only the last bounce for each day and remove the version number.
 
     Returns:
         A dictionary containing the actions to be performed on the files.
@@ -65,7 +65,7 @@ def determine_actions(
         for bounces in suffix_groups.values():
             by_date[key].extend(bounces)
 
-    if major_only:
+    if daily:
         handle_major(by_date, actions)
     else:
         handle_minor(by_date, actions)
@@ -136,8 +136,7 @@ def prepare_output(actions: dict[str, list]) -> tuple[list[str], list[str]]:
         actions: A dictionary containing the actions to be performed on the files.
 
     Returns:
-        A tuple of (trash_files, rename_files) where each is a list of formatted strings
-        ready to be printed.
+        A tuple of (trash_files, rename_files) where each is a list of formatted strings.
     """
     if not actions["trash"] and not actions["rename"]:
         return [], []
@@ -157,35 +156,6 @@ def prepare_output(actions: dict[str, list]) -> tuple[list[str], list[str]]:
         ]
 
     return trash_files, rename_files
-
-
-def print_actions(trash_files: list[str], rename_files: list[str]) -> None:
-    """Print the actions to be performed on files.
-
-    Args:
-        trash_files: List of formatted strings for files to be trashed.
-        rename_files: List of formatted strings for files to be renamed.
-    """
-    if not trash_files and not rename_files:
-        print_colored("No actions to perform.", "green")
-        return
-
-    if trash_files:
-        print_colored("Files to Trash:", "red")
-        for line in trash_files:
-            print_colored(line, "red")
-    else:
-        print_colored("No files to trash.", "green")
-
-    if rename_files:
-        print_colored("\nFiles to Rename:", "yellow")
-        for line in rename_files:
-            old_name, new_name = line.split(" → ")
-            print(old_name + color(" → ", "yellow") + color(new_name, "green"))
-    else:
-        print_colored("No files to rename.", "green")
-
-    print()
 
 
 def execute_actions(actions: dict[str, list]) -> None:
@@ -221,15 +191,35 @@ def execute_actions(actions: dict[str, list]) -> None:
         print_colored("Actions canceled.", "red")
 
 
+def print_actions(trash_files: list[str], rename_files: list[str]) -> None:
+    """Print the actions to be performed on files."""
+    if not trash_files and not rename_files:
+        print_colored("No actions to perform.", "green")
+        return
+
+    if trash_files:
+        print_colored("Files to Trash:", "red")
+        for line in trash_files:
+            print_colored(line, "red")
+    else:
+        print_colored("No files to trash.", "green")
+
+    if rename_files:
+        print_colored("\nFiles to Rename:", "yellow")
+        for line in rename_files:
+            old_name, new_name = line.split(" → ")
+            print(old_name + color(" → ", "yellow") + color(new_name, "green"))
+    else:
+        print_colored("No files to rename.", "green")
+
+    print()
+
+
 def main() -> None:
-    """Process audio files in the current working directory by finding the bounces, grouping them,
-    determining and printing the actions to be taken, and then executing them.
-    """
+    """Process audio files in the current working directory."""
     parser = argparse.ArgumentParser(description="Prune and consolidate Logic bounce files.")
     parser.add_argument(
-        "--major",
-        action="store_true",
-        help="Consolidate to one bounce per day, renumbering to version 0",
+        "-d", "--daily", action="store_true", help="keep only the last bounce for each day"
     )
     args = parser.parse_args()
 
@@ -238,7 +228,7 @@ def main() -> None:
     with walking_animation("Analyzing bounce files...", "cyan"):
         bounces = BounceParser.find_bounces(directory)
         bounce_groups = BounceParser.group_bounces(bounces)
-        actions = determine_actions(bounce_groups, major_only=args.major)
+        actions = determine_actions(bounce_groups, daily=args.daily)
         trash_files, rename_files = prepare_output(actions)
 
     print_actions(trash_files, rename_files)

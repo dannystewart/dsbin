@@ -24,6 +24,7 @@ will consolidate down to one bounce per day named by date with no suffix.
 from __future__ import annotations
 
 import argparse
+from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -41,9 +42,18 @@ if TYPE_CHECKING:
 configure_traceback()
 
 
+@dataclass
+class BounceActions:
+    """Dataclass to hold the actions to be taken on bounces."""
+
+    trash: list[Path]
+    rename: list[tuple[Path, Path]]
+
+
 def determine_actions(
-    bounce_groups: dict[tuple[str, datetime, str], dict[str, list[Bounce]]], daily: bool = False
-) -> dict:
+    bounce_groups: dict[tuple[str, datetime, str], dict[str, list[Bounce]]],
+    daily: bool = False,
+) -> BounceActions:
     """Given a dictionary of bounce groups, determine the actions to be taken on the bounces.
 
     Args:
@@ -52,9 +62,9 @@ def determine_actions(
         daily: If True, keep only the last bounce for each day and remove the version number.
 
     Returns:
-        A dictionary containing the actions to be performed on the files.
+        A BounceActions object containing the actions to be performed on the files.
     """
-    actions = {"trash": [], "rename": []}
+    actions = BounceActions(trash=[], rename=[])
 
     # Group bounces by title and date
     by_date: dict[tuple[str, datetime], list[Bounce]] = {}
@@ -73,7 +83,7 @@ def determine_actions(
     return actions
 
 
-def handle_major(by_date: dict[tuple[str, datetime], list[Bounce]], actions: dict) -> None:
+def handle_major(by_date: dict[tuple[str, datetime], list[Bounce]], actions: BounceActions) -> None:
     """Keep only one bounce per day per suffix, removing version numbers entirely."""
     # Regroup bounces by title, date, and suffix
     by_date_and_suffix: dict[tuple[str, datetime, str | None], list[Bounce]] = {}
@@ -90,7 +100,7 @@ def handle_major(by_date: dict[tuple[str, datetime], list[Bounce]], actions: dic
 
         # For multiple bounces, trash all but the latest of this suffix variant
         if len(bounces) > 1:
-            actions["trash"].extend(b.file_path for b in sorted_bounces[:-1])
+            actions.trash.extend(b.file_path for b in sorted_bounces[:-1])
 
         # Always check if the file needs renaming to remove version
         current_stem = latest.file_path.stem
@@ -100,10 +110,10 @@ def handle_major(by_date: dict[tuple[str, datetime], list[Bounce]], actions: dic
 
         if current_stem != new_stem:
             new_name = latest.file_path.with_stem(new_stem)
-            actions["rename"].append((latest.file_path, new_name))
+            actions.rename.append((latest.file_path, new_name))
 
 
-def handle_minor(by_date: dict[tuple[str, datetime], list[Bounce]], actions: dict) -> None:
+def handle_minor(by_date: dict[tuple[str, datetime], list[Bounce]], actions: BounceActions) -> None:
     """Keep only one bounce per version (_1a, _1b, etc. renamed to _1)."""
     for bounces in by_date.values():
         if len(bounces) <= 1:
@@ -117,7 +127,7 @@ def handle_minor(by_date: dict[tuple[str, datetime], list[Bounce]], actions: dic
             same_version = [b for b in sorted_bounces if b.version == latest.version]
             if len(same_version) > 1:
                 # Trash all but the latest minor version
-                actions["trash"].extend(b.file_path for b in same_version[:-1])
+                actions.trash.extend(b.file_path for b in same_version[:-1])
 
                 # Rename the latest minor version to just the major version
                 if latest.minor_version:
@@ -126,31 +136,31 @@ def handle_minor(by_date: dict[tuple[str, datetime], list[Bounce]], actions: dic
                     )
                     if latest.suffix:
                         new_name = new_name.with_stem(f"{new_name.stem} {latest.suffix}")
-                    actions["rename"].append((latest.file_path, new_name))
+                    actions.rename.append((latest.file_path, new_name))
 
 
-def prepare_output(actions: dict[str, list]) -> tuple[list[str], list[str]]:
+def prepare_output(actions: BounceActions) -> tuple[list[str], list[str]]:
     """Prepare the sorted lists of files for output.
 
     Args:
-        actions: A dictionary containing the actions to be performed on the files.
+        actions: A BounceActions object containing the actions to be performed on the files.
 
     Returns:
         A tuple of (trash_files, rename_files) where each is a list of formatted strings.
     """
-    if not actions["trash"] and not actions["rename"]:
+    if not actions.trash and not actions.rename:
         return [], []
 
     # Sort and prepare trash files
     trash_files = []
-    if actions["trash"]:
-        sorted_trash = sorted(actions["trash"], key=lambda x: BounceParser.get_bounce(x).date)
+    if actions.trash:
+        sorted_trash = sorted(actions.trash, key=lambda x: BounceParser.get_bounce(x).date)
         trash_files = [f"✖ {file.name}" for file in sorted_trash]
 
     # Sort and prepare rename files
     rename_files = []
-    if actions["rename"]:
-        sorted_rename = sorted(actions["rename"], key=lambda x: BounceParser.get_bounce(x[0]).date)
+    if actions.rename:
+        sorted_rename = sorted(actions.rename, key=lambda x: BounceParser.get_bounce(x[0]).date)
         rename_files = [
             f"{old_path.name} → {new_path.name}" for old_path, new_path in sorted_rename
         ]
@@ -158,16 +168,16 @@ def prepare_output(actions: dict[str, list]) -> tuple[list[str], list[str]]:
     return trash_files, rename_files
 
 
-def execute_actions(actions: dict[str, list]) -> None:
+def execute_actions(actions: BounceActions) -> None:
     """Execute a series of actions on a given directory."""
-    if not actions["trash"] and not actions["rename"]:
+    if not actions.trash and not actions.rename:
         return
 
     if confirm_action("Proceed with these actions?", default_to_yes=False):
-        successful_deletions, failed_deletions = delete_files(actions["trash"], show_output=False)
+        successful_deletions, failed_deletions = delete_files(actions.trash, show_output=False)
 
         renamed_files_count = 0
-        for old_path, new_path in actions["rename"]:
+        for old_path, new_path in actions.rename:
             old_path.rename(new_path)
             renamed_files_count += 1
 

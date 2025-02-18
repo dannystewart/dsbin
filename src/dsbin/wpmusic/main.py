@@ -183,6 +183,10 @@ class WPMusic:
 
             return track_metadata
 
+        except TypeError:
+            self.logger.error("Process aborted by user")
+            sys.exit(1)
+
         except Exception as e:
             self.logger.error("An error occurred: %s", str(e))
             return {}

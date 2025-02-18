@@ -14,11 +14,10 @@ from dsutil.files import delete_files
 from dsutil.shell import handle_keyboard_interrupt
 from dsutil.text import color as colored
 
-from dsbin.wpmusic.wp_config import Config, spinner
-
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack
     from dsbin.wpmusic.upload_tracker import UploadTracker
+    from dsbin.wpmusic.wp_config import Config
 
 
 class FileManager:
@@ -54,7 +53,6 @@ class FileManager:
         self.logger.debug("Output filename: %s", output_path)
 
         if audio_track.append_text:
-            spinner.stop()
             try:
                 base_filename = self.prompt_for_custom_filename(base_filename)
             except TypeError:

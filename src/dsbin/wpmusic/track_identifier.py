@@ -9,10 +9,11 @@ import inquirer
 from dsutil import LocalLogger
 from dsutil.text import color as colored
 
-from dsbin.wpmusic.wp_config import Config, spinner
-
 if TYPE_CHECKING:
+    from halo import Halo
+
     from dsbin.wpmusic.audio_track import AudioTrack
+    from dsbin.wpmusic.wp_config import Config
 
 
 class TrackIdentifier:
@@ -26,18 +27,22 @@ class TrackIdentifier:
             simple=self.config.log_simple,
         )
 
-    def identify_track(self, audio_track: AudioTrack) -> dict[str, AudioTrack]:
+    def identify_track(
+        self, audio_track: AudioTrack, spinner: Halo | None = None
+    ) -> dict[str, AudioTrack]:
         """Fetch track metadata based on the input file.
 
         Raises:
             TypeError: If no track is selected from the fallback menu.
         """
-        spinner.start(colored("Fetching track metadata...", "cyan"))
+        if spinner:
+            spinner.start(colored("Fetching track metadata...", "cyan"))
 
         try:
             return self._identify_by_name(audio_track)
         except ValueError:
-            spinner.stop()
+            if spinner:
+                spinner.stop()
             try:
                 return self._identify_by_fallback_menu(audio_track)
             except TypeError as e:
@@ -73,13 +78,11 @@ class TrackIdentifier:
             )
             self.logger.debug("Comparing '%s' with '%s'", formatted_file_name, json_filename)
             if formatted_file_name == json_filename:
-                spinner.stop()
                 self.logger.debug(
                     "Processing and uploading %s: %s", audio_track.filename, track["track_name"]
                 )
                 return track
 
-        spinner.stop()
         msg = "No track found in metadata."
         raise ValueError(msg)
 
@@ -95,8 +98,6 @@ class TrackIdentifier:
 
         if selected_track_name == "(skip adding metadata)":
             return self._handle_skipped_metadata(audio_track)
-
-        spinner.start()
 
         for track in audio_track.tracks:
             if track["track_name"] == selected_track_name:
@@ -124,7 +125,6 @@ class TrackIdentifier:
             )
         ]
         answers = inquirer.prompt(questions)
-        spinner.stop()
         if not answers:
             msg = "No track selected."
             raise TypeError(msg)
@@ -154,5 +154,4 @@ class TrackIdentifier:
 
         self.logger.debug("Confirmed filename: %s", confirmed_filename)
 
-        spinner.start()
         return {"file_name": confirmed_filename}

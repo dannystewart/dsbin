@@ -21,6 +21,8 @@ import argparse
 import sys
 from pathlib import Path
 
+from halo import Halo
+
 from dsutil import LocalLogger, configure_traceback
 from dsutil.media import ffmpeg_audio
 from dsutil.shell import handle_keyboard_interrupt
@@ -31,7 +33,7 @@ from dsbin.wpmusic.file_manager import FileManager
 from dsbin.wpmusic.metadata_setter import MetadataSetter
 from dsbin.wpmusic.track_identifier import TrackIdentifier
 from dsbin.wpmusic.upload_tracker import UploadTracker
-from dsbin.wpmusic.wp_config import Config, spinner
+from dsbin.wpmusic.wp_config import Config
 
 configure_traceback()
 
@@ -45,6 +47,9 @@ class WPMusic:
 
         # Keep files based on argument or if skipping upload
         should_keep = args.keep_files or args.skip_upload
+
+        # Initialize spinner
+        self.spinner = Halo(text="Initializing", spinner="dots", color="cyan")
 
         # Initialize configuration and logger
         self.config = Config(
@@ -165,6 +170,9 @@ class WPMusic:
                 raise TypeError(msg)
 
             output_filename = self.file_manager.format_filename(audio_track)
+            if not output_filename:
+                self.spinner.stop()
+
             self.process_and_upload(audio_track, output_filename)
 
             if not self.config.skip_upload:
@@ -198,7 +206,7 @@ class WPMusic:
 
         for format_name in self.config.formats_to_convert:
             # Convert the file to the desired format
-            spinner.start(color(f"Converting to {format_name.upper()}...", "cyan"))
+            self.spinner.start(color(f"Converting to {format_name.upper()}...", "cyan"))
             output_path = self.convert_file_to_format(
                 audio_track.filename, format_name, output_filename
             )
@@ -206,7 +214,7 @@ class WPMusic:
             self.logger.debug("Converted to %s. File path: %s", format_name.upper(), output_path)
 
             # Add metadata to the converted file
-            spinner.start(color(f"Adding metadata to {format_name.upper()} file...", "cyan"))
+            self.spinner.start(color(f"Adding metadata to {format_name.upper()} file...", "cyan"))
             processed_file = self.metadata_setter.apply_metadata(
                 audio_track, format_name, output_path
             )
@@ -216,18 +224,18 @@ class WPMusic:
             # Upload the file if it's in the list of formats to upload
             if format_name in self.config.formats_to_upload and not self.config.skip_upload:
                 self.logger.debug("Uploading %s file...", format_name.upper())
-                spinner.start(color(f"Uploading {format_name.upper()} file...", "cyan"))
+                self.spinner.start(color(f"Uploading {format_name.upper()} file...", "cyan"))
                 self.file_manager.upload_file_to_web_server(processed_file, audio_track)
 
-            spinner.succeed(color(f"{format_name.upper()} processing complete!", "green"))
+            self.spinner.succeed(color(f"{format_name.upper()} processing complete!", "green"))
 
         # After all formats are uploaded
         self.upload_tracker.log_upload_set()
 
         if not self.config.skip_upload:
-            spinner.succeed(color("Upload complete!", "green"))
+            self.spinner.succeed(color("Upload complete!", "green"))
         else:
-            spinner.succeed(color("Conversion complete! Files kept locally.", "green"))
+            self.spinner.succeed(color("Conversion complete! Files kept locally.", "green"))
 
     def convert_file_to_format(self, input_file: str, format_name: str, base_filename: str) -> Path:
         """Convert the input file to a different format.

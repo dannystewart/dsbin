@@ -4,12 +4,9 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 import paramiko
-from halo import Halo
 
 from dsutil.env import DSEnv
 from dsutil.paths import DSPaths
-
-spinner = Halo(text="Initializing", spinner="dots")
 
 
 @dataclass

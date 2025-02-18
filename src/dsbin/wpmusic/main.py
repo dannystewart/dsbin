@@ -120,6 +120,7 @@ class WPMusic:
         # Check for and process matching instrumental file
         instrumental_path = self._find_instrumental_pair(file_path)
         if instrumental_path:
+            print()
             self.logger.info("Found matching instrumental file: %s", instrumental_path)
             self._process_single_file(
                 instrumental_path, is_pair=True, track_metadata=track_metadata
@@ -145,11 +146,12 @@ class WPMusic:
 
         try:
             if not track_metadata:  # Identify the original track
-                track_metadata = self.track_identifier.identify_track(audio_track)
+                track_metadata = self.track_identifier.identify_track(audio_track, self.spinner)
                 audio_track.set_track_metadata(track_metadata)
             else:  # If we already have metadata, it's the instrumental for the original track
                 audio_track.set_track_metadata(track_metadata)
                 audio_track.is_instrumental = True
+                print()
 
             self.logger.info(
                 "%s %s%s...",

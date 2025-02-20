@@ -11,8 +11,7 @@ as well as directories.
 from __future__ import annotations
 
 import argparse
-import glob
-import os
+from pathlib import Path
 
 from natsort import natsorted
 
@@ -80,9 +79,9 @@ class ALACrity:
         ):
             delete_files(skipped_files, show_individual=False)
 
-    def _gather_files(self, path: str) -> list[str]:
-        """Gather the files or directories to process based on the given path. For directories, it uses
-        the specified file extensions to filter files.
+    def _gather_files(self, path: str) -> list[Path]:
+        """Gather the files or directories to process based on the given path. For directories, it
+        uses the specified file extensions to filter files.
 
         Args:
             path: A string representing a file path or directory.
@@ -91,7 +90,7 @@ class ALACrity:
             A list of file paths to be processed.
         """
         list_files_args = {
-            "extensions": [ext.lstrip(".") for ext in self.exts_to_convert],
+            "exts": [ext.lstrip(".") for ext in self.exts_to_convert],
             "recursive": False,
         }
         files_to_process = []
@@ -99,15 +98,16 @@ class ALACrity:
         if self.auto_mode:
             list_files_args["include_hidden"] = False
 
-        if os.path.isfile(path) and path.lower().endswith(tuple(ALLOWED_EXTS)):
-            files_to_process = [path]
-        elif os.path.isdir(path):
-            files_to_process = list_files(path, **list_files_args)
+        path_obj = Path(path)
+        if path_obj.is_file() and path_obj.suffix.lower() in ALLOWED_EXTS:
+            files_to_process = [str(path_obj)]
+        elif path_obj.is_dir():
+            files_to_process = list_files(path_obj, **list_files_args)
         else:
             print(f"The path '{path}' is neither a directory nor a file.")
             return []
 
-        return natsorted(files_to_process)
+        return natsorted(Path(f) for f in files_to_process)
 
     def gather_and_process_files(
         self, files_to_process: list[str]
@@ -155,24 +155,24 @@ class ALACrity:
             - status: A string indicating the status of the conversion
                 ("converted", "already_exists", or "failed").
         """
-        base, _ = os.path.splitext(input_path)
-        output_path = f"{base}.{self.extension}"
-        input_filename = os.path.basename(input_path)
-        output_filename = os.path.basename(output_path)
+        input_path_obj = Path(input_path)
+        output_path = input_path_obj.with_suffix(f".{self.extension}")
+        input_filename = input_path_obj.name
+        output_filename = output_path.name
 
-        if os.path.exists(output_path):
-            return output_path, "already_exists"
+        if output_path.exists():
+            return str(output_path), "already_exists"
 
         if self.preserve_bit_depth:
-            actual_bit_depth = find_bit_depth(input_path)
+            actual_bit_depth = find_bit_depth(str(input_path_obj))
             if actual_bit_depth in {24, 32}:
                 self.bit_depth = actual_bit_depth
 
         with conversion_list_context(output_filename):
             try:
                 ffmpeg_audio(
-                    input_files=input_path,
-                    output_format=self.extension,
+                    input_files=str(input_path_obj),
+                    output_format=self.extension or "m4a",
                     codec=self.codec,
                     bit_depth=self.bit_depth,
                     audio_bitrate=self.audio_bitrate,
@@ -180,10 +180,10 @@ class ALACrity:
                     preserve_metadata=True,
                     show_output=False,
                 )
-                return output_path, "converted"
+                return str(output_path), "converted"
             except Exception as e:
                 print_colored(f"\nFailed to convert {input_filename}: {e}", "red")
-                return input_path, "failed"
+                return str(input_path_obj), "failed"
 
     @staticmethod
     def _handle_existing_file(output_path: str) -> bool:
@@ -195,10 +195,11 @@ class ALACrity:
         Returns:
             True if the file doesn't exist or user confirms overwrite, False otherwise.
         """
-        if os.path.exists(output_path):
+        output_path_obj = Path(output_path)
+        if output_path_obj.exists():
             print_colored(f"File '{output_path}' already exists.", "yellow")
             if confirm_action("Overwrite?"):
-                os.remove(output_path)
+                output_path_obj.unlink()
                 return True
             return False
         return True
@@ -207,12 +208,14 @@ class ALACrity:
         """Set instance variables based on the parsed command-line arguments."""
         resolved_paths = []
         for path in args.paths:
-            if "*" in path or "?" in path:
-                resolved_paths.extend(glob.glob(path))
+            path_obj = Path(path)
+            path_str = str(path_obj)
+            if "*" in path_str or "?" in path_str:
+                resolved_paths.extend(path_obj.parent.glob(path_obj.name))
             else:
-                resolved_paths.append(path)
+                resolved_paths.append(path_obj)
 
-        self.paths = natsorted(resolved_paths)
+        self.paths = natsorted([str(p) for p in resolved_paths])
         self.preserve_bit_depth = args.max
         self.auto_mode = not (
             args.flac
@@ -261,7 +264,7 @@ def parse_arguments() -> argparse.Namespace:
             )
 
     paths_help = "File(s) or directory of files to convert or wildcard pattern (e.g., *.m4a) (defaulting to current directory)"
-    parser.add_argument("paths", nargs="*", default=[os.getcwd()], help=paths_help)
+    parser.add_argument("paths", nargs="*", default=[Path.cwd()], help=paths_help)
 
     return parser.parse_args()
 

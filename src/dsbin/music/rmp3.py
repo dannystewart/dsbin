@@ -10,7 +10,7 @@ can get rid of the MP3 to save space (and people's ears).
 from __future__ import annotations
 
 import argparse
-import os
+from pathlib import Path
 
 from dsutil import configure_traceback
 from dsutil.files import delete_files, list_files
@@ -18,22 +18,23 @@ from dsutil.files import delete_files, list_files
 configure_traceback()
 
 
-def delete_mp3(directory: str, dry_run: bool = False) -> None:
+def delete_mp3(directory: str | Path, dry_run: bool = False) -> None:
     """Removes MP3 files if there is an AIFF or WAV file with the same name.
 
     Args:
         directory: The directory to search for MP3 files.
         dry_run: If True, will list the files that would be deleted without actually deleting them.
     """
-    mp3_files = list_files(directory, extensions="mp3", recursive=True)
+    mp3_files = list_files(directory, exts="mp3", recursive=True)
 
     files_to_delete = []
     for mp3_file in mp3_files:
-        base_filename = os.path.splitext(mp3_file)[0]
-        aif_file = f"{base_filename}.aif"
-        wav_file = f"{base_filename}.wav"
+        mp3_path = Path(mp3_file)
+        base_path = mp3_path.with_suffix("")
+        aif_file = base_path.with_suffix(".aif")
+        wav_file = base_path.with_suffix(".wav")
 
-        if os.path.exists(aif_file) or os.path.exists(wav_file):
+        if aif_file.exists() or wav_file.exists():
             files_to_delete.append(mp3_file)
 
     delete_files(files_to_delete, dry_run=dry_run)
@@ -45,17 +46,13 @@ def main() -> None:
         description="Remove MP3 files if there is an AIFF or WAV file with the same name."
     )
     parser.add_argument(
-        "directory", nargs="?", default=".", help="Directory to search for MP3 files."
+        "directory", nargs="?", default=".", help="directory to search for MP3 files"
     )
-    parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="List files that would be deleted without actually deleting them.",
-    )
+    parser.add_argument("--dry-run", action="store_true", help="list files without deleting them")
 
     args = parser.parse_args()
-
-    delete_mp3(args.directory, dry_run=args.dry_run)
+    directory = Path(args.directory)
+    delete_mp3(directory, dry_run=args.dry_run)
 
 
 if __name__ == "__main__":

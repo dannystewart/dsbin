@@ -76,7 +76,7 @@ class BounceDataSource(DataSourcePlugin):
         """Find all audio files in the directory."""
         files = list_files(
             self.directory,
-            extensions=self.BOUNCE_EXTENSIONS,
+            exts=self.BOUNCE_EXTENSIONS,
             recursive=True,
             sort_key=lambda x: x.stat().st_mtime,
         )

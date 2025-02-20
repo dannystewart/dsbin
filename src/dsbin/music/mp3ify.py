@@ -37,10 +37,7 @@ def main():
 
     path = Path(path)
     if path.is_dir():
-        files_to_convert = list_files(
-            directory=str(path),
-            extensions=allowed_extensions,
-        )
+        files_to_convert = list_files(path, exts=allowed_extensions)
     elif path.is_file() and path.suffix.lower() in allowed_extensions:
         files_to_convert = [str(path)]
     else:

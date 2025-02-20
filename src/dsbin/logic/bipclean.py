@@ -5,7 +5,7 @@ Audio Files folder, but if you decide to revert or save the project without keep
 deleted. This script identifies and deletes these files without the need for a full project cleanup.
 
 By default, this looks for files created within the last 4 hours. You can override this with any
-value by using the `--hours` argument. Files are listed and confirmed before deletion.
+value by using the --hours argument. Files can be individually selected for deletion.
 """
 
 from __future__ import annotations
@@ -13,11 +13,11 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timedelta
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
-from dsutil import configure_traceback
+import inquirer
+
+from dsutil import TZ, configure_traceback
 from dsutil.files import delete_files, list_files
-from dsutil.shell import confirm_action
 from dsutil.text import print_colored
 
 configure_traceback()
@@ -37,14 +37,32 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def select_files(files: list[Path]) -> list[Path]:
+    """Present a checkbox selection of files and return those selected."""
+    if not files:
+        return []
+
+    choices = [
+        inquirer.Checkbox(
+            "files",
+            message="Select files to delete",
+            choices=[(str(f), f) for f in files],
+            default=files,
+        )
+    ]
+
+    answers = inquirer.prompt(choices)
+    return answers["files"] if answers else []
+
+
 def main() -> None:
     """Find and delete AIFF files created within the specified time period."""
     args = parse_args()
     hours = args.hours
     current_dir = str(Path.cwd())
-    duration = datetime.now(tz=ZoneInfo("America/New_York")) - timedelta(hours=hours)
+    duration = datetime.now(tz=TZ) - timedelta(hours=hours)
 
-    aiff_files = list_files(directory=current_dir, extensions=["aif"], modified_after=duration)
+    aiff_files = list_files(dir=current_dir, exts=["aif"], modified_after=duration)
 
     s = "s" if hours != 1 else ""
     if not aiff_files:
@@ -53,14 +71,24 @@ def main() -> None:
             print_colored("Use --hours to specify a different time period.", "cyan")
         return
 
-    print_colored(f"The following AIFF files were created in the last {hours} hour{s}:", "green")
-    for file in aiff_files:
+    print_colored(f"Found {len(aiff_files)} AIFF files from the last {hours} hour{s}:", "green")
+
+    selected_files = select_files(aiff_files)
+
+    if not selected_files:
+        print_colored("No files selected for deletion.", "yellow")
+        return
+
+    print_colored("\nThe following files will be deleted:", "yellow")
+    for file in selected_files:
         print(f"- {file}")
 
-    if confirm_action("Delete the files?", default_to_yes=True):
-        delete_files(aiff_files)
-    else:
-        print("No files were deleted.")
+    if len(selected_files) < len(aiff_files):
+        skipped = len(aiff_files) - len(selected_files)
+        print_colored(f"\n{skipped} file{'s' if skipped != 1 else ''} will be kept.", "cyan")
+
+    delete_files(selected_files)
+    print_colored("\nSelected files have been deleted.", "green")
 
 
 if __name__ == "__main__":

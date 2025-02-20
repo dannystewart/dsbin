@@ -3,20 +3,17 @@
 """Uploads audio files to a Telegram channel.
 
 To have this run automatically via Hazel, call it as an embedded script like this:
-    ❯ source ~/.zshrc && $(pyenv which python) -m dsbin.music.pybounce "$1"
+    source ~/.zshrc && $(pyenv which python) -m dsbin.music.pybounce "$1"
 """
 
 from __future__ import annotations
 
 import argparse
 import asyncio
-import glob
 import logging
-import os
-import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
-from typing import Protocol
+from pathlib import Path
 
 import inquirer
 from mutagen import File as MutagenFile  # type: ignore
@@ -26,12 +23,11 @@ from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
 from dsutil import TZ, LocalLogger, configure_traceback
-from dsutil.animation import walking_animation
 from dsutil.env import DSEnv
 from dsutil.macos import get_timestamps
+from dsutil.music.pybounce_helpers import SQLiteManager
 from dsutil.paths import DSPaths
 from dsutil.shell import async_handle_keyboard_interrupt
-from dsutil.tools import async_retry_on_exception
 
 configure_traceback()
 
@@ -60,40 +56,6 @@ logger = LocalLogger().get_logger(level=log_level)
 logging.basicConfig(level=logging.WARNING)
 
 
-class TelegramClientProtocol(Protocol):
-    """Protocol for the Telegram client."""
-
-    async def start(self) -> None: ...  # noqa: D102
-
-    async def disconnect(self) -> None: ...  # noqa: D102
-
-
-class SQLiteManager:
-    """Manages the SQLite database for the Telegram client."""
-
-    # Retry configuration
-    RETRY_TRIES = 5
-    RETRY_DELAY = 5
-
-    def __init__(self, client: TelegramClientProtocol) -> None:
-        self.client = client
-
-    @async_retry_on_exception(
-        sqlite3.OperationalError, tries=RETRY_TRIES, delay=RETRY_DELAY, logger=logging
-    )
-    async def start_client(self) -> None:
-        """Start the client safely, retrying if a sqlite3.OperationalError occurs."""
-        with walking_animation():
-            await self.client.start()
-
-    @async_retry_on_exception(
-        sqlite3.OperationalError, tries=RETRY_TRIES, delay=RETRY_DELAY, logger=logging
-    )
-    async def disconnect_client(self) -> None:
-        """Disconnects the client safely, retrying if a sqlite3.OperationalError occurs."""
-        await self.client.disconnect()
-
-
 class FileManager:
     """Manages selecting files and obtaining metadata."""
 
@@ -106,10 +68,10 @@ class FileManager:
         def list_files() -> list[str]:
             extensions = ["wav", "aiff", "mp3", "m4a", "flac"]
             audio_files = [
-                f
+                str(f)
                 for ext in extensions
-                for f in os.listdir(".")
-                if f.lower().endswith(f".{ext}") and os.path.isfile(f)
+                for f in Path().iterdir()
+                if f.suffix.lower() == f".{ext}" and f.is_file()
             ]
             return natsorted(audio_files)
 
@@ -176,7 +138,11 @@ class TelegramUploader:
         self.client = TelegramClient(str(self.session_file), env.api_id, env.api_hash)
 
     async def get_channel_entity(self) -> Channel | Chat:
-        """Get the Telegram channel entity for the given URL."""
+        """Get the Telegram channel entity for the given URL.
+
+        Raises:
+            ValueError: If the URL does not point to a channel or chat.
+        """
         try:
             entity = await self.client.get_entity(env.channel_url)
             if not isinstance(entity, Channel | Chat):
@@ -188,7 +154,7 @@ class TelegramUploader:
             raise
 
     async def post_file_to_channel(
-        self, file_path: str, comment: str, channel_entity: Channel | Chat
+        self, file_path: Path, comment: str, channel_entity: Channel | Chat
     ) -> None:
         """Upload the given file to the given channel.
 
@@ -197,10 +163,11 @@ class TelegramUploader:
             comment: A comment to include with the file.
             channel_entity: The channel entity to upload the file to.
         """
-        filename = os.path.basename(file_path)
-        title = os.path.splitext(filename)[0]
-        duration = await self.files.get_audio_duration(file_path)
-        timestamp = await self.files.get_file_creation_time(file_path)
+        file_path = Path(file_path)
+        filename = file_path.name
+        title = file_path.stem
+        duration = await self.files.get_audio_duration(str(file_path))
+        timestamp = await self.files.get_file_creation_time(str(file_path))
 
         # Format duration as M:SS
         minutes, seconds = divmod(duration, 60)
@@ -212,7 +179,7 @@ class TelegramUploader:
         logger.debug("Uploading to %s (channel ID: %s)", env.channel_url, channel_entity.id)
 
         pbar = async_tqdm(
-            total=os.path.getsize(file_path),
+            total=file_path.stat().st_size,
             desc="Uploading",
             unit="B",
             unit_scale=True,
@@ -220,13 +187,16 @@ class TelegramUploader:
             leave=False,
         )
 
+        def update_progress(sent: int, _: int) -> None:
+            pbar.update(sent - pbar.n)
+
         try:
             await self.client.send_file(
                 channel_entity,
-                file_path,
+                str(file_path),
                 caption=f"{title}\n{timestamp_text}\n{comment}",
                 attributes=[DocumentAttributeAudio(duration=duration)],
-                progress_callback=lambda sent, _: pbar.update(sent - pbar.n),
+                progress_callback=update_progress,
             )
         except (KeyboardInterrupt, asyncio.CancelledError):
             pbar.reset()
@@ -238,20 +208,20 @@ class TelegramUploader:
         logger.info("'%s' uploaded successfully.", file_path)
 
     async def upload_files(
-        self, files: list[str], comment: str, channel_entity: Channel | Chat
+        self, files: list[Path], comment: str, channel_entity: Channel | Chat
     ) -> None:
         """Upload the given files to the channel."""
         for file in files:
-            if os.path.isfile(file):
+            if Path(file).is_file():
                 await self.post_file_to_channel(file, comment, channel_entity)
             else:
                 logger.warning("'%s' is not a valid file. Skipping.", file)
 
     async def process_and_upload_file(
-        self, file: str, comment: str, channel_entity: Channel | Chat
+        self, file: Path, comment: str, channel_entity: Channel | Chat
     ) -> None:
         """Process a single file (convert if needed) and upload it to Telegram."""
-        if not os.path.isfile(file):
+        if not Path(file).is_file():
             logger.warning("'%s' is not a valid file. Skipping.", file)
             return
         try:
@@ -270,7 +240,7 @@ async def run() -> None:
 
     files = FileManager()
     telegram = TelegramUploader(files)
-    sqlite = SQLiteManager(telegram.client)
+    sqlite = SQLiteManager(telegram.client)  # type: ignore
 
     try:
         await sqlite.start_client()
@@ -278,14 +248,14 @@ async def run() -> None:
 
         files_to_upload = []
         for file_pattern in args.files:
-            files_to_upload.extend(glob.glob(file_pattern))
+            files_to_upload.extend(Path().glob(file_pattern))
 
         # Remove duplicates while preserving order
         files_to_upload = list(dict.fromkeys(files_to_upload)) or await files.select_interactively()
 
         if files_to_upload:
             for file in files_to_upload:
-                await telegram.process_and_upload_file(file, args.comment, channel_entity)
+                await telegram.process_and_upload_file(Path(file), args.comment, channel_entity)
         else:
             logger.warning("No files selected for upload.")
 
@@ -296,7 +266,10 @@ async def run() -> None:
 
 def main() -> None:
     """Run the main function with asyncio."""
-    asyncio.run(run())
+    try:
+        asyncio.run(run())  # type: ignore
+    except KeyboardInterrupt:
+        logger.error("Upload canceled by user.")
 
 
 if __name__ == "__main__":

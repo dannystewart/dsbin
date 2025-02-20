@@ -8,9 +8,9 @@ that was removed when converted to WAV.
 from __future__ import annotations
 
 import argparse
-import os
 import re
 import sys
+from pathlib import Path
 from typing import Literal
 
 from dsutil import configure_traceback
@@ -25,7 +25,7 @@ AudioFormat = Literal["wav", "aif"]
 
 
 def convert_audio(
-    file_path: str, target_format: AudioFormat, version: str | None = None, recursive: bool = False
+    file_path: Path, target_format: AudioFormat, version: str | None = None, recursive: bool = False
 ) -> None:
     """Convert audio files between WAV and AIFF formats.
 
@@ -35,28 +35,30 @@ def convert_audio(
         version: Logic Pro version number (only for WAV to AIFF conversion).
         recursive: Search for files recursively.
     """
+    file_path = Path(file_path)
     source_format = "aif" if target_format == "wav" else "wav"
     source_extensions = ["aif", "aiff"] if source_format == "aif" else ["wav"]
 
-    if not (os.path.isdir(file_path) or os.path.isfile(file_path)):
+    if not (file_path.is_dir() or file_path.is_file()):
         print(f"The path specified does not exist: {file_path}")
         return
 
-    if os.path.isfile(file_path):
+    if file_path.is_file():
         source_files = [file_path]
     else:
-        source_files = list_files(file_path, extensions=source_extensions, recursive=recursive)
+        source_files = list_files(file_path, exts=source_extensions, recursive=recursive)
 
     metadata_options = None
     if version and target_format == "aif":
         metadata_options = ["metadata", f"comment=Creator: Logic Pro X {version}"]
 
     for source_file in source_files:
-        target_file = f"{os.path.splitext(source_file)[0]}.{target_format}"
+        source_file = Path(source_file)
+        target_file = source_file.with_suffix(f".{target_format}")
 
-        if not os.path.exists(target_file):
+        if not target_file.exists():
             ffmpeg_audio(
-                input_files=source_file,
+                input_files=str(source_file),
                 output_format=target_format,
                 additional_args=metadata_options,
                 show_output=True,

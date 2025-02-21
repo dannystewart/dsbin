@@ -16,13 +16,14 @@ from pathlib import Path
 
 import inquirer
 
-from dsutil import TZ, configure_traceback
-from dsutil.files import delete_files, list_files
+from dsutil import TZ, FileManager, configure_traceback
 from dsutil.text import print_colored
 
 configure_traceback()
 
 DEFAULT_HOURS = 2
+
+files = FileManager()
 
 
 def parse_args() -> argparse.Namespace:
@@ -63,7 +64,7 @@ def main() -> None:
     duration = datetime.now(tz=TZ) - timedelta(hours=hours)
 
     # Get all AIFF files and filter by recency
-    aiff_files = list_files(dir=current_dir, exts=["aif"])
+    aiff_files = files.list(dir=current_dir, exts=["aif"])
     recent_files = [
         f for f in aiff_files if datetime.fromtimestamp(f.stat().st_mtime, tz=TZ) > duration
     ]
@@ -90,7 +91,7 @@ def main() -> None:
         skipped = len(aiff_files) - len(selected_files)
         print_colored(f"\n{skipped} file{'s' if skipped != 1 else ''} will be kept.", "cyan")
 
-    delete_files(selected_files)
+    files.delete(selected_files)
     print_colored("\nSelected files have been deleted.", "green")
 
 

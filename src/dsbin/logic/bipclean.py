@@ -59,20 +59,23 @@ def main() -> None:
     """Find and delete AIFF files created within the specified time period."""
     args = parse_args()
     hours = args.hours
-    current_dir = str(Path.cwd())
+    current_dir = Path.cwd()
     duration = datetime.now(tz=TZ) - timedelta(hours=hours)
 
-    aiff_files = list_files(dir=current_dir, exts=["aif"], modified_after=duration)
+    # Get all AIFF files and filter by recency
+    aiff_files = list_files(dir=current_dir, exts=["aif"])
+    recent_files = [
+        f for f in aiff_files if datetime.fromtimestamp(f.stat().st_mtime, tz=TZ) > duration
+    ]
 
     s = "s" if hours != 1 else ""
-    if not aiff_files:
+    if not recent_files:
         print_colored(f"No AIFF files from within the last {hours} hour{s}.", "green")
         if hours == DEFAULT_HOURS:
             print_colored("Use --hours to specify a different time period.", "cyan")
         return
 
     print_colored(f"Found {len(aiff_files)} AIFF files from the last {hours} hour{s}:", "green")
-
     selected_files = select_files(aiff_files)
 
     if not selected_files:

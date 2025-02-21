@@ -248,10 +248,16 @@ async def run() -> None:
         channel_entity = await telegram.get_channel_entity()
 
         files_to_upload = []
-        for file_pattern in args.files:
-            files_to_upload.extend(Path().glob(file_pattern))
+        if args.files:
+            for file_pattern in args.files:
+                if file_pattern:
+                    pattern_path = Path(file_pattern)
+                    if pattern_path.is_absolute():
+                        files_to_upload.append(pattern_path)
+                    else:
+                        files_to_upload.extend(Path().glob(file_pattern))
 
-        # Remove duplicates while preserving order
+        # If no files were found or specified, fall back to interactive selection
         files_to_upload = list(dict.fromkeys(files_to_upload)) or await files.select_interactively()
 
         if files_to_upload:

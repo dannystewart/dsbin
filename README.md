@@ -35,18 +35,18 @@ Descriptions will be added at some point in the future.
 #### Music scripts
 - `aif2wav`
 - `alacrity`
-- `bounceprune`
 - `hpfilter`
 - `metacopy`
 - `mp3ify`
 - `mshare`
 - `pybounce`
-- `pyfiler`
 - `rmp3`
 - `wav2aif`
 
 #### Logic-specific scripts
 - `bipclean`
+- `bouncefiler`
+- `bounceprune`
 - `oldprojects`
 
 #### Mac-specific scripts

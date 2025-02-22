@@ -43,7 +43,7 @@ class ALACrity:
     }
 
     def __init__(self, args: argparse.Namespace) -> None:
-        self.files = FileManager(simple_log=True)
+        self.files = FileManager()
         self.media = MediaManager()
 
         # Set default values for conversion options

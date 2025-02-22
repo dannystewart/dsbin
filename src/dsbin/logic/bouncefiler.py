@@ -14,16 +14,18 @@ import inquirer
 from dsutil import LocalLogger, configure_traceback
 from dsutil.animation import walking_animation
 from dsutil.env import DSEnv
-from dsutil.files import delete_files, move_file
+from dsutil.files import FileManager
 from dsutil.shell import confirm_action
 from dsutil.text import color
 
-from dsbin.music.bounce_parser import Bounce, BounceParser
+from dsbin.logic.bounce_parser import Bounce, BounceParser
 
 configure_traceback()
 
 env = DSEnv()
 env.add_debug_var()
+
+files = FileManager()
 
 log_level = "debug" if env.debug else "info"
 logger = LocalLogger().get_logger(level=log_level, simple=True)
@@ -82,11 +84,11 @@ def sort_bounces(bounces: list[Bounce], selected_suffixes: list[str]) -> None:
                     duplicates.append(source)
                     continue
 
-                if move_file(source, destination, overwrite=False, show_output=False):
+                if files.move(source, destination, overwrite=False, show_output=False):
                     logger.info(
                         "%s -> %s",
-                        color(source.name, "green"),
-                        color(destination, "green"),
+                        color(source.name, "white"),
+                        color(str(destination), "green"),
                     )
                 else:
                     logger.warning("Failed to move %s to %s.", source.name, destination)
@@ -102,7 +104,7 @@ def handle_duplicates(duplicates: list[Path]) -> None:
         print(color(f"✖ {file.name}", "yellow"))
 
     if confirm_action("\nDelete duplicate source files?", default_to_yes=False):
-        successful, failed = delete_files(duplicates, show_output=False)
+        successful, failed = files.delete(duplicates, show_output=False)
         if successful:
             print(
                 color(

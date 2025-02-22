@@ -76,18 +76,18 @@ ytdl = "dsbin.media.ytdl:main"
 # Music scripts
 aif2wav = "dsbin.music.awa:aif2wav"
 alacrity = "dsbin.music.alacrity:main"
-bounceprune = "dsbin.music.bounceprune:main"
 hpfilter = "dsbin.music.hpfilter:main"
 metacopy = "dsbin.music.metacopy:main"
 mp3ify = "dsbin.music.mp3ify:main"
 mshare = "dsbin.music.mshare:main"
 pybounce = "dsbin.music.pybounce:main"
-pyfiler = "dsbin.music.pyfiler:main"
 rmp3 = "dsbin.music.rmp3:main"
 wav2aif = "dsbin.music.awa:wav2aif"
 
 # Logic-specific scripts
 bipclean = "dsbin.logic.bipclean:main"
+bouncefiler = "dsbin.logic.bouncefiler:main"
+bounceprune = "dsbin.logic.bounceprune:main"
 oldprojects = "dsbin.logic.oldprojects:main"
 
 # Mac-specific scripts

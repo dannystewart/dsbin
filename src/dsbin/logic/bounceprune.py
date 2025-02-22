@@ -34,7 +34,7 @@ from dsutil.files import delete_files
 from dsutil.shell import confirm_action
 from dsutil.text import color, print_colored
 
-from dsbin.music.bounce_parser import Bounce, BounceParser
+from dsbin.logic.bounce_parser import Bounce, BounceParser
 
 if TYPE_CHECKING:
     from datetime import datetime

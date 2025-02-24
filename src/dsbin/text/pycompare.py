@@ -9,6 +9,7 @@ It can ignore case sensitivity when comparing, and supports titles for each list
 from __future__ import annotations
 
 import argparse
+from pathlib import Path
 
 import inquirer
 
@@ -26,9 +27,11 @@ def process_lists(
     title1: str = "first",
     title2: str = "second",
     comma_separated: bool = False,
+    output_file: str | None = None,
 ) -> None:
-    """Process two lists and compare them based on the specified case sensitivity. If case
-    sensitivity is enabled, also display a message indicating how many additional elements
+    """Process two lists and compare them based on the specified case sensitivity.
+
+    If case sensitivity is enabled, also display a message indicating how many additional elements
     would match if case sensitivity were ignored.
 
     Args:
@@ -38,6 +41,7 @@ def process_lists(
         title1: The title for the first list. Defaults to None.
         title2: The title for the second list. Defaults to None.
         comma_separated: Whether to print results comma-separated. Defaults to False.
+        output_file: The file to write the results to. Defaults to None.
     """
     set1, set2 = (
         (set(map(str.lower, list1)), set(map(str.lower, list2)))
@@ -48,17 +52,33 @@ def process_lists(
     unique_in_set1 = sorted(set1 - set2, key=lambda s: s.casefold() if ignore_case else s)
     unique_in_set2 = sorted(set2 - set1, key=lambda s: s.casefold() if ignore_case else s)
 
-    print_results("Common elements", common_elements, ignore_case, comma_separated)
-    print_results(f"Unique in {title1} list", unique_in_set1, ignore_case, comma_separated)
-    print_results(f"Unique in {title2} list", unique_in_set2, ignore_case, comma_separated)
+    output_lines = []
+    print_results("Common elements", common_elements, ignore_case, comma_separated, output_lines)
+    print_results(
+        f"Unique in {title1} list", unique_in_set1, ignore_case, comma_separated, output_lines
+    )
+    print_results(
+        f"Unique in {title2} list", unique_in_set2, ignore_case, comma_separated, output_lines
+    )
 
     if not ignore_case:
         additional_matches = count_case_insensitive_matches(list1, list2, common_elements)
         if additional_matches > 0:
-            print_colored(
-                f"\nNote: {additional_matches} additional elements would match if case sensitivity were ignored.",
-                "yellow",
-            )
+            note = f"\nNote: {additional_matches} additional elements would match if case sensitivity were ignored."
+            print_colored(note, "yellow")
+            if output_file:
+                output_lines.extend(("", note))
+
+    if output_file:
+        try:
+            output_path = Path(output_file)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_path.write_text("\n".join(output_lines))
+            print_colored(f"\nResults saved to {output_path}.", "green")
+        except OSError as e:
+            print_colored(f"\nError writing to file {output_path}: {e}", "red")
+        except Exception as e:
+            print_colored(f"\nUnexpected error: {e}", "red")
 
 
 def count_case_insensitive_matches(
@@ -66,9 +86,10 @@ def count_case_insensitive_matches(
     list2: list[str],
     common_elements: list[str],
 ) -> int:
-    """Count the number of matches between two lists regardless of case (excluding common
-    elements). Used for reporting what the difference would be if case sensitivity were
-    ignored, in case it affects the results.
+    """Count the number of matches between two lists.
+
+    Counts regardless of case (excluding common elements). Used for reporting what the difference
+    would be if case sensitivity were ignored, in case it affects the results.
 
     Args:
         list1: The first list.
@@ -106,6 +127,7 @@ def print_results(
     elements_list: list[str],
     case_insensitive: bool,
     comma_separated: bool = False,
+    output_lines: list[str] | None = None,
 ) -> None:
     """Print the results of a list of elements with an optional header.
 
@@ -114,16 +136,24 @@ def print_results(
         elements_list: The list of elements to print.
         case_insensitive: Whether the comparison was case-insensitive.
         comma_separated: Whether to print results comma-separated. Defaults to False.
+        output_lines: List to append output lines to for file writing. Defaults to None.
     """
     count = len(elements_list)
     case_notice = "" if case_insensitive else " case-sensitive"
-    header = f"{header} ({count}{case_notice}):"
+    header_text = f"\n{header} ({count}{case_notice}):"
     if comma_separated:
         elements = ", ".join(elements_list) if elements_list else "None"
     else:
         elements = "\n".join(elements_list) if elements_list else "None"
-    print_colored(f"\n{header}", "yellow")
+
+    print_colored(header_text, "yellow")
     print_colored(elements, "blue")
+
+    if output_lines is not None and output_lines:
+        # If this isn't the first section, add a blank line before the header
+        output_lines.extend(("", header_text.strip(), elements))
+    elif output_lines:
+        output_lines.extend((header_text.strip(), elements))
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -144,6 +174,12 @@ def parse_arguments() -> argparse.Namespace:
         "--comma-separated",
         action="store_true",
         help="print results comma-separated",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        help="save results to the specified file",
     )
     return parser.parse_args()
 
@@ -191,7 +227,7 @@ def main() -> None:
     print_colored(f"\nPaste the {title2} list (type '.' and press Enter to finish):", "green")
     list2 = input_until_sentinel()
 
-    process_lists(ignore_case, list1, list2, title1, title2, args.comma_separated)
+    process_lists(ignore_case, list1, list2, title1, title2, args.comma_separated, args.output)
 
 
 if __name__ == "__main__":

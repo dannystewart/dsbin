@@ -5,7 +5,7 @@ It's designed to work with filenames in the following format:
     "Title YY.MM.DD_Version[MinorVersion][Suffix].extension"
 
 Example:
-    "My Song 24.05.15_0a No Vocals.wav"
+    "My Song 24.5.1_0a No Vocals.wav"
 
 Key Features:
 - Parse bounce filenames into structured Bounce objects
@@ -109,14 +109,14 @@ class BounceParser:
             ValueError: If the filename doesn't match the expected pattern.
 
         Example:
-            bounce = BounceParser.get_bounce("My Song 24.05.15_0a No Vocals.wav")
+            bounce = BounceParser.get_bounce("My Song 24.5.1_0a No Vocals.wav")
 
             # Result:
             # Bounce(
             #     title="My Song",
             #     year=24,
             #     month=5,
-            #     day=15,
+            #     day=1,
             #     version=0,
             #     minor_version="a",
             #     suffix="No Vocals",
@@ -174,9 +174,9 @@ class BounceParser:
             bounces_recursive = BounceParser.find_bounces("/path/to/bounces", recursive=True)
 
             # If the directory contains:
-            # - /path/to/bounces/Song A 24.05.15_0.wav
-            # - /path/to/bounces/Song A 24.05.15_1 No Vocals.wav
-            # - /path/to/bounces/subdir/Song B 24.05.16_0.wav
+            # - /path/to/bounces/Song A 24.5.1_0.wav
+            # - /path/to/bounces/Song A 24.5.1_1 No Vocals.wav
+            # - /path/to/bounces/subdir/Song B 24.5.2_0.wav
 
             # Non-recursive search will return Bounce objects for the first two files.
             # Recursive search will return Bounce objects for all three files.
@@ -200,7 +200,7 @@ class BounceParser:
         return [cls.get_bounce(file) for file in bounce_files]
 
     @classmethod
-    def get_latest_bounce(cls, bounces: list[Bounce]) -> Bounce:
+    def get_latest_bounce(cls, bounces: list[Bounce], include_suffixed: bool = False) -> Bounce:
         """Get the latest bounce from a list of bounces.
 
         "Latest" is determined by sorting the bounces and returning the last one. The sorting is
@@ -215,11 +215,13 @@ class BounceParser:
 
         Example:
             bounces = [
-                Bounce(title="Song A", year=24, month=5, day=15, version=0, minor_version="", ...),
-                Bounce(title="Song A", year=24, month=5, day=15, version=1, minor_version="", ...),
-                Bounce(title="Song A", year=24, month=5, day=16, version=0, minor_version="", ...),
+                Bounce(title="Song A", year=24, month=5, day=1, version=0, minor_version="", ...),
+                Bounce(title="Song A", year=24, month=5, day=1, version=1, suffix="No Vocals", ...),
+                Bounce(title="Song A", year=24, month=5, day=1, version=1, minor_version="", ...),
+                Bounce(title="Song A", year=24, month=5, day=2, version=0, minor_version="", ...),
             ]
             latest = BounceParser.get_latest_bounce(bounces)
+            # Result: Bounce object representing "Song A 24.5.2_0"
 
             latest_with_suffix = BounceParser.get_latest_bounce(bounces, include_suffixed=True)
             # Result: Same as above, since the latest bounce has no suffix.
@@ -248,7 +250,7 @@ class BounceParser:
 
         Args:
             directory: The directory to search for bounce files.
-            year: The year (last two digits, 00-99).
+            year: The year (last two digits, 00-99 for 2000-2099).
             month: The month (1-12).
             day: The day (1-31).
 
@@ -256,20 +258,19 @@ class BounceParser:
             A list of Bounce objects from the specified day, sorted by version and minor version.
 
         Example:
-            day_bounces = BounceParser.get_from_day("/path/to/bounces", 24, 5, 15)
+            day_bounces = BounceParser.get_from_day("/path/to/bounces", 24, 5, 1)
 
             # If the directory contains:
-            # - Song A 24.05.15_0.wav
-            # - Song A 24.05.15_1.wav
-            # - Song B 24.05.15_0.wav
-            # - Song C 24.05.16_0.wav
+            # - Song A 24.5.1_0.wav
+            # - Song A 24.5.1_1.wav
+            # - Song B 24.5.1_0.wav
+            # - Song C 24.5.2_0.wav
 
             # The result will be a list of Bounce objects for the first three files,
             # sorted by title, version, and minor version.
 
         Note:
             - The year should be given as the last two digits (e.g., 24 for 2024).
-            - This method assumes all bounce files are from the 21st century (2000-2099).
             - If no bounces are found for the specified day, an empty list is returned.
         """
         bounces = cls.find_bounces(directory)
@@ -287,6 +288,7 @@ class BounceParser:
 
         Args:
             directory: The directory to search for bounce files.
+            include_suffixed: If False, only consider bounces without a suffix.
 
         Returns:
             A list of the latest Bounce objects for each day, sorted by date.
@@ -295,7 +297,7 @@ class BounceParser:
             Assume the directory contains:
             - Song A 24.05.15_0.wav
             - Song A 24.05.15_1.wav
-            - Song A 24.05.15_1a.wav
+            - Song A 24.05.15_1 No Vocals.wav
             - Song B 24.05.16_0.wav
             - Song B 24.05.16_1.wav
             - Song A 24.05.17_0.wav
@@ -304,7 +306,7 @@ class BounceParser:
 
             # Result will be a list of Bounce objects:
             # [
-            #     Bounce(title="Song A", year=24, month=5, day=1, version=1, minor_version="a" ...),
+            #     Bounce(title="Song A", year=24, month=5, day=1, version=1, minor_version="" ...),
             #     Bounce(title="Song B", year=24, month=5, day=2, version=1, minor_version="" ...),
             #     Bounce(title="Song A", year=24, month=5, day=3, version=0, minor_version="" ...)
             # ]
@@ -404,11 +406,11 @@ class BounceParser:
 
             # Result structure:
             # {
-            #     ("Song A", datetime(2024, 5, 15), 1): {
+            #     ("Song A", datetime(2024, 5, 1), 1): {
             #         "No Vocals": [Bounce(title="Song A", ...)],
             #         "": [Bounce(title="Song A", ...)]
             #     },
-            #     ("Song B", datetime(2024, 5, 16), 2): {
+            #     ("Song B", datetime(2024, 5, 2), 2): {
             #         "": [Bounce(title="Song B", ...)]
             #     }
             # }
@@ -440,10 +442,10 @@ class BounceParser:
 
         Example:
             Assume the directory contains:
-            - Song A 24.05.15_0 No Vocals.wav
-            - Song A 24.05.15_1.wav
-            - Song B 24.05.16_0 no vocals.wav
-            - Song B 24.05.16_1 No Vocals.wav
+            - Song A 24.5.1_0 No Vocals.wav
+            - Song A 24.5.1_1.wav
+            - Song B 24.5.2_0 no vocals.wav
+            - Song B 24.5.2_1 No Vocals.wav
 
             no_vocals = BounceParser.filter_by_suffix("/path/to/bounces", "No Vocals")
 
@@ -478,13 +480,13 @@ class BounceParser:
             wav_bounces = BounceParser.filter_by_format("/path/to/bounces", "wav")
 
             # If the directory contains:
-            # - Song A 24.05.15_0.wav
-            # - Song A 24.05.15_1.m4a
-            # - Song B 24.05.16_0.wav
-            # - Song C 24.05.17_0.mp3
+            # - Song A 24.5.1_0.wav
+            # - Song A 24.5.1_1.m4a
+            # - Song B 24.5.2_0.wav
+            # - Song C 24.5.3_0.mp3
 
-            # The result will be a list of Bounce objects for "Song A 24.05.15_0.wav"
-            # and "Song B 24.05.16_0.wav", sorted by date and version.
+            # The result will be a list of Bounce objects for "Song A 24.5.1_0.wav"
+            # and "Song B 24.5.2_0.wav", sorted by date and version.
 
         Note:
             - The file_format comparison is case-insensitive ('wav' will match 'WAV' or 'wav').

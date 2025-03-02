@@ -52,7 +52,7 @@ class BounceActions:
 
 
 def determine_actions(
-    bounce_groups: dict[tuple[str, datetime, str], dict[str, list[Bounce]]],
+    bounce_groups: dict[tuple[str, datetime, int], dict[str, list[Bounce]]],
     daily: bool = False,
     skip_latest: bool = False,
 ) -> BounceActions:

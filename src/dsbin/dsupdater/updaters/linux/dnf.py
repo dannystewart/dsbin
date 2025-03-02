@@ -17,7 +17,7 @@ class DNFPackageManager(UpdateManager):
     prerequisite: str | None = "dnf"
     requires_sudo: bool = True
 
-    system_updater = True
+    system_updater: ClassVar[bool] = True
     update_stages: ClassVar[dict[str, UpdateStage]] = {
         "upgrade": UpdateStage(
             command="dnf upgrade -y",

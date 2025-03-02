@@ -17,7 +17,7 @@ class APTPackageManager(UpdateManager):
     prerequisite: str | None = "apt"
     requires_sudo: bool = True
 
-    system_updater = True
+    system_updater: ClassVar[bool] = True
     update_stages: ClassVar[dict[str, UpdateStage]] = {
         "update": UpdateStage(
             command="apt update",

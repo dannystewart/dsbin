@@ -15,9 +15,9 @@ class MacOSSoftwareUpdate(UpdateManager):
     display_name: str = "macOS"
     description: str = "macOS software update command"
     prerequisite: str | None = "softwareupdate"
-    skip_auto_add = True
+    skip_auto_add: bool = True
 
-    system_updater = True
+    system_updater: ClassVar[bool] = True
     update_stages: ClassVar[dict[str, UpdateStage]] = {
         "force_install_now": UpdateStage(
             command="softwareupdate -ia --force",

@@ -19,7 +19,7 @@ class ChezmoiPackageManager(UpdateManager):
     display_name: str = "chezmoi"
     description: str = "Chezmoi dotfile sync"
     prerequisite: str | None = "chezmoi"
-    sort_order = 10
+    sort_order: int = 10
 
     logger: Logger = field(init=False)
 

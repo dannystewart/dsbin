@@ -17,8 +17,9 @@ Project Name 23.11.20_1a.wav
 Project Name 23.11.20_1b.wav
 Project Name 23.11.20_1c.wav
 
-This script will delete 1, 1a, and 1b, then rename 1c to 1, or with the --major flag, the script
-will consolidate down to one bounce per day named by date with no suffix.
+This script will delete 1, 1a, and 1b, then rename 1c to 1, or with the `-d` / `--daily` flag, the
+script will consolidate down to one bounce per day named by date with no suffix. The `-s` or
+`--skip-latest` flag can be used to skip the most recent day's bounces if work is still in progress.
 """
 
 from __future__ import annotations
@@ -53,6 +54,7 @@ class BounceActions:
 def determine_actions(
     bounce_groups: dict[tuple[str, datetime, str], dict[str, list[Bounce]]],
     daily: bool = False,
+    skip_latest: bool = False,
 ) -> BounceActions:
     """Given a dictionary of bounce groups, determine the actions to be taken on the bounces.
 
@@ -60,6 +62,7 @@ def determine_actions(
         bounce_groups: A dictionary of bounce groups where the keys are tuples representing the
                        bounce attributes and the values are lists of Bounce objects.
         daily: If True, keep only the last bounce for each day and remove the version number.
+        skip_latest: If True, don't take any action on the most recent day's bounces.
 
     Returns:
         A BounceActions object containing the actions to be performed on the files.
@@ -74,6 +77,24 @@ def determine_actions(
             by_date[key] = []
         for bounces in suffix_groups.values():
             by_date[key].extend(bounces)
+
+    # If skip_latest is True, identify and remove the most recent date for each title
+    if skip_latest and by_date:
+        # Extract titles and find the latest date for each
+        titles = {key[0] for key in by_date}
+        latest_dates_by_title = {}
+
+        for title in titles:
+            title_dates = [date for t, date in by_date if t == title]
+            if title_dates:
+                latest_dates_by_title[title] = max(title_dates)
+
+        # Filter out the latest date for each title
+        by_date = {
+            key: bounces
+            for key, bounces in by_date.items()
+            if key[1] != latest_dates_by_title.get(key[0])
+        }
 
     if daily:
         handle_major(by_date, actions)
@@ -231,6 +252,9 @@ def main() -> None:
     parser.add_argument(
         "-d", "--daily", action="store_true", help="keep only the last bounce for each day"
     )
+    parser.add_argument(
+        "-s", "--skip-latest", action="store_true", help="skip the most recent day's bounces"
+    )
     args = parser.parse_args()
 
     directory = Path.cwd()
@@ -238,7 +262,7 @@ def main() -> None:
     with walking_animation("Analyzing bounce files...", "cyan"):
         bounces = BounceParser.find_bounces(directory)
         bounce_groups = BounceParser.group_bounces(bounces)
-        actions = determine_actions(bounce_groups, daily=args.daily)
+        actions = determine_actions(bounce_groups, daily=args.daily, skip_latest=args.skip_latest)
         trash_files, rename_files = prepare_output(actions)
 
     print_actions(trash_files, rename_files)

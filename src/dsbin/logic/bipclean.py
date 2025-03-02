@@ -4,7 +4,7 @@ This script is for audio files bounced in place within a Logic project. These fi
 Audio Files folder, but if you decide to revert or save the project without keeping it, they're not
 deleted. This script identifies and deletes these files without the need for a full project cleanup.
 
-By default, this looks for files created within the last 4 hours. You can override this with any
+By default, this looks for files created within the last 2 hours. You can override this with any
 value by using the --hours argument. Files can be individually selected for deletion.
 """
 

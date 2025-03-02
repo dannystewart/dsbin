@@ -63,16 +63,16 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
 
     # List command
-    list_parser = subparsers.add_parser("list", help="List bounces")
-    list_parser.add_argument("--suffix", help="Filter by suffix")
-    list_parser.add_argument("--format", help="Filter by file format")
-    list_parser.add_argument("--title", help="Filter by title (substring match)")
+    list_parser = subparsers.add_parser("list", help="list bounces")
+    list_parser.add_argument("--suffix", help="filter by suffix")
+    list_parser.add_argument("--format", help="filter by file format")
+    list_parser.add_argument("--title", help="filter by title (substring match)")
     list_parser.set_defaults(func=list_bounces)
 
     # Latest command
-    latest_parser = subparsers.add_parser("latest", help="Show latest bounce(s)")
+    latest_parser = subparsers.add_parser("latest", help="show latest bounce(s)")
     latest_parser.add_argument(
-        "--per-day", action="store_true", help="Show latest bounce for each day"
+        "--per-day", action="store_true", help="show latest bounce for each day"
     )
     latest_parser.set_defaults(func=latest)
 

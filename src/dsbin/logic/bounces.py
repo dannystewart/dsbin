@@ -32,17 +32,18 @@ def list_bounces(args: argparse.Namespace) -> None:
 
 def latest(args: argparse.Namespace) -> None:
     """Show the latest bounce(s)."""
-    bounces = BounceParser.find_bounces(args.directory)
+    include_suffixed = args.include_suffixed
 
     if args.per_day:
-        latest_bounces = BounceParser.get_latest_per_day(args.directory)
+        latest_bounces = BounceParser.get_latest_per_day(args.directory, include_suffixed)
         for bounce in latest_bounces:
             suffix_str = f" {bounce.suffix}" if bounce.suffix else ""
             print(
                 f"{bounce.title} {bounce.date.strftime('%y.%m.%d')}_{bounce.full_version}{suffix_str}.{bounce.file_format}"
             )
     else:
-        latest_bounce = BounceParser.get_latest_bounce(bounces)
+        bounces = BounceParser.find_bounces(args.directory)
+        latest_bounce = BounceParser.get_latest_bounce(bounces, include_suffixed)
         suffix_str = f" {latest_bounce.suffix}" if latest_bounce.suffix else ""
         print(
             f"{latest_bounce.title} {latest_bounce.date.strftime('%y.%m.%d')}_{latest_bounce.full_version}{suffix_str}.{latest_bounce.file_format}"
@@ -73,6 +74,11 @@ def main():
     latest_parser = subparsers.add_parser("latest", help="show latest bounce(s)")
     latest_parser.add_argument(
         "--per-day", action="store_true", help="show latest bounce for each day"
+    )
+    latest_parser.add_argument(
+        "--include-suffixed",
+        action="store_true",
+        help="include suffixed bounces when determining latest",
     )
     latest_parser.set_defaults(func=latest)
 

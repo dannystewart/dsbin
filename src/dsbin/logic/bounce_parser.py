@@ -208,6 +208,7 @@ class BounceParser:
 
         Args:
             bounces: A list of Bounce objects.
+            include_suffixed: If False, only consider bounces without a suffix.
 
         Returns:
             The latest Bounce object from the list.
@@ -220,13 +221,22 @@ class BounceParser:
             ]
             latest = BounceParser.get_latest_bounce(bounces)
 
-            # Result:
-            # Bounce object representing "Song A 24.05.16_0"
+            latest_with_suffix = BounceParser.get_latest_bounce(bounces, include_suffixed=True)
+            # Result: Same as above, since the latest bounce has no suffix.
 
         Note:
-            If there are multiple bounces with the same latest date and version,
-            the one with the latest minor version will be returned.
+            If there are multiple bounces with the same latest date and version, the one with the
+            latest minor version will be returned.
+
+            If include_suffixed is False and there are no bounces without a suffix, this method will
+            return the latest bounce regardless of suffix.
         """
+        if not include_suffixed:
+            # Filter out suffixed bounces, but keep all if that would leave nothing
+            non_suffixed = [b for b in bounces if not b.suffix]
+            if non_suffixed:
+                bounces = non_suffixed
+
         return cls.sort_bounces(bounces)[-1]
 
     @classmethod
@@ -267,7 +277,7 @@ class BounceParser:
         return [bounce for bounce in bounces if bounce.date == target_date]
 
     @classmethod
-    def get_latest_per_day(cls, directory: Path) -> list[Bounce]:
+    def get_latest_per_day(cls, directory: Path, include_suffixed: bool = False) -> list[Bounce]:
         """Get the latest bounce per day from the given directory.
 
         This method considers the 'latest' bounce to be the one with the highest version number,
@@ -300,19 +310,25 @@ class BounceParser:
             # ]
 
         Note:
-            This method does not consider the suffix when determining the 'latest' bounce.
-            If you need to distinguish between different suffixes, you may need to process
-            the results further.
+            If include_suffixed is False and there are no non-suffixed bounces for a particular day,
+            this method will use the latest suffixed bounce for that day.
         """
         bounces = cls.find_bounces(directory)
-        grouped_bounces: dict[tuple[int, int, int], Bounce] = {}
 
+        # Group bounces by day
+        by_day: dict[tuple[int, int, int], list[Bounce]] = {}
         for bounce in bounces:
             key = (bounce.year, bounce.month, bounce.day)
-            if key not in grouped_bounces or bounce.version > grouped_bounces[key].version:
-                grouped_bounces[key] = bounce
+            if key not in by_day:
+                by_day[key] = []
+            by_day[key].append(bounce)
 
-        return list(grouped_bounces.values())
+        # Get the latest bounce for each day
+        latest_bounces = [
+            cls.get_latest_bounce(day_bounces, include_suffixed) for day_bounces in by_day.values()
+        ]
+
+        return sorted(latest_bounces, key=lambda x: x.date)
 
     @classmethod
     def sort_bounces(cls, bounces: list[Bounce]) -> list[Bounce]:

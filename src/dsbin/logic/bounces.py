@@ -4,15 +4,33 @@
 
 from __future__ import annotations
 
-import argparse
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from dsbin.logic.bounce_parser import BounceParser
+from dsutil.argparser import ArgParser
+from dsutil.text import color
+
+from dsbin.logic.bounce_parser import Bounce, BounceParser
+
+if TYPE_CHECKING:
+    import argparse
+
+
+def print_bounce(bounce: Bounce) -> None:
+    """Print a bounce with color-coded components for easier visual parsing."""
+    title = color(bounce.title, "blue")
+    date = color(bounce.date.strftime("%y."), "blue")
+    date += color(bounce.date.strftime("%-m.%-d"), "green", attrs=["bold"])
+    version = color(f"_{bounce.full_version}", "green")
+    suffix = color(f" {bounce.suffix}", "green") if bounce.suffix else ""
+    ext = color(f".{bounce.file_format}", "blue")
+
+    print(f"{title} {date}{version}{suffix}{ext}")
 
 
 def list_bounces(args: argparse.Namespace) -> None:
     """List bounces, optionally filtered by various criteria."""
-    bounces = BounceParser.find_bounces(args.directory)
+    bounces = BounceParser.find_bounces(args.dir)
 
     if args.suffix:
         bounces = [b for b in bounces if b.suffix == args.suffix]
@@ -24,10 +42,7 @@ def list_bounces(args: argparse.Namespace) -> None:
     sorted_bounces = BounceParser.sort_bounces(bounces)
 
     for bounce in sorted_bounces:
-        suffix_str = f" {bounce.suffix}" if bounce.suffix else ""
-        print(
-            f"{bounce.title} {bounce.date.strftime('%y.%m.%d')}_{bounce.full_version}{suffix_str}.{bounce.file_format}"
-        )
+        print_bounce(bounce)
 
 
 def latest(args: argparse.Namespace) -> None:
@@ -37,31 +52,25 @@ def latest(args: argparse.Namespace) -> None:
     if args.per_day:
         latest_bounces = BounceParser.get_latest_per_day(args.directory, include_suffixed)
         for bounce in latest_bounces:
-            suffix_str = f" {bounce.suffix}" if bounce.suffix else ""
-            print(
-                f"{bounce.title} {bounce.date.strftime('%y.%m.%d')}_{bounce.full_version}{suffix_str}.{bounce.file_format}"
-            )
+            print_bounce(bounce)
     else:
         bounces = BounceParser.find_bounces(args.directory)
         latest_bounce = BounceParser.get_latest_bounce(bounces, include_suffixed)
-        suffix_str = f" {latest_bounce.suffix}" if latest_bounce.suffix else ""
-        print(
-            f"{latest_bounce.title} {latest_bounce.date.strftime('%y.%m.%d')}_{latest_bounce.full_version}{suffix_str}.{latest_bounce.file_format}"
-        )
+        print_bounce(latest_bounce)
 
 
-def main():
-    """Parse arguments and execute the appropriate command."""
-    parser = argparse.ArgumentParser(description="Work with Logic bounce files")
+def get_parser() -> argparse.ArgumentParser:
+    """Parse command-line arguments."""
+    parser = ArgParser(description="Work with Logic bounce files")
     parser.add_argument(
         "-d",
-        "--directory",
+        "--dir",
         type=Path,
         default=Path.cwd(),
         help="directory to search (default: current directory)",
     )
 
-    subparsers = parser.add_subparsers(dest="command", help="Command to execute")
+    subparsers = parser.add_subparsers(dest="command", help="command to execute")
 
     # List command
     list_parser = subparsers.add_parser("list", help="list bounces")
@@ -82,6 +91,12 @@ def main():
     )
     latest_parser.set_defaults(func=latest)
 
+    return parser
+
+
+def main():
+    """Parse arguments and execute the appropriate command."""
+    parser = get_parser()
     args = parser.parse_args()
 
     if hasattr(args, "func"):

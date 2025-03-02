@@ -88,6 +88,7 @@ wav2aif = "dsbin.music.awa:wav2aif"
 bipclean = "dsbin.logic.bipclean:main"
 bouncefiler = "dsbin.logic.bouncefiler:main"
 bounceprune = "dsbin.logic.bounceprune:main"
+bounces = "dsbin.logic.bounces:main"
 oldprojects = "dsbin.logic.oldprojects:main"
 
 # Mac-specific scripts

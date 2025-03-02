@@ -316,13 +316,14 @@ class BounceParser:
 
     @classmethod
     def sort_bounces(cls, bounces: list[Bounce]) -> list[Bounce]:
-        """Sort bounces by title, date, version, and minor version.
+        """Sort bounces by title, date, version, minor version, and suffix.
 
         The sorting order is as follows:
         1. Title (alphabetically)
         2. Date (chronologically)
         3. Version (numerically)
         4. Minor version (alphabetically, empty string before 'a')
+        5. Suffix (alphabetically, None before any suffix)
 
         Args:
             bounces: A list of Bounce objects to sort.
@@ -332,23 +333,28 @@ class BounceParser:
 
         Example:
             bounces = [
-                Bounce(title="Song B", year=24, month=5, day=15, version=1, minor_version="b", ...),
-                Bounce(title="Song A", year=24, month=5, day=15, version=1, minor_version="", ...),
-                Bounce(title="Song A", year=24, month=5, day=15, version=1, minor_version="a", ...),
-                Bounce(title="Song A", year=24, month=5, day=16, version=1, minor_version="", ...),
+                Bounce(title="Song A", year=24, month=5, day=1, version=1, suffix="No Vocals", ...),
+                Bounce(title="Song A", year=24, month=5, day=1, version=1, suffix=None, ...),
+                Bounce(title="Song B", year=24, month=5, day=1, version=1, minor_version="b"...),
+                Bounce(title="Song A", year=24, month=5, day=2, version=1, minor_version=""...),
             ]
             sorted_bounces = BounceParser.sort_bounces(bounces)
 
             # Result order:
-            # 1. Song A, 2024-05-15, version 1, no minor version
-            # 2. Song A, 2024-05-15, version 1, minor version 'a'
-            # 3. Song A, 2024-05-16, version 1, no minor version
-            # 4. Song B, 2024-05-15, version 1, minor version 'b'
+            # 1. Song A, 2024-05-01, version 1, no minor version, no suffix
+            # 2. Song A, 2024-05-01, version 1, no minor version, "No Vocals" suffix
+            # 3. Song A, 2024-05-02, version 1, no minor version, no suffix
+            # 4. Song B, 2024-05-01, version 1, minor version 'b', no suffix
         """
-        return sorted(bounces, key=lambda x: (x.title, x.date, x.version, x.minor_version or " "))
+        return sorted(
+            bounces,
+            key=lambda x: (x.title, x.date, x.version, x.minor_version or " ", x.suffix or ""),
+        )
 
     @classmethod
-    def group_bounces(cls, bounces: list[Bounce]) -> dict[tuple, dict[str, list[Bounce]]]:
+    def group_bounces(
+        cls, bounces: list[Bounce]
+    ) -> dict[tuple[str, datetime, int], dict[str, list[Bounce]]]:
         """Group bounces by title, date, major version, and suffix.
 
         This method creates a nested dictionary structure that groups Bounce objects first by their

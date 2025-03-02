@@ -5,18 +5,18 @@
 from __future__ import annotations
 
 import filecmp
-import os
 from collections import OrderedDict
+from pathlib import Path
 
 from dsutil.text import print_colored
 
-CHEZMOI_ENV = os.path.expanduser("~/.local/share/chezmoi/dot_local/bin/.env")
+CHEZMOI_ENV = Path.home() / ".local" / "share" / "chezmoi" / "dot_local" / "bin" / ".env"
 CHEZMOI_NAME = "Chezmoi .env"
-HOME_ENV = os.path.expanduser("~/.local/bin/.env")
+HOME_ENV = Path.home() / ".local" / "bin" / ".env"
 HOME_NAME = "Home .env"
 
 
-def read_env_file(file_path: str) -> OrderedDict[str, str]:
+def read_env_file(file_path: Path) -> OrderedDict[str, str]:
     """Read the content of a .env file and return it as an OrderedDict.
 
     Args:
@@ -25,9 +25,8 @@ def read_env_file(file_path: str) -> OrderedDict[str, str]:
     Returns:
         An ordered dictionary containing the key-value pairs from the .env file.
     """
-
     env_dict = OrderedDict()
-    with open(file_path, encoding="utf-8") as f:
+    with file_path.open(encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line and not line.startswith("#"):
@@ -36,19 +35,18 @@ def read_env_file(file_path: str) -> OrderedDict[str, str]:
     return env_dict
 
 
-def write_env_file(file_path: str, env_dict: OrderedDict[str, str]) -> None:
+def write_env_file(file_path: Path, env_dict: OrderedDict[str, str]) -> None:
     """Write the content to a .env file.
 
     Args:
         file_path: The path to the .env file to be written.
         env_dict: An ordered dictionary containing the key-value pairs to be written.
     """
-    with open(file_path, "w", encoding="utf-8") as f:
-        for key, value in env_dict.items():
-            f.write(f"{key}={value}\n")
+    with file_path.open("w", encoding="utf-8") as f:
+        f.writelines(f"{key}={value}\n" for key, value in env_dict.items())
 
 
-def sync_env_files(chezmoi_env: OrderedDict[str, str], home_env: OrderedDict[str, str]) -> bool:
+def sync_env_files(chezmoi_env: Path, home_env: Path) -> bool:
     """Synchronize two .env files by merging their content.
 
     This function reads two .env files, merges their contents, resolves conflicts if necessary, and
@@ -67,6 +65,8 @@ def sync_env_files(chezmoi_env: OrderedDict[str, str], home_env: OrderedDict[str
 
     env1 = read_env_file(chezmoi_env)
     env2 = read_env_file(home_env)
+
+    # ...existing code...
 
     merged_env = OrderedDict()
     changes = []

@@ -93,7 +93,7 @@ class BounceParser:
     logger = LocalLogger().get_logger()
 
     @classmethod
-    def get_bounce(cls, file_path: str | Path) -> Bounce:
+    def get_bounce(cls, file_path: Path) -> Bounce:
         """Parse a bounce filename and return a Bounce object.
 
         This method extracts information from the filename based on the expected pattern:
@@ -154,7 +154,7 @@ class BounceParser:
         )
 
     @classmethod
-    def find_bounces(cls, directory: str | Path, recursive: bool = False) -> list[Bounce]:
+    def find_bounces(cls, directory: Path, recursive: bool = False) -> list[Bounce]:
         """Find all bounce files in a directory and return a list of Bounce objects.
 
         This method searches the given directory for files that match the bounce filename pattern.
@@ -230,7 +230,7 @@ class BounceParser:
         return cls.sort_bounces(bounces)[-1]
 
     @classmethod
-    def get_from_day(cls, directory: str | Path, year: int, month: int, day: int) -> list[Bounce]:
+    def get_from_day(cls, directory: Path, year: int, month: int, day: int) -> list[Bounce]:
         """Get bounces from a specific day in the given directory.
 
         This method finds all bounce files in the directory and filters them to include only those
@@ -267,7 +267,7 @@ class BounceParser:
         return [bounce for bounce in bounces if bounce.date == target_date]
 
     @classmethod
-    def get_latest_per_day(cls, directory: str | Path) -> list[Bounce]:
+    def get_latest_per_day(cls, directory: Path) -> list[Bounce]:
         """Get the latest bounce per day from the given directory.
 
         This method considers the 'latest' bounce to be the one with the highest version number,
@@ -409,7 +409,7 @@ class BounceParser:
         return groups
 
     @classmethod
-    def filter_by_suffix(cls, directory: str | Path, suffix: str) -> list[Bounce]:
+    def filter_by_suffix(cls, directory: Path, suffix: str) -> list[Bounce]:
         """Filter bounces by suffix.
 
         This method is case-sensitive and matches the suffix exactly. If you need case-insensitive
@@ -445,7 +445,7 @@ class BounceParser:
         return [bounce for bounce in bounces if bounce.suffix == suffix]
 
     @classmethod
-    def filter_by_format(cls, directory: str | Path, file_format: str) -> list[Bounce]:
+    def filter_by_format(cls, directory: Path, file_format: str) -> list[Bounce]:
         """Filter bounces by file format.
 
         This method finds all bounce files in the directory and filters them to include only those

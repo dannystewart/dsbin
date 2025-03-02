@@ -304,7 +304,6 @@ class BounceParser:
             If you need to distinguish between different suffixes, you may need to process
             the results further.
         """
-
         bounces = cls.find_bounces(directory)
         grouped_bounces: dict[tuple[int, int, int], Bounce] = {}
 

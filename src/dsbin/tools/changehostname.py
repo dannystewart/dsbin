@@ -4,12 +4,12 @@
 
 from __future__ import annotations
 
-import os
 import re
 import shutil
 import socket
 import subprocess
 import sys
+from pathlib import Path
 
 from dsutil.shell import confirm_action, is_root_user, read_file_content, write_to_file
 from dsutil.text import print_colored
@@ -22,7 +22,7 @@ def get_current_hostname() -> str:
     print(f"Current hostname: {old_hostname}")
     print("Hostname command output: " + subprocess.check_output(["hostname"]).decode().strip())
 
-    if os.path.exists("/etc/hostname"):
+    if Path("/etc/hostname").exists():
         print("Contents of /etc/hostname: " + read_file_content("/etc/hostname"))
 
     return old_hostname
@@ -38,13 +38,13 @@ def run_hostname_command(new_hostname: str) -> None:
 
 def update_hostname_file(new_hostname: str) -> None:
     """Update the /etc/hostname file."""
-    if os.path.exists("/etc/hostname"):
+    if Path("/etc/hostname").exists():
         write_to_file("/etc/hostname", new_hostname)
 
 
 def update_hosts_file(old_hostname: str, new_hostname: str) -> None:
     """Update the /etc/hosts file."""
-    with open("/etc/hosts", "r+", encoding="utf-8") as hosts_file:
+    with Path("/etc/hosts", "r+").open(encoding="utf-8") as hosts_file:
         content = hosts_file.read()
         content = content.replace(old_hostname, new_hostname)
         hosts_file.seek(0)
@@ -53,9 +53,10 @@ def update_hosts_file(old_hostname: str, new_hostname: str) -> None:
 
 
 def validate_hostname(old_hostname: str, new_hostname: str) -> bool:
-    """Ensure that the new hostname is valid. The hostname must be between 1 and 253 characters long,
-    must not contain any invalid characters, and must not start or end with a hyphen. The new
-    hostname must also be different from the current hostname.
+    """Ensure that the new hostname is valid.
+
+    The hostname must be between 1 and 253 characters, must not contain any invalid characters, and
+    must not start or end with a hyphen. It must also be different from the current hostname.
 
     Args:
         old_hostname: The current hostname.

@@ -36,7 +36,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     """Main function."""
     args = parse_arguments()
 

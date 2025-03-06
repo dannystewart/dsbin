@@ -30,7 +30,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     """Convert a file to MP3."""
     args = parse_arguments()
     path = args.path

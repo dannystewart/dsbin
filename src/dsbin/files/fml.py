@@ -68,7 +68,7 @@ def upload_file(
     return response.status_code in {200, 201, 204}
 
 
-def main():
+def main() -> None:
     """Main function."""
     args = parse_arguments()
     username = os.environ.get("FASTMAIL_USERNAME")

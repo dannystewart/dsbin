@@ -81,7 +81,7 @@ def validate_tag_name(tag: str) -> bool:
 
 
 @handle_keyboard_interrupt()
-def main():
+def main() -> None:
     """Replace an existing Git tag with a new tag name and description."""
     tag = sys.argv[1].strip() if len(sys.argv) >= 2 else None
     new_tag = sys.argv[2].strip() if len(sys.argv) == 3 else None

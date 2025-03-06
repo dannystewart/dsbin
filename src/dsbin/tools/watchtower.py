@@ -43,7 +43,7 @@ def run_watchtower(run_once: bool, restart: bool, schedule: bool) -> None:
     subprocess.run(cmd, check=False)
 
 
-def main():
+def main() -> None:
     """Present menu for Watchtower options."""
     questions = [
         inquirer.List(

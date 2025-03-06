@@ -146,7 +146,7 @@ def kill_all_ssh_tunnels() -> None:
         logger.error("Failed to kill all SSH tunnels.")
 
 
-def main():
+def main() -> None:
     """Perform SSH action based on user input."""
     parser, args = parse_arguments()
 

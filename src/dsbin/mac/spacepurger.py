@@ -49,7 +49,7 @@ def format_space(amount: int) -> str:
     return f"{amount / factor:.2f} GB"
 
 
-def main():
+def main() -> None:
     """Main function."""
     if platform.system() != "Darwin":
         print(colored("This script can only be run on macOS.", "red"))

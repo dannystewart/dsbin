@@ -260,7 +260,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     """Main entry point for the script."""
     args = parse_arguments()
     ALACrity(args)

@@ -54,7 +54,7 @@ def determine_output_file(input_file: str, output_file: str) -> tuple[str, str, 
     return output_file, video_codec, audio_codec, metadata_flag
 
 
-def main():
+def main() -> None:
     """Trim the input video file."""
     parser = argparse.ArgumentParser(description="Trim a video file without re-encoding.")
     parser.add_argument("input_file", type=str, help="Input video file.")

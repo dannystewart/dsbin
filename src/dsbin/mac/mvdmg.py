@@ -59,7 +59,7 @@ def move_dmg_files(source_dir: str, dest_dir: str, remove_source_files: bool = F
                     print(f"Failed to move {source_file_path}: {e}")
 
 
-def main():
+def main() -> None:
     """Main function."""
     args = parse_arguments()
     try:

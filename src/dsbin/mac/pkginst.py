@@ -173,7 +173,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     """Install a PKG file using the macOS install utility."""
     args = parse_args()
 

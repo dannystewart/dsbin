@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from typing import Any
 
 import requests
 
@@ -37,8 +38,9 @@ class IPLookup:
 
     def perform_ip_lookup(self) -> None:
         """Fetch and print IP data from all sources."""
-        print(color(f"\nIP lookup results for {self.ip_address}:", "blue"))
+        print(color(f"Getting results for IP {self.ip_address}...", "cyan"))
 
+        no_data_sources = []
         for source, config in IP_SOURCES.items():
             result = self.get_ip_info(source)
             if not result:
@@ -48,7 +50,7 @@ class IPLookup:
             for key in config["data_path"]:
                 data = data.get(key, {})
             if not data:
-                print(f"\n{color(f'[{source}]', 'blue')} No data available.")
+                no_data_sources.append(source)
                 continue
 
             print_data = {}
@@ -63,7 +65,10 @@ class IPLookup:
 
             self.print_ip_data(source, **print_data)
 
-    def get_ip_info(self, source: str) -> dict | None:
+        if no_data_sources:
+            print(f"\n{color(f'No data available from: {", ".join(no_data_sources)}', 'blue')}")
+
+    def get_ip_info(self, source: str) -> dict[str, Any] | None:
         """Get the IP information from the source."""
         site_url = "https://www.iplocation.net/"
         url = f"{site_url}get-ipdata"
@@ -140,6 +145,10 @@ def main() -> None:
             return
     else:
         ip_address = args.ip_address or input("Please enter the IP address to look up: ")
+
+    if not ip_address:
+        print(color("No IP address provided.", "red"))
+        return
 
     IPLookup(ip_address)
 

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from dsutil import configure_traceback
 from dsutil.files import list_files
-from dsutil.media import ffmpeg_audio
+from dsutil.media import MediaManager
 from dsutil.text import color as colored
 
 configure_traceback()
@@ -39,7 +39,7 @@ def main() -> None:
     if path.is_dir():
         files_to_convert = list_files(path, exts=allowed_extensions)
     elif path.is_file() and path.suffix.lower() in allowed_extensions:
-        files_to_convert = [str(path)]
+        files_to_convert = [path]
     else:
         print(colored("Provided path is neither a supported file nor a directory.", "red"))
         sys.exit(1)
@@ -48,7 +48,7 @@ def main() -> None:
         print(colored("No files needing conversion.", "green"))
         sys.exit(0)
 
-    ffmpeg_audio(
+    MediaManager().ffmpeg_audio(
         input_files=files_to_convert, output_format="mp3", audio_bitrate="320k", show_output=True
     )
 

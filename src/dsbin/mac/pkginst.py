@@ -7,7 +7,7 @@ from __future__ import annotations
 import argparse
 import os
 import subprocess
-from glob import glob
+from pathlib import Path
 
 from dsutil import LocalLogger, configure_traceback
 from dsutil.files import delete_files
@@ -16,17 +16,17 @@ from dsutil.text import color
 
 configure_traceback()
 
-logger = LocalLogger().get_logger("pkginst")
+logger = LocalLogger().get_logger()
 
 
 def install_pkg(
-    pkg_paths: str | list,
+    pkg_paths: Path | list[Path],
     target: str = "/",
     from_dmg: bool = False,
     dmg_path: str | None = None,
     mount_point: str | None = None,
 ) -> bool:
-    """Install a .pkg file or a list of .pkg files on macOS using the installer command-line utility.
+    """Install a .pkg file or list of .pkg files on macOS using the installer command-line utility.
 
     Args:
         pkg_paths: Path to the .pkg file or list of paths to .pkg files to install.
@@ -38,12 +38,12 @@ def install_pkg(
     Returns:
         True if all installations were successful, False otherwise.
     """
-    if isinstance(pkg_paths, str):
+    if isinstance(pkg_paths, Path):
         pkg_paths = [pkg_paths]
 
     success = True
     for pkg_path in pkg_paths:
-        if not os.path.isfile(pkg_path):
+        if not Path(pkg_path).is_file():
             logger.error("Error: File '%s' does not exist.", pkg_path)
             success = False
             continue
@@ -67,8 +67,8 @@ def install_pkg(
 
 
 def install_pkg_from_dmg(dmg_path: str, pkg_name: str | None = None, target: str = "/") -> None:
-    """Mount a DMG file, installs the specified PKG file from inside it, and then unmount the DMG. If
-    no PKG name is specified, install the first PKG file found within the DMG.
+    """Mount a DMG file, installs the specified PKG file from inside it, and then unmount the DMG.
+    If no PKG name is specified, install the first PKG file found within the DMG.
 
     Args:
         dmg_path: Path to the .dmg file.
@@ -89,8 +89,8 @@ def install_pkg_from_dmg(dmg_path: str, pkg_name: str | None = None, target: str
             unmount_dmg(mount_point)
 
 
-def find_pkg_in_dmg(mount_point: str, pkg_name: str | None = None) -> str | None:
-    """Find the specified PKG file within the mounted DMG, or the first PKG file if no name is provided.
+def find_pkg_in_dmg(mount_point: str, pkg_name: str | None = None) -> Path | None:
+    """Find specified PKG file in the mounted DMG, or the first PKG file if no name is provided.
 
     Args:
         mount_point: The mount point of the DMG.
@@ -100,15 +100,15 @@ def find_pkg_in_dmg(mount_point: str, pkg_name: str | None = None) -> str | None
         The path to the PKG file if found, otherwise None.
     """
     if pkg_name:
-        pkg_path = os.path.join(mount_point, pkg_name)
-        if os.path.isfile(pkg_path):
+        pkg_path = Path(mount_point) / pkg_name
+        if Path(pkg_path).is_file():
             return pkg_path
         logger.error("Error: File '%s' does not exist.", pkg_path)
         return None
     for root, _, files in os.walk(mount_point):
         for file in files:
             if file.endswith(".pkg"):
-                return os.path.join(root, file)
+                return Path(root) / file
     return None
 
 
@@ -122,9 +122,13 @@ def mount_dmg(dmg_path: str) -> str | None:
         The mount point path, or None if there was an error.
     """
     try:
-        hdiutil_output = subprocess.check_output(
-            ["hdiutil", "attach", dmg_path, "-nobrowse", "-noverify"]
-        )
+        hdiutil_output = subprocess.check_output([
+            "hdiutil",
+            "attach",
+            dmg_path,
+            "-nobrowse",
+            "-noverify",
+        ])
         if mount_point := next(
             (
                 line.split(b"\t")[-1].decode("utf-8")
@@ -177,13 +181,14 @@ def main() -> None:
     """Install a PKG file using the macOS install utility."""
     args = parse_args()
 
-    for path in args.paths:
-        if "*" in path or "?" in path:
-            pkg_list = glob(path)
+    for path_str in args.paths:
+        path = Path(path_str)
+        if "*" in path_str or "?" in path_str:
+            pkg_list = list(Path().glob(path_str))
             install_pkg(pkg_list, args.target)
-        elif path.endswith(".dmg"):
-            install_pkg_from_dmg(path, args.dmg_pkg_name, args.target)
-        elif path.endswith(".pkg"):
+        elif path.suffix == ".dmg":
+            install_pkg_from_dmg(str(path), args.dmg_pkg_name, args.target)
+        elif path.suffix == ".pkg":
             install_pkg(path, args.target)
         else:
             logger.error("Unsupported file type: %s", path)

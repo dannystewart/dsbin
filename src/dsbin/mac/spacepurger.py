@@ -108,23 +108,15 @@ def create_large_file(filepath: Path, timeout: int = 5) -> None:
         spinner.text = "File created successfully"
 
 
-def purge_temp_files(directory: Path) -> bool:
-    """Remove the temporary files directory."""
+def cleanup_files(directory: Path, error: bool = False) -> None:
+    """Remove temporary files."""
     if directory.exists():
         try:
             shutil.rmtree(directory)
-            return True
-        except Exception:
-            return False
-    return True
-
-
-def cleanup_handler(directory: Path, signum: int = 0, frame: FrameType | None = None) -> None:  # noqa: ARG001
-    """Clean up temporary files when interrupted."""
-    if directory.exists():
-        try:
-            shutil.rmtree(directory)
-            logger.info("Temp files removed.")
+            if error:
+                logger.warning("Operation incomplete. Cleaning up temp files.")
+            else:
+                logger.info("Temp files removed.")
         except Exception:
             logger.warning(
                 "Failed to remove temporary files. Please remove %s manually.", directory
@@ -144,10 +136,6 @@ def main() -> None:
     # Create the directory if it doesn't already exist
     largefiles_dir.mkdir(exist_ok=True, parents=True)
 
-    # Create a simple handler that knows about our directory
-    def interrupt_handler(signum: int = 0, frame: FrameType | None = None) -> None:
-        cleanup_handler(largefiles_dir, signum, frame)
-
     # Get initial disk stats
     initial_free_space = get_free_space(filesystem_path)
     initial_percentage = get_disk_usage(filesystem_path)
@@ -162,12 +150,17 @@ def main() -> None:
         "Filling until only %s free space remains.", format_space_in_gb(min_free_space_bytes)
     )
 
-    # Main loop to fill the disk
+    # Main loop to fill the disk and track completion
     iteration = 1
+    completed_normally = False
+
+    # Define a keyboard interrupt handler for cleanup
+    def interrupt_handler(signum: int = 0, frame: FrameType | None = None) -> None:  # noqa: ARG001
+        cleanup_files(largefiles_dir, error=True)
 
     @handle_keyboard_interrupt(callback=interrupt_handler, use_newline=True, logger=logger)
     def fill_disk() -> None:
-        nonlocal iteration
+        nonlocal iteration, completed_normally
 
         while True:
             # Check if we've reached our target
@@ -179,6 +172,7 @@ def main() -> None:
                 logger.info(
                     "Target free space %s reached.", format_space_in_gb(min_free_space_bytes)
                 )
+                completed_normally = True
                 break
 
             # Generate a large file
@@ -197,11 +191,13 @@ def main() -> None:
             )
             iteration += 1
 
-    try:  # Fill the disk
-        fill_disk()
+    # Run the filling process
+    fill_disk()
 
-    finally:  # Always clean up
-        cleanup_handler(largefiles_dir)
+    # Only proceed with final steps if we completed normally
+    if completed_normally:
+        # Clean up files
+        cleanup_files(largefiles_dir)
 
         # Show final stats
         final_free_space = get_free_space(filesystem_path)

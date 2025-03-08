@@ -15,7 +15,6 @@ import contextlib
 import os
 import shutil
 import subprocess
-import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -120,19 +119,16 @@ def purge_temp_files(directory: Path) -> bool:
     return True
 
 
-def cleanup_handler(
-    directory: Path,
-    signum: int = 0,  # noqa: ARG001
-    frame: FrameType | None = None,  # noqa: ARG001
-    error: bool = False,
-) -> None:
-    """Handle Ctrl+C interrupt by cleaning up files."""
-    if purge_temp_files(directory):
-        logger.info("Temporary files have been successfully removed.")
-    else:
-        logger.warning("Failed to remove temporary files. Please remove %s manually.", directory)
-    if error:
-        sys.exit(1)
+def cleanup_handler(directory: Path, signum: int = 0, frame: FrameType | None = None) -> None:  # noqa: ARG001
+    """Clean up temporary files when interrupted."""
+    if directory.exists():
+        try:
+            shutil.rmtree(directory)
+            logger.info("Temp files removed.")
+        except Exception:
+            logger.warning(
+                "Failed to remove temporary files. Please remove %s manually.", directory
+            )
 
 
 def main() -> None:
@@ -148,9 +144,9 @@ def main() -> None:
     # Create the directory if it doesn't already exist
     largefiles_dir.mkdir(exist_ok=True, parents=True)
 
-    # Set up interrupt handler
-    def interrupt_handler(signum: int = 0, frame: FrameType | None = None) -> None:  # noqa: ARG001
-        return cleanup_handler(largefiles_dir, signum, frame, error=True)
+    # Create a simple handler that knows about our directory
+    def interrupt_handler(signum: int = 0, frame: FrameType | None = None) -> None:
+        cleanup_handler(largefiles_dir, signum, frame)
 
     # Get initial disk stats
     initial_free_space = get_free_space(filesystem_path)
@@ -169,7 +165,7 @@ def main() -> None:
     # Main loop to fill the disk
     iteration = 1
 
-    @handle_keyboard_interrupt(callback=interrupt_handler, logger=logger)
+    @handle_keyboard_interrupt(callback=interrupt_handler, use_newline=True, logger=logger)
     def fill_disk() -> None:
         nonlocal iteration
 

@@ -26,15 +26,12 @@ configure_traceback()
 FILE_SIZE_IN_GB = 1  # Size of each file to be written (in GB)
 MINIMUM_FREE_SPACE_IN_GB = 5  # Set a minimum threshold (in GB)
 
-
 # You probably don't need to adjust these
 PATH_TO_CREATE = "/tmp/large_file"  # Path to create the dummy file
 FS_TO_CHECK = "/"  # Path to check the file system
 GB_MULTIPLIER = 1024 * 1024 * 1024  # Multiplier to convert bytes to GB
 FILE_SIZE = FILE_SIZE_IN_GB * GB_MULTIPLIER  # Size converted from bytes to GB
-MINIMUM_FREE_SPACE = (
-    MINIMUM_FREE_SPACE_IN_GB * GB_MULTIPLIER
-)  # Minimum threshold converted from bytes to GB
+MINIMUM_FREE_SPACE = MINIMUM_FREE_SPACE_IN_GB * GB_MULTIPLIER  # Minimum threshold in GB
 
 
 def check_disk_usage(folder: str) -> int:

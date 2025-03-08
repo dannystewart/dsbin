@@ -27,22 +27,22 @@ Usage for setting timestamps:
 Usage for copying timestamps:
     timestamps --copy-from file1.txt --copy-to file2.txt
 
-Usage for copying timestamps for directores:
+Usage for copying timestamps for directories:
     timestamps --src-dir ./folder1 --dst-dir ./folder2
 """
 
 from __future__ import annotations
 
-import os
 import sys
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from dsutil import configure_traceback
 from dsutil.argparser import ArgInfo, ArgParser, ArgumentsBase
 from dsutil.macos import get_timestamps, set_timestamps
 from dsutil.shell import catch_errors
-from dsutil.text import color
+from dsutil.text import ColorName, color
 
 if TYPE_CHECKING:
     import argparse
@@ -83,7 +83,7 @@ class TimestampArguments(ArgumentsBase):
 
 @catch_errors()
 def set_times(
-    file: str,
+    file: Path,
     ctime: str | None = None,
     mtime: str | None = None,
     ctime_to_mtime: bool = False,
@@ -97,6 +97,9 @@ def set_times(
         mtime: The modification timestamp to set.
         ctime_to_mtime: Copy creation time to modification time.
         mtime_to_ctime: Copy modification time to creation time.
+
+    Raises:
+        ValueError: If both ctime_to_mtime and mtime_to_ctime are specified.
     """
     if ctime_to_mtime and mtime_to_ctime:
         msg = "You cannot copy creation time and modification time to each other."
@@ -115,14 +118,16 @@ def set_times(
 
 @catch_errors()
 def get_times(
-    file: str,
+    file: Path,
     message: str = "File timestamps",
-    color_name: str = "yellow",
+    color_name: ColorName = "yellow",
     ctime: str | None = None,
     mtime: str | None = None,
 ) -> None:
-    """Get and print timestamps for the specified file with a given message and color. If you supply a
-    ctime and mtime as arguments, it will just print with those times instead of checking the file.
+    """Get and print timestamps for the specified file with a given message and color.
+
+    If you supply a ctime and mtime as arguments, it will just print with those times instead of
+    checking the file.
 
     Args:
         file: The file to get timestamps for.
@@ -130,6 +135,9 @@ def get_times(
         color_name: The color for the message.
         ctime: The creation timestamp to display if you just want to print it.
         mtime: The modification timestamp to display if you just want to print it.
+
+    Raises:
+        ValueError: If only one of ctime or mtime is specified.
     """
     if not ctime and not mtime:
         ctime, mtime = get_timestamps(file)
@@ -143,7 +151,7 @@ def get_times(
 
 
 @catch_errors()
-def copy_times(from_file: str, to_file: str) -> None:
+def copy_times(from_file: Path, to_file: Path) -> None:
     """Copy timestamps from one file to another.
 
     Args:
@@ -156,22 +164,23 @@ def copy_times(from_file: str, to_file: str) -> None:
 
 
 @catch_errors()
-def copy_times_between_directories(src_dir: str, dst_dir: str) -> None:
-    """Copy timestamps from files in a directory to matching files in another directory with identical
-    names (minus extension).
+def copy_times_between_directories(src_dir: Path, dst_dir: Path) -> None:
+    """Copy timestamps from files in a directory to matching files in another directory with
+    identical names (minus extension).
 
     Args:
         src_dir: The source directory to copy timestamps from.
         dst_dir: The destination directory to copy timestamps to.
     """
-    for src_filename in os.listdir(src_dir):
-        src_file_path = os.path.join(src_dir, src_filename)
-        if os.path.isfile(src_file_path):
-            base_name, _ = os.path.splitext(src_filename)
-            for dst_filename in os.listdir(dst_dir):
-                dst_file_path = os.path.join(dst_dir, dst_filename)
-                if os.path.isfile(dst_file_path) and os.path.splitext(dst_filename)[0] == base_name:
-                    copy_times(src_file_path, dst_file_path)
+    src_path = Path(src_dir)
+    dst_path = Path(dst_dir)
+
+    for src_file in src_path.iterdir():
+        if src_file.is_file():
+            base_name = src_file.stem
+            for dst_file in dst_path.iterdir():
+                if dst_file.is_file() and dst_file.stem == base_name:
+                    copy_times(str(src_file), str(dst_file))
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -190,6 +199,9 @@ def main() -> None:
     """Copy, set, or get file timestamps."""
     args = parse_arguments()
 
+    if args.file:
+        file = Path(args.file)
+
     if args.src_dir and args.dst_dir:
         copy_times_between_directories(args.src_dir, args.dst_dir)
     elif args.from_file and args.to_file:
@@ -207,7 +219,7 @@ def main() -> None:
         or args.mtime_to_ctime
     ):
         set_times(
-            args.file,
+            file,
             ctime=args.creation,
             mtime=args.modification,
             ctime_to_mtime=args.ctime_to_mtime,

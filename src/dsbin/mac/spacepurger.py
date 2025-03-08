@@ -10,107 +10,213 @@ script is a workaround to force it to clean up without having to reboot.
 
 from __future__ import annotations
 
+import argparse
+import contextlib
 import os
-import platform
 import shutil
+import subprocess
 import sys
 from pathlib import Path
+from typing import TYPE_CHECKING
 
-from dsutil import configure_traceback
+from dsutil import LocalLogger, configure_traceback
 from dsutil.progress import halo_progress
-from dsutil.text import color as colored
+from dsutil.shell import handle_keyboard_interrupt
+
+if TYPE_CHECKING:
+    from types import FrameType
 
 configure_traceback()
 
-# Sizes (in GB)
-FILE_SIZE_IN_GB = 1  # Size of each file to be written (in GB)
-MINIMUM_FREE_SPACE_IN_GB = 5  # Set a minimum threshold (in GB)
+logger = LocalLogger().get_logger()
 
-# You probably don't need to adjust these
-PATH_TO_CREATE = "/tmp/large_file"  # Path to create the dummy file
-FS_TO_CHECK = "/"  # Path to check the file system
-GB_MULTIPLIER = 1024 * 1024 * 1024  # Multiplier to convert bytes to GB
-FILE_SIZE = FILE_SIZE_IN_GB * GB_MULTIPLIER  # Size converted from bytes to GB
-MINIMUM_FREE_SPACE = MINIMUM_FREE_SPACE_IN_GB * GB_MULTIPLIER  # Minimum threshold in GB
+# macOS becomes unstable with less than 20GB of free space
+MIN_FREE_SPACE_GB = 20
 
 
-def check_disk_usage(folder: str) -> int:
-    """Return folder/drive free space (in bytes)."""
-    _, _, free = shutil.disk_usage(folder)
+def parse_args() -> argparse.Namespace:
+    """Parse command line arguments."""
+    parser = argparse.ArgumentParser(
+        description="Fill disk until minimum free space to force macOS to free purgeable space"
+    )
+    parser.add_argument(
+        "-s",
+        "--space",
+        type=float,
+        default=MIN_FREE_SPACE_GB,
+        help=f"minimum free space in GB to maintain (default: {MIN_FREE_SPACE_GB})",
+    )
+    parser.add_argument(
+        "-d",
+        "--directory",
+        type=str,
+        default="/tmp/largefiles",
+        help="directory to store temp files (default: /tmp/largefiles)",
+    )
+    parser.add_argument(
+        "-p",
+        "--path",
+        type=str,
+        default="/System/Volumes/Data",
+        help="path to check disk usage (default: /System/Volumes/Data)",
+    )
+    args = parser.parse_args()
+
+    # Ensure minimum free space for safety
+    if args.space < MIN_FREE_SPACE_GB:
+        logger.warning(
+            "Minimum free space set below safe threshold. Using %s GB instead.", MIN_FREE_SPACE_GB
+        )
+        args.space = MIN_FREE_SPACE_GB
+
+    return args
+
+
+def format_space_in_gb(bytes_amount: int) -> str:
+    """Format bytes into a human-readable GB value."""
+    return f"{bytes_amount / (1024 * 1024 * 1024):.2f} GB"
+
+
+def get_free_space(path: Path) -> int:
+    """Get free space in bytes for the specified path."""
+    _, _, free = shutil.disk_usage(path)
     return free
 
 
-def format_space(amount: int) -> str:
-    """Helper function to convert bytes to GB and format the output."""
-    factor = 1024 * 1024 * 1024
-    return f"{amount / factor:.2f} GB"
+def get_disk_usage(path: Path) -> int:
+    """Get the current disk usage percentage for the specified path."""
+    result = subprocess.run(["df", "-k", path], capture_output=True, text=True, check=False)
+    lines = result.stdout.strip().split("\n")
+    if len(lines) >= 2:  # Extract percentage and remove '%' character
+        usage = lines[1].split()[4].replace("%", "")
+        return int(usage)
+    return 0
+
+
+def create_large_file(filepath: Path, timeout: int = 5) -> None:
+    """Create a large file using /dev/random with timeout."""
+    with (
+        contextlib.suppress(subprocess.TimeoutExpired),
+        halo_progress(start_message="Creating file...", end_message="File created") as spinner,
+    ):
+        subprocess.run(
+            ["dd", "if=/dev/random", f"of={filepath}", "bs=15m"],
+            timeout=timeout,
+            stderr=subprocess.DEVNULL,
+            check=False,
+        )
+        os.sync()  # Flush filesystem buffers
+        spinner.text = "File created successfully"
+
+
+def purge_temp_files(directory: Path) -> bool:
+    """Remove the temporary files directory."""
+    if directory.exists():
+        try:
+            shutil.rmtree(directory)
+            return True
+        except Exception:
+            return False
+    return True
+
+
+def cleanup_handler(
+    directory: Path,
+    signum: int = 0,  # noqa: ARG001
+    frame: FrameType | None = None,  # noqa: ARG001
+    error: bool = False,
+) -> None:
+    """Handle Ctrl+C interrupt by cleaning up files."""
+    if purge_temp_files(directory):
+        logger.info("Temporary files have been successfully removed.")
+    else:
+        logger.warning("Failed to remove temporary files. Please remove %s manually.", directory)
+    if error:
+        sys.exit(1)
 
 
 def main() -> None:
-    """Main function."""
-    if platform.system() != "Darwin":
-        print(colored("This script can only be run on macOS.", "red"))
-        sys.exit(1)
+    """Fill disk to force macOS to free purgeable space."""
+    args = parse_args()
 
-    try:
-        free_space_before = check_disk_usage(FS_TO_CHECK)
-        print(f"Initial free space: {format_space(free_space_before)}")
+    min_free_space_gb = args.space
+    min_free_space_bytes = min_free_space_gb * (1024 * 1024 * 1024)
 
-        file_count = 0
-        files_to_remove = []
+    filesystem_path = Path(args.path)
+    largefiles_dir = Path(args.directory)
 
-        # While we have more free space than our minimum threshold, keep creating files
-        while free_space_before > MINIMUM_FREE_SPACE + FILE_SIZE:
-            # Create a uniquely named large file for each iteration
-            filename = f"{PATH_TO_CREATE}_{file_count}.tmp"
-            files_to_remove.append(filename)
-            with halo_progress(
-                start_message="Creating file...",
-                end_message=f"File created (free space: {format_space(free_space_before)})",
-            ) as spinner:
-                # Create a large file with urandom for speed and non-redundancy
-                with Path(filename).open("wb") as f:
-                    f.write(os.urandom(FILE_SIZE))
-                os.sync()  # Flush the filesystem buffers  # type: ignore
+    # Create the directory if it doesn't already exist
+    largefiles_dir.mkdir(exist_ok=True, parents=True)
 
-                free_space_before = check_disk_usage(FS_TO_CHECK)
-                spinner.text = f"File created. (Free space: {format_space(free_space_before)})"
+    # Set up interrupt handler
+    def interrupt_handler(signum: int = 0, frame: FrameType | None = None) -> None:  # noqa: ARG001
+        return cleanup_handler(largefiles_dir, signum, frame, error=True)
 
-                # If the free space is below the threshold, break
-                if free_space_before <= MINIMUM_FREE_SPACE:
-                    print(
-                        colored(
-                            f"Minimum free space reached: {format_space(free_space_before)}", "red"
-                        )
-                    )
-                    break
+    # Get initial disk stats
+    initial_free_space = get_free_space(filesystem_path)
+    initial_percentage = get_disk_usage(filesystem_path)
 
-            file_count += 1
+    logger.info(
+        "Initial disk state: %s%% full (%s free).",
+        initial_percentage,
+        format_space_in_gb(initial_free_space),
+    )
 
-        # Now delete all temporary files
-        for filepath in files_to_remove:
-            path = Path(filepath)
-            if path.exists():
-                path.unlink()
-        print(colored("All temporary files removed.", "green"))
+    logger.info(
+        "Filling until only %s free space remains.", format_space_in_gb(min_free_space_bytes)
+    )
 
-        # Check the final amount of free space
-        free_space_after = check_disk_usage(FS_TO_CHECK)
-        print(f"Free space after cleanup: {format_space(free_space_after)}")
+    # Main loop to fill the disk
+    iteration = 1
 
-    except KeyboardInterrupt:
-        print(colored("Keyboard interrupt detected. Cleaning up temporary files...", "red"))
+    @handle_keyboard_interrupt(callback=interrupt_handler, logger=logger)
+    def fill_disk() -> None:
+        nonlocal iteration
 
-    except Exception as e:
-        print(colored(f"An error occurred: {e}", "red"))
+        while True:
+            # Check if we've reached our target
+            current_free_space = get_free_space(filesystem_path)
+            current_percentage = get_disk_usage(filesystem_path)
 
-    finally:  # Always clean up, even if something goes wrong
-        for filepath in files_to_remove:
-            path = Path(filepath)
-            if path.exists():
-                path.unlink()
-        print(colored("Temporary files cleaned up.", "red"))
+            # Stop condition
+            if current_free_space <= min_free_space_bytes:
+                logger.info(
+                    "Target free space %s reached.", format_space_in_gb(min_free_space_bytes)
+                )
+                break
 
+            # Generate a large file
+            filepath = largefiles_dir / f"largefile{iteration}"
+            create_large_file(filepath)
 
-if __name__ == "__main__":
-    main()
+            # Update usage stats
+            current_free_space = get_free_space(filesystem_path)
+            current_percentage = get_disk_usage(filesystem_path)
+
+            logger.info(
+                "File %s created, disk is now %s%% full (%s free)",
+                iteration,
+                current_percentage,
+                format_space_in_gb(current_free_space),
+            )
+            iteration += 1
+
+    try:  # Fill the disk
+        fill_disk()
+
+    finally:  # Always clean up
+        cleanup_handler(largefiles_dir)
+
+        # Show final stats
+        final_free_space = get_free_space(filesystem_path)
+        final_percentage = get_disk_usage(filesystem_path)
+        space_freed = final_free_space - initial_free_space
+
+        if space_freed > 0:
+            logger.info("Successfully freed %s of space!", format_space_in_gb(space_freed))
+
+        logger.info(
+            "All done! Disk is now %s%% full (%s free)",
+            final_percentage,
+            format_space_in_gb(final_free_space),
+        )

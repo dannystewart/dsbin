@@ -34,18 +34,18 @@ dependencies = [
     "tqdm>=4.67.1",
     "types-paramiko>=3.5.0.20240928",
     "types-pillow>=10.2.0.20240822",
-    "types-requests (>=2.32.0.20250301)",
+    "types-requests (>=2.32.0.20250306)",
 ]
 
 [project.optional-dependencies]
-dev = ["mypy (>=1.15.0)", "ruff (>=0.9.9)"]
+dev = ["mypy (>=1.15.0)", "ruff (>=0.9.10)"]
 
 [tool.poetry]
 packages = [{ include = "dsbin", from = "src" }]
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.15.0"
-ruff = ">=0.9.9"
+ruff = ">=0.9.10"
 
 [project.scripts]
 # Scripts to list all my scripts and check versions

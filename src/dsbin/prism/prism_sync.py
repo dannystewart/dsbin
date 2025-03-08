@@ -203,24 +203,33 @@ def sync_workspace_files(source_root: Path) -> None:
 
         # Only update if there are actual changes
         if new_settings != target_data["settings"]:
-            new_data = target_data.copy()
-            new_data["settings"] = new_settings
-
-            # Show diff of changes
-            current = json_dumps(target_data, indent=4)
-            new = json_dumps(new_data, indent=4)
-
-            show_diff(current, new, target_file.name)
-
-            if confirm_action(f"Update {target_file.name}?", prompt_color="yellow"):
-                target_file.write_text(json_dumps(new_data, indent=4) + "\n")
-                logger.info("Workspace file updated in %s", source_root)
+            _perform_workspace_sync(target_data, new_settings, target_file, source_root)
         else:
             logger.info("✔ Workspaces in sync")
 
     except Exception as e:
         logger.error("Unexpected error processing workspace files: %s", e)
         logger.debug("Error details:", exc_info=True)
+
+
+def _perform_workspace_sync(
+    target_data: dict[str, dict[str, str]],
+    new_settings: dict[str, str],
+    target_file: Path,
+    source_root: Path,
+):
+    new_data = target_data.copy()
+    new_data["settings"] = new_settings
+
+    # Show diff of changes
+    current = json_dumps(target_data, indent=4)
+    new = json_dumps(new_data, indent=4)
+
+    show_diff(current, new, target_file.name)
+
+    if confirm_action(f"Update {target_file.name}?", prompt_color="yellow"):
+        target_file.write_text(json_dumps(new_data, indent=4) + "\n")
+        logger.info("Workspace file updated in %s", source_root)
 
 
 def get_changed_files(
@@ -244,7 +253,7 @@ def get_changed_files(
             yield source_path, target_path
 
 
-@handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
+@handle_keyboard_interrupt(message="Sync interrupted by user.", logger=logger)
 def sync_file(source: Path, target: Path) -> bool:
     """Sync a single file, showing diff if text file."""
     if not source.exists():
@@ -295,7 +304,7 @@ def sync_file(source: Path, target: Path) -> bool:
     return False
 
 
-@handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
+@handle_keyboard_interrupt(message="Sync interrupted by user.", logger=logger)
 def sync_directory(source_dir: Path, target_dir: Path) -> list[str]:
     """Sync a directory, returning list of changed files."""
     changed_files = []
@@ -329,7 +338,7 @@ def sync_directory(source_dir: Path, target_dir: Path) -> list[str]:
     return changed_files
 
 
-@handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
+@handle_keyboard_interrupt(message="Sync interrupted by user.", logger=logger)
 def sync_instances(source_root: Path, target_root: Path) -> None:
     """Sync specified directories and files between instances."""
     changes_made = []
@@ -363,7 +372,7 @@ def sync_instances(source_root: Path, target_root: Path) -> None:
         logger.info("✔ Files in sync")
 
 
-@handle_keyboard_interrupt(message="Sync interrupted by user.", use_logging=True)
+@handle_keyboard_interrupt(message="Sync interrupted by user.", logger=logger)
 def main() -> None:
     """Sync files between prod and dev instances."""
     if confirm_action("Perform sync from dev to prod?", prompt_color="blue"):

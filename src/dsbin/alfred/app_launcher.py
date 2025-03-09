@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from __future__ import annotations
 
 import subprocess
@@ -40,7 +42,7 @@ class AppLauncher:
 
         with Pool() as pool:
             try:
-                results = pool.map(self.open_app, apps_to_open)
+                results = pool.map_async(self.open_app, apps_to_open).get(timeout=30)
 
                 launched_apps = sum(results)
                 if launched_apps != len(apps_to_open):
@@ -69,58 +71,44 @@ class AppLauncher:
 
     def identify_app(self, app_name: str) -> Path:
         """Find the full path of an app given its name."""
-        for location in self.APP_LOCATIONS:
-            try:
-                return self.find_app_location(app_name, location)
-            except FileNotFoundError:
-                continue
-
-        sys.stdout.write(f"Warning: Could not find app '{app_name}'\n")
-        return Path()
-
-    @staticmethod
-    def find_app_location(app_name: str, location: str) -> Path:
-        """Find the full path of an app given its name.
-
-        Args:
-            app_name: The name of the app to find.
-            location: The directory to search in.
-
-        Raises:
-            FileNotFoundError: If the app is not found in the specified location.
-        """
         app_name_lower = app_name.lower()
-        location_path = Path(location)
         exact_match: Path | None = None
         substring_match: Path | None = None
 
-        # Only get immediate children of the location directory
-        for item in location_path.iterdir():
-            if item.is_dir() and item.name.lower().endswith(".app"):
-                dir_name_lower = item.name.lower()
+        for location in self.APP_LOCATIONS:
+            location_path = Path(location)
 
-                # Exact match including ".app"
-                if dir_name_lower == f"{app_name_lower}.app":
-                    return item
+            # Only get immediate children of the location directory
+            for item in location_path.iterdir():
+                if item.is_dir() and item.name.lower().endswith(".app"):
+                    dir_name_lower = item.name.lower()
 
-                # Exact match without ".app"
-                if dir_name_lower == app_name_lower:
-                    exact_match = item
+                    # Exact match including ".app"
+                    if dir_name_lower == f"{app_name_lower}.app":
+                        return item
 
-                # Substring match
-                if not exact_match and app_name_lower in dir_name_lower:
-                    substring_match = item
+                    # Exact match without ".app"
+                    if dir_name_lower == app_name_lower:
+                        exact_match = item
+
+                    # Substring match
+                    if not exact_match and app_name_lower in dir_name_lower:
+                        substring_match = item
 
         if exact_match:
             return exact_match
         if substring_match:
             return substring_match
 
-        msg = f"Could not find app '{app_name}' in {location}"
-        raise FileNotFoundError(msg)
+        sys.stdout.write(f"Warning: Could not find app '{app_name}'\n")
+        return Path()
 
 
 def main() -> None:
     """Open the apps based on the query."""
     query = sys.argv[1] if len(sys.argv) > 1 else ""
     AppLauncher().launch(query)
+
+
+if __name__ == "__main__":
+    main()

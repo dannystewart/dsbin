@@ -129,7 +129,7 @@ class DMGCreator:
             intermediary_folder.mkdir()
 
             with halo_progress(
-                filename=folder_path.name,
+                folder_path.name,
                 start_message="Creating temporary copy of folder:",
                 end_message="Created temporary copy of folder:",
                 fail_message="Failed to copy folder:",
@@ -137,7 +137,7 @@ class DMGCreator:
                 self._rsync_folder(folder_path, intermediary_folder)
 
             with halo_progress(
-                filename=folder_name,
+                folder_name,
                 start_message="Creating sparseimage for",
                 end_message="Created sparseimage for",
                 fail_message="Failed to create sparseimage for",
@@ -145,7 +145,7 @@ class DMGCreator:
                 self._create_sparseimage(folder_name, intermediary_folder)
 
             with halo_progress(
-                filename=folder_name,
+                folder_name,
                 start_message="Creating DMG for",
                 end_message="Created DMG for",
                 fail_message="Failed to create DMG for",

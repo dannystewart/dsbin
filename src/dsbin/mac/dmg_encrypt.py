@@ -78,7 +78,7 @@ def encrypt_dmg(source_dmg: Path, output_dmg: Path, passphrase: str, replace: bo
         mount_point.mkdir()
 
         with halo_progress(
-            filename=source_dmg.name,
+            source_dmg.name,
             start_message="Mounting DMG:",
             end_message="Mounted DMG:",
             fail_message="Failed to mount DMG:",
@@ -97,7 +97,7 @@ def encrypt_dmg(source_dmg: Path, output_dmg: Path, passphrase: str, replace: bo
 
         try:
             with halo_progress(
-                filename=output_dmg.name,
+                output_dmg.name,
                 start_message="Encrypting DMG:" if replace else "Creating encrypted DMG:",
                 end_message="Encrypted DMG:" if replace else "Created encrypted DMG:",
                 fail_message="Failed to create encrypted DMG",
@@ -132,7 +132,7 @@ def encrypt_dmg(source_dmg: Path, output_dmg: Path, passphrase: str, replace: bo
 
         finally:
             with halo_progress(
-                filename=output_dmg.name if replace else source_dmg.name,
+                output_dmg.name if replace else source_dmg.name,
                 start_message="Unmounting DMG:",
                 end_message="Unmounted DMG:",
                 fail_message="Failed to unmount DMG",

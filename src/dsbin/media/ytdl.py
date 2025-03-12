@@ -61,7 +61,7 @@ def main() -> None:
     else:
         target_filename = clean_filename
 
-    with halo_progress(filename=clean_filename):
+    with halo_progress(clean_filename):
         ffmpeg_video(
             input_files=original_filename,
             output_format="mp4",

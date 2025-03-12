@@ -361,7 +361,7 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "dsutil"
-version = "1.10.1"
+version = "1.10.2"
 description = "Personal Python utility library"
 optional = false
 python-versions = ">=3.12"
@@ -390,7 +390,7 @@ dev = ["mypy (>=1.15.0)", "ruff (>=0.9.10)"]
 type = "git"
 url = "https://gitlab.dannystewart.com/danny/dsutil.git"
 reference = "HEAD"
-resolved_reference = "ab9fa673f9254b5f535e3e722e528be68a661b54"
+resolved_reference = "baf49ecd0927098674d760f65f8019e02b46308b"
 
 [[package]]
 name = "editor"

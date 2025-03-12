@@ -84,7 +84,7 @@ class MusicShare:
                         settings.filename = Path(custom_filename)
 
                 with halo_progress(
-                    filename=str(settings.filename),
+                    str(settings.filename),
                     start_message=settings.message,
                     end_message=settings.completion_message,
                     fail_message="Failed",

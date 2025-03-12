@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.metadata
 import subprocess
 from dataclasses import dataclass
 from typing import ClassVar
@@ -36,6 +37,13 @@ class DSPackageUpdater(UpdateManager):
         ),
     }
 
+    def _get_installed_version(self, package: str) -> str | None:
+        """Get the currently installed version of a package."""
+        try:
+            return importlib.metadata.version(package)
+        except importlib.metadata.PackageNotFoundError:
+            return None
+
     def _get_latest_version(self, package: str) -> str | None:
         """Get latest version from GitLab."""
         gitlab_base = "https://gitlab.dannystewart.com/danny"
@@ -70,15 +78,28 @@ class DSPackageUpdater(UpdateManager):
     @handle_keyboard_interrupt()
     def perform_update_stages(self) -> None:
         """Update pip itself, then update all installed packages."""
+        # Get current package versions before uninstalling
+        dsbin_old = self._get_installed_version("dsbin")
+        dsutil_old = self._get_installed_version("dsutil")
+
+        # Uninstall the existing packages to ensure a clean install
         self.run_stage("uninstall")
 
         # Get latest package version numbers
-        dsbin_version = self._get_latest_version("dsbin")
-        dsutil_version = self._get_latest_version("dsutil")
+        dsbin_new = self._get_latest_version("dsbin")
+        dsutil_new = self._get_latest_version("dsutil")
 
-        # Formulate end message with available version numbers
-        dsbin_str = f"dsbin {dsbin_version}" if dsbin_version else "dsbin"
-        dsutil_str = f" and dsutil {dsutil_version}" if dsutil_version else ""
+        # Formulate the end message with the version information
+        if dsbin_old and dsbin_new and dsbin_old != dsbin_new:
+            dsbin_str = f"dsbin {dsbin_old} -> {dsbin_new}"
+        else:
+            dsbin_str = f"dsbin {dsbin_new}" if dsbin_new else "dsbin"
+
+        if dsutil_old and dsutil_new and dsutil_old != dsutil_new:
+            dsutil_str = f" and dsutil {dsutil_old} -> {dsutil_new}"
+        else:
+            dsutil_str = f" and dsutil {dsutil_new}" if dsutil_new else ""
+
         end_message = f"{dsbin_str}{dsutil_str} installed successfully!"
 
         self.update_stages["install"].end_message = end_message

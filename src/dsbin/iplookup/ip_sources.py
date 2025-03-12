@@ -4,6 +4,7 @@ from typing import Any
 
 from dsutil.text import Text
 
+# IP lookup sources and their data paths and fields
 IP_SOURCES: dict[str, dict[str, Any]] = {
     "ip2location": {
         "data_path": ["res"],
@@ -85,4 +86,28 @@ IP_SOURCES: dict[str, dict[str, Any]] = {
             "org": "org_name",
         },
     },
+}
+
+# Variations of United States country names to be standardized
+USA_NAMES: set[str] = {
+    "us",
+    "usa",
+    "united states",
+    "united states of america",
+}
+
+# Variations of Washington, D.C. region names to be standardized
+REGION_NAMES: set[str] = {
+    "washington, d.c.",
+    "district of columbia",
+    "d.c.",
+    "dc",
+}
+
+# Variations of city names to be standardized
+CITY_NAMES: set[str] = {
+    "washington d.c.",
+    "washington d.c. (northeast washington)",
+    "washington d.c. (northwest washington)",
+    "new york city",
 }

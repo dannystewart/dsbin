@@ -100,7 +100,7 @@ class DSPackageUpdater(UpdateManager):
         else:
             dsutil_str = f" and dsutil {dsutil_new}" if dsutil_new else ""
 
-        end_message = f"{dsbin_str}{dsutil_str} installed successfully!"
+        end_message = f"Installed {dsbin_str}{dsutil_str} successfully!"
 
         self.update_stages["install"].end_message = end_message
         self.run_stage("install")

@@ -16,7 +16,7 @@ import argparse
 import json
 import operator
 from collections import Counter
-from typing import Any
+from typing import Any, ClassVar
 
 import pycountry
 import requests
@@ -33,6 +33,9 @@ MAX_RETRIES = 3
 
 class IPLookup:
     """Perform an IP lookup using multiple sources."""
+
+    # Omit these values entirely if they start with "Unknown"
+    OMIT_UNKNOWN: ClassVar[set[str]] = {"region", "isp", "org"}
 
     def __init__(self, ip_address: str, do_lookup: bool = True):
         self.ip_address: str = ip_address
@@ -90,7 +93,7 @@ class IPLookup:
 
             # If empty or starts with "Unknown", set it to an empty string for formatting
             if not retrieved_value or retrieved_value.startswith("Unknown"):
-                retrieved_value = "" if key in {"isp", "org"} else f"Unknown {key.capitalize()}"
+                retrieved_value = "" if key in self.OMIT_UNKNOWN else f"Unknown {key.capitalize()}"
 
             formatted_data[key] = retrieved_value
 
@@ -135,7 +138,18 @@ class IPLookup:
         region, city = self.standardize_region_and_city(region, city)
         isp_org = self.standardize_isp_and_org(isp, org)
 
-        formatted_data = {"source": source, "location": f"{city}, {region}, {country}"}
+        # Build location string based on available data
+        location_parts = []
+        if city:
+            location_parts.append(city)
+        if region:
+            location_parts.append(region)
+        if country:
+            location_parts.append(country)
+
+        location = ", ".join(location_parts) if location_parts else "Unknown Location"
+
+        formatted_data = {"source": source, "location": location}
         if isp_org:
             formatted_data["ISP_Org"] = isp_org
 
@@ -158,8 +172,7 @@ class IPLookup:
         for line, count in sorted_locations:
             if count > 1:
                 print(f"• {color(f'{count} sources:', 'blue')} {line}")
-            else:
-                # Find the source for this unique result
+            else:  # Find the source for this unique result
                 source = next(
                     r["source"]
                     for r in results

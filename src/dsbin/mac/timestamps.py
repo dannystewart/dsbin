@@ -34,12 +34,11 @@ Usage for copying timestamps for directories:
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
 from pathlib import Path
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING
 
 from dsutil import configure_traceback
-from dsutil.argparser import ArgInfo, ArgParser, ArgumentsBase
+from dsutil.argparser import ArgParser
 from dsutil.macos import get_timestamps, set_timestamps
 from dsutil.shell import catch_errors
 from dsutil.text import ColorName, color
@@ -48,37 +47,6 @@ if TYPE_CHECKING:
     import argparse
 
 configure_traceback()
-
-
-@dataclass
-class TimestampArguments(ArgumentsBase):
-    """Descriptions and metadata for timestamp command-line arguments."""
-
-    file: ClassVar[ArgInfo] = ArgInfo("File to get or set timestamps for", nargs="?")
-    creation: ClassVar[ArgInfo] = ArgInfo("Creation timestamp to set", default=None)
-    modification: ClassVar[ArgInfo] = ArgInfo("Modification timestamp to set", default=None)
-
-    copy: ClassVar[ArgInfo] = ArgInfo(
-        "Copy timestamps from one file to another", action="store_true"
-    )
-    copy_from: ClassVar[ArgInfo] = ArgInfo(
-        "Source file to copy timestamps from", default=None, dest="from_file"
-    )
-    copy_to: ClassVar[ArgInfo] = ArgInfo(
-        "Destination file to copy timestamps to", default=None, dest="to_file"
-    )
-    src_dir: ClassVar[ArgInfo] = ArgInfo(
-        "Source directory for copying timestamps from", default=None
-    )
-    dst_dir: ClassVar[ArgInfo] = ArgInfo(
-        "Destination directory for copying timestamps to", default=None
-    )
-    ctime_to_mtime: ClassVar[ArgInfo] = ArgInfo(
-        "Copy creation time to modification time", action="store_true"
-    )
-    mtime_to_ctime: ClassVar[ArgInfo] = ArgInfo(
-        "Copy modification time to creation time", action="store_true"
-    )
 
 
 @catch_errors()
@@ -190,7 +158,30 @@ def parse_arguments() -> argparse.Namespace:
         arg_width=30,
         max_width=120,
     )
-    parser.add_args_from_class(TimestampArguments)
+    parser.add_argument("file", help="File to get or set timestamps for", nargs="?")
+    parser.add_argument("creation", help="Creation timestamp to set", default=None)
+    parser.add_argument("modification", help="Modification timestamp to set", default=None)
+    parser.add_argument(
+        "copy", help="Copy timestamps from one file to another", action="store_true"
+    )
+    parser.add_argument(
+        "copy_from", help="Source file to copy timestamps from", default=None, dest="from_file"
+    )
+    parser.add_argument(
+        "copy_to", help="Destination file to copy timestamps to", default=None, dest="to_file"
+    )
+    parser.add_argument(
+        "src_dir", help="Source directory for copying timestamps from", default=None
+    )
+    parser.add_argument(
+        "dst_dir", help="Destination directory for copying timestamps to", default=None
+    )
+    parser.add_argument(
+        "ctime_to_mtime", help="Copy creation time to modification time", action="store_true"
+    )
+    parser.add_argument(
+        "mtime_to_ctime", help="Copy modification time to creation time", action="store_true"
+    )
     return parser.parse_args()
 
 

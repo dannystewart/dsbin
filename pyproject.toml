@@ -39,14 +39,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["mypy (>=1.15.0)", "ruff (>=0.9.10)"]
+dev = ["mypy (>=1.15.0)", "ruff (>=0.10.0)"]
 
 [tool.poetry]
 packages = [{ include = "dsbin", from = "src" }]
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.15.0"
-ruff = ">=0.9.10"
+ruff = ">=0.10.0"
 
 [project.scripts]
 # Scripts to list all my scripts and check versions

@@ -103,6 +103,7 @@ spacepurger = "dsbin.mac.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
 
 # Development-related scripts
+code-configs = "dsbin.dev.code_configs:main"
 dsbump = "dsbin.dev.dsbump:main"
 dsversion = "dsbin.dev.dsbump:main"
 pipmigrator = "dsbin.dev.pipmigrator:main"

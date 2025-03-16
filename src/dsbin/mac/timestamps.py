@@ -37,11 +37,11 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsutil import configure_traceback
-from dsutil.argparser import ArgParser
-from dsutil.macos import get_timestamps, set_timestamps
-from dsutil.shell import catch_errors
-from dsutil.text import ColorName, color
+from dsbase import configure_traceback
+from dsbase.argparser import ArgParser
+from dsbase.macos import get_timestamps, set_timestamps
+from dsbase.shell import catch_errors
+from dsbase.text import ColorName, color
 
 if TYPE_CHECKING:
     import argparse

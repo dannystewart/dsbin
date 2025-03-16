@@ -10,7 +10,7 @@ authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "dsutil @ git+https://gitlab.dannystewart.com/danny/dsutil.git",
+    "dsbase (>=0.1.1)",
     "halo>=0.0.31",
     "inquirer>=3.4.0",
     "json5>=0.10.0",

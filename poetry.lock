@@ -360,14 +360,16 @@ test = ["certifi (>=2024)", "cryptography-vectors (==44.0.2)", "pretend (>=0.7)"
 test-randomorder = ["pytest-randomly"]
 
 [[package]]
-name = "dsutil"
-version = "1.10.6"
-description = "Personal Python utility library"
+name = "dsbase"
+version = "0.1.1.post1"
+description = "Python utilities and helpers for logging, environment management, file operations, and more"
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
-files = []
-develop = false
+files = [
+    {file = "dsbase-0.1.1.post1-py3-none-any.whl", hash = "sha256:a72efe9ada97dcc57390cc7f76380065df256ba66d84c4e56f3aa89cf3b92aeb"},
+    {file = "dsbase-0.1.1.post1.tar.gz", hash = "sha256:bdd3cd8e87c31be845b42c6b347f0ba9e4ade463ed863f129e14fbeb89f3beba"},
+]
 
 [package.dependencies]
 halo = ">=0.0.31"
@@ -385,12 +387,6 @@ tzdata = ">=2025.1"
 
 [package.extras]
 dev = ["mypy (>=1.15.0)", "ruff (>=0.10.0)"]
-
-[package.source]
-type = "git"
-url = "https://gitlab.dannystewart.com/danny/dsutil.git"
-reference = "HEAD"
-resolved_reference = "6c34ac54db487416d309e32aeeb363d5f6341a14"
 
 [[package]]
 name = "editor"
@@ -1529,4 +1525,4 @@ dev = ["mypy", "ruff"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "a84971080a268f0a30dc676768f250acb0c17e4b8b1fccac60329c0c0ed467c0"
+content-hash = "b334ebe4a3d10c7f1f96b37b415e76cbbb672538c52b922aa89c32d2dff75fe0"

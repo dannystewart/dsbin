@@ -15,8 +15,8 @@ import re
 from importlib.metadata import entry_points
 from pathlib import Path
 
-from dsutil import configure_traceback
-from dsutil.text import color, print_colored
+from dsbase import configure_traceback
+from dsbase.text import color, print_colored
 
 configure_traceback()
 
@@ -119,7 +119,7 @@ def display_list(scripts: list[tuple[str, str, str | None]], search_term: str = 
 
     print()
     print_colored(
-        f"{"Script Name":<{script_width}} {"Description":<{DESC_WIDTH}}",
+        f"{'Script Name':<{script_width}} {'Description':<{DESC_WIDTH}}",
         "cyan",
         attrs=["bold", "underline"],
     )

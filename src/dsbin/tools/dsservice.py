@@ -5,11 +5,11 @@ import subprocess
 import sys
 from pathlib import Path
 
+from dsbase.shell import is_root_user
+from dsbase.text import color, print_colored
+
 from dsbin.systemd.service_list import ServiceConfigs
 from dsbin.systemd.systemd import SystemdServiceTemplate
-
-from dsutil.shell import is_root_user
-from dsutil.text import color, print_colored
 
 # Define column widths
 COLUMN_BUFFER = 2
@@ -108,7 +108,7 @@ def list_services(search_term: str = "") -> None:
 
     if not services:
         print_colored(
-            f"No services found{f' matching \'{search_term}\'' if search_term else ''}.", "yellow"
+            f"No services found{f" matching '{search_term}'" if search_term else ''}.", "yellow"
         )
         return
 
@@ -116,7 +116,7 @@ def list_services(search_term: str = "") -> None:
 
     print()
     print_colored(
-        f"{"Service Name":<{service_width}} {"Description":<{DESC_WIDTH}}",
+        f"{'Service Name':<{service_width}} {'Description':<{DESC_WIDTH}}",
         "cyan",
         attrs=["bold", "underline"],
     )

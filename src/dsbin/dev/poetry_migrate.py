@@ -9,7 +9,7 @@ import tomlkit
 import tomlkit.toml_document
 from tomlkit.items import Array
 
-from dsutil import LocalLogger, configure_traceback
+from dsbase import LocalLogger, configure_traceback
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

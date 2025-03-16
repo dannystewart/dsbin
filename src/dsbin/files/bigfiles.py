@@ -12,8 +12,8 @@ import operator
 from collections import defaultdict
 from pathlib import Path
 
-from dsutil import configure_traceback
-from dsutil.text import color as colored
+from dsbase import configure_traceback
+from dsbase.text import color as colored
 
 configure_traceback()
 

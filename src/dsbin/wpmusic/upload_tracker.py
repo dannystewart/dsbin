@@ -10,7 +10,7 @@ from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from dsutil import TZ, LocalLogger
+from dsbase import TZ, LocalLogger
 
 from dsbin.wpmusic.db_manager import DatabaseManager
 from dsbin.wpmusic.table_config import TableConfig

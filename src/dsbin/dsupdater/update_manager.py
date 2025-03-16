@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from dsutil.shell import handle_keyboard_interrupt
+from dsbase.shell import handle_keyboard_interrupt
 
 from dsbin.dsupdater.shell_helper import ShellHelper
 

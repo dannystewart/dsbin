@@ -6,8 +6,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsutil import LocalLogger, Text, TimeAwareLogger, configure_traceback
-from dsutil.animation import walking_animation
+from dsbase import LocalLogger, Text, TimeAwareLogger, configure_traceback
+from dsbase.animation import walking_animation
 
 from dsbin.workcalc.bounce_plugin import BounceDataSource
 from dsbin.workcalc.git_plugin import GitDataSource

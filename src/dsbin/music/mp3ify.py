@@ -8,10 +8,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from dsutil import configure_traceback
-from dsutil.files import list_files
-from dsutil.media import MediaManager
-from dsutil.text import color as colored
+from dsbase import configure_traceback
+from dsbase.files import list_files
+from dsbase.media import MediaManager
+from dsbase.text import color as colored
 
 configure_traceback()
 

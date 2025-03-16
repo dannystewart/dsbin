@@ -13,11 +13,11 @@ from __future__ import annotations
 import subprocess
 import sys
 
-from dsutil import configure_traceback
-from dsutil.files import delete_files, move_file
-from dsutil.media import ffmpeg_video
-from dsutil.progress import halo_progress
-from dsutil.text import print_colored
+from dsbase import configure_traceback
+from dsbase.files import delete_files, move_file
+from dsbase.media import ffmpeg_video
+from dsbase.progress import halo_progress
+from dsbase.text import print_colored
 
 configure_traceback()
 

@@ -22,11 +22,11 @@ from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
-from dsutil import TZ, LocalLogger, configure_traceback
-from dsutil.env import DSEnv
-from dsutil.macos import get_timestamps
-from dsutil.paths import DSPaths
-from dsutil.shell import async_handle_keyboard_interrupt
+from dsbase import TZ, LocalLogger, configure_traceback
+from dsbase.env import DSEnv
+from dsbase.macos import get_timestamps
+from dsbase.paths import DSPaths
+from dsbase.shell import async_handle_keyboard_interrupt
 
 from .pybounce_helpers import SQLiteManager
 

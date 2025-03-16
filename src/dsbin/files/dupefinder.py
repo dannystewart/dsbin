@@ -10,8 +10,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from dsutil import configure_traceback
-from dsutil.files import find_duplicate_files_by_hash
+from dsbase import configure_traceback
+from dsbase.files import find_duplicate_files_by_hash
 
 configure_traceback()
 

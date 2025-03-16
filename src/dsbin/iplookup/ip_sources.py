@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from dsutil.text import Text
+from dsbase.text import Text
 
 # IP lookup sources and their data paths and fields
 IP_SOURCES: dict[str, dict[str, Any]] = {

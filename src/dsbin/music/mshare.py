@@ -19,11 +19,11 @@ from typing import ClassVar
 
 import inquirer
 
-from dsutil import LocalLogger, animation, configure_traceback
-from dsutil.media import find_bit_depth
-from dsutil.progress import halo_progress
-from dsutil.shell import handle_keyboard_interrupt
-from dsutil.text import color as colored
+from dsbase import LocalLogger, animation, configure_traceback
+from dsbase.media import find_bit_depth
+from dsbase.progress import halo_progress
+from dsbase.shell import handle_keyboard_interrupt
+from dsbase.text import color as colored
 
 configure_traceback()
 

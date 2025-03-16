@@ -21,9 +21,9 @@ from typing import Any, ClassVar
 import pycountry
 import requests
 
-from dsutil.progress import halo_progress
-from dsutil.shell import handle_keyboard_interrupt
-from dsutil.text import color, print_colored
+from dsbase.progress import halo_progress
+from dsbase.shell import handle_keyboard_interrupt
+from dsbase.text import color, print_colored
 
 from .ip_sources import CITY_NAMES, IP_SOURCES, REGION_NAMES, USA_NAMES
 

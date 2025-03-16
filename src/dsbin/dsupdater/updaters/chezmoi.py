@@ -4,7 +4,7 @@ import platform
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from dsutil.shell import handle_keyboard_interrupt
+from dsbase.shell import handle_keyboard_interrupt
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage, UpdateStageFailedError
 

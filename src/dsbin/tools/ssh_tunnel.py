@@ -9,9 +9,9 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from dsutil.argparser import ArgParser
-from dsutil.log import LocalLogger
-from dsutil.text import print_colored, progress
+from dsbase.argparser import ArgParser
+from dsbase.log import LocalLogger
+from dsbase.text import print_colored, progress
 
 if TYPE_CHECKING:
     import argparse

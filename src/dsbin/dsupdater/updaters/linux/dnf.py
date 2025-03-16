@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from dsutil.shell import handle_keyboard_interrupt
+from dsbase.shell import handle_keyboard_interrupt
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage
 

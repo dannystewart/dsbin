@@ -16,9 +16,9 @@ from pathlib import Path
 
 import inquirer
 
-from dsutil import TZ, configure_traceback
-from dsutil.files import FileManager
-from dsutil.text import print_colored
+from dsbase import TZ, configure_traceback
+from dsbase.files import FileManager
+from dsbase.text import print_colored
 
 configure_traceback()
 

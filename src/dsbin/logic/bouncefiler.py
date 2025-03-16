@@ -11,12 +11,12 @@ from pathlib import Path
 
 import inquirer
 
-from dsutil import LocalLogger, configure_traceback
-from dsutil.animation import walking_animation
-from dsutil.env import DSEnv
-from dsutil.files import FileManager
-from dsutil.shell import confirm_action
-from dsutil.text import color
+from dsbase import LocalLogger, configure_traceback
+from dsbase.animation import walking_animation
+from dsbase.env import DSEnv
+from dsbase.files import FileManager
+from dsbase.shell import confirm_action
+from dsbase.text import color
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 

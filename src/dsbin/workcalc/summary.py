@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from dsutil import Text
+from dsbase import Text
 
 from dsbin.workcalc.stats import FormattedTime
 

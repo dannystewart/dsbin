@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 import tomlkit
 import tomlkit.toml_document
 
-from dsutil import configure_traceback
+from dsbase import configure_traceback
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

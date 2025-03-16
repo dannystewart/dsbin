@@ -6,8 +6,8 @@ from typing import TYPE_CHECKING, Any
 
 import inquirer
 
-from dsutil import LocalLogger
-from dsutil.text import color as colored
+from dsbase import LocalLogger
+from dsbase.text import color as colored
 
 if TYPE_CHECKING:
     from halo import Halo

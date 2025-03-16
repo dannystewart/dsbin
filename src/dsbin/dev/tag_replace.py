@@ -8,8 +8,8 @@ import re
 import subprocess
 import sys
 
-from dsutil.shell import confirm_action, handle_keyboard_interrupt
-from dsutil.text import print_colored
+from dsbase.shell import confirm_action, handle_keyboard_interrupt
+from dsbase.text import print_colored
 
 
 def run_git_command(command: str | list[str]) -> str:

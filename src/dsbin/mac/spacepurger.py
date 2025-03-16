@@ -18,9 +18,9 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsutil import LocalLogger, configure_traceback
-from dsutil.progress import halo_progress
-from dsutil.shell import handle_keyboard_interrupt
+from dsbase import LocalLogger, configure_traceback
+from dsbase.progress import halo_progress
+from dsbase.shell import handle_keyboard_interrupt
 
 if TYPE_CHECKING:
     from types import FrameType

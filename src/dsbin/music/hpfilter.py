@@ -37,8 +37,8 @@ from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
 
-from dsutil import configure_traceback
-from dsutil.text import color, print_colored
+from dsbase import configure_traceback
+from dsbase.text import color, print_colored
 
 if TYPE_CHECKING:
     from collections.abc import Callable

@@ -11,8 +11,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dsutil.shell import confirm_action, is_root_user, read_file_content, write_to_file
-from dsutil.text import print_colored
+from dsbase.shell import confirm_action, is_root_user, read_file_content, write_to_file
+from dsbase.text import print_colored
 
 
 def get_current_hostname() -> str:

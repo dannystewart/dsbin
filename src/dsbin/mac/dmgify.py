@@ -33,11 +33,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from dsutil import LocalLogger, configure_traceback
-from dsutil.argparser import ArgParser
-from dsutil.files import delete_files, move_file
-from dsutil.progress import halo_progress, with_retries
-from dsutil.shell import handle_keyboard_interrupt
+from dsbase import LocalLogger, configure_traceback
+from dsbase.argparser import ArgParser
+from dsbase.files import delete_files, move_file
+from dsbase.progress import halo_progress, with_retries
+from dsbase.shell import handle_keyboard_interrupt
 
 if TYPE_CHECKING:
     import argparse

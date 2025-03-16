@@ -13,4 +13,4 @@ from dsbin.systemd.systemd import ServiceConfigBase, SystemdServiceTemplate, ser
     ),
 )
 class ServiceConfigs(ServiceConfigBase):
-    """Collection of service configurations for dsutil."""
+    """Collection of service configurations for dsbase."""

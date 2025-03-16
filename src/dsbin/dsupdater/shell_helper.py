@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import pexpect
 
-from dsutil.shell import handle_keyboard_interrupt
+from dsbase.shell import handle_keyboard_interrupt
 
 from dsbin.dsupdater.output_processor import OutputProcessor
 

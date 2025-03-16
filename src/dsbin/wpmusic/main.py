@@ -23,10 +23,10 @@ from pathlib import Path
 
 from halo import Halo
 
-from dsutil import LocalLogger, configure_traceback
-from dsutil.media import ffmpeg_audio
-from dsutil.shell import handle_keyboard_interrupt
-from dsutil.text import color
+from dsbase import LocalLogger, configure_traceback
+from dsbase.media import ffmpeg_audio
+from dsbase.shell import handle_keyboard_interrupt
+from dsbase.text import color
 
 from dsbin.wpmusic.audio_track import AudioTrack
 from dsbin.wpmusic.file_manager import FileManager

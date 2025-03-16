@@ -51,11 +51,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsutil import LocalLogger
-from dsutil.env import DSEnv
-from dsutil.notifiers import TelegramSender
-from dsutil.paths import DSPaths
-from dsutil.shell import confirm_action, is_root_user
+from dsbase import LocalLogger
+from dsbase.env import DSEnv
+from dsbase.notifiers import TelegramSender
+from dsbase.paths import DSPaths
+from dsbase.shell import confirm_action, is_root_user
 
 if TYPE_CHECKING:
     from logging import Logger

@@ -5,8 +5,8 @@ from typing import ClassVar
 
 import paramiko
 
-from dsutil.env import DSEnv
-from dsutil.paths import DSPaths
+from dsbase.env import DSEnv
+from dsbase.paths import DSPaths
 
 
 @dataclass

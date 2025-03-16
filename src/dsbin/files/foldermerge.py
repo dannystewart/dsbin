@@ -7,10 +7,10 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from dsutil import configure_traceback
-from dsutil.files import sha256_checksum
-from dsutil.shell import confirm_action
-from dsutil.text import color as colored
+from dsbase import configure_traceback
+from dsbase.files import sha256_checksum
+from dsbase.shell import confirm_action
+from dsbase.text import color as colored
 
 configure_traceback()
 

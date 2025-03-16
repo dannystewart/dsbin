@@ -11,10 +11,10 @@ from typing import TYPE_CHECKING
 from halo import Halo
 from json5 import loads as json5_loads
 
-from dsutil import LocalLogger, configure_traceback
-from dsutil.diff import show_diff
-from dsutil.paths import DSPaths
-from dsutil.shell import confirm_action, handle_keyboard_interrupt
+from dsbase import LocalLogger, configure_traceback
+from dsbase.diff import show_diff
+from dsbase.paths import DSPaths
+from dsbase.shell import confirm_action, handle_keyboard_interrupt
 
 if TYPE_CHECKING:
     from collections.abc import Iterator

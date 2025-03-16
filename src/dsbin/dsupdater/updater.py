@@ -10,11 +10,11 @@ import shutil
 import time
 from typing import TYPE_CHECKING
 
-from dsutil.argparser import ArgParser
-from dsutil.log import LocalLogger
-from dsutil.shell import handle_keyboard_interrupt
-from dsutil.text import Text, color, print_colored
-from dsutil.tools import configure_traceback
+from dsbase.argparser import ArgParser
+from dsbase.log import LocalLogger
+from dsbase.shell import handle_keyboard_interrupt
+from dsbase.text import Text, color, print_colored
+from dsbase.tools import configure_traceback
 
 from dsbin.dsupdater import updaters
 from dsbin.dsupdater.privilege_helper import PrivilegeHelper

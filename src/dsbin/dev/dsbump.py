@@ -31,10 +31,10 @@ from enum import StrEnum
 from functools import total_ordering
 from pathlib import Path
 
-from dsutil import configure_traceback
-from dsutil.env import DSEnv
-from dsutil.log import LocalLogger
-from dsutil.shell import handle_keyboard_interrupt
+from dsbase import configure_traceback
+from dsbase.env import DSEnv
+from dsbase.log import LocalLogger
+from dsbase.shell import handle_keyboard_interrupt
 
 configure_traceback()
 

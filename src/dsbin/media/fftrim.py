@@ -8,7 +8,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from dsutil import configure_traceback
+from dsbase import configure_traceback
 
 configure_traceback()
 

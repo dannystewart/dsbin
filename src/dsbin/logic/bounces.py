@@ -7,8 +7,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsutil.argparser import ArgParser
-from dsutil.text import color
+from dsbase.argparser import ArgParser
+from dsbase.text import color
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 

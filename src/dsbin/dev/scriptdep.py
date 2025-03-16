@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Analyze dependencies and imports across dsutil and scripts to help separate concerns."""
+"""Analyze dependencies and imports across dsbase and scripts to help separate concerns."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
-from dsutil import configure_traceback
+from dsbase import configure_traceback
 
 configure_traceback()
 
@@ -88,41 +88,41 @@ def print_imports_by_file(imports_by_file: dict, title: str) -> None:
             print(f"  - {imp}")
 
 
-def categorize_imports(dsutil_imports: dict, scripts_imports: dict) -> tuple[set, set, set]:
-    """Categorize imports into dsutil-only, scripts-only, and shared."""
+def categorize_imports(dsbase_imports: dict, scripts_imports: dict) -> tuple[set, set, set]:
+    """Categorize imports into dsbase-only, scripts-only, and shared."""
     all_imports = set()
-    for imports in dsutil_imports.values():
+    for imports in dsbase_imports.values():
         all_imports.update(imports)
     for imports in scripts_imports.values():
         all_imports.update(imports)
 
-    dsutil_only = set()
+    dsbase_only = set()
     scripts_only = set()
     shared = set()
 
     for imp in all_imports:
-        in_dsutil = any(imp in imports for imports in dsutil_imports.values())
+        in_dsbase = any(imp in imports for imports in dsbase_imports.values())
         in_scripts = any(imp in imports for imports in scripts_imports.values())
 
-        if in_dsutil and in_scripts:
+        if in_dsbase and in_scripts:
             shared.add(imp)
-        elif in_dsutil:
-            dsutil_only.add(imp)
+        elif in_dsbase:
+            dsbase_only.add(imp)
         else:
             scripts_only.add(imp)
 
-    return dsutil_only, scripts_only, shared
+    return dsbase_only, scripts_only, shared
 
 
 def print_categorized_imports(
-    dsutil_only: set, scripts_only: set, shared: set, installed_packages: set
+    dsbase_only: set, scripts_only: set, shared: set, installed_packages: set
 ) -> None:
     """Print categorized imports."""
     print("\nPotential package assignments:")
     print("-" * 30)
 
-    print("\ndsutil-specific imports:")
-    for imp in sorted(dsutil_only):
+    print("\ndsbase-specific imports:")
+    for imp in sorted(dsbase_only):
         if imp.lower() in installed_packages:
             print(f"  - {imp}")
 
@@ -145,10 +145,10 @@ def analyze_dependencies() -> None:
     print(unused_imports)
 
     exclude_dirs = [".venv", "tests", "build", "dist"]
-    dsutil_imports = analyze_imports(Path("dsutil"), "dsutil", exclude_dirs)
+    dsbase_imports = analyze_imports(Path("dsbase"), "dsbase", exclude_dirs)
     scripts_imports = analyze_imports(Path(), "scripts", exclude_dirs)
 
-    dsutil_imports = analyze_imports(Path("dsutil"), "dsutil", exclude_dirs)
+    dsbase_imports = analyze_imports(Path("dsbase"), "dsbase", exclude_dirs)
     scripts_imports = analyze_imports(Path(), "scripts", exclude_dirs)
 
     installed_packages = get_installed_packages()
@@ -156,15 +156,15 @@ def analyze_dependencies() -> None:
     print("\nDependency Analysis Report")
     print("=" * 50)
 
-    print_imports_by_file(dsutil_imports, "dsutil")
+    print_imports_by_file(dsbase_imports, "dsbase")
     print_imports_by_file(scripts_imports, "scripts")
 
-    dsutil_only, scripts_only, shared = categorize_imports(dsutil_imports, scripts_imports)
-    print_categorized_imports(dsutil_only, scripts_only, shared, installed_packages)
+    dsbase_only, scripts_only, shared = categorize_imports(dsbase_imports, scripts_imports)
+    print_categorized_imports(dsbase_only, scripts_only, shared, installed_packages)
 
 
 def main() -> None:
-    """Analyze dependencies and imports across dsutil and scripts."""
+    """Analyze dependencies and imports across dsbase and scripts."""
     analyze_dependencies()
 
 

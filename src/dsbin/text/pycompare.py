@@ -13,9 +13,9 @@ from pathlib import Path
 
 import inquirer
 
-from dsutil import configure_traceback
-from dsutil.shell import handle_keyboard_interrupt
-from dsutil.text import color, print_colored
+from dsbase import configure_traceback
+from dsbase.shell import handle_keyboard_interrupt
+from dsbase.text import color, print_colored
 
 configure_traceback()
 

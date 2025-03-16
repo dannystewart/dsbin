@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dsutil import LocalLogger, configure_traceback
+from dsbase import LocalLogger, configure_traceback
 
 configure_traceback()
 

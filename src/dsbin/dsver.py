@@ -9,7 +9,7 @@ from importlib import metadata
 
 from packaging import version
 
-from dsutil.text import color
+from dsbase.text import color
 
 
 @dataclass

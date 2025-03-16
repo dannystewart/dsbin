@@ -12,9 +12,9 @@ import argparse
 import os
 from pathlib import Path
 
-from dsutil import animation, configure_traceback
-from dsutil.shell import confirm_action, handle_keyboard_interrupt
-from dsutil.text import color as colored
+from dsbase import animation, configure_traceback
+from dsbase.shell import confirm_action, handle_keyboard_interrupt
+from dsbase.text import color as colored
 
 configure_traceback()
 

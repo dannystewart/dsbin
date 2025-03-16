@@ -9,10 +9,10 @@ import paramiko  # type: ignore
 import pyperclip
 from scp import SCPClient
 
-from dsutil import LocalLogger
-from dsutil.files import delete_files
-from dsutil.shell import handle_keyboard_interrupt
-from dsutil.text import color as colored
+from dsbase import LocalLogger
+from dsbase.files import delete_files
+from dsbase.shell import handle_keyboard_interrupt
+from dsbase.text import color as colored
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack

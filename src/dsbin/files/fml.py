@@ -14,8 +14,8 @@ from dotenv import load_dotenv
 from requests import Session
 from requests.auth import HTTPBasicAuth
 
-from dsutil import configure_traceback
-from dsutil.text import color as colored
+from dsbase import configure_traceback
+from dsbase.text import color as colored
 
 configure_traceback()
 

@@ -29,11 +29,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsutil import configure_traceback
-from dsutil.animation import walking_animation
-from dsutil.files import delete_files
-from dsutil.shell import confirm_action
-from dsutil.text import color, print_colored
+from dsbase import configure_traceback
+from dsbase.animation import walking_animation
+from dsbase.files import delete_files
+from dsbase.shell import confirm_action
+from dsbase.text import color, print_colored
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 

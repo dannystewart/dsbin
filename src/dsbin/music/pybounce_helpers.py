@@ -5,9 +5,9 @@ from __future__ import annotations
 import sqlite3
 from typing import TYPE_CHECKING, Any, Protocol
 
-from dsutil import LocalLogger, configure_traceback
-from dsutil.animation import walking_animation
-from dsutil.tools import async_retry_on_exception
+from dsbase import LocalLogger, configure_traceback
+from dsbase.animation import walking_animation
+from dsbase.tools import async_retry_on_exception
 
 if TYPE_CHECKING:
     from collections.abc import Callable

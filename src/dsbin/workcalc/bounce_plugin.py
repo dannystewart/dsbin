@@ -5,9 +5,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from dsutil import LocalLogger
-from dsutil.files import list_files
-from dsutil.macos import get_timestamps
+from dsbase import LocalLogger
+from dsbase.files import list_files
+from dsbase.macos import get_timestamps
 
 from dsbin.workcalc.plugin import DataSourcePlugin
 from dsbin.workcalc.work_item import WorkItem

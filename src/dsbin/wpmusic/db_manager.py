@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any
 
 import mysql.connector
 
-from dsutil import LocalLogger
-from dsutil.db import MySQLHelper, SQLiteHelper
+from dsbase import LocalLogger
+from dsbase.db import MySQLHelper, SQLiteHelper
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -201,13 +201,11 @@ class DatabaseManager:
             if isinstance(uploaded, datetime):
                 uploaded = uploaded.isoformat()
 
-            current_track["uploads"].append(
-                {
-                    "filename": row["filename"],
-                    "instrumental": row["instrumental"],
-                    "uploaded": uploaded,
-                }
-            )
+            current_track["uploads"].append({
+                "filename": row["filename"],
+                "instrumental": row["instrumental"],
+                "uploaded": uploaded,
+            })
 
         if current_track is not None:
             history.append(current_track)

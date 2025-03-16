@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsutil.shell import handle_keyboard_interrupt
+from dsbase.shell import handle_keyboard_interrupt
 
 if TYPE_CHECKING:
     from argparse import Namespace

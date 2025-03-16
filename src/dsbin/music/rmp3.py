@@ -12,8 +12,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dsutil import configure_traceback
-from dsutil.files import delete_files, list_files
+from dsbase import configure_traceback
+from dsbase.files import delete_files, list_files
 
 configure_traceback()
 

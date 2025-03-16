@@ -21,7 +21,7 @@ import colorama
 import readchar
 from colorama import Fore, Style
 
-from dsutil import configure_traceback
+from dsbase import configure_traceback
 
 configure_traceback()
 

@@ -13,10 +13,10 @@ import sys
 from enum import StrEnum
 from pathlib import Path
 
-from dsutil import configure_traceback
-from dsutil.files import FileManager
-from dsutil.media import MediaManager
-from dsutil.text import print_colored
+from dsbase import configure_traceback
+from dsbase.files import FileManager
+from dsbase.media import MediaManager
+from dsbase.text import print_colored
 
 configure_traceback()
 

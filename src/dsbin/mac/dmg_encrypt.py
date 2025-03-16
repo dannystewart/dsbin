@@ -18,9 +18,9 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsutil import LocalLogger, configure_traceback
-from dsutil.argparser import ArgParser
-from dsutil.progress import halo_progress
+from dsbase import LocalLogger, configure_traceback
+from dsbase.argparser import ArgParser
+from dsbase.progress import halo_progress
 
 if TYPE_CHECKING:
     import argparse

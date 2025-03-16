@@ -9,10 +9,10 @@ import os
 import subprocess
 from pathlib import Path
 
-from dsutil import LocalLogger, configure_traceback
-from dsutil.files import delete_files
-from dsutil.shell import confirm_action
-from dsutil.text import color
+from dsbase import LocalLogger, configure_traceback
+from dsbase.files import delete_files
+from dsbase.shell import confirm_action
+from dsbase.text import color
 
 configure_traceback()
 

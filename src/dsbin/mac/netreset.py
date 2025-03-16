@@ -10,9 +10,9 @@ import sys
 import time
 from typing import Any
 
-from dsutil import configure_traceback
-from dsutil.shell import acquire_sudo, confirm_action
-from dsutil.text import color as colored
+from dsbase import configure_traceback
+from dsbase.shell import acquire_sudo, confirm_action
+from dsbase.text import color as colored
 
 configure_traceback()
 

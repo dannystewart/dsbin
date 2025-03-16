@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
-from dsutil.log import LocalLogger
+from dsbase.log import LocalLogger
 
 if TYPE_CHECKING:
     from logging import Logger

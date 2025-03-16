@@ -23,8 +23,8 @@ class DSPackageUpdater(UpdateManager):
 
     update_stages: ClassVar[dict[str, UpdateStage]] = {
         "uninstall": UpdateStage(
-            command="pip uninstall -y dsbin dsutil",
-            start_message="Uninstalling dsbin and dsutil for clean install...",
+            command="pip uninstall -y dsbin dsbase",
+            start_message="Uninstalling dsbin and dsbase for clean install...",
             capture_output=True,
             filter_output=True,
         ),
@@ -45,6 +45,24 @@ class DSPackageUpdater(UpdateManager):
             return None
 
     def _get_latest_version(self, package: str) -> str | None:
+        """Get latest version based on package source."""
+        if package == "dsbase":
+            return self._get_pypi_version(package)
+        return self._get_gitlab_version(package)
+
+    def _get_pypi_version(self, package: str) -> str | None:
+        """Get latest version from PyPI."""
+        try:
+            import requests
+
+            response = requests.get(f"https://pypi.org/pypi/{package}/json", timeout=5)
+            if response.status_code == 200:
+                return response.json()["info"]["version"]
+            return None
+        except Exception:
+            return None
+
+    def _get_gitlab_version(self, package: str) -> str | None:
         """Get latest version from GitLab."""
         gitlab_base = "https://gitlab.dannystewart.com/danny"
         try:
@@ -80,14 +98,14 @@ class DSPackageUpdater(UpdateManager):
         """Update pip itself, then update all installed packages."""
         # Get current package versions before uninstalling
         dsbin_old = self._get_installed_version("dsbin")
-        dsutil_old = self._get_installed_version("dsutil")
+        dsbase_old = self._get_installed_version("dsbase")
 
         # Uninstall the existing packages to ensure a clean install
         self.run_stage("uninstall")
 
         # Get latest package version numbers
         dsbin_new = self._get_latest_version("dsbin")
-        dsutil_new = self._get_latest_version("dsutil")
+        dsbase_new = self._get_latest_version("dsbase")
 
         # Formulate the end message with the version information
         if dsbin_old and dsbin_new and dsbin_old != dsbin_new:
@@ -95,12 +113,12 @@ class DSPackageUpdater(UpdateManager):
         else:
             dsbin_str = f"dsbin {dsbin_new}" if dsbin_new else "dsbin"
 
-        if dsutil_old and dsutil_new and dsutil_old != dsutil_new:
-            dsutil_str = f" and dsutil {dsutil_old} -> {dsutil_new}"
+        if dsbase_old and dsbase_new and dsbase_old != dsbase_new:
+            dsbase_str = f" and dsbase {dsbase_old} -> {dsbase_new}"
         else:
-            dsutil_str = f" and dsutil {dsutil_new}" if dsutil_new else ""
+            dsbase_str = f" and dsbase {dsbase_new}" if dsbase_new else ""
 
-        end_message = f"Installed {dsbin_str}{dsutil_str} successfully!"
+        end_message = f"Installed {dsbin_str}{dsbase_str} successfully!"
 
         self.update_stages["install"].end_message = end_message
         self.run_stage("install")

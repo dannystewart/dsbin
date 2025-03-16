@@ -22,6 +22,26 @@ class PackageVersions:
 
 
 def get_latest_version(package: str) -> str | None:
+    """Get latest version based on package source."""
+    if package == "dsbase":
+        return get_pypi_version(package)
+    return get_gitlab_version(package)
+
+
+def get_pypi_version(package: str) -> str | None:
+    """Get latest version from PyPI."""
+    try:
+        import requests
+
+        response = requests.get(f"https://pypi.org/pypi/{package}/json", timeout=5)
+        if response.status_code == 200:
+            return response.json()["info"]["version"]
+        return None
+    except Exception:
+        return None
+
+
+def get_gitlab_version(package: str) -> str | None:
     """Get latest version from GitLab."""
     gitlab_base = "https://gitlab.dannystewart.com/danny"
     try:
@@ -87,7 +107,7 @@ def format_version_info(versions: PackageVersions) -> tuple[str, str]:
 
 def main() -> None:
     """Show versions of DS packages."""
-    packages = ["dsbin", "dsutil"]
+    packages = ["dsbin", "dsbase"]  # Changed dsutil to dsbase
     any_updates = False
 
     for package in packages:

@@ -59,7 +59,7 @@ def get_module_or_function_docstring(module_path: str, function_name: str) -> st
             file_path /= part
         file_path = file_path.with_suffix(".py")
 
-        with open(file_path, encoding="utf-8") as f:
+        with Path(file_path).open(encoding="utf-8") as f:
             module_ast = ast.parse(f.read())
 
         # First try to get module-level docstring

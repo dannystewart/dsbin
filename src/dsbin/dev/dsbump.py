@@ -10,7 +10,7 @@ Usage:
     dsbump major          # 1.2.3    -> 2.0.0
 
     # Pre-release versions
-    dsbump dev            # 1.2.3    -> 1.2.4.dev1
+    dsbump dev            # 1.2.3    -> 1.2.4.dev0
     dsbump alpha          # 1.2.3    -> 1.2.4a1
     dsbump beta           # 1.2.4a1  -> 1.2.4b1
     dsbump rc             # 1.2.4b1  -> 1.2.4rc1
@@ -292,7 +292,7 @@ def bump_version(bump_type: BumpType | str, current_version: str) -> str:
 
 def _get_base_version(
     bump_type: BumpType | str,
-    pre_type: str | None,
+    pre_type: BumpType | None,
     major: int,
     minor: int,
     patch: int,
@@ -391,7 +391,7 @@ def _handle_version_modifier(
     if bump_type == BumpType.DEV:
         if pre_type == "dev" and pre_num:
             return f"{major}.{minor}.{patch}.dev{pre_num + 1}"
-        return f"{major}.{minor}.{patch + 1}.dev1"
+        return f"{major}.{minor}.{patch + 1}.dev0"
 
     # Map full names to version string components
     bump_type = BumpType(bump_type)

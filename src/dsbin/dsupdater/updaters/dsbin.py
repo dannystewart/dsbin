@@ -1,13 +1,10 @@
 from __future__ import annotations
 
-import importlib.metadata
-import subprocess
 from dataclasses import dataclass
 from typing import ClassVar
 
-from packaging import version
-
 from dsbase.shell import handle_keyboard_interrupt
+from dsbase.version import VersionChecker
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage
 
@@ -29,7 +26,7 @@ class DSPackageUpdater(UpdateManager):
             filter_output=True,
         ),
         "install": UpdateStage(
-            command="pip install --upgrade git+https://gitlab.dannystewart.com/danny/dsbin.git",
+            command="pip install --upgrade git+ssh://git@github.com/dannystewart/dsbin.git",
             start_message="Installing dsbin...",
             end_message="dsbin installed successfully!",
             capture_output=True,
@@ -37,61 +34,19 @@ class DSPackageUpdater(UpdateManager):
         ),
     }
 
+    def __post_init__(self):
+        super().__post_init__()
+        self.version_checker = VersionChecker()
+
     def _get_installed_version(self, package: str) -> str | None:
         """Get the currently installed version of a package."""
-        try:
-            return importlib.metadata.version(package)
-        except importlib.metadata.PackageNotFoundError:
-            return None
+        return self.version_checker.get_installed_version(package)
 
     def _get_latest_version(self, package: str) -> str | None:
         """Get latest version based on package source."""
         if package == "dsbase":
-            return self._get_pypi_version(package)
-        return self._get_gitlab_version(package)
-
-    def _get_pypi_version(self, package: str) -> str | None:
-        """Get latest version from PyPI."""
-        try:
-            import requests
-
-            response = requests.get(f"https://pypi.org/pypi/{package}/json", timeout=5)
-            if response.status_code == 200:
-                return response.json()["info"]["version"]
-            return None
-        except Exception:
-            return None
-
-    def _get_gitlab_version(self, package: str) -> str | None:
-        """Get latest version from GitLab."""
-        gitlab_base = "https://gitlab.dannystewart.com/danny"
-        try:
-            result = subprocess.run(
-                ["git", "ls-remote", "--tags", f"{gitlab_base}/{package}.git"],
-                capture_output=True,
-                text=True,
-                check=True,
-            )
-
-            # Get all version tags and clean them up
-            versions = []
-            for ref in result.stdout.splitlines():
-                tag = ref.split("/")[-1]
-                if tag.startswith("v"):
-                    # Clean up Git ref notation and parse version
-                    clean_tag = tag.split("^")[0]
-                    try:
-                        versions.append(version.parse(clean_tag))
-                    except version.InvalidVersion:
-                        continue
-
-            # Sort with packaging.version comparison
-            if versions:
-                return str(max(versions))
-            return None
-
-        except subprocess.CalledProcessError:
-            return None
+            return self.version_checker.get_pypi_version(package)
+        return self.version_checker.get_github_version("dannystewart", package, use_ssh=True)
 
     @handle_keyboard_interrupt()
     def perform_update_stages(self) -> None:

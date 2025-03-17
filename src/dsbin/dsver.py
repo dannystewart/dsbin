@@ -3,88 +3,13 @@
 
 from __future__ import annotations
 
-import subprocess
-from dataclasses import dataclass
-from importlib import metadata
-
 from packaging import version
 
 from dsbase.text import color
+from dsbase.version import VersionChecker, VersionInfo
 
 
-@dataclass
-class PackageVersions:
-    """Package version information."""
-
-    name: str
-    current: str | None
-    latest: str | None
-
-
-def get_latest_version(package: str) -> str | None:
-    """Get latest version based on package source."""
-    if package == "dsbase":
-        return get_pypi_version(package)
-    return get_gitlab_version(package)
-
-
-def get_pypi_version(package: str) -> str | None:
-    """Get latest version from PyPI."""
-    try:
-        import requests
-
-        response = requests.get(f"https://pypi.org/pypi/{package}/json", timeout=5)
-        if response.status_code == 200:
-            return response.json()["info"]["version"]
-        return None
-    except Exception:
-        return None
-
-
-def get_gitlab_version(package: str) -> str | None:
-    """Get latest version from GitLab."""
-    gitlab_base = "https://gitlab.dannystewart.com/danny"
-    try:
-        result = subprocess.run(
-            ["git", "ls-remote", "--tags", f"{gitlab_base}/{package}.git"],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-
-        # Get all version tags and clean them up
-        versions = []
-        for ref in result.stdout.splitlines():
-            tag = ref.split("/")[-1]
-            if tag.startswith("v"):
-                # Clean up Git ref notation and parse version
-                clean_tag = tag.split("^")[0].lstrip("v")
-                try:
-                    versions.append(version.parse(clean_tag))
-                except version.InvalidVersion:
-                    continue
-
-        # Sort with packaging.version comparison
-        if versions:
-            return str(max(versions))
-        return None
-
-    except subprocess.CalledProcessError:
-        return None
-
-
-def get_package_info(package: str, check_latest: bool = False) -> PackageVersions:
-    """Get package version information."""
-    try:
-        current = metadata.version(package)
-    except metadata.PackageNotFoundError:
-        current = None
-
-    latest = get_latest_version(package) if check_latest else None
-    return PackageVersions(package, current, latest)
-
-
-def format_version_info(versions: PackageVersions) -> tuple[str, str]:
+def format_version_info(versions: VersionInfo) -> tuple[str, str]:
     """Format package status and version display."""
     current_version = color(f"{versions.current}", "green")
     latest_version = color(f"{versions.latest}", "yellow")
@@ -107,18 +32,35 @@ def format_version_info(versions: PackageVersions) -> tuple[str, str]:
 
 def main() -> None:
     """Show versions of DS packages."""
-    packages = ["dsbin", "dsbase"]  # Changed dsutil to dsbase
+    checker = VersionChecker()
+
+    # Define packages and their sources
+    packages = [
+        {
+            "name": "dsbin",
+            "source": "gitlab",
+            "host": "gitlab.dannystewart.com",
+            "owner": "danny",
+            "use_ssh": True,
+        },
+        {"name": "dsbase", "source": "pypi"},
+    ]
+
     any_updates = False
 
-    for package in packages:
-        versions = get_package_info(package, check_latest=True)
-        name = color(f"{package}:", "cyan", attrs=["bold"])
-        symbol, version = format_version_info(versions)
+    for pkg in packages:
+        pkg_name = pkg.pop("name")
+        source = pkg.pop("source")
 
-        print(f"{symbol} {name} {version}")
-        any_updates = any_updates or (
-            versions.latest and (not versions.current or versions.latest > versions.current)
-        )
+        # Check version information
+        info = checker.check_package(pkg_name, source=source, **pkg)
+
+        # Format and display the information
+        name = color(f"{pkg_name}:", "cyan", attrs=["bold"])
+        symbol, version_str = format_version_info(info)
+
+        print(f"{symbol} {name} {version_str}")
+        any_updates = any_updates or info.update_available
 
 
 if __name__ == "__main__":

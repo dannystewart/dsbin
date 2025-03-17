@@ -1,6 +1,6 @@
 [project]
 name = "dsbin"
-version = "0.12.2"
+version = "0.12.3"
 description = "Personal Python script library"
 authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
 urls = { repository = "https://github.com/dannystewart/dsbin" }

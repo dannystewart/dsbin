@@ -33,6 +33,7 @@ from pathlib import Path
 
 from dsbase.env import DSEnv
 from dsbase.log import LocalLogger
+from dsbase.shell import confirm_action
 from dsbase.util import dsbase_setup, handle_interrupt
 
 dsbase_setup()
@@ -893,8 +894,7 @@ def main() -> None:
 
         # Prompt for confirmation unless --force is used
         if not args.force:
-            confirm = input("Proceed with version bump? [y/N]: ").lower().strip()
-            if confirm != "y":
+            if not confirm_action("Proceed with version bump?"):
                 logger.info("Version bump cancelled.")
                 return
 

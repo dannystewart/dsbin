@@ -31,6 +31,7 @@ DEV_ROOT = Path("/home/danny/docker/prism-dev")
 SYNC_DIRS = [
     "config",  # All configs including private
     "data",  # All shared resources
+    "src/prism/bots",  # All individual bots
 ]
 
 # Individual files
@@ -48,6 +49,9 @@ EXCLUDE_PATTERNS = [
     "inactive_bots.toml",
     "inactive_bots.yaml",
     "logs/",
+    "src/prism/bots/__init__.py",
+    "src/prism/bots/bot_controller.py",
+    "src/prism/bots/.gitignore",
     "temp/",
     "tmp/",
 ]

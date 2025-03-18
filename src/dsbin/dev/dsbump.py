@@ -329,22 +329,18 @@ def _get_base_version(
 def _handle_explicit_version(version: str) -> None:
     """Validate explicit version number format.
 
-    Raises:
-        ValueError: If version number is invalid.
+    Supports formats like:
+    - 1.2.3
+    - 1.2.3a1
+    - 1.2.3.dev0
+    - 1.2.3.post1
     """
-    try:
-        if "-" in version:
-            version_part, _ = version.split("-", 1)
-            major, minor, patch = map(int, version_part.split("."))
-        else:
-            major, minor, patch = map(int, version.split("."))
-            if any(n < 0 for n in (major, minor, patch)):
-                logger.error("Invalid version number: %s. Numbers cannot be negative.", version)
-                sys.exit(1)
-    except ValueError as e:
-        if str(e).startswith("Invalid version number"):
-            raise
-        logger.error("Invalid format: %s. Must be three numbers separated by dots.", version)
+    # Parse version to extract the base part (major.minor.patch)
+    major, minor, patch, _, _ = parse_version(version)
+
+    # Validate the numbers
+    if any(n < 0 for n in (major, minor, patch)):
+        logger.error("Invalid version number: %s. Numbers cannot be negative.", version)
         sys.exit(1)
 
 

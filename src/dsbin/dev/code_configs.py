@@ -9,9 +9,9 @@ from typing import Final
 
 import requests
 
-from dsbase.diff import show_diff
 from dsbase.log import LocalLogger
 from dsbase.shell import confirm_action
+from dsbase.text.diff import show_diff
 
 logger = LocalLogger().get_logger(__name__)
 

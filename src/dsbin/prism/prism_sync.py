@@ -11,10 +11,10 @@ from typing import TYPE_CHECKING
 from halo import Halo
 from json5 import loads as json5_loads
 
-from dsbase.diff import show_diff
 from dsbase.log import LocalLogger
 from dsbase.paths import DSPaths
 from dsbase.shell import confirm_action
+from dsbase.text.diff import show_diff
 from dsbase.util import dsbase_setup, handle_interrupt
 
 if TYPE_CHECKING:

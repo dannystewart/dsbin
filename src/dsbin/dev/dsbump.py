@@ -412,7 +412,7 @@ def _handle_version_modifier(
 
     # Handle dev versions separately since they use dot notation
     if bump_type == BumpType.DEV:
-        if pre_type == "dev" and pre_num:
+        if pre_type == BumpType.DEV and pre_num is not None:
             return f"{major}.{minor}.{patch}.dev{pre_num + 1}"
         return f"{major}.{minor}.{patch + 1}.dev0"
 
@@ -430,11 +430,15 @@ def _handle_version_modifier(
             )
             sys.exit(1)
 
-    # Handle incrementing same type
-    if pre_num and pre_type == new_suffix:
-        return f"{major}.{minor}.{patch}{new_suffix}{pre_num + 1}"
+        # Handle incrementing same type (e.g., beta1 -> beta2)
+        if pre_type == bump_type and pre_num is not None:
+            return f"{major}.{minor}.{patch}{new_suffix}{pre_num + 1}"
 
-    # Starting new pre-release series (no previous pre-release)
+        # Handle moving to next pre-release stage (e.g., alpha1 -> beta1)
+        if pre_type.is_prerelease and bump_type.is_prerelease and pre_type != bump_type:
+            return f"{major}.{minor}.{patch}{new_suffix}1"
+
+    # Starting new pre-release series (no previous pre-release or different type)
     return f"{major}.{minor}.{patch + 1}{new_suffix}1"
 
 

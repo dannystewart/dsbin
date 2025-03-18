@@ -154,6 +154,20 @@ def parse_args() -> argparse.Namespace:
         "--message",
         help="custom commit message (default: 'Bump version to x.y.z')",
     )
+
+    # Mutually exclusive group for push options
+    push_group = parser.add_mutually_exclusive_group()
+    push_group.add_argument(
+        "--push",
+        action="store_true",
+        help="tag and push the current version without incrementing",
+    )
+    push_group.add_argument(
+        "--no-push",
+        action="store_true",
+        help="commit and tag changes but don't push to remote",
+    )
+
     return parser.parse_args()
 
 
@@ -283,6 +297,54 @@ def parse_version(version: str) -> tuple[int, int, int, BumpType | None, int | N
     except ValueError:
         logger.error("Invalid version format: %s. Numbers go left to right, champ.", version)
         sys.exit(1)
+
+
+@handle_interrupt()
+def tag_current_version(commit_message: str | None = None) -> None:
+    """Tag and push the current version without incrementing.
+
+    Args:
+        commit_message: Custom commit message (if None, default is used).
+    """
+    pyproject = Path("pyproject.toml")
+    if not pyproject.exists():
+        logger.error("No pyproject.toml found in current directory.")
+        sys.exit(1)
+
+    check_git_state()
+    current_version = get_version(pyproject)
+
+    # Commit any changes to pyproject.toml
+    result = subprocess.run(
+        ["git", "status", "--porcelain", "pyproject.toml"],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    if result.stdout.strip():
+        # There are changes to pyproject.toml
+        message = commit_message or f"Update version {current_version}"
+        subprocess.run(["git", "add", "pyproject.toml"], check=True)
+        subprocess.run(["git", "commit", "-m", message], check=True)
+
+    # Create and push tag
+    version_prefix = detect_version_prefix()
+    tag_name = f"{version_prefix}{current_version}"
+
+    if (  # Check if tag already exists
+        subprocess.run(["git", "rev-parse", tag_name], capture_output=True, check=False).returncode
+        == 0
+    ):
+        logger.error("Tag %s already exists.", tag_name)
+        sys.exit(1)
+
+    # Create tag and push
+    subprocess.run(["git", "tag", tag_name], check=True)
+    subprocess.run(["git", "push"], check=True)
+    subprocess.run(["git", "push", "--tags"], check=True)
+
+    logger.info("Successfully tagged and pushed version %s!", current_version)
 
 
 @handle_interrupt()
@@ -446,6 +508,7 @@ def update_version(
     bump_type: BumpType | str | list[BumpType] | None,
     cleanup: bool = False,
     commit_message: str | None = None,
+    push: bool = True,
 ) -> None:
     """Update version, create git tag, and push changes.
 
@@ -453,6 +516,7 @@ def update_version(
         bump_type: Version bump type(s) (BumpType or list of BumpType) or specific version string.
         cleanup: Whether to clean up pre-release tags.
         commit_message: Custom commit message (if None, default is used).
+        push: Whether to push changes to remote.
     """
     pyproject = Path("pyproject.toml")
     if not pyproject.exists():
@@ -474,10 +538,12 @@ def update_version(
         # Update version
         if bump_type is not None:
             _update_version_in_pyproject(pyproject, new_version)
-        handle_git_operations(new_version, bump_type, current_version, cleanup, commit_message)
-        logger.info(
-            "Successfully %s v%s!", "tagged" if bump_type is None else "updated to", new_version
+        handle_git_operations(
+            new_version, bump_type, current_version, cleanup, commit_message, push
         )
+        action = "tagged" if bump_type is None else "updated to"
+        push_status = "" if push else " (not pushed)"
+        logger.info("Successfully %s v%s%s!", action, new_version, push_status)
 
     except Exception as e:
         logger.error("Version update failed: %s", str(e))
@@ -713,6 +779,7 @@ def handle_git_operations(
     current_version: str,
     cleanup: bool = False,
     commit_message: str | None = None,
+    push: bool = True,
 ) -> None:
     """Handle git commit, tag, and push operations.
 
@@ -722,6 +789,7 @@ def handle_git_operations(
         current_version: The previous version string.
         cleanup: Whether to clean up pre-release tags.
         commit_message: Custom commit message (if None, default is used).
+        push: Whether to push changes to remote.
     """
     version_prefix = detect_version_prefix()
     tag_name = f"{version_prefix}{new_version}"
@@ -739,7 +807,24 @@ def handle_git_operations(
     if cleanup and should_perform_cleanup(bump_type, new_version):
         cleanup_tags(current_version, new_version)
 
-    create_and_push_tag(tag_name)
+    # Create tag
+    if (  # Check if tag already exists
+        subprocess.run(["git", "rev-parse", tag_name], capture_output=True, check=False).returncode
+        == 0
+    ):
+        logger.error("Tag %s already exists.", tag_name)
+        sys.exit(1)
+
+    subprocess.run(["git", "tag", tag_name], check=True)
+
+    if push:
+        # Push changes and tags
+        subprocess.run(["git", "push"], check=True)
+        subprocess.run(["git", "push", "--tags"], check=True)
+    else:
+        logger.info(
+            "Changes committed and tagged locally. Use 'git push && git push --tags' to push to remote."
+        )
 
 
 def parse_bump_types(type_args: list[str]) -> BumpType | list[BumpType] | str:
@@ -800,14 +885,28 @@ def main() -> None:
     """Perform version bump."""
     args = parse_args()
 
-    try:  # Default to patch if no types specified
+    try:
+        # Handle --push flag (tag current version without incrementing)
+        if args.push:
+            if args.type and args.type != [BumpType.PATCH.value]:
+                logger.error("--push cannot be used with version bump arguments")
+                sys.exit(1)
+            tag_current_version(commit_message=args.message)
+            return
+
+        # Default to patch if no types specified
         type_args = args.type or [BumpType.PATCH.value]
         bump_type = parse_bump_types(type_args)
 
         if args.preview:
             preview_version_bump(bump_type)
         else:
-            update_version(bump_type=bump_type, cleanup=args.cleanup, commit_message=args.message)
+            update_version(
+                bump_type=bump_type,
+                cleanup=args.cleanup,
+                commit_message=args.message,
+                push=not args.no_push,
+            )
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)

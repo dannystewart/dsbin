@@ -31,12 +31,11 @@ from enum import StrEnum
 from functools import total_ordering
 from pathlib import Path
 
-from dsbase import configure_traceback
 from dsbase.env import DSEnv
 from dsbase.log import LocalLogger
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import dsbase_setup, handle_interrupt
 
-configure_traceback()
+dsbase_setup()
 
 env = DSEnv()
 env.add_debug_var()
@@ -158,7 +157,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def check_git_state() -> None:
     """Check if we're in a git repository and on a valid branch."""
     try:  # Check if we're in a git repo
@@ -176,7 +175,7 @@ def check_git_state() -> None:
         sys.exit(1)
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def detect_version_prefix() -> str:
     """Detect whether versions are tagged with 'v' prefix based on existing tags.
 
@@ -212,7 +211,7 @@ def detect_version_prefix() -> str:
         return "v"
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def get_version(pyproject_path: Path) -> str:
     """Get current version from pyproject.toml."""
     content = pyproject_path.read_text()
@@ -286,7 +285,7 @@ def parse_version(version: str) -> tuple[int, int, int, BumpType | None, int | N
         sys.exit(1)
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def bump_version(bump_type: BumpType | str, current_version: str) -> str:
     """Calculate new version number based on bump type and current version.
 
@@ -442,7 +441,7 @@ def _handle_version_modifier(
     return f"{major}.{minor}.{patch + 1}{new_suffix}1"
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def update_version(
     bump_type: BumpType | str | list[BumpType] | None,
     cleanup: bool = False,
@@ -535,7 +534,7 @@ def _update_version_in_pyproject(pyproject: Path, new_version: str) -> None:
         sys.exit(1)
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def cleanup_tags(old_version: str, new_version: str) -> None:
     """Remove all pre-release tags for relevant versions.
 
@@ -606,7 +605,7 @@ def _identify_tag_patterns(old_version: str, new_version: str) -> list[str]:
     return patterns
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def _remove_found_tags(found_tags: set[str]) -> None:
     """Remove identified pre-release tags.
 
@@ -707,7 +706,7 @@ def create_and_push_tag(tag_name: str) -> None:
     subprocess.run(["git", "push", "--tags"], check=True)
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def handle_git_operations(
     new_version: str,
     bump_type: BumpType | str | list[BumpType] | None,

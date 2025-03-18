@@ -6,8 +6,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import LocalLogger, Text, TimeAwareLogger, configure_traceback
 from dsbase.animation import walking_animation
+from dsbase.log import LocalLogger, TimeAwareLogger
+from dsbase.text import Text
+from dsbase.util import dsbase_setup
 
 from dsbin.workcalc.bounce_plugin import BounceDataSource
 from dsbin.workcalc.git_plugin import GitDataSource
@@ -23,7 +25,7 @@ if TYPE_CHECKING:
     from dsbin.workcalc.plugin import DataSourcePlugin
     from dsbin.workcalc.work_item import WorkItem
 
-configure_traceback()
+dsbase_setup()
 
 
 def parse_date(date_str: str) -> datetime.date:

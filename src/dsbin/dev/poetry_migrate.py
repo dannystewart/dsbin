@@ -9,14 +9,15 @@ import tomlkit
 import tomlkit.toml_document
 from tomlkit.items import Array
 
-from dsbase import LocalLogger, configure_traceback
+from dsbase.log import LocalLogger
+from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from tomlkit.items import Array
 
-configure_traceback()
+dsbase_setup()
 
 POETRY_TO_PEP621_MAPPING = {
     "name": "name",

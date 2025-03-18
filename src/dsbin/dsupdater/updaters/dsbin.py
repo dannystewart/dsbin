@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import handle_interrupt
 from dsbase.version import VersionChecker
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage
@@ -48,7 +48,7 @@ class DSPackageUpdater(UpdateManager):
             return self.version_checker.get_pypi_version(package)
         return self.version_checker.get_github_version("dannystewart", package, use_ssh=True)
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def perform_update_stages(self) -> None:
         """Update pip itself, then update all installed packages."""
         # Get current package versions before uninstalling

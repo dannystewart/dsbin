@@ -9,12 +9,13 @@ import os
 import subprocess
 from pathlib import Path
 
-from dsbase import LocalLogger, configure_traceback
 from dsbase.files import delete_files
+from dsbase.log import LocalLogger
 from dsbase.shell import confirm_action
 from dsbase.text import color
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 logger = LocalLogger().get_logger()
 

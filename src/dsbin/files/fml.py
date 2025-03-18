@@ -14,10 +14,10 @@ from dotenv import load_dotenv
 from requests import Session
 from requests.auth import HTTPBasicAuth
 
-from dsbase import configure_traceback
 from dsbase.text import color as colored
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 # Load environment variables
 script_directory = Path(__file__).resolve().parent

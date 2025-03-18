@@ -51,8 +51,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import LocalLogger
 from dsbase.env import DSEnv
+from dsbase.log import LocalLogger
 from dsbase.notifiers import TelegramSender
 from dsbase.paths import DSPaths
 from dsbase.shell import confirm_action, is_root_user
@@ -62,7 +62,6 @@ if TYPE_CHECKING:
 
 paths = DSPaths("dockermounter")
 LOG_FILE_PATH = paths.get_log_path("dockermounter.log")
-
 logger = LocalLogger().get_logger(log_file=LOG_FILE_PATH)
 
 POSSIBLE_SHARES = ["Danny", "Downloads", "Music", "Media", "Storage"]

@@ -12,10 +12,10 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dsbase import configure_traceback
 from dsbase.files import delete_files, list_files
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def delete_mp3(directory: str | Path, dry_run: bool = False) -> None:

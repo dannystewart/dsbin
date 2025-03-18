@@ -23,10 +23,10 @@ from pathlib import Path
 
 from halo import Halo
 
-from dsbase import LocalLogger, configure_traceback
+from dsbase.log import LocalLogger
 from dsbase.media import ffmpeg_audio
-from dsbase.shell import handle_keyboard_interrupt
 from dsbase.text import color
+from dsbase.util import dsbase_setup, handle_interrupt
 
 from dsbin.wpmusic.audio_track import AudioTrack
 from dsbin.wpmusic.file_manager import FileManager
@@ -35,7 +35,7 @@ from dsbin.wpmusic.track_identifier import TrackIdentifier
 from dsbin.wpmusic.upload_tracker import UploadTracker
 from dsbin.wpmusic.wp_config import Config
 
-configure_traceback()
+dsbase_setup()
 
 
 class WPMusic:
@@ -89,7 +89,7 @@ class WPMusic:
         # Process files
         self.process()
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def process(self) -> None:
         """Process and upload multiple audio files or display history."""
         if self.args.force_refresh:

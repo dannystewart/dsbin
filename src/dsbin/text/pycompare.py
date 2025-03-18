@@ -13,11 +13,10 @@ from pathlib import Path
 
 import inquirer
 
-from dsbase import configure_traceback
-from dsbase.shell import handle_keyboard_interrupt
 from dsbase.text import color, print_colored
+from dsbase.util import dsbase_setup, handle_interrupt
 
-configure_traceback()
+dsbase_setup()
 
 
 def process_lists(
@@ -184,7 +183,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def main() -> None:
     """Compare two lists."""
     ignore_case = True

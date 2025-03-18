@@ -36,8 +36,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from dsbase import TZ, LocalLogger
+from dsbase.log import LocalLogger
 from dsbase.macos import get_timestamps
+from dsbase.time import TZ
 
 
 @dataclass

@@ -33,18 +33,18 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbase import LocalLogger, configure_traceback
 from dsbase.argparser import ArgParser
 from dsbase.files import delete_files, move_file
+from dsbase.log import LocalLogger
 from dsbase.progress import halo_progress, with_retries
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import dsbase_setup, handle_interrupt
 
 if TYPE_CHECKING:
     import argparse
     from collections.abc import Iterator
     from logging import Logger
 
-configure_traceback()
+dsbase_setup()
 
 
 @contextmanager
@@ -293,7 +293,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def main() -> None:
     """Run the DMG creation process."""
     args = parse_arguments()

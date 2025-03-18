@@ -17,11 +17,11 @@ import time
 
 from natsort import natsorted
 
-from dsbase import configure_traceback
 from dsbase.shell import confirm_action
 from dsbase.text import color
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 BACKUP_PATH = "/Users/danny/Library/CloudStorage/OneDrive-Personal/Documents/Archive/Backups/Bots"
 

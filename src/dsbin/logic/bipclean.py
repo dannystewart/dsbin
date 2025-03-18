@@ -16,11 +16,12 @@ from pathlib import Path
 
 import inquirer
 
-from dsbase import TZ, configure_traceback
 from dsbase.files import FileManager
 from dsbase.text import print_colored
+from dsbase.time import TZ
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 DEFAULT_HOURS = 2
 

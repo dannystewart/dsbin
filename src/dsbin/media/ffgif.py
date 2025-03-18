@@ -8,13 +8,13 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from dsbase import configure_traceback
 from dsbase.argparser import ArgParser
+from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse
 
-configure_traceback()
+dsbase_setup()
 
 
 def parse_arguments() -> argparse.Namespace:

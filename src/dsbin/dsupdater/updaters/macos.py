@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import handle_interrupt
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage
 
@@ -31,12 +31,12 @@ class MacOSSoftwareUpdate(UpdateManager):
         ),
     }
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def perform_update_stages(self) -> None:
         """Install updates using softwareupdate."""
         self.run_stage("check_in_background")
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def force_install_now(self) -> None:
         """Check for updates in the background."""
         self.run_stage("force_install_now")

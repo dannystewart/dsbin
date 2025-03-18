@@ -10,14 +10,14 @@ from typing import TYPE_CHECKING, Any
 import tomlkit
 import tomlkit.toml_document
 
-from dsbase import configure_traceback
+from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from tomlkit.items import Table
 
-configure_traceback()
+dsbase_setup()
 
 
 def find_pyproject_files(start_path: Path) -> list[Path]:

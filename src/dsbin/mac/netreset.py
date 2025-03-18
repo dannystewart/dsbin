@@ -10,11 +10,11 @@ import sys
 import time
 from typing import Any
 
-from dsbase import configure_traceback
 from dsbase.shell import acquire_sudo, confirm_action
 from dsbase.text import color as colored
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 IP_TO_PING = "9.9.9.9"
 

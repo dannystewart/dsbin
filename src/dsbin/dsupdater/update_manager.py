@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import handle_interrupt
 
 from dsbin.dsupdater.shell_helper import ShellHelper
 
@@ -97,7 +97,7 @@ class UpdateManager(ABC):
         self.privileges: PrivilegeHelper = self.updater.privileges
         self.shell: ShellHelper = ShellHelper(self.updater)
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def update(self) -> None:
         """Run the requested updates. This is a wrapper for perform_update_stages with start and end
         messages, as well as consistent handling for various exceptions and error conditions.
@@ -119,13 +119,13 @@ class UpdateManager(ABC):
                 self.logger.error("[%s] %s", self.display_name, self.error_message % str(e))
             self.update_successful = False
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     @abstractmethod
     def perform_update_stages(self) -> None:
         """Perform the stages needed to complete the update process."""
         raise NotImplementedError
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def run_stage(
         self,
         stage_name: str,

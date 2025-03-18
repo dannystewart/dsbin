@@ -8,12 +8,12 @@ import argparse
 import sys
 from pathlib import Path
 
-from dsbase import configure_traceback
 from dsbase.files import list_files
 from dsbase.media import MediaManager
 from dsbase.text import color as colored
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 allowed_extensions = [".aiff", ".aif", ".wav", ".m4a", ".flac"]
 

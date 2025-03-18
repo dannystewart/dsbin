@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from dsbase import Text
+from dsbase.text import Text
 
 if TYPE_CHECKING:
     from datetime import datetime

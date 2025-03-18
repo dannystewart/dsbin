@@ -13,9 +13,9 @@ import os
 import subprocess
 from pathlib import Path
 
-from dsbase import configure_traceback
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def run_command(command: str, env: dict[str, str]) -> None:

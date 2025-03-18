@@ -8,9 +8,9 @@ import os
 import subprocess
 import sys
 
-from dsbase import configure_traceback
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def log_message(message: str) -> None:

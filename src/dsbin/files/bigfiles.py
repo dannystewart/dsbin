@@ -12,10 +12,10 @@ import operator
 from collections import defaultdict
 from pathlib import Path
 
-from dsbase import configure_traceback
 from dsbase.text import color as colored
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def bytes_to_readable(size_in_bytes: float) -> str:

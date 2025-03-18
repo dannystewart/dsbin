@@ -5,8 +5,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbase import LocalLogger
 from dsbase.files import list_files
+from dsbase.log import LocalLogger
 from dsbase.macos import get_timestamps
 
 from dsbin.workcalc.plugin import DataSourcePlugin

@@ -361,14 +361,14 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "dsbase"
-version = "0.1.2"
+version = "0.2.0.dev2"
 description = "Python utilities and helpers for logging, environment management, file operations, and more"
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "dsbase-0.1.2-py3-none-any.whl", hash = "sha256:1f206ab642d810c5c4e2ae58f162de0d82e3694d2584f2584597804518ec7b1b"},
-    {file = "dsbase-0.1.2.tar.gz", hash = "sha256:d9889e6cd30d0085b53dc81883384053ddfb3ddc3c674944b024afbaa8ae8f33"},
+    {file = "dsbase-0.2.0.dev2-py3-none-any.whl", hash = "sha256:21208a855356a81a4669229262f61922205cc4f6a4501d3c098aae5f37c17c44"},
+    {file = "dsbase-0.2.0.dev2.tar.gz", hash = "sha256:524dc9e2774728ba1be8e0330e4573628faf1fee4bb30f1da60339f289352eed"},
 ]
 
 [package.dependencies]
@@ -1521,4 +1521,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "3a7b5b1416a6a85274f526f96203ece2cb71b1daac4e85aa6b9b5b6e412d0f98"
+content-hash = "6f53cf3744711c3d50dfd0849983420a211aa458ff19e6697edf1ba9ca82ddb4"

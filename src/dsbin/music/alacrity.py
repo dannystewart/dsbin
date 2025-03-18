@@ -17,14 +17,14 @@ from typing import ClassVar
 
 from natsort import natsorted
 
-from dsbase import configure_traceback
 from dsbase.files import FileManager
 from dsbase.media import MediaManager
 from dsbase.progress import conversion_list_context
 from dsbase.shell import confirm_action
 from dsbase.text import print_colored
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 class ALACrity:

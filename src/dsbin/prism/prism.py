@@ -10,12 +10,13 @@ import sys
 from pathlib import Path
 from threading import Thread
 
-from dsbase import LocalLogger, configure_traceback
+from dsbase.log import LocalLogger
+from dsbase.util import dsbase_setup
 
 from dsbin.prism.prism_config import Action, PrismConfig
 from dsbin.prism.prism_sync import main as sync_instances
 
-configure_traceback()
+dsbase_setup()
 
 logger = LocalLogger().get_logger(level="info")
 

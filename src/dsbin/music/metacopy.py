@@ -9,9 +9,10 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dsbase import LocalLogger, configure_traceback
+from dsbase.log import LocalLogger
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 logger = LocalLogger().get_logger("metacopy")
 

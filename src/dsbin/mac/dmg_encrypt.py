@@ -18,14 +18,16 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import LocalLogger, configure_traceback
 from dsbase.argparser import ArgParser
+from dsbase.log import LocalLogger
 from dsbase.progress import halo_progress
+from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse
 
-configure_traceback()
+dsbase_setup()
+
 logger = LocalLogger().get_logger(simple=True)
 
 

@@ -10,10 +10,10 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from dsbase import configure_traceback
 from dsbase.files import find_duplicate_files_by_hash
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def main() -> None:

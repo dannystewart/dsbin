@@ -9,8 +9,8 @@ from typing import TYPE_CHECKING, Any
 
 import mysql.connector
 
-from dsbase import LocalLogger
 from dsbase.db import MySQLHelper, SQLiteHelper
+from dsbase.log import LocalLogger
 
 if TYPE_CHECKING:
     from collections.abc import Generator

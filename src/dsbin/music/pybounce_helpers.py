@@ -5,9 +5,10 @@ from __future__ import annotations
 import sqlite3
 from typing import TYPE_CHECKING, Any, Protocol
 
-from dsbase import LocalLogger, configure_traceback
 from dsbase.animation import walking_animation
+from dsbase.log import LocalLogger
 from dsbase.tools import async_retry_on_exception
+from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -15,7 +16,8 @@ if TYPE_CHECKING:
 
     from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 
-configure_traceback()
+dsbase_setup()
+
 logger = LocalLogger().get_logger(level="info")
 
 

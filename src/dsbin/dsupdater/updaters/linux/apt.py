@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import handle_interrupt
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage
 
@@ -36,7 +36,7 @@ class APTPackageManager(UpdateManager):
         ),
     }
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def perform_update_stages(self) -> None:
         """Update packages using APT."""
         self.run_stage("update")

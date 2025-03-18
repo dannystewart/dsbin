@@ -15,10 +15,10 @@ import re
 from importlib.metadata import entry_points
 from pathlib import Path
 
-from dsbase import configure_traceback
 from dsbase.text import color, print_colored
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 # Define column widths
 COLUMN_BUFFER = 2

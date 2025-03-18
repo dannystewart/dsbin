@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import handle_interrupt
 
 if TYPE_CHECKING:
     from argparse import Namespace
@@ -82,7 +82,7 @@ class PrivilegeHelper:
         if self.test_sudo_only:
             self.return_whether_sudo_is_needed_then_exit(exit_ok=self.has_sudo)
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def acquire_sudo_if_needed(self) -> None:
         """Acquire sudo privileges."""
         if self.has_sudo or not self.needs_sudo:

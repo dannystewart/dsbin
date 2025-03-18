@@ -13,13 +13,13 @@ from __future__ import annotations
 import subprocess
 import sys
 
-from dsbase import configure_traceback
 from dsbase.files import delete_files, move_file
 from dsbase.media import ffmpeg_video
 from dsbase.progress import halo_progress
 from dsbase.text import print_colored
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def get_default_filename(url: str) -> str:

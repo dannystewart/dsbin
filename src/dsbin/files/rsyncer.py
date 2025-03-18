@@ -11,11 +11,10 @@ from pathlib import Path
 import inquirer
 import pyperclip
 
-from dsbase import configure_traceback
-from dsbase.shell import handle_keyboard_interrupt
 from dsbase.text import print_colored
+from dsbase.util import dsbase_setup, handle_interrupt
 
-configure_traceback()
+dsbase_setup()
 
 
 def get_full_path(path: str, filename: str) -> str:
@@ -35,7 +34,7 @@ def get_first_item(path: str) -> str | None:
         return None
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def choose_operation() -> str:
     """Choose the command operation: copy, move, or synchronize."""
     questions = [
@@ -55,7 +54,7 @@ def choose_operation() -> str:
     return answers["operation"]
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def get_paths() -> tuple[dict[str, str] | None, bool]:
     """Get the source and destination paths."""
     questions = [
@@ -89,7 +88,7 @@ def get_paths() -> tuple[dict[str, str] | None, bool]:
     return paths, True
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def clarify_result(paths: dict) -> bool:
     """Clarify the result by showing the full path of the first item in the folder."""
     source = paths["source"]
@@ -119,7 +118,7 @@ def clarify_result(paths: dict) -> bool:
     return False
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def check_exclusions(command: str) -> str:
     """Get any exclusions and whether exclusions should also be deleted."""
     exclusions = []
@@ -143,7 +142,7 @@ def construct_command(base_command: str, exclusions: list, paths: dict) -> str:
     return f"{base_command} {exclusions_str} '{paths['source']}' '{paths['destination']}'"
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def main() -> None:
     """Build an rsync command interactively."""
     command = choose_operation()

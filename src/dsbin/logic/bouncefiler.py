@@ -11,16 +11,17 @@ from pathlib import Path
 
 import inquirer
 
-from dsbase import LocalLogger, configure_traceback
 from dsbase.animation import walking_animation
 from dsbase.env import DSEnv
 from dsbase.files import FileManager
+from dsbase.log import LocalLogger
 from dsbase.shell import confirm_action
 from dsbase.text import color
+from dsbase.util import dsbase_setup
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 
-configure_traceback()
+dsbase_setup()
 
 env = DSEnv()
 env.add_debug_var()

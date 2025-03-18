@@ -18,14 +18,14 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import LocalLogger, configure_traceback
+from dsbase.log import LocalLogger
 from dsbase.progress import halo_progress
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import dsbase_setup, handle_interrupt
 
 if TYPE_CHECKING:
     from types import FrameType
 
-configure_traceback()
+dsbase_setup()
 
 logger = LocalLogger().get_logger()
 
@@ -158,7 +158,7 @@ def main() -> None:
     def interrupt_handler(signum: int = 0, frame: FrameType | None = None) -> None:  # noqa: ARG001
         cleanup_files(largefiles_dir, error=True)
 
-    @handle_keyboard_interrupt(callback=interrupt_handler, use_newline=True, logger=logger)
+    @handle_interrupt(callback=interrupt_handler, use_newline=True, logger=logger)
     def fill_disk() -> None:
         nonlocal iteration, completed_normally
 

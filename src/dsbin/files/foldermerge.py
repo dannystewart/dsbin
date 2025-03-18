@@ -7,12 +7,12 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from dsbase import configure_traceback
 from dsbase.files import sha256_checksum
 from dsbase.shell import confirm_action
 from dsbase.text import color as colored
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def merge_folders(first_folder: str, second_folder: str, dry_run: bool = False) -> None:

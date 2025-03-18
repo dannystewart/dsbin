@@ -21,9 +21,9 @@ import colorama
 import readchar
 from colorama import Fore, Style
 
-from dsbase import configure_traceback
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def format_path(path: str, base_dir: str) -> str:

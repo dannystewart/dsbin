@@ -12,9 +12,8 @@ from typing import TYPE_CHECKING
 
 from dsbase.argparser import ArgParser
 from dsbase.log import LocalLogger
-from dsbase.shell import handle_keyboard_interrupt
 from dsbase.text import Text, color, print_colored
-from dsbase.tools import configure_traceback
+from dsbase.util import dsbase_setup, handle_interrupt
 
 from dsbin.dsupdater import updaters
 from dsbin.dsupdater.privilege_helper import PrivilegeHelper
@@ -24,7 +23,7 @@ from dsbin.dsupdater.updaters.macos import MacOSSoftwareUpdate
 if TYPE_CHECKING:
     from argparse import Namespace
 
-configure_traceback()
+dsbase_setup()
 
 
 class Updater:
@@ -137,7 +136,7 @@ class Updater:
             if not updater.skip_auto_add:
                 updater_list.append(updater)
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def run_updater_list(self, updater_list: list[UpdateManager]) -> None:
         """Run the provided list of updaters."""
         for updater in updater_list:
@@ -146,7 +145,7 @@ class Updater:
             if updater.update_successful:
                 self.anything_updated = True
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def run_individual_updater(self, updater_name: str) -> None:
         """Run a specific individual updater by name."""
         for updater_class in self.updater_classes:
@@ -171,7 +170,7 @@ class Updater:
                 return
         self.logger.error("Updater '%s' not found.", updater_name)
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def run_softwareupdate_on_macos(self, manual: bool = False) -> None:
         """Handle softwareupdate on macOS separately."""
         if platform.system() == "Darwin" and shutil.which("softwareupdate"):

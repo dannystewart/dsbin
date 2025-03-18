@@ -12,14 +12,14 @@ import argparse
 import os
 from pathlib import Path
 
-from dsbase import animation, configure_traceback
-from dsbase.shell import confirm_action, handle_keyboard_interrupt
+from dsbase.shell import animation, confirm_action
 from dsbase.text import color as colored
+from dsbase.util import dsbase_setup, handle_interrupt
 
-configure_traceback()
+dsbase_setup()
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def find_python_version_files(start_path: str) -> list[str]:
     """Find .python-version files in the directory and its subdirectories.
 
@@ -38,7 +38,7 @@ def find_python_version_files(start_path: str) -> list[str]:
     return file_paths
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def update_python_version_file(file_path: str | Path, old_version: str, new_version: str) -> None:
     """Updates the Python version in the specified file.
 
@@ -56,7 +56,7 @@ def update_python_version_file(file_path: str | Path, old_version: str, new_vers
         print(f"Updated {file_path}")
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def main(start_path: str, old_version: str, new_version: str) -> None:
     """Recursively searches for .python-version files, lists them, and updates after confirmation.
 

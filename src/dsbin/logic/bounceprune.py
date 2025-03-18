@@ -29,18 +29,18 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import configure_traceback
 from dsbase.animation import walking_animation
 from dsbase.files import delete_files
 from dsbase.shell import confirm_action
 from dsbase.text import color, print_colored
+from dsbase.util import dsbase_setup
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 
 if TYPE_CHECKING:
     from datetime import datetime
 
-configure_traceback()
+dsbase_setup()
 
 
 @dataclass

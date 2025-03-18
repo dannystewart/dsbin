@@ -8,7 +8,7 @@ from mutagen.id3._frames import APIC, TALB, TCON, TDRC, TIT2, TPE1, TRCK  # noqa
 from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4, MP4Cover
 
-from dsbase import LocalLogger
+from dsbase.log import LocalLogger
 
 if TYPE_CHECKING:
     from pathlib import Path

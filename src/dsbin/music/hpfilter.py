@@ -37,13 +37,13 @@ from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
 
-from dsbase import configure_traceback
 from dsbase.text import color, print_colored
+from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-configure_traceback()
+dsbase_setup()
 
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 warnings.filterwarnings("ignore", category=scipy.io.wavfile.WavFileWarning)

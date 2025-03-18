@@ -8,8 +8,9 @@ import re
 import subprocess
 import sys
 
-from dsbase.shell import confirm_action, handle_keyboard_interrupt
+from dsbase.shell import confirm_action
 from dsbase.text import print_colored
+from dsbase.util import handle_interrupt
 
 
 def run_git_command(command: str | list[str]) -> str:
@@ -44,7 +45,7 @@ def update_tag_in_repo(tag: str, new_tag: str, description: str) -> None:
         sys.exit(1)
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def get_updated_name_and_description(tag: str, new_tag: str | None = None) -> tuple[str, str]:
     """Ask the user for the new tag name and description if not already provided."""
     if not new_tag:
@@ -61,7 +62,7 @@ def get_updated_name_and_description(tag: str, new_tag: str | None = None) -> tu
     return new_tag, description
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def push_tags_if_desired() -> None:
     """Push tags to remote if desired."""
     if confirm_action("Do you want to push the tags to remote?"):
@@ -80,7 +81,7 @@ def validate_tag_name(tag: str) -> bool:
     return bool(re.match(r"^[\w.-]+$", tag))
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def main() -> None:
     """Replace an existing Git tag with a new tag name and description."""
     tag = sys.argv[1].strip() if len(sys.argv) >= 2 else None

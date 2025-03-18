@@ -22,15 +22,16 @@ from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
-from dsbase import TZ, LocalLogger, configure_traceback
 from dsbase.env import DSEnv
+from dsbase.log import LocalLogger
 from dsbase.macos import get_timestamps
 from dsbase.paths import DSPaths
-from dsbase.shell import async_handle_keyboard_interrupt
+from dsbase.time import TZ
+from dsbase.util import async_handle_interrupt, dsbase_setup
 
 from .pybounce_helpers import SQLiteManager
 
-configure_traceback()
+dsbase_setup()
 
 env = DSEnv()
 env.add_var("PYBOUNCE_TELEGRAM_API_ID", attr_name="api_id", var_type=str)
@@ -233,7 +234,7 @@ class TelegramUploader:
             logger.warning("Skipping '%s'.", file)
 
 
-@async_handle_keyboard_interrupt()
+@async_handle_interrupt()
 async def run() -> None:
     """Upload files to a Telegram channel."""
     # Parse command-line arguments

@@ -4,7 +4,7 @@ import platform
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import handle_interrupt
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage, UpdateStageFailedError
 
@@ -33,7 +33,7 @@ class ChezmoiPackageManager(UpdateManager):
         ),
     }
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def perform_update_stages(self) -> None:
         """Update dotfiles using Chezmoi."""
         try:

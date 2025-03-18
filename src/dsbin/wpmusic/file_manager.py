@@ -9,10 +9,10 @@ import paramiko  # type: ignore
 import pyperclip
 from scp import SCPClient
 
-from dsbase import LocalLogger
 from dsbase.files import delete_files
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.log import LocalLogger
 from dsbase.text import color as colored
+from dsbase.util import handle_interrupt
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack
@@ -61,7 +61,7 @@ class FileManager:
 
         return base_filename or ""
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def prompt_for_custom_filename(self, default_filename: str) -> str | None:
         """Prompt the user to enter a custom filename."""
         questions = [

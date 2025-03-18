@@ -11,15 +11,16 @@ from typing import TYPE_CHECKING
 from halo import Halo
 from json5 import loads as json5_loads
 
-from dsbase import LocalLogger, configure_traceback
 from dsbase.diff import show_diff
+from dsbase.log import LocalLogger
 from dsbase.paths import DSPaths
-from dsbase.shell import confirm_action, handle_keyboard_interrupt
+from dsbase.shell import confirm_action
+from dsbase.util import dsbase_setup, handle_interrupt
 
 if TYPE_CHECKING:
     from collections.abc import Iterator
 
-configure_traceback()
+dsbase_setup()
 
 logger = LocalLogger().get_logger(level="info", simple=True)
 
@@ -257,7 +258,7 @@ def get_changed_files(
             yield source_path, target_path
 
 
-@handle_keyboard_interrupt(message="Sync interrupted by user.", logger=logger)
+@handle_interrupt(message="Sync interrupted by user.", logger=logger)
 def sync_file(source: Path, target: Path) -> bool:
     """Sync a single file, showing diff if text file."""
     if not source.exists():
@@ -308,7 +309,7 @@ def sync_file(source: Path, target: Path) -> bool:
     return False
 
 
-@handle_keyboard_interrupt(message="Sync interrupted by user.", logger=logger)
+@handle_interrupt(message="Sync interrupted by user.", logger=logger)
 def sync_directory(source_dir: Path, target_dir: Path) -> list[str]:
     """Sync a directory, returning list of changed files."""
     changed_files = []
@@ -342,7 +343,7 @@ def sync_directory(source_dir: Path, target_dir: Path) -> list[str]:
     return changed_files
 
 
-@handle_keyboard_interrupt(message="Sync interrupted by user.", logger=logger)
+@handle_interrupt(message="Sync interrupted by user.", logger=logger)
 def sync_instances(source_root: Path, target_root: Path) -> None:
     """Sync specified directories and files between instances."""
     changes_made = []
@@ -376,7 +377,7 @@ def sync_instances(source_root: Path, target_root: Path) -> None:
         logger.info("✔ Files in sync")
 
 
-@handle_keyboard_interrupt(message="Sync interrupted by user.", logger=logger)
+@handle_interrupt(message="Sync interrupted by user.", logger=logger)
 def main() -> None:
     """Sync files between prod and dev instances."""
     if confirm_action("Perform sync from dev to prod?", prompt_color="blue"):

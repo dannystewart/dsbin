@@ -13,12 +13,12 @@ import sys
 from enum import StrEnum
 from pathlib import Path
 
-from dsbase import configure_traceback
 from dsbase.files import FileManager
 from dsbase.media import MediaManager
 from dsbase.text import print_colored
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 LOGIC_VERSION_PATTERN = re.compile(r"^(10|11)\.\d+(?:\.\d+)?$")
 

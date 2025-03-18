@@ -22,8 +22,8 @@ import pycountry
 import requests
 
 from dsbase.progress import halo_progress
-from dsbase.shell import handle_keyboard_interrupt
 from dsbase.text import color, print_colored
+from dsbase.util import handle_interrupt
 
 from .ip_sources import CITY_NAMES, IP_SOURCES, REGION_NAMES, USA_NAMES
 
@@ -237,7 +237,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def main() -> None:
     """Main function."""
     args = parse_args()

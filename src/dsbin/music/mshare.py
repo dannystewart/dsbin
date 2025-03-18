@@ -19,13 +19,14 @@ from typing import ClassVar
 
 import inquirer
 
-from dsbase import LocalLogger, animation, configure_traceback
+from dsbase.log import LocalLogger
 from dsbase.media import find_bit_depth
 from dsbase.progress import halo_progress
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.shell import animation
 from dsbase.text import color as colored
+from dsbase.util import dsbase_setup, handle_interrupt
 
-configure_traceback()
+dsbase_setup()
 
 
 @dataclass
@@ -264,7 +265,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-@handle_keyboard_interrupt()
+@handle_interrupt()
 def main() -> None:
     """Convert to desired formats."""
     # Start the loading animation

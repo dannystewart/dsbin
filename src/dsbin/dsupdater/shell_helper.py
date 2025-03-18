@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import pexpect
 
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import handle_interrupt
 
 from dsbin.dsupdater.output_processor import OutputProcessor
 
@@ -29,7 +29,7 @@ class ShellHelper:
         self.logger: Logger = updater.logger
         self.debug: bool = updater.debug
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def run_shell_command(
         self,
         command: str,

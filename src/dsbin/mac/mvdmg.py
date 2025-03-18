@@ -8,9 +8,9 @@ import argparse
 import os
 import shutil
 
-from dsbase import configure_traceback
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def parse_arguments() -> argparse.Namespace:

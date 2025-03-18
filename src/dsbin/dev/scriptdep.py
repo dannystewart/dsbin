@@ -10,9 +10,9 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
-from dsbase import configure_traceback
+from dsbase.util import dsbase_setup
 
-configure_traceback()
+dsbase_setup()
 
 
 def run_tool(cmd: list, cwd: str | None = None) -> tuple[str, str]:

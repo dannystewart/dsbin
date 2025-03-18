@@ -4,7 +4,7 @@ import operator
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from dsbase import Text
+from dsbase.text import Text
 
 if TYPE_CHECKING:
     from datetime import date, datetime

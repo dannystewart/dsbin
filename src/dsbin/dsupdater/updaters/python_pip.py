@@ -4,7 +4,7 @@ import platform
 from dataclasses import dataclass
 from typing import ClassVar
 
-from dsbase.shell import handle_keyboard_interrupt
+from dsbase.util import handle_interrupt
 
 from dsbin.dsupdater.update_manager import UpdateManager, UpdateStage
 
@@ -38,7 +38,7 @@ class PythonPipUpdater(UpdateManager):
         ),
     }
 
-    @handle_keyboard_interrupt()
+    @handle_interrupt()
     def perform_update_stages(self) -> None:
         """Update pip itself, then update all installed packages."""
         # First upgrade pip itself

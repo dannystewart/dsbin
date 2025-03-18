@@ -304,6 +304,8 @@ def parse_version(version: str) -> tuple[int, int, int, BumpType | None, int | N
 def tag_current_version(commit_message: str | None = None) -> None:
     """Tag and push the current version without incrementing.
 
+    Creates a new commit with the current version number, then tags and pushes it.
+
     Args:
         commit_message: Custom commit message (if None, default is used).
     """
@@ -314,34 +316,29 @@ def tag_current_version(commit_message: str | None = None) -> None:
 
     check_git_state()
     current_version = get_version(pyproject)
-
-    # Commit any changes to pyproject.toml
-    result = subprocess.run(
-        ["git", "status", "--porcelain", "pyproject.toml"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
-
-    if result.stdout.strip():
-        # There are changes to pyproject.toml
-        message = commit_message or f"Update version {current_version}"
-        subprocess.run(["git", "add", "pyproject.toml"], check=True)
-        subprocess.run(["git", "commit", "-m", message], check=True)
-
-    # Create and push tag
     version_prefix = detect_version_prefix()
     tag_name = f"{version_prefix}{current_version}"
 
-    if (  # Check if tag already exists
+    # Check if tag already exists
+    if (
         subprocess.run(["git", "rev-parse", tag_name], capture_output=True, check=False).returncode
         == 0
     ):
         logger.error("Tag %s already exists.", tag_name)
         sys.exit(1)
 
-    # Create tag and push
+    # Create a new commit with the current version number
+    has_other_changes = commit_version_change(current_version, commit_message)
+    if has_other_changes:
+        logger.info(
+            "Committed pyproject.toml without version change. "
+            "Other changes in the working directory were skipped and preserved."
+        )
+
+    # Create tag
     subprocess.run(["git", "tag", tag_name], check=True)
+
+    # Push changes and tags
     subprocess.run(["git", "push"], check=True)
     subprocess.run(["git", "push", "--tags"], check=True)
 
@@ -857,31 +854,6 @@ def parse_bump_types(type_args: list[str]) -> BumpType | list[BumpType] | str:
     return bump_types if len(bump_types) > 1 else bump_types[0]
 
 
-def preview_version_bump(bump_type: BumpType | list[BumpType] | str) -> None:
-    """Show preview of version bump without making changes.
-
-    Args:
-        bump_type: The type of version bump(s) to preview.
-    """
-    pyproject = Path("pyproject.toml")
-    if not pyproject.exists():
-        logger.error("No pyproject.toml found in current directory.")
-        sys.exit(1)
-
-    current_version = get_version(pyproject)
-
-    # Calculate new version
-    if isinstance(bump_type, list):
-        new_version = current_version
-        for bt in bump_type:
-            new_version = bump_version(bt, new_version)
-    else:
-        new_version = bump_version(bump_type, current_version)
-
-    logger.info("Current version: %s", current_version)
-    logger.info("Would bump to:   %s", new_version)
-
-
 def main() -> None:
     """Perform version bump."""
     args = parse_args()
@@ -899,10 +871,25 @@ def main() -> None:
         type_args = args.type or [BumpType.PATCH.value]
         bump_type = parse_bump_types(type_args)
 
-        # Preview version bump if --push is not used
-        if not args.force and not args.no_push:
-            preview_version_bump(bump_type)
-            return
+        # Get version info for confirmation
+        pyproject = Path("pyproject.toml")
+        if not pyproject.exists():
+            logger.error("No pyproject.toml found in current directory.")
+            sys.exit(1)
+
+        current_version = get_version(pyproject)
+
+        # Calculate new version
+        if isinstance(bump_type, list):
+            new_version = current_version
+            for bt in bump_type:
+                new_version = bump_version(bt, new_version)
+        else:
+            new_version = bump_version(bump_type, current_version)
+
+        # Show version info
+        logger.info("Current version: %s", current_version)
+        logger.info("Will bump to:    %s", new_version)
 
         # Prompt for confirmation unless --force is used
         if not args.force:

@@ -33,11 +33,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbase.argparser import ArgParser
 from dsbase.files import delete_files, move_file
 from dsbase.log import LocalLogger
 from dsbase.progress import halo_progress, with_retries
-from dsbase.util import dsbase_setup, handle_interrupt
+from dsbase.util import ArgParser, dsbase_setup, handle_interrupt
 
 if TYPE_CHECKING:
     import argparse

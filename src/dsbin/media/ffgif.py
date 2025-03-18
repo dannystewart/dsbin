@@ -8,8 +8,7 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from dsbase.argparser import ArgParser
-from dsbase.util import dsbase_setup
+from dsbase.util import ArgParser, dsbase_setup
 
 if TYPE_CHECKING:
     import argparse

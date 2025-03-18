@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import os
 import subprocess
+from pathlib import Path
 
 from dsbase import configure_traceback
 
@@ -26,7 +27,7 @@ def export_and_install_packages(source_env: str, target_env: str) -> None:
     """Export packages from source environment and install them in target environment."""
     get_packages(source_env, "pip freeze > requirements.txt")
     get_packages(target_env, "pip install -r requirements.txt")
-    os.remove("requirements.txt")
+    Path("requirements.txt").unlink()
 
 
 def get_packages(env: str, command: str) -> None:

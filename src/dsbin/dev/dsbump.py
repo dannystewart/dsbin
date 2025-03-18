@@ -140,9 +140,10 @@ def parse_args() -> argparse.Namespace:
         help="version bump type(s): major, minor, patch, dev, alpha, beta, rc, post, or x.y.z",
     )
     parser.add_argument(
-        "--preview",
+        "-f",
+        "--force",
         action="store_true",
-        help="show what the new version would be without making changes",
+        help="skip confirmation prompt",
     )
     parser.add_argument(
         "--cleanup",
@@ -898,15 +899,24 @@ def main() -> None:
         type_args = args.type or [BumpType.PATCH.value]
         bump_type = parse_bump_types(type_args)
 
-        if args.preview:
+        # Preview version bump if --push is not used
+        if not args.force and not args.no_push:
             preview_version_bump(bump_type)
-        else:
-            update_version(
-                bump_type=bump_type,
-                cleanup=args.cleanup,
-                commit_message=args.message,
-                push=not args.no_push,
-            )
+            return
+
+        # Prompt for confirmation unless --force is used
+        if not args.force:
+            confirm = input("Proceed with version bump? [y/N]: ").lower().strip()
+            if confirm != "y":
+                logger.info("Version bump cancelled.")
+                return
+
+        update_version(
+            bump_type=bump_type,
+            cleanup=args.cleanup,
+            commit_message=args.message,
+            push=not args.no_push,
+        )
     except Exception as e:
         logger.error(str(e))
         sys.exit(1)

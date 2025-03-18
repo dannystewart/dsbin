@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from dsbase.log import LocalLogger
-from dsbase.progress import halo_progress
+from dsbase.shell import halo_progress
 from dsbase.util import dsbase_setup, handle_interrupt
 
 if TYPE_CHECKING:

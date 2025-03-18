@@ -21,8 +21,7 @@ import inquirer
 
 from dsbase.log import LocalLogger
 from dsbase.media import find_bit_depth
-from dsbase.progress import halo_progress
-from dsbase.shell import animation
+from dsbase.shell import animation, halo_progress
 from dsbase.text import color as colored
 from dsbase.util import dsbase_setup, handle_interrupt
 

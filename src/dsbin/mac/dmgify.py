@@ -35,8 +35,8 @@ from typing import TYPE_CHECKING, ClassVar
 
 from dsbase.files import delete_files, move_file
 from dsbase.log import LocalLogger
-from dsbase.progress import halo_progress, with_retries
-from dsbase.util import ArgParser, dsbase_setup, handle_interrupt
+from dsbase.shell import halo_progress
+from dsbase.util import ArgParser, dsbase_setup, handle_interrupt, with_retries
 
 if TYPE_CHECKING:
     import argparse

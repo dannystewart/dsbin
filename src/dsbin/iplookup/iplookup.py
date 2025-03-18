@@ -21,7 +21,7 @@ from typing import Any, ClassVar
 import pycountry
 import requests
 
-from dsbase.progress import halo_progress
+from dsbase.shell import halo_progress
 from dsbase.text import color, print_colored
 from dsbase.util import handle_interrupt
 

@@ -19,8 +19,7 @@ from natsort import natsorted
 
 from dsbase.files import FileManager
 from dsbase.media import MediaManager
-from dsbase.progress import conversion_list_context
-from dsbase.shell import confirm_action
+from dsbase.shell import confirm_action, conversion_list_context
 from dsbase.text import print_colored
 from dsbase.util import dsbase_setup
 

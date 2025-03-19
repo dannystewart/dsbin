@@ -37,7 +37,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase.macos import get_timestamps, set_timestamps
+from dsbase.files.macos import get_timestamps, set_timestamps
 from dsbase.text import ColorName, color
 from dsbase.util import ArgParser, catch_errors, dsbase_setup
 

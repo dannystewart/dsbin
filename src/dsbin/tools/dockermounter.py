@@ -53,7 +53,7 @@ from typing import TYPE_CHECKING
 
 from dsbase.env import DSEnv
 from dsbase.log import LocalLogger
-from dsbase.notifiers import TelegramSender
+from dsbase.notify import TelegramSender
 from dsbase.paths import DSPaths
 from dsbase.shell import confirm_action, is_root_user
 

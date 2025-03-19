@@ -10,16 +10,11 @@ You can modify the default cutoff frequency and suffix for the album and folder 
 changing the DEFAULT_CUTOFF_FREQ and SUFFIX variables at the top of the script, or by
 using the --cutoff argument to override the default cutoff for a single run.
 
-I mostly use this script to process my Evanescence remixes, so I've included a preset for
-that. If you use the --ev argument, it will use the EV_COVER_ART and EV_OUTPUT_FOLDER
-variables instead of the --cover and --output arguments.
-
 The script will output to the 'HomePod' folder in the same directory as the input file by default.
 This can be overridden with the `--output` argument.
 
 Usage:
     hpfilter.py [-h] [--cover COVER_IMAGE][--cutoff CUTOFF_FREQ] [--output OUTPUT_FOLDER]
-    hpfilter.py [--ev] [--ev-cover] [--ev-output]
 """
 
 from __future__ import annotations
@@ -29,7 +24,7 @@ import subprocess
 import tempfile
 import warnings
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import scipy.io.wavfile
@@ -37,34 +32,27 @@ from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
 
+from dsbase.env import DSEnv
 from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable
 
-dsbase_setup()
+type NPArray = np.ndarray[Any, Any]
 
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 warnings.filterwarnings("ignore", category=scipy.io.wavfile.WavFileWarning)
+
+dsbase_setup()
+
+dsenv = DSEnv()
 
 # Default cutoff frequency if not specified
 DEFAULT_CUTOFF_FREQ = 100
 
 # Default suffix for folder and album name
 SUFFIX = "HomePod"
-
-# Evanescence cover art image (used with --ev argument)
-EV_COVER_ART = (
-    Path.home()
-    / "Library/CloudStorage/OneDrive-Personal/Pictures/Album Artwork/Evanescence/Evanescence Remixes HomePod.png"
-)
-
-# Evanescence output folder (used with --ev argument)
-EV_OUTPUT_FOLDER = (
-    Path.home()
-    / "Library/CloudStorage/OneDrive-Personal/Music/Danny Stewart/Evanescence Remixes/HomePod"
-)
 
 
 def parse_arguments() -> argparse.Namespace:
@@ -94,25 +82,12 @@ def parse_arguments() -> argparse.Namespace:
         help="Output folder where processed files will be saved",
         metavar="OUTPUT_FOLDER",
     )
-    parser.add_argument(
-        "--ev",
-        action="store_true",
-        help="Use preset Evanescence cover art and output folder",
-    )
-    parser.add_argument(
-        "--ev-cover",
-        action="store_true",
-        help="Use preset Evanescence cover art",
-    )
-    parser.add_argument(
-        "--ev-output",
-        action="store_true",
-        help="Use preset Evanescence output folder",
-    )
     return parser.parse_args()
 
 
-def run_with_spinner(text: str, func: Callable, *args: list, **kwargs: dict) -> Callable:
+def run_with_spinner(
+    text: str, func: Callable[..., Any], *args: Any, **kwargs: Any
+) -> Callable[..., Any]:
     """Run a function with a spinner animation to indicate progress.
 
     Args:
@@ -138,7 +113,7 @@ def run_with_spinner(text: str, func: Callable, *args: list, **kwargs: dict) -> 
         spinner.stop()
 
 
-def read_audio_file(filepath: Path | str) -> tuple[np.ndarray, int]:
+def read_audio_file(filepath: Path | str) -> tuple[NPArray, int]:
     """Read an audio file from the given filepath and return the audio data and sample rate.
 
     Args:
@@ -194,7 +169,7 @@ def read_audio_file(filepath: Path | str) -> tuple[np.ndarray, int]:
 
 def write_audio_file(
     filepath: Path | str,
-    data: np.ndarray,
+    data: NPArray,
     sample_rate: int,
     original_file: Path | str,
     cover_art: Path | str | None,
@@ -307,7 +282,7 @@ def process_m4a_with_ffmpeg(
     output_directory: Path | str,
     cutoff_freq: int,
     cover_art: Path | str | None,
-) -> Callable:
+) -> Callable[[str, Callable[[], str]], str]:
     """Process an M4A audio file using ffmpeg.
 
     Args:
@@ -351,7 +326,7 @@ def process_m4a_with_ffmpeg(
     return run_with_spinner(color(f"Processing {input_filepath.name}...", "cyan"), run_command)
 
 
-def highpass_filter(data: np.ndarray, cutoff_freq: int, sample_rate: int) -> np.ndarray:
+def highpass_filter(data: NPArray, cutoff_freq: int, sample_rate: int) -> NPArray:
     """Apply a highpass filter to the input data.
 
     Args:
@@ -371,7 +346,7 @@ def process_file(
     output_directory: Path | str,
     cutoff_freq: int,
     cover_art: Path | str | None,
-) -> Callable:
+) -> Callable[[str, Callable[[], str]], str]:
     """Process an input file by applying a cutoff frequency to filter the audio data.
 
     If the file extension is '.m4a', use the process_m4a_with_ffmpeg function to process the file
@@ -385,7 +360,7 @@ def process_file(
         cover_art: The path to the cover art image.
 
     Returns:
-        The path to the output file.
+        The spinner function that runs the operation.
     """
     input_filepath = Path(input_filepath)
     output_directory = Path(output_directory)
@@ -421,7 +396,7 @@ def process_file(
 
 
 def process_all_files(
-    input_patterns: list,
+    input_patterns: list[str],
     cutoff_freq: int,
     cover_art: Path | str | None,
     output_folder: Path | str | None = None,
@@ -474,8 +449,6 @@ def main() -> None:
     """Parse arguments then process input files at specified cutoff frequency with cover art."""
     args = parse_arguments()
 
-    output_folder = EV_OUTPUT_FOLDER if args.ev or args.ev_output else args.output
-    cover_art = EV_COVER_ART if args.ev or args.ev_cover else args.cover
     process_all_files(
-        args.input, cutoff_freq=args.cutoff, cover_art=cover_art, output_folder=output_folder
+        args.input, cutoff_freq=args.cutoff, cover_art=args.cover, output_folder=args.output
     )

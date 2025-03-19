@@ -474,7 +474,7 @@ def _handle_version_modifier(
     if bump_type == BumpType.DEV:
         if pre_type == BumpType.DEV and pre_num is not None:
             return f"{major}.{minor}.{patch}.dev{pre_num + 1}"
-        return f"{major}.{minor}.{patch + 1}.dev0"
+        return f"{major}.{minor}.{patch}.dev0"
 
     # Map full names to version string components
     bump_type = BumpType(bump_type)
@@ -499,7 +499,7 @@ def _handle_version_modifier(
             return f"{major}.{minor}.{patch}{new_suffix}1"
 
     # Starting new pre-release series (no previous pre-release or different type)
-    return f"{major}.{minor}.{patch + 1}{new_suffix}1"
+    return f"{major}.{minor}.{patch}{new_suffix}1"
 
 
 @handle_interrupt()

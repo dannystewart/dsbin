@@ -49,10 +49,6 @@ build-backend = "poetry.core.masonry.api"
 lsbin = "dsbin.lsbin:main"
 dsver = "dsbin.dsver:main"
 
-# Dedicated utilities
-dsupdater = "dsbin.dsupdater.updater:main"
-dsupdater-install = "dsbin.dsupdater.install:main"
-
 # File management scripts
 backupsort = "dsbin.files.backupsort:main"
 bigfiles = "dsbin.files.bigfiles:main"

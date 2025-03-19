@@ -53,7 +53,6 @@ dsver = "dsbin.dsver:main"
 dsupdater = "dsbin.dsupdater.updater:main"
 dsupdater-install = "dsbin.dsupdater.install:main"
 iplookup = "dsbin.iplookup.iplookup:main"
-prism = "dsbin.prism.prism:main"
 
 # File management scripts
 backupsort = "dsbin.files.backupsort:main"

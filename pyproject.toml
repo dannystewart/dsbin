@@ -54,7 +54,6 @@ dsupdater = "dsbin.dsupdater.updater:main"
 dsupdater-install = "dsbin.dsupdater.install:main"
 iplookup = "dsbin.iplookup.iplookup:main"
 prism = "dsbin.prism.prism:main"
-workcalc = "dsbin.workcalc.main:main"
 wpmusic = "dsbin.wpmusic.main:main"
 
 # File management scripts

@@ -10,20 +10,21 @@ downloaded with the same filename, but it can be used for any type of file.
 from __future__ import annotations
 
 import argparse
-import glob
-import os
 import re
 import time
+from pathlib import Path
 
 from natsort import natsorted
 
+from dsbase.env import DSEnv
 from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
-BACKUP_PATH = "/Users/danny/Library/CloudStorage/OneDrive-Personal/Documents/Archive/Backups/Bots"
+dsenv = DSEnv()
+dsenv.add_var("BACKUPSORT_PATH", description="Path to move renamed files to")
 
 
 def is_already_renamed(filename: str) -> int:
@@ -34,7 +35,7 @@ def is_already_renamed(filename: str) -> int:
 
 def format_timestamp(file_path: str) -> str:
     """Get the last modification time of a file and format it as a string."""
-    mtime = os.path.getmtime(file_path)
+    mtime = Path(file_path).stat().st_mtime
     return time.strftime("%y%m%d_%H%M", time.localtime(mtime))
 
 
@@ -85,18 +86,18 @@ def clean_filename(filename: str, timestamp_count: int) -> str:
     return f"{clean_basename}{extension}"
 
 
-def get_files_to_process(args: argparse.Namespace) -> list:
+def get_files_to_process(args: argparse.Namespace) -> list[str]:
     """Get the list of files to process based on command line arguments."""
-    files_to_process = args.files or os.listdir(".")
+    files_to_process = args.files or Path().iterdir()
     expanded_files = []
     for file_pattern in files_to_process:
-        expanded_files.extend(glob.glob(file_pattern))
+        expanded_files.extend(str(path) for path in Path().glob(str(file_pattern)))
     return natsorted(expanded_files)
 
 
 def process_file(filename: str) -> tuple[str, str] | None:
     """Process a single file and return planned changes if any."""
-    if filename.startswith(".") or not os.path.isfile(filename):
+    if filename.startswith(".") or not Path(filename).is_file():
         return None
 
     timestamp_count = is_already_renamed(filename)
@@ -129,9 +130,9 @@ def perform_operations(planned_changes: list, args: argparse.Namespace) -> None:
             final_path = new_name
             action_str = "Renamed"
             if not args.rename_only:
-                final_path = os.path.join(BACKUP_PATH, new_name)
+                final_path = Path(dsenv.backupsort_path) / new_name
                 action_str = "Renamed and moved"
-            os.rename(old_name, final_path)
+            Path(old_name).rename(final_path)
             print(color(f"{action_str} {old_name}", "blue") + " ➔ " + color(final_path, "green"))
     elif planned_changes:
         print("Renaming canceled.")

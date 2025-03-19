@@ -19,9 +19,10 @@ from typing import ClassVar
 
 import inquirer
 
+from dsbase.animate import start_walking, stop_walking
 from dsbase.log import LocalLogger
 from dsbase.media import find_bit_depth
-from dsbase.shell import animation, halo_progress
+from dsbase.shell import halo_progress
 from dsbase.text import color as colored
 from dsbase.util import dsbase_setup, handle_interrupt
 
@@ -268,7 +269,7 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> None:
     """Convert to desired formats."""
     # Start the loading animation
-    animation_thread = animation.start_animation()
+    animation_thread = start_walking()
 
     # Parse command-line arguments
     args = parse_arguments()
@@ -282,7 +283,7 @@ def main() -> None:
     bit_depth = find_bit_depth(str(input_file))
 
     # Stop the animation once we have the bit depth
-    animation.stop_animation(animation_thread)
+    stop_walking(animation_thread)
 
     mshare = MusicShare(input_file, bit_depth, args.upload)
     mshare.perform_conversions()

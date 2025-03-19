@@ -12,7 +12,8 @@ import argparse
 import os
 from pathlib import Path
 
-from dsbase.shell import animation, confirm_action
+from dsbase.animate import start_walking, stop_walking
+from dsbase.shell import confirm_action
 from dsbase.text import color as colored
 from dsbase.util import dsbase_setup, handle_interrupt
 
@@ -67,9 +68,9 @@ def main(start_path: str, old_version: str, new_version: str) -> None:
     """
     print(colored("Searching for .python-version files...", "green"))
 
-    animation_thread = animation.start_animation()
+    animation_thread = start_walking()
     file_paths = find_python_version_files(start_path)
-    animation.stop_animation(animation_thread)
+    stop_walking(animation_thread)
 
     if not file_paths:
         print("No .python-version files found.")

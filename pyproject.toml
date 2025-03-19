@@ -7,7 +7,7 @@ urls = { repository = "https://github.com/dannystewart/dsbin" }
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "dsbase (>=0.2.1,<0.3.0)",
+    "dsbase (>=0.2.2,<0.3.0)",
     "halo (>=0.0.31,<0.0.32)",
     "inquirer (>=3.4.0,<4.0.0)",
     "mutagen (>=1.47.0,<2.0.0)",

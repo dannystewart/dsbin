@@ -158,14 +158,14 @@ files = [
 
 [[package]]
 name = "dsbase"
-version = "0.2.1"
+version = "0.2.2"
 description = "Python utilities and helpers for logging, environment management, file operations, and more"
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "dsbase-0.2.1-py3-none-any.whl", hash = "sha256:84c28a944f58022885e6bc208a06094de5398209312fa327907d302094b4d7a8"},
-    {file = "dsbase-0.2.1.tar.gz", hash = "sha256:3f19d2ffe1581a5f305529fd5695f49662473ee0c0191474d9a729389c135801"},
+    {file = "dsbase-0.2.2-py3-none-any.whl", hash = "sha256:99d532ea0af59ba81264c3f8e315c2d85ae9657e97e3bbc59ef6b5b6807d9c36"},
+    {file = "dsbase-0.2.2.tar.gz", hash = "sha256:daa8d3294c5458f2fd74d42a9e02d2cfed878924d078add09abbe76e94c00c01"},
 ]
 
 [package.dependencies]
@@ -902,4 +902,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "27249fde3e13a93fc014ab4c42f3325e476f7bed088f4d6bcfed732bd17d5e84"
+content-hash = "2592fe057c9da34ae23dd98fed10e79a787e2d5990cfd41f96b9787b72c981c2"

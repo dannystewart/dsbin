@@ -19,9 +19,7 @@ dependencies = [
     "python-dotenv (>=1.0.1,<2.0.0)",
     "requests (>=2.32.3,<3.0.0)",
     "scipy (>=1.15.2,<2.0.0)",
-    "telethon (>=1.39.0,<2.0.0)",
     "tomlkit (>=0.13.2,<0.14.0)",
-    "tqdm (>=4.67.1,<5.0.0)",
     "types-requests (>=2.32.0.20250306,<3.0.0.0)",
 ]
 
@@ -58,7 +56,6 @@ hpfilter = "dsbin.music.hpfilter:main"
 metacopy = "dsbin.music.metacopy:main"
 mp3ify = "dsbin.music.mp3ify:main"
 mshare = "dsbin.music.mshare:main"
-pybounce = "dsbin.music.pybounce:main"
 rmp3 = "dsbin.music.rmp3:main"
 wav2aif = "dsbin.music.awa:wav2aif"
 

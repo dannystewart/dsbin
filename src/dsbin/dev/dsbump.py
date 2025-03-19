@@ -374,6 +374,13 @@ def bump_version(bump_type: BumpType | str, current_version: str) -> str:
         if bump_type == BumpType.MAJOR:
             return f"{major + 1}.0.0"
 
+    # Handle pre-release versions and increment appropriately
+    bump_type_enum = BumpType(bump_type) if not isinstance(bump_type, BumpType) else bump_type
+    if bump_type_enum.is_prerelease and not pre_type:
+        if bump_type_enum == BumpType.DEV:
+            return f"{major}.{minor}.{patch + 1}.dev0"
+        return f"{major}.{minor}.{patch + 1}{bump_type_enum.version_suffix}1"
+
     return _get_base_version(bump_type, pre_type, major, minor, patch, pre_num)
 
 

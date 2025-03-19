@@ -11,7 +11,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/home/danny/.pyenv/shims/dockermounter --auto
+ExecStart=/home/USER/.pyenv/shims/dockermounter --auto
 User=root
 Environment=PYENV_ROOT=/home/YOUR_USERNAME/.pyenv
 Environment=PATH=/home/YOUR_USERNAME/.pyenv/shims:/home/YOUR_USERNAME/.pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -33,8 +33,8 @@ WantedBy=timers.target
 
 Then install the service and timer:
 
-> sudo cp dockermounter.py /home/danny/.pyenv/shims/dockermounter
-> sudo chmod +x /home/danny/.pyenv/shims/dockermounter
+> sudo cp dockermounter.py /home/USER/.pyenv/shims/dockermounter
+> sudo chmod +x /home/USER/.pyenv/shims/dockermounter
 > sudo systemctl daemon-reload
 > sudo systemctl enable dockermounter.timer
 > sudo systemctl start dockermounter.timer
@@ -64,7 +64,7 @@ paths = DSPaths("dockermounter")
 LOG_FILE_PATH = paths.get_log_path("dockermounter.log")
 logger = LocalLogger().get_logger(log_file=LOG_FILE_PATH)
 
-POSSIBLE_SHARES = ["Danny", "Downloads", "Music", "Media", "Storage"]
+POSSIBLE_SHARES = ["USER", "Downloads", "Music", "Media", "Storage"]
 
 
 def setup_env() -> DSEnv:

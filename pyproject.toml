@@ -52,7 +52,6 @@ dsver = "dsbin.dsver:main"
 # Dedicated utilities
 dsupdater = "dsbin.dsupdater.updater:main"
 dsupdater-install = "dsbin.dsupdater.install:main"
-iplookup = "dsbin.iplookup.iplookup:main"
 
 # File management scripts
 backupsort = "dsbin.files.backupsort:main"

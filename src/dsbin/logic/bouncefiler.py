@@ -11,7 +11,7 @@ from pathlib import Path
 
 import inquirer
 
-from dsbase.animation import walking_animation
+from dsbase.animate import walking_man
 from dsbase.env import DSEnv
 from dsbase.files import FileManager
 from dsbase.log import LocalLogger
@@ -119,7 +119,7 @@ def handle_duplicates(duplicates: list[Path]) -> None:
 
 def scan_bounces() -> tuple[list[Bounce], list[str]]:
     """Scan bounce files and determine common suffixes."""
-    with walking_animation("Scanning bounce files...", "cyan"):
+    with walking_man("Scanning bounce files...", "cyan"):
         directory = Path.cwd()
 
         # Get all bounces

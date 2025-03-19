@@ -29,7 +29,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase.animation import walking_animation
+from dsbase.animate import walking_man
 from dsbase.files import delete_files
 from dsbase.shell import confirm_action
 from dsbase.text import color, print_colored
@@ -259,7 +259,7 @@ def main() -> None:
 
     directory = Path.cwd()
 
-    with walking_animation("Analyzing bounce files...", "cyan"):
+    with walking_man("Analyzing bounce files...", "cyan"):
         bounces = BounceParser.find_bounces(directory)
         bounce_groups = BounceParser.group_bounces(bounces)
         actions = determine_actions(bounce_groups, daily=args.daily, skip_latest=args.skip_latest)

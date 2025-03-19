@@ -1,12 +1,15 @@
 #!/usr/bin/env python3
+
 """Show installed versions of DS packages."""
 
 from __future__ import annotations
 
+from typing import Any
+
 from packaging import version
 
 from dsbase.text import color
-from dsbase.version import VersionChecker, VersionInfo
+from dsbase.version import PackageSource, VersionChecker, VersionInfo
 
 
 def format_version_info(versions: VersionInfo) -> tuple[str, str]:
@@ -35,15 +38,10 @@ def main() -> None:
     checker = VersionChecker()
 
     # Define packages and their sources
-    packages = [
-        {
-            "name": "dsbin",
-            "source": "gitlab",
-            "host": "gitlab.dannystewart.com",
-            "owner": "danny",
-            "use_ssh": True,
-        },
-        {"name": "dsbase", "source": "pypi"},
+    pypi_source: PackageSource = "pypi"
+    packages: list[dict[str, Any]] = [
+        {"name": "dsbase", "source": pypi_source},
+        {"name": "dsbin", "source": pypi_source},
     ]
 
     any_updates = False

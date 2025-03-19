@@ -5,10 +5,9 @@ from __future__ import annotations
 import sqlite3
 from typing import TYPE_CHECKING, Any, Protocol
 
-from dsbase.animation import walking_animation
+from dsbase.animate import walking_man
 from dsbase.log import LocalLogger
-from dsbase.tools import async_retry_on_exception
-from dsbase.util import dsbase_setup
+from dsbase.util import async_retry_on_exception, dsbase_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -66,7 +65,7 @@ class SQLiteManager:
     )
     async def start_client(self) -> None:
         """Start the client safely, retrying if a sqlite3.OperationalError occurs."""
-        with walking_animation():
+        with walking_man():
             await self.client.start()
 
     @async_retry_on_exception(

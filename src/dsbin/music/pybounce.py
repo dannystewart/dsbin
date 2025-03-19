@@ -23,8 +23,8 @@ from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
 from dsbase.env import DSEnv
+from dsbase.files.macos import get_timestamps
 from dsbase.log import LocalLogger
-from dsbase.macos import get_timestamps
 from dsbase.paths import DSPaths
 from dsbase.time import TZ
 from dsbase.util import async_handle_interrupt, dsbase_setup

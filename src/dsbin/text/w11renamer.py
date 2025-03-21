@@ -2,9 +2,9 @@
 
 """Generates non-stupid filenames for Windows 11 ISO files from stupid ones.
 
-Microsoft names files with a stupid incomprehensible meaningless name like
-`22631.3007.240102-1451.23H2_NI_RELEASE_SVC_PROD1_CLIENTPRO_OEMRET_X64FRE_EN-US.ISO`, so
-this turns that into `Win11_22631.3007_Pro_x64.iso` because it's not stupid.
+Microsoft names their ISOs with a stupid incomprehensible, meaningless, and often inconsistent name
+like `26100.1.240331-1435.GE_RELEASE_CLIENTPRO_OEMRET_A64FRE_EN-US.ISO`, so this turns that into
+`Win11_Pro_240331_26100.1_ARM64.iso` because it's not stupid.
 """
 
 from __future__ import annotations
@@ -15,6 +15,7 @@ import sys
 from pathlib import Path
 
 from dsbase.log import LocalLogger
+from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup
 
@@ -23,55 +24,19 @@ dsbase_setup()
 logger = LocalLogger().get_logger(simple=True, color=False)
 
 
-def parse_arguments() -> argparse.Namespace | None:
+def parse_arguments() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
         description="Turns stupid Windows 11 ISO names into non-stupid ones."
     )
-    parser.add_argument(
-        "filename",
-        nargs="?",
-        help="Windows 11 ISO filename or string to process",
-    )
-    parser.add_argument(
-        "--rename",
-        action="store_true",
-        help="rename the file if it exists",
-    )
+    parser.add_argument("input", nargs="?", help="Windows 11 ISO filename or string to process")
     args = parser.parse_args()
 
-    if not args.filename:
+    if not args.input:
         parser.print_help()
-        return
+        sys.exit(0)
 
     return args
-
-
-def handle_naming(input_name: str | Path, rename: bool = False) -> None:
-    """Handle generating the new name and optionally performing the rename."""
-    # Convert to string if it's a Path
-    original_name = input_name.name if isinstance(input_name, Path) else input_name
-
-    # Get the new name and add the .iso extension back if the original had it
-    new_name = destupify_filename(original_name)
-    if original_name.upper().endswith(".ISO"):
-        new_name = f"{new_name}.iso"
-
-    print()
-    if rename and isinstance(input_name, Path):
-        try:
-            # Rename the file
-            input_name.rename(input_name.parent / new_name)
-            logger.info(
-                "\nRenamed: \n%s → %s", color(original_name, "yellow"), color(new_name, "green")
-            )
-        except OSError as e:
-            logger.error("Could not rename file: %s", str(e))
-            sys.exit(1)
-    else:
-        if rename:
-            logger.debug("NOTE: Cannot rename when processing input as text only.")
-        logger.info("New filename: \n%s", color(new_name, "green"))
 
 
 def destupify_filename(filename: str) -> str:
@@ -151,16 +116,32 @@ def _decipher_edition(filename: str) -> str:
 def main() -> None:
     """Main function."""
     args = parse_arguments()
-    if not args:
-        return
 
-    input_path = Path(args.filename)
+    input_name = args.input
+    input_path = Path(input_name)
+    is_file = input_path.is_file()
 
-    # If it's a real file, process it as such, otherwise treat as string
-    if input_path.exists():
-        handle_naming(input_path, args.rename)
-    else:
-        handle_naming(args.filename, False)
+    # Get the original name (either filename or string)
+    original_name = input_path.name if is_file else input_name
+
+    # Get the new name and add the .iso extension back if the original had it
+    new_name = destupify_filename(original_name)
+    if original_name.upper().endswith(".ISO"):
+        new_name = f"{new_name}.iso"
+
+    print()
+    logger.info("New filename: %s", color(new_name, "green"))
+
+    if is_file:  # If it's a file, ask for confirmation before renaming
+        if confirm_action("Do you want to rename the file?"):
+            try:
+                input_path.rename(input_path.parent / new_name)
+                logger.info(
+                    "\nRenamed %s → %s", color(original_name, "yellow"), color(new_name, "green")
+                )
+            except OSError as e:
+                logger.error("Could not rename file: %s", str(e))
+                sys.exit(1)
 
 
 if __name__ == "__main__":

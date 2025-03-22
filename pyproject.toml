@@ -77,7 +77,7 @@ spacepurger = "dsbin.mac.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
 
 # Development-related scripts
-code-configs = "dsbin.dev.code_configs:main"
+code-configs = "dsbin.code_configs.main:main"
 dsbump = "dsbin.dev.dsbump:main"
 pipmigrator = "dsbin.dev.pipmigrator:main"
 poetry-migrate = "dsbin.dev.poetry_migrate:main"

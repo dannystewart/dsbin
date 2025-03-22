@@ -1,11 +1,19 @@
+"""This script will download config files for various coding tools which are then used as reference
+to compare against files with the same name in the directory where the script is run. This is to
+ensure that I always have the latest versions of my preferred configurations for all my projects.
+
+Note that these config files live in the dsbin repository: https://github.com/dannystewart/dsbin
+
+The script also saves the updated config files to the package root, which is the root of the dsbin
+repository itself, thereby creating a virtuous cycle where the package is always up-to-date with the
+latest versions of the config files for other projects to pull from.
+"""
+
 from __future__ import annotations
 
 import argparse
 import shutil
 from argparse import Namespace
-from dataclasses import dataclass
-from pathlib import Path
-from typing import Final
 
 import requests
 
@@ -13,37 +21,9 @@ from dsbase.log import LocalLogger
 from dsbase.shell import confirm_action
 from dsbase.text.diff import show_diff
 
+from dsbin.code_configs.config_files import CONFIGS, ConfigFile
+
 logger = LocalLogger().get_logger(__name__)
-
-
-@dataclass
-class ConfigFile:
-    """Represents a config file that can be updated from a remote source."""
-
-    name: str
-    url: str
-    local_path: Path
-    package_path: Path
-
-    def __post_init__(self) -> None:
-        self.package_path = Path(__file__).parent / "configs" / self.local_path.name
-        self.package_path.parent.mkdir(exist_ok=True)
-
-
-CONFIGS: Final[list[ConfigFile]] = [
-    ConfigFile(
-        name="ruff",
-        url="https://raw.githubusercontent.com/dannystewart/dsbase/refs/heads/main/ruff.toml",
-        local_path=Path("ruff.toml"),
-        package_path=Path(),
-    ),
-    ConfigFile(
-        name="mypy",
-        url="https://raw.githubusercontent.com/dannystewart/dsbase/refs/heads/main/mypy.ini",
-        local_path=Path("mypy.ini"),
-        package_path=Path(),
-    ),
-]
 
 
 def parse_args() -> Namespace:

@@ -78,7 +78,6 @@ timestamps = "dsbin.mac.timestamps:main"
 
 # Development-related scripts
 code-configs = "dsbin.code_configs.main:main"
-dsbump = "dsbin.dsbump.main:main"
 pipmigrator = "dsbin.dev.pipmigrator:main"
 poetry-migrate = "dsbin.dev.poetry_migrate:main"
 pyenversioner = "dsbin.dev.pyenversioner:main"

@@ -1,4 +1,4 @@
-# Ruff config version: 13
+# Ruff config version: 15
 # -----------------------
 
 # Files and directories to exclude
@@ -158,8 +158,8 @@ ignore = [
 # Allow fix for all enabled rules (when `--fix`) is provided
 fixable = ["ALL"]
 
-# Prevent removal of unused variables (to avoid removing while working)
-unfixable = ["F841"]
+# Prevent removing unused variables and auto-adding self to classes
+unfixable = ["F841", "N805"]
 
 # Allow unused variables when underscore-prefixed
 dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
@@ -176,7 +176,7 @@ suppress-none-returning = true
 allow-multiline = false
 
 [lint.flake8-quotes]
-docstring-quotes = "single"
+docstring-quotes = "double"
 
 [lint.isort]
 required-imports = ["from __future__ import annotations"]

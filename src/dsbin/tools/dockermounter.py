@@ -112,7 +112,7 @@ class ShareManager:
     telegram: TelegramSender | None = field(init=False)
     logger: Logger = field(init=False)
 
-    def __post_init__(self) -> None:
+    def __post_init__(self):
         """Initialize environment and optional Telegram notification.
 
         Raises:

@@ -158,14 +158,14 @@ files = [
 
 [[package]]
 name = "dsbase"
-version = "0.3.3"
+version = "0.3.4"
 description = "Python utilities and helpers for logging, environment management, file operations, and more"
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "dsbase-0.3.3-py3-none-any.whl", hash = "sha256:8b40cc99eaf394a8ce393acac23213242fa4fca5d7c6049566a330ab1cfd3cf0"},
-    {file = "dsbase-0.3.3.tar.gz", hash = "sha256:603710507683936ea6ee108389cf5739df46b99594179a7cd633a21dbd0f5254"},
+    {file = "dsbase-0.3.4-py3-none-any.whl", hash = "sha256:97511a90694ebfe0bc746ae92ff80c995b8e045474f21bb0cf81f3540ba31c35"},
+    {file = "dsbase-0.3.4.tar.gz", hash = "sha256:cb97a400ef2a00a3c5c265dcbe596a6fb092be2f8188c92d7cb648ac78a978c7"},
 ]
 
 [package.dependencies]
@@ -913,14 +913,14 @@ files = [
 
 [[package]]
 name = "tzdata"
-version = "2025.1"
+version = "2025.2"
 description = "Provider of IANA time zone data"
 optional = false
 python-versions = ">=2"
 groups = ["main"]
 files = [
-    {file = "tzdata-2025.1-py2.py3-none-any.whl", hash = "sha256:7e127113816800496f027041c570f50bcd464a020098a3b6b199517772303639"},
-    {file = "tzdata-2025.1.tar.gz", hash = "sha256:24894909e88cdb28bd1636c6887801df64cb485bd593f2fd83ef29075a81d694"},
+    {file = "tzdata-2025.2-py2.py3-none-any.whl", hash = "sha256:1a403fada01ff9221ca8044d701868fa132215d84beb92242d9acd2147f667a8"},
+    {file = "tzdata-2025.2.tar.gz", hash = "sha256:b60a638fcc0daffadf82fe0f57e53d06bdec2f36c4df66280ae79bce6bd6f2b9"},
 ]
 
 [[package]]
@@ -1011,4 +1011,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "5721f03cee0cb9fb3241bbcdac53fad05f5811b0a6f5b5a05e67bb7ba7aa089c"
+content-hash = "3852f67a2b7f9ec89690108231662b9e769bb2615209709228a29dbee9d1206e"

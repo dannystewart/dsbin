@@ -9,8 +9,8 @@ import os
 import subprocess
 from pathlib import Path
 
+from dsbase import LocalLogger
 from dsbase.files import delete_files
-from dsbase.log import LocalLogger
 from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup

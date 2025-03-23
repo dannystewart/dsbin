@@ -51,8 +51,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase.env import EnvManager
-from dsbase.log import LocalLogger
+from dsbase import EnvManager, LocalLogger
 from dsbase.notify import TelegramSender
 from dsbase.paths import PathKeeper
 from dsbase.shell import confirm_action, is_root_user

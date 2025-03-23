@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dsbase.log import LocalLogger
+from dsbase import LocalLogger
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

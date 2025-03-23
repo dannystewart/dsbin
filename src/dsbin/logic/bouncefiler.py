@@ -11,10 +11,8 @@ from pathlib import Path
 
 import inquirer
 
+from dsbase import EnvManager, FileManager, LocalLogger
 from dsbase.animate import walking_man
-from dsbase.env import EnvManager
-from dsbase.files import FileManager
-from dsbase.log import LocalLogger
 from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup

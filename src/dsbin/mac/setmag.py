@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import subprocess
 
-from dsbase.log import LocalLogger
+from dsbase import LocalLogger
 from dsbase.util import dsbase_setup, platform_check
 
 dsbase_setup()

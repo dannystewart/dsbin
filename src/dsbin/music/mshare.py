@@ -19,8 +19,8 @@ from typing import ClassVar
 
 import inquirer
 
+from dsbase import LocalLogger
 from dsbase.animate import start_walking, stop_walking
-from dsbase.log import LocalLogger
 from dsbase.media import find_bit_depth
 from dsbase.shell import halo_progress
 from dsbase.text import color as colored

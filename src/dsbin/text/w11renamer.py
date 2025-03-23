@@ -14,7 +14,7 @@ import re
 import sys
 from pathlib import Path
 
-from dsbase.log import LocalLogger
+from dsbase import LocalLogger
 from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup

@@ -32,7 +32,6 @@ from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
 
-from dsbase.env import DSEnv
 from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup
 
@@ -46,7 +45,6 @@ warnings.filterwarnings("ignore", category=scipy.io.wavfile.WavFileWarning)
 
 dsbase_setup()
 
-dsenv = DSEnv()
 
 # Default cutoff frequency if not specified
 DEFAULT_CUTOFF_FREQ = 100

@@ -12,7 +12,7 @@ from pathlib import Path
 import inquirer
 
 from dsbase.animate import walking_man
-from dsbase.env import DSEnv
+from dsbase.env import EnvManager
 from dsbase.files import FileManager
 from dsbase.log import LocalLogger
 from dsbase.shell import confirm_action
@@ -23,13 +23,10 @@ from dsbin.logic.bounce_parser import Bounce, BounceParser
 
 dsbase_setup()
 
-env = DSEnv()
-env.add_debug_var()
-
+env_man = EnvManager()
+env_man.add_debug_var()
 files = FileManager()
-
-log_level = "debug" if env.debug else "info"
-logger = LocalLogger().get_logger(level=log_level, simple=True)
+logger = LocalLogger().get_logger(level=env_man.log_level, simple=True)
 
 
 def get_unique_suffixes(bounces: list[Bounce]) -> list[str]:

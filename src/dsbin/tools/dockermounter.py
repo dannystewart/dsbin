@@ -51,44 +51,44 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase.env import DSEnv
+from dsbase.env import EnvManager
 from dsbase.log import LocalLogger
 from dsbase.notify import TelegramSender
-from dsbase.paths import DSPaths
+from dsbase.paths import PathKeeper
 from dsbase.shell import confirm_action, is_root_user
 
 if TYPE_CHECKING:
     from logging import Logger
 
-paths = DSPaths("dockermounter")
-LOG_FILE_PATH = paths.get_log_path("dockermounter.log")
+paths = PathKeeper("dockermounter")
+LOG_FILE_PATH = paths.from_log("dockermounter.log")
 logger = LocalLogger().get_logger(log_file=LOG_FILE_PATH)
 
 POSSIBLE_SHARES = ["USER", "Downloads", "Music", "Media", "Storage"]
 
 
-def setup_env() -> DSEnv:
+def setup_env() -> EnvManager:
     """Setup environment configuration."""
-    env = DSEnv()
-    env.add_var(
+    env_man = EnvManager()
+    env_man.add_var(
         "TELEGRAM_BOT_TOKEN",
         description="Telegram Bot API token for notifications",
         secret=True,
         required=False,
     )
-    env.add_var(
+    env_man.add_var(
         "TELEGRAM_CHAT_ID",
         description="Telegram chat ID for notifications",
         required=False,
     )
-    env.add_var(
+    env_man.add_var(
         "NOTIFY_ON_CHECK",
         description="Send notification even when all mounts are okay",
         required=False,
         default="false",
         var_type=lambda x: x.lower() == "true",
     )
-    return env
+    return env_man
 
 
 @dataclass
@@ -108,7 +108,7 @@ class ShareManager:
     docker_compose: Path | None
     auto: bool
 
-    env: DSEnv = field(init=False)
+    env: EnvManager = field(init=False)
     telegram: TelegramSender | None = field(init=False)
     logger: Logger = field(init=False)
 

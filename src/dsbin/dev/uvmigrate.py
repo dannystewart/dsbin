@@ -26,7 +26,12 @@ def find_pyproject_files(start_path: Path) -> list[Path]:
 
 
 def validate_file(file_path: Path) -> None:
-    """Validate that the file exists and is a pyproject.toml file."""
+    """Validate that the file exists and is a pyproject.toml file.
+
+    Raises:
+        FileNotFoundError: If the file is not found.
+        ValueError: If the file is not named 'pyproject.toml'.
+    """
     if not file_path.exists():
         msg = f"File not found: {file_path}"
         raise FileNotFoundError(msg)
@@ -237,12 +242,16 @@ def backup_file(file_path: Path) -> Path:
 
 
 def convert_pyproject(file_path: Path) -> None:
-    """Convert a Poetry pyproject.toml to uv-compatible format."""
+    """Convert a Poetry pyproject.toml to uv-compatible format.
+
+    Raises:
+        ValueError: If the file does not contain a [tool.poetry] section.
+    """
     # Create backup first
     backup_path = backup_file(file_path)
     print(f"Backup created at: {backup_path}")
 
-    with open(file_path, encoding="utf-8") as f:
+    with Path(file_path).open(encoding="utf-8") as f:
         pyproject = tomlkit.load(f)
 
     poetry_section = pyproject.get("tool", {}).get("poetry", {})
@@ -287,7 +296,7 @@ def convert_pyproject(file_path: Path) -> None:
     # Store original scripts section text
     scripts_text = ""
     if "scripts" in poetry_section:
-        with open(file_path, encoding="utf-8") as f:
+        with Path(file_path).open(encoding="utf-8") as f:
             content = f.read()
             # Find the [tool.poetry.scripts] section
             if "[tool.poetry.scripts]" in content:
@@ -296,12 +305,12 @@ def convert_pyproject(file_path: Path) -> None:
                 scripts_text = scripts_part.split("\n[")[0]
 
     # Write main configuration
-    with open(file_path, "w", encoding="utf-8") as f:
+    with Path(file_path).open("w", encoding="utf-8") as f:
         tomlkit.dump(new_pyproject, f)
 
     # Add scripts section with original formatting if it exists
     if scripts_text:
-        with open(file_path, "a", encoding="utf-8") as f:
+        with Path(file_path).open("a", encoding="utf-8") as f:
             f.write("\n[project.scripts]")
             f.write(scripts_text)
 

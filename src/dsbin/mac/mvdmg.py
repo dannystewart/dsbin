@@ -7,6 +7,7 @@ from __future__ import annotations
 import argparse
 import os
 import shutil
+from pathlib import Path
 
 from dsbase.util import dsbase_setup
 
@@ -44,11 +45,11 @@ def move_dmg_files(source_dir: str, dest_dir: str, remove_source_files: bool = F
     for root, _, files in os.walk(source_dir):
         for file in files:
             if file.lower().endswith(".dmg"):
-                source_file_path = os.path.join(root, file)
+                source_file_path = Path(root) / file
                 relative_path = os.path.relpath(root, source_dir)
-                destination_dir_path = os.path.join(dest_dir, relative_path)
-                os.makedirs(destination_dir_path, exist_ok=True)
-                destination_file_path = os.path.join(destination_dir_path, file)
+                destination_dir_path = Path(dest_dir) / relative_path
+                Path(destination_dir_path).mkdir(parents=True, exist_ok=True)
+                destination_file_path = Path(destination_dir_path) / file
                 try:
                     if remove_source_files:
                         shutil.move(source_file_path, destination_file_path)

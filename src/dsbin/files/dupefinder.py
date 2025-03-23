@@ -22,7 +22,9 @@ def main() -> None:
     if len(input_files) == 0:
         input_files = [f for f in Path().iterdir() if f.is_file()]
 
-    find_duplicate_files_by_hash(input_files)
+    # Convert all input files to Path objects if they aren't already
+    paths = [Path(f) if not isinstance(f, Path) else f for f in input_files]
+    find_duplicate_files_by_hash(paths)
 
 
 if __name__ == "__main__":

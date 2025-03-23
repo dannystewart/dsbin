@@ -44,7 +44,11 @@ def run_watchtower(run_once: bool, restart: bool, schedule: bool) -> None:
 
 
 def main() -> None:
-    """Present menu for Watchtower options."""
+    """Present menu for Watchtower options.
+
+    Raises:
+        SystemExit: If the user exits the menu.
+    """
     questions = [
         inquirer.List(
             "config",

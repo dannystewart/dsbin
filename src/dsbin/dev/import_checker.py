@@ -9,7 +9,6 @@ import ast
 import os
 from pathlib import Path
 
-from dsbase import Text
 from dsbase.text.Text import color, print_colored
 
 
@@ -192,7 +191,7 @@ def main() -> None:
     circular_deps = 0
 
     if cycles:
-        Text.print_colored("Circular imports detected:\n", "yellow")
+        print_colored("Circular imports detected:\n", "yellow")
         for cycle in cycles:
             if len(cycle) == 2 and cycle[0][0] == cycle[1][0]:  # Self-import case
                 print_self_import_cycle(cycle)

@@ -4,56 +4,21 @@
 
 from __future__ import annotations
 
+import argparse
 import ast
 import os
-import sys
 from pathlib import Path
-from typing import Literal
 
-ColorName = Literal[
-    "black",
-    "grey",
-    "red",
-    "green",
-    "yellow",
-    "blue",
-    "magenta",
-    "cyan",
-    "light_grey",
-    "dark_grey",
-    "light_red",
-    "light_green",
-    "light_yellow",
-    "light_blue",
-    "light_magenta",
-    "light_cyan",
-    "white",
-]
+from dsbase import Text
+from dsbase.text.Text import color, print_colored
 
 
-def color(text: str, color_name: ColorName | None = None) -> str:
-    """Use termcolor to return a string in the specified color if termcolor is available."""
-    try:
-        from termcolor import colored
-    except ImportError:
-        return text
+def find_imports(file_path: str) -> list[tuple[str, int]]:
+    """Extract all imports from a Python file with line numbers.
 
-    return colored(text, color_name)
-
-
-def print_colored(text: str, color_name: ColorName | None = None) -> None:
-    """Use termcolor to print text in the specified color if termcolor is available."""
-    try:
-        from termcolor import colored
-    except ImportError:
-        print(text)
-        return
-
-    print(colored(text, color_name))
-
-
-def find_imports(file_path: str) -> list[str]:
-    """Extract all imports from a Python file."""
+    Returns:
+        List of tuples (module_name, line_number).
+    """
     with Path(file_path).open(encoding="utf-8") as file:
         try:
             tree = ast.parse(file.read())
@@ -71,14 +36,27 @@ def find_imports(file_path: str) -> list[str]:
     return imports
 
 
-def build_import_graph(root_dir: str) -> dict[str, set[str]]:
-    """Build a graph of imports between modules.
+def build_import_graph(
+    root_dir: str, exclude_stdlib: bool = False
+) -> dict[str, list[tuple[str, str, int]]]:
+    """Build a graph of imports between modules with file paths and line numbers.
+
+    Args:
+        root_dir: The root directory of the project.
+        exclude_stdlib: Whether to exclude standard library modules.
 
     Returns:
-        Dictionary mapping module names to sets of imported modules.
+        Dictionary mapping module names to lists of (imported_module, file_path, line_number)
     """
     graph = {}
     root_path = Path(root_dir)
+
+    # Get list of stdlib modules if excluding them
+    stdlib_modules = set()
+    if exclude_stdlib:
+        import pkgutil
+
+        stdlib_modules = {module.name for module in pkgutil.iter_modules()}
 
     for path in root_path.glob("**/*.py"):
         rel_path = path.relative_to(root_path)
@@ -90,13 +68,24 @@ def build_import_graph(root_dir: str) -> dict[str, set[str]]:
             graph[module_name] = []
 
         for imported_module, line_number in imports_with_lines:
+            if exclude_stdlib and imported_module in stdlib_modules:
+                continue
             graph[module_name].append((imported_module, str(path), line_number))
 
     return graph
 
 
-def find_cycles(graph: dict[str, set[str]]) -> list[list[str]]:
-    """Find cycles in the import graph using DFS."""
+def find_cycles(
+    graph: dict[str, list[tuple[str, str, int]]],
+) -> list[list[tuple[str, tuple[str, int]]]]:
+    """Find cycles in the import graph using DFS with file paths and line numbers.
+
+    Args:
+        graph: Import graph with file paths and line numbers.
+
+    Returns:
+        List of cycles found in the graph with context.
+    """
     cycles = []
     visited = set()
     path = []
@@ -106,7 +95,9 @@ def find_cycles(graph: dict[str, set[str]]) -> list[list[str]]:
         if node in path:
             cycle_start_idx = path.index(node)
             cycle = path[cycle_start_idx:] + [node]
-            cycle_info = path_info[cycle_start_idx:] + [path_info[cycle_start_idx]]
+            cycle_info = path_info[cycle_start_idx:] + [
+                path_info[cycle_start_idx] if cycle_start_idx < len(path_info) else None
+            ]
             cycles.append(list(zip(cycle, cycle_info, strict=False)))
             return
 
@@ -125,15 +116,18 @@ def find_cycles(graph: dict[str, set[str]]) -> list[list[str]]:
                 if path_info:  # Ensure path_info is not empty before popping
                     path_info.pop()
 
-        path.pop()
+        if path:  # Ensure path is not empty before popping
+            path.pop()
 
     for node in graph:
+        path = []
+        path_info = []
         dfs(node)
 
     return cycles
 
 
-def print_self_import_cycle(cycle: list[str]) -> None:
+def print_self_import_cycle(cycle: list[tuple[str, tuple[str, int]]]) -> None:
     """Print a self-import cycle."""
     module, (file_path, line_number) = cycle[0]
     module_name = color(module, "red")
@@ -141,8 +135,9 @@ def print_self_import_cycle(cycle: list[str]) -> None:
     print(f"- {module_name} appears to import itself in {location}")
 
 
-def print_circular_dependency_cycle(cycle: list[str]) -> None:
+def print_circular_dependency_cycle(cycle: list[tuple[str, tuple[str, int]]]) -> None:
     """Print a circular dependency cycle."""
+    print("\nCircular dependency:")
     for i, (module, (file_path, line_number)) in enumerate(cycle):
         mod_name = color(module, "red")
         location = color(f"{file_path}:{line_number}", "yellow")
@@ -155,19 +150,70 @@ def print_circular_dependency_cycle(cycle: list[str]) -> None:
 
 
 def main() -> None:
-    """Analyze a Python project for circular imports."""
-    project_root = sys.argv[1] if len(sys.argv) > 1 else "."
-    graph = build_import_graph(project_root)
+    """Main entry point for the import checker tool."""
+    parser = argparse.ArgumentParser(description="Check for circular imports in a Python project")
+    parser.add_argument(
+        "path",
+        nargs="?",
+        default=".",
+        help="Path to the Python project directory (default: current directory)",
+    )
+    parser.add_argument(
+        "--exclude-stdlib",
+        action="store_true",
+        help="Exclude standard library modules from analysis",
+    )
+    parser.add_argument(
+        "--output", choices=["text", "json"], default="text", help="Output format (default: text)"
+    )
+
+    args = parser.parse_args()
+
+    project_root = args.path
+    graph = build_import_graph(project_root, exclude_stdlib=args.exclude_stdlib)
     cycles = find_cycles(graph)
 
+    if args.output == "json":
+        import json
+
+        # Convert to JSON-serializable format
+        json_cycles = []
+        for cycle in cycles:
+            json_cycle = []
+            for module, (file_path, line_number) in cycle:
+                json_cycle.append({"module": module, "file": file_path, "line": line_number})
+            json_cycles.append(json_cycle)
+
+        print(json.dumps({"cycles": json_cycles}, indent=2))
+        return
+
+    # Default text output
+    self_imports = 0
+    circular_deps = 0
+
     if cycles:
-        print_colored("Circular imports detected:\n", "yellow")
+        Text.print_colored("Circular imports detected:\n", "yellow")
         for cycle in cycles:
             if len(cycle) == 2 and cycle[0][0] == cycle[1][0]:  # Self-import case
                 print_self_import_cycle(cycle)
+                self_imports += 1
             else:
-                print("\nCircular dependency:")
                 print_circular_dependency_cycle(cycle)
+                circular_deps += 1
+
+        # Print summary
+        summary = []
+        if self_imports > 0:
+            summary.append(f"{self_imports} self-import{'s' if self_imports != 1 else ''}")
+        if circular_deps > 0:
+            summary.append(
+                f"{circular_deps} circular dependenc{'ies' if circular_deps != 1 else 'y'}"
+            )
+
+        if summary:
+            print_colored(f"\nFound {' and '.join(summary)}.", "yellow")
+    else:
+        print_colored("No circular imports found! 🎉", "green")
 
 
 if __name__ == "__main__":

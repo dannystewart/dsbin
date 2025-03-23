@@ -19,7 +19,7 @@ from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup
 
-from dsbin.logic.bounce_parser import Bounce, BounceParser
+from dsbin.logic import Bounce, BounceParser
 
 dsbase_setup()
 

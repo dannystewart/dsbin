@@ -9,7 +9,7 @@ import tomlkit
 import tomlkit.toml_document
 from tomlkit.items import Array
 
-from dsbase.log import LocalLogger
+from dsbase import LocalLogger
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:

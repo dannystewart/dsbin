@@ -9,7 +9,7 @@ from pathlib import Path
 
 from dsbase.files import sha256_checksum
 from dsbase.shell import confirm_action
-from dsbase.text import color as colored
+from dsbase.text.Text import color as colored
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

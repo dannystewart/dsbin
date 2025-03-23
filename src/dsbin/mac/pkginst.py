@@ -12,7 +12,7 @@ from pathlib import Path
 from dsbase import LocalLogger
 from dsbase.files import delete_files
 from dsbase.shell import confirm_action
-from dsbase.text import color
+from dsbase.text.Text import color
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

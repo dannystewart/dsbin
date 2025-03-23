@@ -11,7 +11,7 @@ import time
 from typing import Any
 
 from dsbase.shell import acquire_sudo, confirm_action
-from dsbase.text import color as colored
+from dsbase.text.Text import color as colored
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

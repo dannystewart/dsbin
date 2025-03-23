@@ -16,7 +16,7 @@ import sys
 from dsbase.files import delete_files, move_file
 from dsbase.media import ffmpeg_video
 from dsbase.shell import halo_progress
-from dsbase.text import print_colored
+from dsbase.text.Text import color_print
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
@@ -73,7 +73,7 @@ def main() -> None:
     if original_filename != target_filename:
         delete_files(original_filename)
         if move_file(target_filename, clean_filename, overwrite=True, show_output=False):
-            print_colored(f"Saved {clean_filename}!", "green")
+            color_print(f"Saved {clean_filename}!", "green")
 
 
 if __name__ == "__main__":

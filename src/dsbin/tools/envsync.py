@@ -8,7 +8,7 @@ import filecmp
 from collections import OrderedDict
 from pathlib import Path
 
-from dsbase.text import print_colored
+from dsbase.text.Text import color_print
 
 CHEZMOI_ENV = Path.home() / ".local" / "share" / "chezmoi" / "dot_local" / "bin" / ".env"
 CHEZMOI_NAME = "Chezmoi .env"
@@ -60,7 +60,7 @@ def sync_env_files(chezmoi_env: Path, home_env: Path) -> bool:
         True if changes were made, False otherwise.
     """
     if filecmp.cmp(chezmoi_env, home_env):
-        print_colored("Files are already in sync. No changes made.", "green")
+        color_print("Files are already in sync. No changes made.", "green")
         return False
 
     env1 = read_env_file(chezmoi_env)
@@ -98,11 +98,11 @@ def sync_env_files(chezmoi_env: Path, home_env: Path) -> bool:
     write_env_file(home_env, merged_env)
 
     if changes:
-        print_colored("Files have been synchronized. Changes made:", "green")
+        color_print("Files have been synchronized. Changes made:", "green")
         for change in changes:
-            print_colored(f"- {change}", "cyan")
+            color_print(f"- {change}", "cyan")
     else:
-        print_colored("Files have been synchronized. No content changes were necessary.", "green")
+        color_print("Files have been synchronized. No content changes were necessary.", "green")
 
     return bool(changes)
 
@@ -116,11 +116,11 @@ def main() -> None:
     try:
         sync_env_files(CHEZMOI_ENV, HOME_ENV)
     except FileNotFoundError as e:
-        print_colored(f"Error: {e}. Please check if the .env files exist.", "red")
+        color_print(f"Error: {e}. Please check if the .env files exist.", "red")
     except PermissionError as e:
-        print_colored(f"Error: {e}. Please check file permissions.", "red")
+        color_print(f"Error: {e}. Please check file permissions.", "red")
     except Exception as e:
-        print_colored(f"An unexpected error occurred: {e}", "red")
+        color_print(f"An unexpected error occurred: {e}", "red")
 
 
 if __name__ == "__main__":

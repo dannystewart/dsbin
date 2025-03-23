@@ -13,7 +13,7 @@ from pathlib import Path
 
 import inquirer
 
-from dsbase.text import color, print_colored
+from dsbase.text.Text import color, print_colored
 from dsbase.util import dsbase_setup, handle_interrupt
 
 dsbase_setup()

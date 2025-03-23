@@ -9,9 +9,8 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from dsbase.log import LocalLogger
-from dsbase.text import print_colored, progress
-from dsbase.util import ArgParser
+from dsbase import ArgParser, LocalLogger
+from dsbase.text.Text import color_print
 
 if TYPE_CHECKING:
     import argparse
@@ -77,8 +76,8 @@ def _print_tunnel_list(tunnels: list[str]) -> None:
     time_width = 13
     cmd_width = 40
     header = f"\n{'PID':<{pid_width}} {'Start Time':<{time_width}} {'Command':<{cmd_width}}"
-    print_colored(header, "cyan")
-    print_colored("-" * len(header), "cyan")
+    color_print(header, "cyan")
+    color_print("-" * len(header), "cyan")
     for tunnel in tunnels:
         parts = tunnel.split()
         pid = parts[1]
@@ -141,7 +140,7 @@ def kill_all_ssh_tunnels() -> None:
         "ps aux | grep ssh | grep -v grep | awk '{print $2}' | xargs kill -9", show_output=True
     )
     if success:
-        progress("All SSH tunnels killed.")
+        logger.info("All SSH tunnels killed.")
     else:
         logger.error("Failed to kill all SSH tunnels.")
 

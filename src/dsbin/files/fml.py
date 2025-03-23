@@ -14,7 +14,7 @@ from dotenv import load_dotenv
 from requests import Session
 from requests.auth import HTTPBasicAuth
 
-from dsbase.text import color as colored
+from dsbase.text.Text import color as colored
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

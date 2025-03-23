@@ -158,14 +158,14 @@ files = [
 
 [[package]]
 name = "dsbase"
-version = "0.3.4"
+version = "0.3.5"
 description = "Python utilities and helpers for logging, environment management, file operations, and more"
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "dsbase-0.3.4-py3-none-any.whl", hash = "sha256:97511a90694ebfe0bc746ae92ff80c995b8e045474f21bb0cf81f3540ba31c35"},
-    {file = "dsbase-0.3.4.tar.gz", hash = "sha256:cb97a400ef2a00a3c5c265dcbe596a6fb092be2f8188c92d7cb648ac78a978c7"},
+    {file = "dsbase-0.3.5-py3-none-any.whl", hash = "sha256:201129cd1a212ab67d77a1ebf7fb78b772568f75a8f5c6ec536188b6be8bbba8"},
+    {file = "dsbase-0.3.5.tar.gz", hash = "sha256:cefca562bc00fd54ea10ac0b0c98da075bc328c4210b67342c3c215b36aab637"},
 ]
 
 [package.dependencies]
@@ -184,7 +184,7 @@ termcolor = ">=2.5.0,<3.0.0"
 tomlkit = ">=0.13.2,<0.14.0"
 types-requests = ">=2.32.0.20250306,<3.0.0.0"
 types-send2trash = ">=1.8.2.7,<2.0.0.0"
-tzdata = ">=2025.1"
+tzdata = ">=2025.2"
 watchdog = ">=6.0.0,<7.0.0"
 
 [[package]]
@@ -1011,4 +1011,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12"
-content-hash = "3852f67a2b7f9ec89690108231662b9e769bb2615209709228a29dbee9d1206e"
+content-hash = "9a339ac179f54568bd9894ed952566624e5800060b58386f3bbe2651d196f5c6"

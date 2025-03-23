@@ -20,7 +20,7 @@ from natsort import natsorted
 from dsbase.files import FileManager
 from dsbase.media import MediaManager
 from dsbase.shell import confirm_action, conversion_list_context
-from dsbase.text import print_colored
+from dsbase.text.Text import color_print
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
@@ -72,7 +72,7 @@ class ALACrity:
             skipped_files.extend(skipped)
 
         if not original_files and not skipped_files:
-            print_colored("No files to convert.", "green")
+            color_print("No files to convert.", "green")
             return
 
         if converted_files and confirm_action("Do you want to remove the original files?"):
@@ -185,7 +185,7 @@ class ALACrity:
                 )
                 return output_path, ConversionResult.CONVERTED
             except Exception as e:
-                print_colored(f"\nFailed to convert {input_path.name}: {e}", "red")
+                color_print(f"\nFailed to convert {input_path.name}: {e}", "red")
                 return input_path, ConversionResult.FAILED
 
     def _configure_vars_from_args(self, args: argparse.Namespace) -> None:

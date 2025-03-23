@@ -32,7 +32,7 @@ from typing import TYPE_CHECKING
 from dsbase.animate import walking_man
 from dsbase.files import delete_files
 from dsbase.shell import confirm_action
-from dsbase.text import color, print_colored
+from dsbase.text.Text import color, print_colored
 from dsbase.util import dsbase_setup
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser

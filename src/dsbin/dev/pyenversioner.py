@@ -14,7 +14,7 @@ from pathlib import Path
 
 from dsbase.animate import start_walking, stop_walking
 from dsbase.shell import confirm_action
-from dsbase.text import color as colored
+from dsbase.text.Text import color as colored
 from dsbase.util import dsbase_setup, handle_interrupt
 
 dsbase_setup()

@@ -10,7 +10,7 @@ from pathlib import Path
 
 from dsbase.files import list_files
 from dsbase.media import MediaManager
-from dsbase.text import color as colored
+from dsbase.text.Text import color as colored
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

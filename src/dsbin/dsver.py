@@ -8,7 +8,7 @@ from typing import Any
 
 from packaging import version
 
-from dsbase.text import color
+from dsbase.text.Text import color
 from dsbase.version import PackageSource, VersionChecker, VersionInfo
 
 

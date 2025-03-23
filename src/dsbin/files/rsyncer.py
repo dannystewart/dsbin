@@ -17,25 +17,25 @@ from dsbase.util import dsbase_setup, handle_interrupt
 dsbase_setup()
 
 
-def get_full_path(path: str, filename: str) -> str:
+def get_full_path(path: Path, filename: Path) -> Path:
     """Return the full path of a file in a directory."""
-    return os.path.join(path, filename)
+    return Path(path) / filename
 
 
-def get_first_item(path: str) -> str | None:
+def get_first_item(path: Path) -> Path | None:
     """Return the first item in a directory."""
     try:
         for root, dirs, files in os.walk(path):
             if dirs:
-                return os.path.join(root, dirs[0])
+                return Path(root) / dirs[0]
             if files:
-                return os.path.join(root, files[0])
+                return Path(root) / files[0]
     except Exception:
         return None
 
 
 @handle_interrupt()
-def choose_operation() -> str:
+def choose_operation() -> Path:
     """Choose the command operation: copy, move, or synchronize."""
     questions = [
         inquirer.List(
@@ -55,7 +55,7 @@ def choose_operation() -> str:
 
 
 @handle_interrupt()
-def get_paths() -> tuple[dict[str, str] | None, bool]:
+def get_paths() -> tuple[dict[str, Path] | None, bool]:
     """Get the source and destination paths."""
     questions = [
         inquirer.Text("source", message="Enter source path"),
@@ -82,28 +82,28 @@ def get_paths() -> tuple[dict[str, str] | None, bool]:
         return paths, False
 
     # Update paths with resolved paths
-    paths["source"] = str(source_path)
-    paths["destination"] = str(dest_path)
+    paths["source"] = Path(source_path)
+    paths["destination"] = Path(dest_path)
 
     return paths, True
 
 
 @handle_interrupt()
-def clarify_result(paths: dict) -> bool:
+def clarify_result(paths: dict[str, Path]) -> bool:
     """Clarify the result by showing the full path of the first item in the folder."""
     source = paths["source"]
     destination = paths["destination"]
 
     # Get the base name of the source
-    source_base = os.path.basename(source.rstrip("/"))
+    source_base = source.name
 
     if first_item := get_first_item(source):
-        source_base = os.path.basename(source.rstrip("/"))
-
-        if source.endswith("/"):
-            dest_path = os.path.join(destination, os.path.relpath(first_item, source.rstrip("/")))
+        if source.as_posix().endswith("/"):
+            # If source ends with /, we're copying contents
+            dest_path = destination / first_item.relative_to(source.parent / source.name)
         else:
-            dest_path = os.path.join(destination, source_base, os.path.relpath(first_item, source))
+            # Otherwise, we're copying the directory itself
+            dest_path = destination / source_base / first_item.relative_to(source)
 
         print_colored("In the source path, the first item is at:", "cyan")
         print_colored(f" {first_item}", "yellow")
@@ -111,6 +111,7 @@ def clarify_result(paths: dict) -> bool:
         print_colored(f" {dest_path}", "yellow")
 
         return inquirer.confirm("Is this correct?", default=True)
+
     print_colored(
         "\nCouldn't find any items in the source folder. Please check the path and try again.",
         "red",
@@ -136,7 +137,7 @@ def check_exclusions(command: str) -> str:
     return command
 
 
-def construct_command(base_command: str, exclusions: list, paths: dict) -> str:
+def construct_command(base_command: Path, exclusions: list[str], paths: dict[str, str]) -> str:
     """Construct final command."""
     exclusions_str = " ".join(exclusions)
     return f"{base_command} {exclusions_str} '{paths['source']}' '{paths['destination']}'"

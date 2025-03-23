@@ -97,7 +97,7 @@ def parse_authors(authors: list[Any] | str | None) -> Array:
     return parsed
 
 
-def create_basic_project(poetry_section: dict) -> dict:
+def create_basic_project(poetry_section: dict[str, Any]) -> dict[str, Any]:
     """Create basic project metadata from Poetry section."""
     project = {}
 
@@ -234,7 +234,7 @@ def convert_simple_dependencies(deps: dict[str, Any]) -> Array:
     return converted
 
 
-def handle_dev_dependencies(poetry_section: dict, project: dict) -> None:
+def handle_dev_dependencies(poetry_section: dict[str, Any], project: dict[str, Any]) -> None:
     """Handle development dependencies."""
     if "group" in poetry_section and "dev" in poetry_section["group"]:
         if "optional-dependencies" not in project:
@@ -242,7 +242,7 @@ def handle_dev_dependencies(poetry_section: dict, project: dict) -> None:
         project["optional-dependencies"]["dev"] = poetry_section["group"]["dev"]["dependencies"]
 
 
-def handle_dependencies(poetry_section: dict, project: dict) -> None:
+def handle_dependencies(poetry_section: dict[str, Any], project: dict[str, Any]) -> None:
     """Process and add dependencies to the project."""
     if "dependencies" not in poetry_section:
         return
@@ -268,7 +268,7 @@ def handle_dependencies(poetry_section: dict, project: dict) -> None:
             project.setdefault("optional-dependencies", {})["dev"] = convert_dependencies(dev_deps)
 
 
-def adjust_src_layout(project_name: str, new_pyproject: dict) -> None:
+def adjust_src_layout(project_name: str, new_pyproject: dict[str, Any]) -> None:
     """Adjust configuration for src layout if detected."""
     if (Path.cwd() / "src" / project_name).exists():
         new_pyproject["tool"]["hatch"]["version"]["path"] = f"src/{project_name}/__init__.py"

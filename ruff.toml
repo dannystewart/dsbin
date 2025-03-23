@@ -1,5 +1,5 @@
-# Ruff config version: 15
-# -----------------------
+# Config version: 0.17 (auto-managed)
+
 
 # Files and directories to exclude
 exclude = [
@@ -191,8 +191,8 @@ section-order = [
 ]
 
 [lint.isort.sections]
-personal_util = ["dsbase", "dsutil"]
-personal_bin = ["dsbin"]
+personal_util = ["configs", "dsbase", "dsutil"]
+personal_bin = ["dsbin", "dsupdater", "evremixes", "iplookup", "prism", "pybounce", "workcalc", "wpmusic"]
 
 [lint.mccabe]
 max-complexity = 10

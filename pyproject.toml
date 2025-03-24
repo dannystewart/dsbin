@@ -5,21 +5,31 @@ description = "Personal Python script library"
 authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
 urls = { repository = "https://github.com/dannystewart/dsbin" }
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4.0"
 dependencies = [
-    "dsbase (>=0.3.5,<0.4.0)",
+    "dsbase (>=0.3.7,<0.4.0)",
     "halo (>=0.0.31,<0.0.32)",
     "inquirer (>=3.4.0,<4.0.0)",
     "mutagen (>=1.47.0,<2.0.0)",
+    "mysql-connector-python (>=9.2.0,<10.0.0)",
     "natsort (>=8.4.0,<9.0.0)",
     "numpy (>=2.2.4,<3.0.0)",
     "packaging (>=24.2,<25.0)",
+    "paramiko (>=3.5.1,<4.0.0)",
     "pexpect (>=4.9.0,<5.0.0)",
+    "pillow (>=11.1.0,<12.0.0)",
     "pyperclip (>=1.9.0,<2.0.0)",
     "python-dotenv (>=1.0.1,<2.0.0)",
     "requests (>=2.32.3,<3.0.0)",
+    "rich (>=13.9.4,<14.0.0)",
+    "rsa (>=4.9,<5.0)",
     "scipy (>=1.15.2,<2.0.0)",
+    "scp (>=0.15.0,<0.16.0)",
+    "telethon (>=1.39.0,<2.0.0)",
     "tomlkit (>=0.13.2,<0.14.0)",
+    "tqdm (>=4.67.1,<5.0.0)",
+    "types-paramiko (>=3.5.0.20240928,<4.0.0.0)",
+    "types-pillow (>=10.2.0.20240822,<11.0.0.0)",
     "types-requests (>=2.32.0.20250306,<3.0.0.0)",
 ]
 
@@ -56,8 +66,10 @@ hpfilter = "dsbin.music.hpfilter:main"
 metacopy = "dsbin.music.metacopy:main"
 mp3ify = "dsbin.music.mp3ify:main"
 mshare = "dsbin.music.mshare:main"
+pybounce = "dsbin.pybounce.main:main"
 rmp3 = "dsbin.music.rmp3:main"
 wav2aif = "dsbin.music.awa:wav2aif"
+wpmusic = "dsbin.wpmusic.main:main"
 
 # Logic-specific scripts
 bipclean = "dsbin.logic.bipclean:main"
@@ -78,6 +90,7 @@ timestamps = "dsbin.mac.timestamps:main"
 
 # Development-related scripts
 check-imports = "dsbin.dev.import_checker:main"
+code-configs = "dsbin.configs.main:main"
 pipmigrator = "dsbin.dev.pipmigrator:main"
 poetry-migrate = "dsbin.dev.poetry_migrate:main"
 pyenversioner = "dsbin.dev.pyenversioner:main"

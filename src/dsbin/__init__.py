@@ -61,7 +61,7 @@ list you're looking at right now.)
 - **watchtower**: Script to help with running Watchtower for Docker.
 
 ## Development Scripts
-- **analyze-impact**: Analyze release impact based on changes internally or to a utility library.
+- **analyze-impact**: Analyze the impact of changes in repositories and their dependencies.
 - **check-imports**: Check for circular imports in a Python project.
 - **code-configs**: Download config files for various coding tools.
 - **pyenversioner**: Updates .python-version files recursively.

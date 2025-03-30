@@ -1,4 +1,4 @@
-"""Analyze release impact based on changes internally or to a utility library."""
+"""Analyze the impact of changes in repositories and their dependencies."""
 
 from __future__ import annotations
 
@@ -33,13 +33,13 @@ class ImpactAnalyzer:
 
     def __init__(
         self,
-        utility_repo: RepoConfig | None,
-        dependent_repos: list[RepoConfig],
+        base_repo: RepoConfig | None,
+        packages: list[RepoConfig],
         args: argparse.Namespace,
         logger: Logger,
     ) -> None:
-        self.utility_repo = utility_repo
-        self.dependent_repos = dependent_repos
+        self.base_repo = base_repo
+        self.packages = packages
         self.logger = logger
         self.base_commit = args.base
         self.verbose = args.verbose
@@ -54,9 +54,9 @@ class ImpactAnalyzer:
 
     def analyze(self) -> None:
         """Run the analysis and display results."""
-        # Analyze utility library changes and their impact (if utility repo is specified)
-        if self.utility_repo:
-            self.analyze_utility_changes()
+        # Analyze base library changes and their impact (if base repo is specified)
+        if self.base_repo:
+            self.analyze_base_changes()
 
         # Analyze repo changes since last release
         self.analyze_repo_changes()
@@ -65,26 +65,26 @@ class ImpactAnalyzer:
         # Determine which repos need releases
         self.display_release_recommendations()
 
-    def analyze_utility_changes(self) -> None:
-        """Analyze changes in utility library and their impact on dependent repos."""
-        if not self.utility_repo:
+    def analyze_base_changes(self) -> None:
+        """Analyze changes in base library and their impact on dependent repos."""
+        if not self.base_repo:
             return
 
-        # Get changed files in utility repo
-        self.changed_files = self.find_changed_files(self.utility_repo.path, self.base_commit)
+        # Get changed files in base repo
+        self.changed_files = self.find_changed_files(self.base_repo.path, self.base_commit)
 
         if not self.changed_files:
-            self.logger.info("✓ No Python files changed in %s.", self.utility_repo.name)
+            self.logger.info("✓ No Python files changed in %s.", self.base_repo.name)
             return
 
         color_print("\n=== Current Changes Detected ===\n", "yellow")
 
-        color_print(f"Changed files in {self.utility_repo.name}:", "blue")
+        color_print(f"Changed files in {self.base_repo.name}:", "blue")
         for file in self.changed_files:
             print(f"  {file}")
 
         # Convert to module paths
-        self.changed_modules = self.get_changed_modules(self.changed_files, self.utility_repo.path)
+        self.changed_modules = self.get_changed_modules(self.changed_files, self.base_repo.path)
         color_print("\nChanged modules:", "blue")
         for module in sorted(self.changed_modules):
             print(f"  {module}")
@@ -105,7 +105,7 @@ class ImpactAnalyzer:
         """Display changes in repositories since their last release."""
         color_print("\n=== Repository Changes Since Last Release ===", "yellow")
 
-        for repo in self.dependent_repos:
+        for repo in self.packages:
             if repo.latest_tag:
                 if repo.changes:
                     color_print(f"\n{repo.name} (last release: {repo.latest_tag}):", "cyan")
@@ -168,13 +168,13 @@ class ImpactAnalyzer:
         color_print("\nRepositories requiring new releases:", "yellow")
         release_repos = {}  # Map repo names to reasons for release
 
-        # Add repos impacted by utility changes
-        if self.utility_repo:
+        # Add repos impacted by base changes
+        if self.base_repo:
             for repo_name in self.impacted_repos:
-                release_repos[repo_name] = [f"Affected by changes in {self.utility_repo.name}"]
+                release_repos[repo_name] = [f"Affected by changes in {self.base_repo.name}"]
 
         # Add repos with their own changes
-        for repo in self.dependent_repos:
+        for repo in self.packages:
             if repo.needs_release:
                 if repo.name in release_repos:
                     release_repos[repo.name].append(
@@ -190,16 +190,16 @@ class ImpactAnalyzer:
                 color_print(f"  - {repo_name}:", "green")
                 for reason in reasons:
                     print(f"      {reason}")
-        elif self.utility_repo and self.changed_files:
+        elif self.base_repo and self.changed_files:
             color_print(
-                f"  None (but you should still release a new version of {self.utility_repo.name})",
+                f"  None (but you should still release a new version of {self.base_repo.name})",
                 "yellow",
             )
         else:
             color_print("  None", "green")
 
-    def find_imports_in_file(self, file_path: Path, utility_name: str) -> set[str]:
-        """Find all imports from the utility library in a given file."""
+    def find_imports_in_file(self, file_path: Path, base_name: str) -> set[str]:
+        """Find all imports from the base library in a given file."""
         try:
             with Path(file_path).open(encoding="utf-8") as f:
                 content = f.read()
@@ -208,22 +208,22 @@ class ImpactAnalyzer:
             return set()
 
         imports = set()
-        utility_prefix = f"{utility_name}."
+        base_prefix = f"{base_name}."
 
         try:  # Parse the Python file
             tree = ast.parse(content)
 
             # Look for imports
             for node in ast.walk(tree):
-                # Regular imports: import utility.xyz
+                # Regular imports: import base.xyz
                 if isinstance(node, ast.Import):
                     for name in node.names:
-                        if name.name.startswith(utility_prefix):
+                        if name.name.startswith(base_prefix):
                             imports.add(name.name)
 
-                # From imports: from utility import xyz
+                # From imports: from base import xyz
                 elif isinstance(node, ast.ImportFrom):
-                    if node.module and node.module.startswith(utility_name):
+                    if node.module and node.module.startswith(base_name):
                         imports.update(f"{node.module}.{name.name}" for name in node.names)
         except SyntaxError:
             self.logger.warning("Couldn't parse %s as a valid Python file.", file_path)
@@ -231,10 +231,10 @@ class ImpactAnalyzer:
         return imports
 
     def find_latest_tag(self, repo_path: Path) -> str | None:
-        """Return the most recent tag in the Git history, or None if not found."""
+        """Return the most recent version tag in the Git history, or None if not found."""
         try:
-            # Get all tags sorted by version (most recent first)
-            cmd = ["git", "-C", str(repo_path), "tag", "--sort=-v:refname"]
+            # Get all tags matching version pattern (v*.*.*)
+            cmd = ["git", "-C", str(repo_path), "tag", "--sort=-v:refname", "-l", "v[0-9]*"]
             self.logger.debug("Running: %s", " ".join(cmd))
             result = subprocess.run(
                 cmd,
@@ -250,6 +250,30 @@ class ImpactAnalyzer:
                 repo_path,
                 tags[:5] if len(tags) > 5 else tags,
             )
+
+            if not tags:
+                # Try without 'v' prefix as fallback
+                cmd = [
+                    "git",
+                    "-C",
+                    str(repo_path),
+                    "tag",
+                    "--sort=-v:refname",
+                    "-l",
+                    "[0-9]*.[0-9]*.[0-9]*",
+                ]
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    check=True,
+                )
+                tags = result.stdout.strip().splitlines()
+                self.logger.debug(
+                    "Fallback search found %d tags: %s",
+                    len(tags),
+                    tags[:5] if len(tags) > 5 else tags,
+                )
 
             if not tags:
                 return None
@@ -286,7 +310,7 @@ class ImpactAnalyzer:
 
     def analyze_repo_changes(self) -> None:
         """Analyze changes to repositories since their last release tag."""
-        for repo in self.dependent_repos:
+        for repo in self.packages:
             latest_tag = self.find_latest_tag(repo.path)
             repo.latest_tag = latest_tag
 
@@ -301,8 +325,8 @@ class ImpactAnalyzer:
                         "blue",
                     )
 
-    def scan_repo_for_imports(self, repo_path: Path, utility_name: str) -> dict[str, set[str]]:
-        """Scan a repo for all utility library imports."""
+    def scan_repo_for_imports(self, repo_path: Path, base_name: str) -> dict[str, set[str]]:
+        """Scan a repo for all base library imports."""
         repo_key = str(repo_path)
 
         # Use cached results if available
@@ -316,7 +340,7 @@ class ImpactAnalyzer:
 
         # Find all Python files
         for py_file in repo_path.glob("**/*.py"):
-            if imports := self.find_imports_in_file(py_file, utility_name):
+            if imports := self.find_imports_in_file(py_file, base_name):
                 imports_by_file[str(py_file)] = imports
                 if self.verbose:
                     color_print(
@@ -404,10 +428,10 @@ class ImpactAnalyzer:
     def analyze_impact(self, changed_modules: set[str]) -> dict[str, set[str]]:
         """Analyze which repos are impacted by changes to specific modules."""
         impacted_repos = {}
-        utility_name = self.utility_repo.name
+        base_name = self.base_repo.name
 
-        for repo in self.dependent_repos:
-            imports_by_file = self.scan_repo_for_imports(repo.path, utility_name)
+        for repo in self.packages:
+            imports_by_file = self.scan_repo_for_imports(repo.path, base_name)
             repo_imports = set()
 
             # Check if any of the changed modules are imported
@@ -428,7 +452,7 @@ class ImpactAnalyzer:
     def show_repo_diffs(self, repo_name: str) -> None:
         """Show detailed diffs for a specific repo since its last release."""
         # Find the repo config
-        repo = next((r for r in self.dependent_repos if r.name == repo_name), None)
+        repo = next((r for r in self.packages if r.name == repo_name), None)
         if not repo:
             self.logger.error("Repository %s not found.", repo_name)
             return
@@ -506,44 +530,34 @@ class ImpactAnalyzer:
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(
-        description="Analyze the impact of changes in repositories and their dependencies."
+    parser = ArgParser(description=__doc__, arg_width=34)
+    parser.add_argument(
+        "-b", "--base", metavar="REPO", help="path to the base repository for impact analysis"
     )
     parser.add_argument(
-        "-u",
-        "--utility-repo",
-        help="Path to the utility repository (e.g., dsbase) - only needed for impact analysis",
-    )
-    parser.add_argument(
-        "-d", "--dependent-repos", nargs="+", help="Paths to repositories to analyze"
-    )
-    parser.add_argument(
-        "-b",
-        "--base",
-        default="HEAD",
-        help="Git reference to compare against (default: HEAD)",
-    )
-    parser.add_argument(
-        "-v",
-        "--verbose",
-        action="store_true",
-        help="show detailed output",
-    )
-    parser.add_argument(
-        "--staged",
-        action="store_true",
-        help="only check staged changes, not working directory changes",
-    )
-    parser.add_argument(
-        "--diff",
+        "-r",
+        "--repos",
         metavar="REPO",
-        help="show detailed diffs for the specified repository",
+        nargs="+",
+        help="paths to package repos to analyze (accepts multiple)",
     )
+    parser.add_argument(
+        "-c", "--commit", default="HEAD", help="Git reference to compare against (default: HEAD)"
+    )
+    parser.add_argument(
+        "-d", "--diff", metavar="REPO", help="show detailed diffs for the specified repository"
+    )
+    parser.add_argument(
+        "--staged-only",
+        action="store_true",
+        help="show only staged changes rather than working directory",
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="show detailed output")
 
     # Ensure at least one repo is specified
     args = parser.parse_args()
-    if not args.utility_repo and not args.dependent_repos:
-        parser.error("At least one repository must be specified with -u or -d")
+    if not args.base and not args.repos:
+        parser.error("At least one repository must be specified with -b or -r")
 
     return args
 
@@ -554,32 +568,32 @@ def main() -> None:
     logger = LocalLogger().get_logger(simple=True, env=env)
     args = parse_args()
 
-    # Create utility repo config if specified
-    utility_repo = None
-    if args.utility_repo:
-        utility_path = Path(args.utility_repo).resolve()
-        if not utility_path.exists():
-            logger.error("Utility repository path %s does not exist", utility_path)
+    # Create base repo config if specified
+    base_repo = None
+    if args.base:
+        base_path = Path(args.base).resolve()
+        if not base_path.exists():
+            logger.error("Base repository path %s does not exist", base_path)
             return
 
-        utility_repo = RepoConfig(name=utility_path.name, path=utility_path)
+        base_repo = RepoConfig(name=base_path.name, path=base_path)
 
     # Create dependent repo configs
-    dependent_repos = []
-    if args.dependent_repos:
-        for repo_path_str in args.dependent_repos:
+    repos = []
+    if args.repos:
+        for repo_path_str in args.repos:
             repo_path = Path(repo_path_str).resolve()
             if not repo_path.exists():
                 logger.warning("Repository path %s does not exist, skipping", repo_path)
                 continue
 
-            dependent_repos.append(RepoConfig(name=repo_path.name, path=repo_path))
+            repos.append(RepoConfig(name=repo_path.name, path=repo_path))
 
-    # If no utility repo specified, use the first dependent repo as the main one to analyze
-    if not utility_repo and dependent_repos:
-        logger.debug("No utility repo specified, analyzing %s on its own", dependent_repos[0].name)
+    # If no base repo specified, use the first dependent repo as the main one to analyze
+    if not base_repo and repos:
+        logger.debug("No base repo specified, analyzing %s on its own", repos[0].name)
 
-    analyzer = ImpactAnalyzer(utility_repo, dependent_repos, args, logger)
+    analyzer = ImpactAnalyzer(base_repo, repos, args, logger)
 
     if args.diff:  # If a specific repo is specified for diff, just show that
         repo_name = Path(args.diff).name if "/" in args.diff else args.diff

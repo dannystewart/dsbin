@@ -57,6 +57,11 @@ dupefinder = "dsbin.files.dupefinder:main"
 fml = "dsbin.files.fml:main"
 foldermerge = "dsbin.files.foldermerge:main"
 rsyncer = "dsbin.files.rsyncer:main"
+workcalc = "dsbin.workcalc.main:main"
+
+# Text processing scripts
+pycompare = "dsbin.text.pycompare:main"
+w11renamer = "dsbin.text.w11renamer:main"
 
 # Media scripts
 ffgif = "dsbin.media.ffgif:main"
@@ -75,13 +80,6 @@ rmp3 = "dsbin.music.rmp3:main"
 wav2aif = "dsbin.music.awa:wav2aif"
 wpmusic = "dsbin.wpmusic.main:main"
 
-# Logic-specific scripts
-bipclean = "dsbin.logic.bipclean:main"
-bouncefiler = "dsbin.logic.bouncefiler:main"
-bounceprune = "dsbin.logic.bounceprune:main"
-bounces = "dsbin.logic.bounces:main"
-oldprojects = "dsbin.logic.oldprojects:main"
-
 # Mac-specific scripts
 dmg-encrypt = "dsbin.mac.dmg_encrypt:main"
 dmgify = "dsbin.mac.dmgify:main"
@@ -92,16 +90,12 @@ setmag = "dsbin.mac.setmag:main"
 spacepurger = "dsbin.mac.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
 
-# Development-related scripts
-check-imports = "dsbin.dev.import_checker:main"
-code-configs = "dsbin.configs.main:main"
-impactanalyzer = "dsbin.dev.impact_analyzer:main"
-poetry-migrate = "dsbin.dev.poetry_migrate:main"
-pybumper = "dsbin.pybumper.main:main"
-pyenversioner = "dsbin.dev.pyenversioner:main"
-scriptdep = "dsbin.dev.scriptdep:main"
-tagreplace = "dsbin.dev.tag_replace:main"
-uvmigrate = "dsbin.dev.uvmigrate:main"
+# Logic-specific scripts
+bipclean = "dsbin.logic.bipclean:main"
+bouncefiler = "dsbin.logic.bouncefiler:main"
+bounceprune = "dsbin.logic.bounceprune:main"
+bounces = "dsbin.logic.bounces:main"
+oldprojects = "dsbin.logic.oldprojects:main"
 
 # System tools
 changehostname = "dsbin.tools.changehostname:main"
@@ -113,6 +107,13 @@ envsync = "dsbin.tools.envsync:main"
 ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
 watchtower = "dsbin.tools.watchtower:main"
 
-# Text processing scripts
-pycompare = "dsbin.text.pycompare:main"
-w11renamer = "dsbin.text.w11renamer:main"
+# Development-related scripts
+check-imports = "dsbin.dev.import_checker:main"
+code-configs = "dsbin.configs.main:main"
+impactanalyzer = "dsbin.dev.impact_analyzer:main"
+poetry-migrate = "dsbin.dev.poetry_migrate:main"
+pybumper = "dsbin.pybumper.main:main"
+pyenversioner = "dsbin.dev.pyenversioner:main"
+scriptdep = "dsbin.dev.scriptdep:main"
+tagreplace = "dsbin.dev.tag_replace:main"
+uvmigrate = "dsbin.dev.uvmigrate:main"

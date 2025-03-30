@@ -7,3 +7,9 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.2
+    hooks:
+    -   id: ruff
+        args: [--config, ruff.toml, --preview, --fix, --unsafe-fixes]
+    -   id: ruff-format

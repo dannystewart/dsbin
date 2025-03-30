@@ -78,17 +78,22 @@ def get_script_descriptions() -> dict[str, str]:
         lines = result.stdout.strip().split("\n")
 
         # Skip header lines
+        in_content = False
         for line in lines:
-            if not line.strip() or "Script Name" in line:
+            if "Script Name" in line and "Description" in line:
+                in_content = True
+                continue
+
+            if not in_content or not line.strip():
                 continue
 
             # Extract script name and description
-            match = re.match(r"([a-zA-Z0-9_-]+(?:,\s*[a-zA-Z0-9_-]+)*)\s{2,}(.+)", line)
+            match = re.match(r"([\w-]+(?:,\s*[\w-]+)*)\s+(.+)$", line)
             if match:
                 scripts, desc = match.groups()
                 # Handle multiple scripts (aliases) separated by commas
                 for script in [s.strip() for s in scripts.split(",")]:
-                    descriptions[script] = desc
+                    descriptions[script] = desc.strip()
 
         return descriptions
     except subprocess.CalledProcessError as e:
@@ -153,13 +158,21 @@ def generate_readme_content(
 
         content.append(f"## {category}")
 
-        # Add each script with its description
+        # Group scripts by description
+        desc_to_scripts: dict[str, list[str]] = {}
         for script_name, _ in sorted(scripts):
-            description = descriptions.get(script_name, "")
-            if description:
-                content.append(f"- **{script_name}**: {description}")
+            desc = descriptions.get(script_name, "*(No description available)*")
+            desc_to_scripts.setdefault(desc, []).append(script_name)
+
+        # Add each group of scripts with their shared description
+        for desc, script_names in desc_to_scripts.items():
+            if len(script_names) > 1:
+                # Combine multiple scripts with same description
+                script_str = ", ".join(f"**{name}**" for name in sorted(script_names))
+                content.append(f"- {script_str}: {desc}")
             else:
-                content.append(f"- **{script_name}**: *(No description available)*")
+                # Single script
+                content.append(f"- **{script_names[0]}**: {desc}")
 
         content.append("")
 

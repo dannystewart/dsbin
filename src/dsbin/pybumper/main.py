@@ -111,10 +111,9 @@ class PyBumper:
             self.logger.info("Will bump to:    %s", new_version_str)
 
             # Prompt for confirmation unless --force is used
-            if not self.force:
-                if not confirm_action("Proceed with version bump?"):
-                    self.logger.info("Version bump cancelled.")
-                    return
+            if not self.force and not confirm_action("Proceed with version bump?"):
+                self.logger.info("Version bump cancelled.")
+                return
 
             self.update_version(bump_type, new_version_str)
         except Exception as e:

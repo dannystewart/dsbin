@@ -214,11 +214,12 @@ def main() -> None:
         else:
             skip_titles = True  # Skip second title if first title was skipped
 
-        if not skip_titles:
-            if title2_in := input(
+        if not skip_titles and (
+            title2_in := input(
                 color("Enter a title for the second list (or press Enter to skip): ", "green")
-            ):
-                title2 = title2_in
+            )
+        ):
+            title2 = title2_in
 
     print_colored(f"Paste the {title1} list (type '.' and press Enter to finish):", "green")
     list1 = input_until_sentinel()

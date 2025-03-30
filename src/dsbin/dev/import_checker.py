@@ -28,9 +28,8 @@ def find_imports(file_path: str) -> list[tuple[str, int]]:
     for node in ast.walk(tree):
         if isinstance(node, ast.Import):
             imports.extend((name.name, node.lineno) for name in node.names)
-        elif isinstance(node, ast.ImportFrom):
-            if node.module:
-                imports.append((node.module, node.lineno))
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            imports.append((node.module, node.lineno))
 
     return imports
 

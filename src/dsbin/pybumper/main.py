@@ -154,7 +154,7 @@ class PyBumper:
                 self._update_version_in_pyproject(self.pyproject_path, new_version)
 
             # Handle git operations
-            self.git.handle_git_operations(new_version, bump_type, self.current_ver_str)
+            self.git.handle_git_operations(new_version, bump_type)
 
             # Log success
             action = "tagged" if bump_type is None else "updated to"

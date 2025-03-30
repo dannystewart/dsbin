@@ -3,8 +3,8 @@ name = "dsbin"
 version = "0.3.3"
 description = "Personal script library solving problems you didn't know you cared about"
 authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
-readme = "README.md"
 urls = { repository = "https://github.com/dannystewart/dsbin" }
+readme = "README.md"
 license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.12,<3.14"

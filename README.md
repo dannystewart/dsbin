@@ -4,7 +4,7 @@ This is my personal collection of Python scripts, built up over many years of so
 
 ## Meta Scripts
 - **dsver**: Show installed versions of my packages.
-- **lsbin**: Lists executable files and their descriptions based on docstrings. (What produced the list you're looking at right now.)
+- **lsbin**: Lists executable files and their descriptions based on docstrings. What you're looking at now.
 
 ## File Management
 - **backupsort**: Sorts saved backup files by adding a timestamp suffix to the filename.
@@ -13,7 +13,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - **fml**: Uploads a file to Fastmail's file storage using WebDAV.
 - **foldermerge**: Tries to merge two folders, accounting for duplicates and name conflicts.
 - **rsyncer**: Build an rsync command interactively.
-- **workcalc**: Calculate work patterns from various data sources.
+- **workcalc**: Calculate how much time went into a project.
 
 ## Text Processing Scripts
 - **pycompare**: Compare two lists and output common/unique elements.
@@ -25,7 +25,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - **ytdl**: Custom yt-dlp command to ensure highest quality MP4.
 
 ## Music Scripts
-- **aif2wav, wav2aif**: Convert AIFF to WAV or WAV to AIFF, with optional Logic metadata.
+- **aif2wav**, **wav2aif**: Convert AIFF to WAV or WAV to AIFF, with optional Logic metadata.
 - **alacrity**: Converts files in a directory to ALAC, with additional formats and options.
 - **hpfilter**: Apply a highpass filter to cut bass frequencies for HomePod playback.
 - **metacopy**: Copy audio metadata from a known file to a new file.
@@ -56,15 +56,18 @@ This is my personal collection of Python scripts, built up over many years of so
 - **changehostname**: Changes the system hostname in all the relevant places.
 - **dockermounter**: Checks to see if mount points are mounted, and act accordingly.
 - **dsservice**: Main function for managing systemd services.
+- **dsupdater**: Comprehensive update installer for Linux and macOS.
+- **dsupdater-install**: Entry point for installer.
 - **envsync**: Synchronize two .env files by merging their content.
 - **ssh-tunnel**: Create or kill an SSH tunnel on the specified port.
 - **watchtower**: Script to help with running Watchtower for Docker.
 
 ## Development Scripts
 - **check-imports**: Check for circular imports in a Python project.
-- **code-configs**: Download config files for various coding tools.
+- **code-configs**: Download configs for coding tools and compare against local versions.
 - **impactanalyzer**: Analyze the impact of changes in repositories and their dependencies.
+- **poetry-migrate**, **uvmigrate**: Process pyproject.toml file(s) based on command line arguments.
+- **pybumper**: Version management tool for Python projects.
 - **pyenversioner**: Updates .python-version files recursively.
 - **scriptdep**: Analyze dependencies and imports across scripts to help separate concerns.
 - **tagreplace**: Replace an existing Git tag with a new tag name and description.
-- **uvmigrate, poetry-migrate**: Process pyproject.toml file(s) based on command line arguments.

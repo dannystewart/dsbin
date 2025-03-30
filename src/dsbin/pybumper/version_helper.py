@@ -271,8 +271,7 @@ class VersionHelper:
             )
         else:
             # Start new dev series
-            new_patch = version.patch + 1  # Increment patch version first
-            new_version_str = f"{version.major}.{version.minor}.{new_patch}.dev0"
+            new_version_str = f"{version.major}.{version.minor}.{version.patch}.dev0"
 
         return self.parse_version(new_version_str)
 
@@ -299,9 +298,8 @@ class VersionHelper:
             # Progress to next pre-release stage (e.g., alpha1 -> beta1)
             new_version_str = f"{version.major}.{version.minor}.{version.patch}{new_suffix}1"
         else:
-            # Starting a new pre-release series
-            new_patch = version.patch + 1  # Increment patch version first
-            new_version_str = f"{version.major}.{version.minor}.{new_patch}{new_suffix}1"
+            # Start new pre-release series
+            new_version_str = f"{version.major}.{version.minor}.{version.patch}{new_suffix}1"
 
         return self.parse_version(new_version_str)
 

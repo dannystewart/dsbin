@@ -10,8 +10,8 @@ from dsbase import EnvManager, LocalLogger, Text
 from dsbase.shell import confirm_action
 from dsbase.util import dsbase_setup, handle_interrupt
 
+from dsbin.pybumper.beta.git_helper import GitHelper
 from dsbin.pybumper.bump_type import BumpType
-from dsbin.pybumper.git_helper import GitHelper
 from dsbin.pybumper.version_helper import VersionHelper
 
 if TYPE_CHECKING:
@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 dsbase_setup()
 
 
-class VersionBumper:
+class PyBumper:
     """Version management tool for Python projects."""
 
     def __init__(self, args: argparse.Namespace, package_name: str) -> None:
@@ -32,7 +32,7 @@ class VersionBumper:
         self.logger = LocalLogger().get_logger(env.log_level, simple=not env.debug)
 
         # Parse command-line arguments into instance variables
-        self.keep_version = args.keep_version
+        self.no_increment = args.no_increment
         self.force = args.force
         self.type = args.type
 
@@ -59,10 +59,10 @@ class VersionBumper:
     def perform_bump(self) -> None:
         """Perform version bump."""
         try:
-            # Handle --keep-version flag (tag current version without incrementing)
-            if self.keep_version:
+            # Handle --no-increment flag (tag current version without incrementing)
+            if self.no_increment:
                 if self.type and self.type != [BumpType.PATCH.value]:
-                    self.logger.error("--keep-version cannot be used with version bump arguments")
+                    self.logger.error("--no-increment cannot be used with version bump arguments")
                     sys.exit(1)
                 self.git.tag_current_version(self.package_name)
                 return

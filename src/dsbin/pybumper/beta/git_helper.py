@@ -8,6 +8,8 @@ from typing import TYPE_CHECKING
 
 from dsbase.util import handle_interrupt
 
+from dsbin.pybumper.beta.monorepo_helper import MonorepoHelper
+
 if TYPE_CHECKING:
     from logging import Logger
 
@@ -74,13 +76,13 @@ class GitHelper:
             return "v"
 
     @handle_interrupt()
-    def tag_current_version(self) -> None:
+    def tag_current_version(self, package_name: str) -> None:
         """Tag and push the current version without incrementing.
 
         Creates a new commit with the current version number, then tags and pushes it.
 
-        Args:
-            commit_message: Custom commit message (if None, default is used).
+        Raises:
+            CalledProcessError: If any of the git commands fail.
         """
         pyproject = Path("pyproject.toml")
         if not pyproject.exists():
@@ -102,29 +104,40 @@ class GitHelper:
             self.logger.error("Tag %s already exists.", tag_name)
             sys.exit(1)
 
-        # Create a new commit with the current version number
-        has_other_changes = self.commit_version_change(current_version)
-        if has_other_changes:
-            self.logger.info(
-                "Committed pyproject.toml without version change. "
-                "Other changes in the working directory were skipped and preserved."
-            )
+        # Create a new commit with the current version number if there are changes
+        try:
+            has_other_changes = self.commit_version_change(current_version, package_name)
+            if has_other_changes:
+                self.logger.info(
+                    "Committed pyproject.toml without version change. "
+                    "Other changes in the working directory were skipped and preserved."
+                )
+        except subprocess.CalledProcessError as e:
+            # If there are no changes to commit, just proceed with tagging
+            if "nothing to commit" in str(e):
+                self.logger.info("No changes to commit, proceeding with tagging.")
+            else:
+                raise
 
         # Create tag
         subprocess.run(["git", "tag", tag_name], check=True)
 
-        # Push changes and tags
-        subprocess.run(["git", "push"], check=True)
-        subprocess.run(["git", "push", "--tags"], check=True)
+        if self.push_to_remote:  # Push changes and tags
+            subprocess.run(["git", "push"], check=True)
+            subprocess.run(["git", "push", "--tags"], check=True)
+            self.logger.info("Successfully tagged and pushed version %s!", current_version)
+        else:
+            self.logger.info(
+                "Successfully tagged version %s! Use 'git push && git push --tags' to push to remote.",
+                current_version,
+            )
 
-        self.logger.info("Successfully tagged and pushed version %s!", current_version)
-
-    def commit_version_change(self, new_version: str) -> bool:
+    def commit_version_change(self, new_version: str, package_name: str) -> bool:
         """Commit version change to git.
 
         Args:
             new_version: The new version string.
-            commit_message: Optional custom commit message.
+            package_name: The name of the package being versioned.
 
         Returns:
             True if there were other uncommitted changes, False otherwise.
@@ -133,6 +146,16 @@ class GitHelper:
         result = subprocess.run(
             ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
         )
+
+        # Check if pyproject.toml has changes
+        pyproject_changed = any(
+            line.endswith("pyproject.toml") for line in result.stdout.splitlines()
+        )
+
+        if not pyproject_changed:
+            self.logger.info("No changes to pyproject.toml detected.")
+            return False
+
         has_other_changes = any(
             not line.endswith("pyproject.toml") for line in result.stdout.splitlines()
         )
@@ -140,11 +163,43 @@ class GitHelper:
         # Stage only pyproject.toml
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
 
+        # Determine if we're in a monorepo
+        current_dir = Path.cwd()
+        monorepo_root = MonorepoHelper.find_monorepo_root(current_dir)
+
         # Use custom message if provided, otherwise use default
-        message = self.commit_message or f"Bump version to {new_version}"
+        if self.commit_message:
+            message = self.commit_message
+        elif monorepo_root:
+            message = f"Bump {package_name} to {new_version}"
+        else:
+            message = f"Bump version to {new_version}"
+
         subprocess.run(["git", "commit", "-m", message], check=True)
 
         return has_other_changes
+
+    def generate_tag_name(self, version: str, package_name: str) -> str:
+        """Generate tag name for the given version and package.
+
+        Args:
+            version: The version string.
+            package_name: The package name.
+
+        Returns:
+            The tag name in format 'package_name-vX.Y.Z' for monorepo or 'vX.Y.Z' for standard repo.
+        """
+        version_prefix = self.detect_version_prefix()
+
+        # Determine if we're in a monorepo
+        current_dir = Path.cwd()
+        monorepo_root = MonorepoHelper.find_monorepo_root(current_dir)
+
+        if monorepo_root:
+            # We're in a monorepo, use package-specific tag
+            return f"{package_name}-{version_prefix}{version}"
+        # Standard repository, use simple version tag
+        return f"{version_prefix}{version}"
 
     def create_and_push_tag(self, tag_name: str) -> None:
         """Create and push a git tag."""
@@ -167,19 +222,20 @@ class GitHelper:
         self,
         new_version: str,
         bump_type: BumpType | str | list[BumpType] | None,
+        package_name: str,
     ) -> None:
         """Handle git commit, tag, and push operations.
 
         Args:
             new_version: The version string to tag with.
             bump_type: The type of version bump performed.
+            package_name: The name of the package being versioned.
         """
-        version_prefix = self.detect_version_prefix()
-        tag_name = f"{version_prefix}{new_version}"
+        tag_name = self.generate_tag_name(new_version, package_name)
 
         # Handle version bump commit if needed
         if bump_type is not None:
-            has_other_changes = self.commit_version_change(new_version)
+            has_other_changes = self.commit_version_change(new_version, package_name)
             if has_other_changes:
                 self.logger.info(
                     "Committed pyproject.toml with the version bump. "

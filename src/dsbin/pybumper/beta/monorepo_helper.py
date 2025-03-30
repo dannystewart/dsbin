@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase.log import LocalLogger
+from dsbase import LocalLogger
 
 if TYPE_CHECKING:
     from logging import Logger

@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING
 
 import mysql.connector
 
-from dsbase.log import LocalLogger
+from dsbase import LocalLogger
 
-from wpmusic.configs import WPConfig
+from dsbin.wpmusic.configs import WPConfig
 
 if TYPE_CHECKING:
     from collections.abc import Generator
@@ -200,10 +200,10 @@ def main() -> None:
             if response == "y":
                 migrate_data(config)
             else:
-                logger.info("Migration cancelled.")
+                logger.info("Migration canceled.")
 
     except KeyboardInterrupt:
-        logger.info("Operation cancelled by user")
+        logger.info("Operation canceled by user")
         sys.exit(1)
     except Exception as e:
         logger.error("Operation failed: %s", str(e))

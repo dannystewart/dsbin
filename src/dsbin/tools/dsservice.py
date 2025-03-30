@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from dsbase.shell import is_root_user
-from dsbase.text.Text import color, print_colored
+from dsbase.text import color, print_colored
 
 from dsbin.systemd.service_list import ServiceConfigs
 from dsbin.systemd.systemd import SystemdServiceTemplate

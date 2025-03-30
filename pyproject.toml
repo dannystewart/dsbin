@@ -1,13 +1,15 @@
 [project]
 name = "dsbin"
-version = "0.3.0"
-description = "Personal Python script library"
+version = "0.3.3"
+description = "Personal script library solving problems you didn't know you cared about"
 authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
-urls = { repository = "https://github.com/dannystewart/dsbin" }
 readme = "README.md"
-requires-python = ">=3.12,<4.0"
+urls = { repository = "https://github.com/dannystewart/dsbin" }
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+requires-python = ">=3.12,<3.14"
 dependencies = [
-    "dsbase (>=0.3.7,<0.4.0)",
+    "dsbase (>=0.4.1,<0.5.0)",
     "halo (>=0.0.31,<0.0.32)",
     "inquirer (>=3.4.0,<4.0.0)",
     "mutagen (>=1.47.0,<2.0.0)",
@@ -19,9 +21,9 @@ dependencies = [
     "pexpect (>=4.9.0,<5.0.0)",
     "pillow (>=11.1.0,<12.0.0)",
     "pyperclip (>=1.9.0,<2.0.0)",
-    "python-dotenv (>=1.0.1,<2.0.0)",
+    "python-dotenv (>=1.1.0,<2.0.0)",
     "requests (>=2.32.3,<3.0.0)",
-    "rich (>=13.9.4,<14.0.0)",
+    "rich (>=14.0.0,<15.0.0)",
     "rsa (>=4.9,<5.0)",
     "scipy (>=1.15.2,<2.0.0)",
     "scp (>=0.15.0,<0.16.0)",
@@ -30,12 +32,14 @@ dependencies = [
     "tqdm (>=4.67.1,<5.0.0)",
     "types-paramiko (>=3.5.0.20240928,<4.0.0.0)",
     "types-pillow (>=10.2.0.20240822,<11.0.0.0)",
-    "types-requests (>=2.32.0.20250306,<3.0.0.0)",
+    "types-requests (>=2.32.0.20250328,<3.0.0.0)",
 ]
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.15.0"
+pdoc = ">=15.0.1"
 ruff = ">=0.11.2"
+dsbase = {path = "../dsbase", develop = true}
 
 [build-system]
 requires = ["poetry-core>=2.0"]
@@ -89,10 +93,11 @@ spacepurger = "dsbin.mac.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
 
 # Development-related scripts
+analyze-impact = "dsbin.dev.analyze_impact:main"
 check-imports = "dsbin.dev.import_checker:main"
 code-configs = "dsbin.configs.main:main"
-pipmigrator = "dsbin.dev.pipmigrator:main"
 poetry-migrate = "dsbin.dev.poetry_migrate:main"
+pybumper = "dsbin.pybumper.main:main"
 pyenversioner = "dsbin.dev.pyenversioner:main"
 scriptdep = "dsbin.dev.scriptdep:main"
 tagreplace = "dsbin.dev.tag_replace:main"
@@ -101,6 +106,8 @@ uvmigrate = "dsbin.dev.uvmigrate:main"
 # System tools
 changehostname = "dsbin.tools.changehostname:main"
 dsservice = "dsbin.tools.dsservice:main"
+dsupdater = "dsbin.updater.updater:main"
+dsupdater-install = "dsbin.updater.install:main"
 dockermounter = "dsbin.tools.dockermounter:main"
 envsync = "dsbin.tools.envsync:main"
 ssh-tunnel = "dsbin.tools.ssh_tunnel:main"

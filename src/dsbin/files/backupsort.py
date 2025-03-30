@@ -18,7 +18,7 @@ from natsort import natsorted
 
 from dsbase import EnvManager
 from dsbase.shell import confirm_action
-from dsbase.text.Text import color
+from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

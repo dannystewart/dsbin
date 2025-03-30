@@ -1,5 +1,5 @@
-# Config version: 0.17 (auto-managed)
-
+# Ruff config version: 18
+# -----------------------
 
 # Files and directories to exclude
 exclude = [
@@ -145,7 +145,6 @@ ignore = [
     "RET503",  # Missing explicit return at the end of function able to return non-None value
     "RUF001",  # String contains ambiguous `’`
     "RUF100",  # Unused `noqa` directive (it's really bad at detecting what's actually unused)
-    "SIM102",  # Use a single if statement instead of nested if statements (Sourcery)
     "T201",    # No print statements
     "TD001",   # Invalid TODO format
     "TD002",   # Missing author in TODO

@@ -12,11 +12,11 @@ from __future__ import annotations
 
 import subprocess
 import sys
+from pathlib import Path
 
-from dsbase.files import delete_files, move_file
-from dsbase.media import ffmpeg_video
+from dsbase import FileManager, MediaManager
 from dsbase.shell import halo_progress
-from dsbase.text.Text import color_print
+from dsbase.text import color_print
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
@@ -62,17 +62,22 @@ def main() -> None:
         target_filename = clean_filename
 
     with halo_progress(clean_filename):
-        ffmpeg_video(
-            input_files=original_filename,
+        MediaManager().video.ffmpeg_video(
+            input_files=Path(original_filename),
             output_format="mp4",
             output_file=target_filename,
             video_codec="h264",
             audio_codec="aac",
         )
 
+    files = FileManager()
+    original_file = Path(original_filename)
+    target_file = Path(target_filename)
+    clean_file = Path(clean_filename)
+
     if original_filename != target_filename:
-        delete_files(original_filename)
-        if move_file(target_filename, clean_filename, overwrite=True, show_output=False):
+        files.delete(original_file)
+        if files.move(target_file, clean_file, overwrite=True, show_output=False):
             color_print(f"Saved {clean_filename}!", "green")
 
 

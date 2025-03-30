@@ -9,7 +9,7 @@ import ast
 import os
 from pathlib import Path
 
-from dsbase.text.Text import color, print_colored
+from dsbase.text import color, print_colored
 
 
 def find_imports(file_path: str) -> list[tuple[str, int]]:

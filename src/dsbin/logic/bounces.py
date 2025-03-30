@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from dsbase import ArgParser
-from dsbase.text.Text import color
+from dsbase.text import color
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 

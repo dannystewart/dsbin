@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any
 import requests
 from PIL import Image
 
-from dsbase.log import LocalLogger
+from dsbase import LocalLogger
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.configs import WPConfig

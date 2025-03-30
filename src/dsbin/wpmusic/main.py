@@ -24,8 +24,8 @@ from typing import TYPE_CHECKING
 
 from halo import Halo
 
-from dsbase.log import LocalLogger
-from dsbase.media import ffmpeg_audio
+from dsbase import LocalLogger, MediaManager
+from dsbase.animate import walking_man
 from dsbase.text import color
 from dsbase.util import dsbase_setup, handle_interrupt
 
@@ -47,6 +47,12 @@ class WPMusic:
     def __init__(self, args: argparse.Namespace):
         if args.doc:
             self.show_help_and_exit()
+
+        with walking_man(color="cyan"):
+            self.initialize(args)
+
+    def initialize(self, args: argparse.Namespace) -> None:
+        """Initialize the script."""
 
         # Keep files based on argument or if skipping upload
         should_keep = args.keep_files or args.skip_upload
@@ -268,10 +274,10 @@ class WPMusic:
         output_file_path = Path(self.config.file_save_path) / f"{base_filename}{format_ext}"
         self.logger.debug("Output file path for %s: %s", format_name.upper(), output_file_path)
 
-        ffmpeg_audio(
-            input_files=str(input_file),
+        MediaManager().ffmpeg_audio(
+            input_files=Path(input_file),
             output_format=format_ext[1:],  # Remove the leading dot
-            output_file=str(output_file_path),
+            output_filename=str(output_file_path),
             overwrite=True,
             show_output=False,
         )

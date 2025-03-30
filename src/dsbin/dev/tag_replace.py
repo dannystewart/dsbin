@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 from dsbase.shell import confirm_action
-from dsbase.text.Text import color_print
+from dsbase.text import color_print
 from dsbase.util import handle_interrupt
 
 

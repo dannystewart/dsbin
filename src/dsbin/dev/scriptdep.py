@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Analyze dependencies and imports across dsbase and scripts to help separate concerns."""
+"""Analyze dependencies and imports across scripts to help separate concerns."""
 
 from __future__ import annotations
 

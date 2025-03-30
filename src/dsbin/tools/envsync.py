@@ -8,7 +8,7 @@ import filecmp
 from collections import OrderedDict
 from pathlib import Path
 
-from dsbase.text.Text import color_print
+from dsbase.text import color_print
 
 CHEZMOI_ENV = Path.home() / ".local" / "share" / "chezmoi" / "dot_local" / "bin" / ".env"
 CHEZMOI_NAME = "Chezmoi .env"

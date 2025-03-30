@@ -9,8 +9,8 @@ import paramiko  # type: ignore
 import pyperclip
 from scp import SCPClient
 
-from dsbase.files import delete_files
-from dsbase.log import LocalLogger
+from dsbase import FileManager as BaseFileManager
+from dsbase import LocalLogger
 from dsbase.text import color as colored
 from dsbase.util import handle_interrupt
 
@@ -85,6 +85,7 @@ class FileManager:
             audio_track: The AudioTrack object containing the track metadata.
             output_filename: The base filename for the converted files.
         """
+        files = BaseFileManager()
         files_to_process = [  # List of files to process based on requested formats
             self.file_save_path / f"{output_filename}{self.config.formats[fmt]}"
             for fmt in self.config.formats_to_convert
@@ -102,7 +103,7 @@ class FileManager:
             self.logger.info("Local files kept and renamed to '%s'.", song_name)
 
         else:  # Otherwise, delete the files
-            delete_files(files_to_process, show_output=False)
+            files.delete(files_to_process, show_output=False)
 
     def upload_file_to_web_server(self, file_path: Path, audio_track: AudioTrack) -> None:
         """Upload a file to my web server."""

@@ -1,4 +1,4 @@
-"""Identifies and deletes AIFF files created within a specified time period (default 2 hours).
+"""Identify and delete recently created AIFF files (default 2 hours).
 
 This script is for audio files bounced in place within a Logic project. These files end up in the
 Audio Files folder, but if you decide to revert or save the project without keeping it, they're not
@@ -17,7 +17,7 @@ from pathlib import Path
 import inquirer
 
 from dsbase.files import FileManager
-from dsbase.text.Text import color_print
+from dsbase.text import color_print
 from dsbase.time import TZ
 from dsbase.util import dsbase_setup
 

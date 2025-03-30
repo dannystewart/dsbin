@@ -9,22 +9,23 @@ bit depth conversion for 24-bit files.
 
 from __future__ import annotations
 
-import argparse
 import re
 import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 import inquirer
 
-from dsbase import LocalLogger
-from dsbase.animate import start_walking, stop_walking
-from dsbase.media import find_bit_depth
+from dsbase import ArgParser, LocalLogger, MediaManager
+from dsbase.animate import walking_man
 from dsbase.shell import halo_progress
-from dsbase.text.Text import color as colored
+from dsbase.text import color as colored
 from dsbase.util import dsbase_setup, handle_interrupt
+
+if TYPE_CHECKING:
+    import argparse
 
 dsbase_setup()
 
@@ -257,9 +258,7 @@ class MusicShare:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
-        description="A script for sharing music bounces in a variety of formats."
-    )
+    parser = ArgParser(description=__doc__)
     parser.add_argument("input_file", help="the file to convert")
     parser.add_argument("--upload", action="store_true", help="use URL-safe filename for uploading")
     return parser.parse_args()
@@ -268,10 +267,6 @@ def parse_arguments() -> argparse.Namespace:
 @handle_interrupt()
 def main() -> None:
     """Convert to desired formats."""
-    # Start the loading animation
-    animation_thread = start_walking()
-
-    # Parse command-line arguments
     args = parse_arguments()
     input_file = Path(args.input_file)
 
@@ -279,11 +274,8 @@ def main() -> None:
         print(colored(f"The file {input_file} does not exist. Aborting.", "red"))
         sys.exit(1)
 
-    # Determine the bit depth so we know what options to show
-    bit_depth = find_bit_depth(str(input_file))
-
-    # Stop the animation once we have the bit depth
-    stop_walking(animation_thread)
+    with walking_man():  # Determine the bit depth so we know what options to show
+        bit_depth = MediaManager().find_bit_depth(input_file)
 
     mshare = MusicShare(input_file, bit_depth, args.upload)
     mshare.perform_conversions()

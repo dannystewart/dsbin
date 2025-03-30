@@ -29,10 +29,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from dsbase import FileManager
 from dsbase.animate import walking_man
-from dsbase.files import delete_files
 from dsbase.shell import confirm_action
-from dsbase.text.Text import color, print_colored
+from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
@@ -195,7 +195,8 @@ def execute_actions(actions: BounceActions) -> None:
         return
 
     if confirm_action("Proceed with these actions?", default_to_yes=False):
-        successful_deletions, failed_deletions = delete_files(actions.trash, show_output=False)
+        files = FileManager()
+        successful_deletions, failed_deletions = files.delete(actions.trash, show_output=False)
 
         renamed_files_count = 0
         for old_path, new_path in actions.rename:

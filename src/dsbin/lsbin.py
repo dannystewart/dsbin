@@ -15,7 +15,7 @@ import re
 from importlib.metadata import entry_points
 from pathlib import Path
 
-from dsbase.text.Text import color, print_colored
+from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

@@ -32,7 +32,7 @@ from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
 
-from dsbase.text.Text import color, print_colored
+from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:

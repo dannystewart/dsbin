@@ -1,30 +1,38 @@
 {
-	"folders": [
-		{
-			"path": "."
-		}
-	],
-	"settings": {
-		"files.exclude": {
-            ".history": true,
-            ".idea": true,
-            "**/__pycache__": true,
-            "**/.cache": true,
-            "**/.DS_Store": true,
-            "**/.git": true,
-            "**/.idea": true,
-            "**/.mypy_cache": true,
-            "**/.pytest_cache": true,
-            "**/.ruff_cache": true,
-            "**/.venv": true,
-            "**/.vscode": true,
-            "**/*.egg-info": true,
-            "**/*.pyi": false,
-            "**/*[0-9a-fA-F]{32}*": true,
-            "**/Thumbs.db": true,
-        },
-        "cSpell.words": [
-            "dockermounter"
-        ],
-	}
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      ".history": true,
+      ".idea": true,
+      "**/__pycache__": true,
+      "**/.cache": true,
+      "**/.DS_Store": true,
+      "**/.git": true,
+      "**/.hg": false,
+      "**/.idea": true,
+      "**/.mypy_cache": true,
+      "**/.pytest_cache": true,
+      "**/.ruff_cache": true,
+      "**/.svn": false,
+      "**/.venv": true,
+      "**/.vscode": true,
+      "**/*.egg-info": true,
+      "**/*.pyi": false,
+      "**/*[0-9a-fA-F]{32}*": true,
+      "**/CVS": false,
+      "**/dist": true,
+      "**/node_modules": true,
+      "**/Thumbs.db": true,
+      "venv": true,
+    },
+    "github.copilot.chat.codeGeneration.instructions": [
+      {
+        "file": "code-style.md"
+      }
+    ]
+  }
 }

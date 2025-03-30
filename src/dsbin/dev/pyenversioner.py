@@ -12,9 +12,8 @@ import argparse
 import os
 from pathlib import Path
 
-from dsbase.animate import start_walking, stop_walking
+from dsbase.animate import walking_man
 from dsbase.shell import confirm_action
-from dsbase.text.Text import color as colored
 from dsbase.util import dsbase_setup, handle_interrupt
 
 dsbase_setup()
@@ -66,11 +65,8 @@ def main(start_path: str, old_version: str, new_version: str) -> None:
         old_version: Old Python version to look for.
         new_version: New Python version to replace with.
     """
-    print(colored("Searching for .python-version files...", "green"))
-
-    animation_thread = start_walking()
-    file_paths = find_python_version_files(start_path)
-    stop_walking(animation_thread)
+    with walking_man("Searching for .python-version files...", color="green"):
+        file_paths = find_python_version_files(start_path)
 
     if not file_paths:
         print("No .python-version files found.")
@@ -84,7 +80,7 @@ def main(start_path: str, old_version: str, new_version: str) -> None:
         for file_path in file_paths:
             update_python_version_file(file_path, old_version, new_version)
     else:
-        print("Update cancelled.")
+        print("Update canceled.")
 
 
 def parse_arguments() -> argparse.Namespace:

@@ -9,7 +9,7 @@ set with -c/--creation and/or -m/--modification.
 
 It supports a --copy argument, in conjunction with --from and --to, that will copy the timestamps
 directly from one file to another. It also supports copying timestamps for entire directories with
---src-dir and --dst-dir. It will only copy timestamps for files that have identical names (minus
+--src-dir and --dest-dir. It will only copy timestamps for files that have identical names (minus
 extension) in the source and destination directories.
 
 Usage for getting timestamps:
@@ -28,7 +28,7 @@ Usage for copying timestamps:
     timestamps --copy-from file1.txt --copy-to file2.txt
 
 Usage for copying timestamps for directories:
-    timestamps --src-dir ./folder1 --dst-dir ./folder2
+    timestamps --src-dir ./folder1 --dest-dir ./folder2
 """
 
 from __future__ import annotations
@@ -38,9 +38,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from dsbase import ArgParser
-from dsbase.files.macos import get_timestamps, set_timestamps
+from dsbase.mac import get_timestamps, set_timestamps
 from dsbase.text import ColorName, color
-from dsbase.util import catch_errors, dsbase_setup
+from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse
@@ -48,7 +48,6 @@ if TYPE_CHECKING:
 dsbase_setup()
 
 
-@catch_errors()
 def set_times(
     file: Path,
     ctime: str | None = None,
@@ -83,7 +82,6 @@ def set_times(
     get_times(file, "New timestamps", "green")
 
 
-@catch_errors()
 def get_times(
     file: Path,
     message: str = "File timestamps",
@@ -117,7 +115,6 @@ def get_times(
     print(color("  Modification time:", color_name), mtime)
 
 
-@catch_errors()
 def copy_times(from_file: Path, to_file: Path) -> None:
     """Copy timestamps from one file to another.
 
@@ -130,61 +127,66 @@ def copy_times(from_file: Path, to_file: Path) -> None:
     get_times(from_file, f"Timestamps copied for {from_file}:", "green")
 
 
-@catch_errors()
-def copy_times_between_directories(src_dir: Path, dst_dir: Path) -> None:
+def copy_times_between_directories(src_dir: Path, dest_dir: Path) -> None:
     """Copy timestamps from files in a directory to matching files in another directory with
     identical names (minus extension).
 
     Args:
         src_dir: The source directory to copy timestamps from.
-        dst_dir: The destination directory to copy timestamps to.
+        dest_dir: The destination directory to copy timestamps to.
     """
     src_path = Path(src_dir)
-    dst_path = Path(dst_dir)
+    dest_path = Path(dest_dir)
 
     for src_file in src_path.iterdir():
         if src_file.is_file():
             base_name = src_file.stem
-            for dst_file in dst_path.iterdir():
-                if dst_file.is_file() and dst_file.stem == base_name:
-                    copy_times(str(src_file), str(dst_file))
+            for dest_file in dest_path.iterdir():
+                if dest_file.is_file() and dest_file.stem == base_name:
+                    copy_times(src_file, dest_file)
 
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments for the timestamp utility."""
-    parser = ArgParser(
-        description="Get or set file timestamps on macOS, or copy them between files.",
-        arg_width=30,
-        max_width=120,
-    )
+    parser = ArgParser(description=__doc__, lines=2)
+
+    # Positional argument for the file
     parser.add_argument("file", help="File to get or set timestamps for", nargs="?")
-    parser.add_argument("creation", help="Creation timestamp to set", default=None)
-    parser.add_argument("modification", help="Modification timestamp to set", default=None)
+
+    # Optional arguments for setting timestamps
+    parser.add_argument("-c", "--creation", help="Creation timestamp to set", default=None)
+    parser.add_argument("-m", "--modification", help="Modification timestamp to set", default=None)
+
+    # Optional arguments for copying timestamps
     parser.add_argument(
-        "copy", help="Copy timestamps from one file to another", action="store_true"
+        "--copy", help="Copy timestamps from one file to another", action="store_true"
     )
     parser.add_argument(
-        "copy_from", help="Source file to copy timestamps from", default=None, dest="from_file"
+        "--copy-from", dest="from_file", help="Source file to copy timestamps from", default=None
     )
     parser.add_argument(
-        "copy_to", help="Destination file to copy timestamps to", default=None, dest="to_file"
+        "--copy-to", dest="to_file", help="Destination file to copy timestamps to", default=None
+    )
+
+    # Optional arguments for directory operations
+    parser.add_argument(
+        "--src-dir", help="Source directory for copying timestamps from", default=None
     )
     parser.add_argument(
-        "src_dir", help="Source directory for copying timestamps from", default=None
+        "--dest-dir", help="Destination directory for copying timestamps to", default=None
+    )
+
+    # Additional options
+    parser.add_argument(
+        "--ctime-to-mtime", help="Copy creation time to modification time", action="store_true"
     )
     parser.add_argument(
-        "dst_dir", help="Destination directory for copying timestamps to", default=None
+        "--mtime-to-ctime", help="Copy modification time to creation time", action="store_true"
     )
-    parser.add_argument(
-        "ctime_to_mtime", help="Copy creation time to modification time", action="store_true"
-    )
-    parser.add_argument(
-        "mtime_to_ctime", help="Copy modification time to creation time", action="store_true"
-    )
+
     return parser.parse_args()
 
 
-@catch_errors()
 def main() -> None:
     """Copy, set, or get file timestamps."""
     args = parse_arguments()
@@ -192,8 +194,8 @@ def main() -> None:
     if args.file:
         file = Path(args.file)
 
-    if args.src_dir and args.dst_dir:
-        copy_times_between_directories(args.src_dir, args.dst_dir)
+    if args.src_dir and args.dest_dir:
+        copy_times_between_directories(args.src_dir, args.dest_dir)
     elif args.from_file and args.to_file:
         copy_times(args.from_file, args.to_file)
     elif args.from_file or args.to_file:

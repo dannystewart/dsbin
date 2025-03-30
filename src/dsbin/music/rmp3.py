@@ -12,20 +12,21 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dsbase.files import delete_files, list_files
+from dsbase import FileManager
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
 
-def delete_mp3(directory: str | Path, dry_run: bool = False) -> None:
+def delete_mp3(directory: Path, dry_run: bool = False) -> None:
     """Removes MP3 files if there is an AIFF or WAV file with the same name.
 
     Args:
         directory: The directory to search for MP3 files.
         dry_run: If True, will list the files that would be deleted without actually deleting them.
     """
-    mp3_files = list_files(directory, exts="mp3", recursive=True)
+    files = FileManager()
+    mp3_files = files.list(directory, exts="mp3", recursive=True)
 
     files_to_delete = []
     for mp3_file in mp3_files:
@@ -37,7 +38,7 @@ def delete_mp3(directory: str | Path, dry_run: bool = False) -> None:
         if aif_file.exists() or wav_file.exists():
             files_to_delete.append(mp3_file)
 
-    delete_files(files_to_delete, dry_run=dry_run)
+    files.delete(files_to_delete, dry_run=dry_run)
 
 
 def main() -> None:

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import inquirer
 
-from dsbase.log import LocalLogger
+from dsbase import LocalLogger
 from dsbase.text import color as colored
 
 from dsbin.wpmusic.audio_track import AudioTrack

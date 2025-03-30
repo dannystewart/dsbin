@@ -8,9 +8,8 @@ import argparse
 import sys
 from pathlib import Path
 
-from dsbase.files import list_files
-from dsbase.media import MediaManager
-from dsbase.text.Text import color as colored
+from dsbase import FileManager, MediaManager
+from dsbase.text import color as colored
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
@@ -32,12 +31,13 @@ def parse_arguments() -> argparse.Namespace:
 
 def main() -> None:
     """Convert a file to MP3."""
+    files = FileManager()
     args = parse_arguments()
     path = args.path
 
     path = Path(path)
     if path.is_dir():
-        files_to_convert = list_files(path, exts=allowed_extensions)
+        files_to_convert = files.list(path, exts=allowed_extensions)
     elif path.is_file() and path.suffix.lower() in allowed_extensions:
         files_to_convert = [path]
     else:

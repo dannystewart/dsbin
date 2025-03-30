@@ -33,8 +33,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbase import ArgParser, LocalLogger
-from dsbase.files import delete_files, move_file
+from dsbase import ArgParser, FileManager, LocalLogger
 from dsbase.shell import halo_progress
 from dsbase.util import dsbase_setup, handle_interrupt, with_retries
 
@@ -55,7 +54,7 @@ def temp_workspace() -> Iterator[Path]:
             yield temp_path
         finally:
             if temp_path.exists():
-                delete_files(temp_path, show_output=False)
+                FileManager().delete(temp_path, show_output=False)
 
 
 @dataclass
@@ -91,10 +90,12 @@ class DMGCreator:
     preserve_folder: bool = False
 
     exclusions: list[str] = field(init=False)
+    files: FileManager = field(init=False)
     logger: Logger = field(init=False)
 
     def __post_init__(self):
         self.logger = LocalLogger().get_logger(simple=True)
+        self.files = FileManager(logger=self.logger)
 
         # Always preserve top-level folder for Logic projects
         if self.is_logic:
@@ -118,7 +119,7 @@ class DMGCreator:
         if dmg_path.exists():
             if self.force_overwrite:
                 self.logger.warning("%s already exists, but forcing overwrite.", dmg_path.name)
-                delete_files(dmg_path, show_output=False)
+                self.files.delete(dmg_path, show_output=False)
             else:
                 self.logger.warning("%s already exists, skipping.", dmg_path.name)
                 return
@@ -153,7 +154,7 @@ class DMGCreator:
 
             temp_dmg = Path(f"{folder_name}.dmg")
             if dmg_path != temp_dmg:
-                move_file(temp_dmg, dmg_path, overwrite=True, show_output=False)
+                self.files.move(temp_dmg, dmg_path, overwrite=True, show_output=False)
 
         self.logger.info("Successfully created DMG: %s", dmg_path.name)
 
@@ -178,9 +179,9 @@ class DMGCreator:
 
     @with_retries
     def _create_sparseimage(self, folder_name: str, source: Path) -> None:
-        sparsebundle_path = f"{folder_name}.sparsebundle"
-        if Path(sparsebundle_path).exists():
-            delete_files(sparsebundle_path, show_output=False)
+        sparsebundle_path = Path(f"{folder_name}.sparsebundle")
+        if sparsebundle_path.exists():
+            self.files.delete(sparsebundle_path, show_output=False)
 
         subprocess.run(
             [
@@ -201,23 +202,16 @@ class DMGCreator:
 
     @with_retries
     def _convert_sparseimage_to_dmg(self, folder_name: str) -> None:
-        output_dmg = f"{folder_name}.dmg"
+        output_dmg = Path(f"{folder_name}.dmg")
         if Path(output_dmg).exists():
-            delete_files(output_dmg, show_output=False)
+            self.files.delete(output_dmg, show_output=False)
 
+        sparsebundle = Path(f"{folder_name}.sparsebundle")
         subprocess.run(
-            [
-                "hdiutil",
-                "convert",
-                f"{folder_name}.sparsebundle",
-                "-format",
-                "ULMO",
-                "-o",
-                output_dmg,
-            ],
+            ["hdiutil", "convert", sparsebundle, "-format", "ULMO", "-o", output_dmg],
             check=True,
         )
-        delete_files(f"{folder_name}.sparsebundle", show_output=False)
+        self.files.delete(sparsebundle, show_output=False)
 
     def process_folders(self, folders: list[str]) -> None:
         """Process multiple folders for DMG creation."""

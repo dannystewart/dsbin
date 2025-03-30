@@ -16,9 +16,7 @@ from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
-from dsbase.env import EnvManager
-from dsbase.log import LocalLogger
-from dsbase.paths import PathKeeper
+from dsbase import EnvManager, LocalLogger, PathKeeper
 from dsbase.util import async_with_handle_interrupt, dsbase_setup
 
 from dsbin.pybounce.file_manager import FileManager

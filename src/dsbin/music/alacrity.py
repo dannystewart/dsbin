@@ -20,7 +20,7 @@ from natsort import natsorted
 from dsbase.files import FileManager
 from dsbase.media import MediaManager
 from dsbase.shell import confirm_action, conversion_list_context
-from dsbase.text.Text import color_print
+from dsbase.text import color_print
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 from dsbase.shell import confirm_action, is_root_user, read_file_content, write_to_file
-from dsbase.text.Text import color_print
+from dsbase.text import color_print
 
 
 def get_current_hostname() -> str:

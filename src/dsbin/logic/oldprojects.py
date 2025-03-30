@@ -15,6 +15,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
 
 import colorama
@@ -26,20 +27,28 @@ from dsbase.util import dsbase_setup
 dsbase_setup()
 
 
+@dataclass
+class Operations:
+    """A set of operations to be performed."""
+
+    move: list[tuple[Path, Path]]
+    delete: list[Path]
+
+
 def format_path(path: str, base_dir: str) -> str:
     """Format a path to be relative to the base directory."""
     return path.replace(base_dir + os.sep, "")
 
 
-def confirm_actions(operations: dict, base_dir: str) -> bool:
+def confirm_actions(operations: Operations, base_dir: str) -> bool:
     """Confirm the actions to be performed."""
     print(f"{Fore.YELLOW}Project files that will be moved:{Style.RESET_ALL}")
-    for _, dest in operations["move"]:
-        print(f"{Fore.YELLOW}→ {Style.RESET_ALL}{format_path(dest, base_dir)}")
+    for _, dest in operations.move:
+        print(f"{Fore.YELLOW}→ {Style.RESET_ALL}{format_path(str(dest), base_dir)}")
 
     print("\n" + Fore.RED + "Folders that will be deleted:" + Style.RESET_ALL)
-    for delete in operations["delete"]:
-        print(f"{Fore.RED}✖ {Style.RESET_ALL}{format_path(delete, base_dir)}")
+    for delete in operations.delete:
+        print(f"{Fore.RED}✖ {Style.RESET_ALL}{format_path(str(delete), base_dir)}")
 
     print("\nDo you want to proceed? (y/n) ", end="")
     key = readchar.readkey()
@@ -47,22 +56,22 @@ def confirm_actions(operations: dict, base_dir: str) -> bool:
     return key.lower() == "y"
 
 
-def perform_operations(operations: dict, base_dir: str) -> None:
+def perform_operations(operations: Operations, base_dir: str) -> None:
     """Perform the specified operations."""
-    for src, dest in operations["move"]:
+    for src, dest in operations.move:
         shutil.move(src, dest)
-        print(f"{Fore.GREEN}✔ Moved {Style.RESET_ALL}{format_path(dest, base_dir)}")
+        print(f"{Fore.GREEN}✔ Moved {Style.RESET_ALL}{format_path(str(dest), base_dir)}")
 
-    for del_path in operations["delete"]:
+    for del_path in operations.delete:
         subprocess.run(["trash", del_path], check=False)
-        print(f"{Fore.RED}✔ Deleted {Style.RESET_ALL}{format_path(del_path, base_dir)}")
+        print(f"{Fore.RED}✔ Deleted {Style.RESET_ALL}{format_path(str(del_path), base_dir)}")
 
 
 def move_and_delete_logic_folders() -> None:
     """Move the Logic projects up from their folders and then delete empty folders."""
     colorama.init()
-    base_dir = Path(os.getcwd())
-    operations: dict = {"move": [], "delete": []}
+    base_dir = Path(Path.cwd())
+    operations = Operations(move=[], delete=[])
 
     print("Searching in:", base_dir.name)
 
@@ -74,10 +83,10 @@ def move_and_delete_logic_folders() -> None:
                     logicx_folders = [f for f in subdir_path.glob("*.logicx") if f.is_dir()]
                     for logicx_path in logicx_folders:
                         new_location = Path(root) / logicx_path.name
-                        operations["move"].append((logicx_path, new_location))
-                        operations["delete"].append(subdir_path)
+                        operations.move.append((logicx_path, new_location))
+                        operations.delete.append(subdir_path)
 
-        if operations["move"] or operations["delete"]:
+        if operations.move or operations.delete:
             if confirm_actions(operations, str(base_dir)):
                 perform_operations(operations, str(base_dir))
                 print(Fore.GREEN + "\nOperations completed." + Style.RESET_ALL)

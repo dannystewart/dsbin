@@ -9,10 +9,9 @@ import os
 import subprocess
 from pathlib import Path
 
-from dsbase import LocalLogger
-from dsbase.files import delete_files
+from dsbase import FileManager, LocalLogger
 from dsbase.shell import confirm_action
-from dsbase.text.Text import color
+from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
@@ -24,7 +23,7 @@ def install_pkg(
     pkg_paths: Path | list[Path],
     target: str = "/",
     from_dmg: bool = False,
-    dmg_path: str | None = None,
+    dmg_path: Path | None = None,
     mount_point: str | None = None,
 ) -> bool:
     """Install a .pkg file or list of .pkg files on macOS using the installer command-line utility.
@@ -39,6 +38,7 @@ def install_pkg(
     Returns:
         True if all installations were successful, False otherwise.
     """
+    files = FileManager()
     if isinstance(pkg_paths, Path):
         pkg_paths = [pkg_paths]
 
@@ -57,9 +57,9 @@ def install_pkg(
             if from_dmg and dmg_path and mount_point:
                 if confirm_action(color(f"Unmount and delete {dmg_path}?", "yellow")):
                     unmount_dmg(mount_point)
-                    delete_files(dmg_path)
+                    files.delete(dmg_path)
             elif not from_dmg and confirm_action(color(f"Delete {pkg_path}?", "yellow")):
-                delete_files(pkg_path)
+                files.delete(pkg_path)
         except subprocess.CalledProcessError as e:
             logger.error("Error during installation: %s", str(e))
             success = False
@@ -67,7 +67,7 @@ def install_pkg(
     return success
 
 
-def install_pkg_from_dmg(dmg_path: str, pkg_name: str | None = None, target: str = "/") -> None:
+def install_pkg_from_dmg(dmg_path: Path, pkg_name: str | None = None, target: str = "/") -> None:
     """Mount a DMG file, installs the specified PKG file from inside it, and then unmount the DMG.
     If no PKG name is specified, install the first PKG file found within the DMG.
 
@@ -113,7 +113,7 @@ def find_pkg_in_dmg(mount_point: str, pkg_name: str | None = None) -> Path | Non
     return None
 
 
-def mount_dmg(dmg_path: str) -> str | None:
+def mount_dmg(dmg_path: Path) -> str | None:
     """Mount a DMG file and return the mount point.
 
     Args:
@@ -188,7 +188,7 @@ def main() -> None:
             pkg_list = list(Path().glob(path_str))
             install_pkg(pkg_list, args.target)
         elif path.suffix == ".dmg":
-            install_pkg_from_dmg(str(path), args.dmg_pkg_name, args.target)
+            install_pkg_from_dmg(path, args.dmg_pkg_name, args.target)
         elif path.suffix == ".pkg":
             install_pkg(path, args.target)
         else:

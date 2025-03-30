@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol
 
-from dsbase.log import LocalLogger
+from dsbase import LocalLogger
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:

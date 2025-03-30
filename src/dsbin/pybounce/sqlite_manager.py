@@ -5,8 +5,8 @@ from __future__ import annotations
 import sqlite3
 from typing import TYPE_CHECKING
 
+from dsbase import LocalLogger
 from dsbase.animate import walking_man
-from dsbase.log import LocalLogger
 from dsbase.util import async_retry_on_exception, dsbase_setup
 
 if TYPE_CHECKING:

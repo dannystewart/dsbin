@@ -11,7 +11,7 @@ from pathlib import Path
 import inquirer
 import pyperclip
 
-from dsbase.text.Text import color_print
+from dsbase.text import color_print
 from dsbase.util import dsbase_setup, handle_interrupt
 
 dsbase_setup()

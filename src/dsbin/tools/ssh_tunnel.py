@@ -10,7 +10,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from dsbase import ArgParser, LocalLogger
-from dsbase.text.Text import color_print
+from dsbase.text import color_print
 
 if TYPE_CHECKING:
     import argparse

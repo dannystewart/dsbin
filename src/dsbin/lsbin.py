@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Lists executable files and their descriptions based on docstrings.
+"""Lists executable files and their descriptions based on docstrings. What you're looking at now.
 
 This script is designed to list executable files in this package and print their description a
 docstring block at the top of the file (like the one you're reading right now). Otherwise, It also

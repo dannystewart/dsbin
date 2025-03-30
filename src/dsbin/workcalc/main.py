@@ -1,3 +1,5 @@
+"""Calculate how much time went into a project."""
+
 from __future__ import annotations
 
 import argparse

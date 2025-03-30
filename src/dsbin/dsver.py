@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Show installed versions of DS packages."""
+"""Show installed versions of my packages."""
 
 from __future__ import annotations
 

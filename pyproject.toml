@@ -93,9 +93,9 @@ spacepurger = "dsbin.mac.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
 
 # Development-related scripts
-analyze-impact = "dsbin.dev.analyze_impact:main"
 check-imports = "dsbin.dev.import_checker:main"
 code-configs = "dsbin.configs.main:main"
+impactanalyzer = "dsbin.dev.impact_analyzer:main"
 poetry-migrate = "dsbin.dev.poetry_migrate:main"
 pybumper = "dsbin.pybumper.main:main"
 pyenversioner = "dsbin.dev.pyenversioner:main"

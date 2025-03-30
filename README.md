@@ -61,9 +61,9 @@ This is my personal collection of Python scripts, built up over many years of so
 - **watchtower**: Script to help with running Watchtower for Docker.
 
 ## Development Scripts
-- **analyze-impact**: Analyze the impact of changes in repositories and their dependencies.
 - **check-imports**: Check for circular imports in a Python project.
 - **code-configs**: Download config files for various coding tools.
+- **impactanalyzer**: Analyze the impact of changes in repositories and their dependencies.
 - **pyenversioner**: Updates .python-version files recursively.
 - **scriptdep**: Analyze dependencies and imports across scripts to help separate concerns.
 - **tagreplace**: Replace an existing Git tag with a new tag name and description.

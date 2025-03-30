@@ -132,16 +132,16 @@ def main() -> None:
     print()
     logger.info("New filename: %s", color(new_name, "green"))
 
-    if is_file:  # If it's a file, ask for confirmation before renaming
-        if confirm_action("Do you want to rename the file?"):
-            try:
-                input_path.rename(input_path.parent / new_name)
-                logger.info(
-                    "\nRenamed %s → %s", color(original_name, "yellow"), color(new_name, "green")
-                )
-            except OSError as e:
-                logger.error("Could not rename file: %s", str(e))
-                sys.exit(1)
+    # If it's a file, ask for confirmation before renaming
+    if is_file and confirm_action("Do you want to rename the file?"):
+        try:
+            input_path.rename(input_path.parent / new_name)
+            logger.info(
+                "\nRenamed %s → %s", color(original_name, "yellow"), color(new_name, "green")
+            )
+        except OSError as e:
+            logger.error("Could not rename file: %s", str(e))
+            sys.exit(1)
 
 
 if __name__ == "__main__":

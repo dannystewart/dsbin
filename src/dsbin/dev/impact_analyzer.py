@@ -225,9 +225,12 @@ class ImpactAnalyzer:
                             imports.add(name.name)
 
                 # From imports: from base import xyz
-                elif isinstance(node, ast.ImportFrom):
-                    if node.module and node.module.startswith(base_name):
-                        imports.update(f"{node.module}.{name.name}" for name in node.names)
+                elif (
+                    isinstance(node, ast.ImportFrom)
+                    and node.module
+                    and node.module.startswith(base_name)
+                ):
+                    imports.update(f"{node.module}.{name.name}" for name in node.names)
         except SyntaxError:
             self.logger.warning("Couldn't parse %s as a valid Python file.", file_path)
 

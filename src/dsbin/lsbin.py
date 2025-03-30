@@ -68,9 +68,12 @@ def get_module_or_function_docstring(module_path: str, function_name: str) -> st
 
         # If no module docstring, look for the function docstring
         for node in module_ast.body:
-            if isinstance(node, ast.FunctionDef) and node.name == function_name:
-                if (func_doc := ast.get_docstring(node)) is not None:
-                    return func_doc.split("\n")[0].strip()
+            if (
+                isinstance(node, ast.FunctionDef)
+                and node.name == function_name
+                and (func_doc := ast.get_docstring(node)) is not None
+            ):
+                return func_doc.split("\n")[0].strip()
 
         return None
     except Exception as e:

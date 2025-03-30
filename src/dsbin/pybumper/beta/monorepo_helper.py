@@ -12,7 +12,7 @@ if TYPE_CHECKING:
     from logging import Logger
 
 
-class MonorepoHelper:
+class MonorepoHelperBeta:
     """Helper for monorepo detection and package management."""
 
     logger: Logger = LocalLogger().get_logger()
@@ -188,7 +188,7 @@ class MonorepoHelper:
         possible_paths = cls._get_possible_package_paths(monorepo_root, package_name)
 
         for path in possible_paths:
-            if MonorepoHelper.is_valid_package_path(path):
+            if MonorepoHelperBeta.is_valid_package_path(path):
                 return package_name, path
 
         cls.logger.error(

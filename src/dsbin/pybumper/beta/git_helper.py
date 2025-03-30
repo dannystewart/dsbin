@@ -8,7 +8,7 @@ from typing import TYPE_CHECKING
 
 from dsbase.util import handle_interrupt
 
-from dsbin.pybumper.beta.monorepo_helper import MonorepoHelper
+from dsbin.pybumper.beta.monorepo_helper import MonorepoHelperBeta
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class GitHelper:
+class GitHelperBeta:
     """Helper class for git operations."""
 
     version_helper: VersionHelper
@@ -165,7 +165,7 @@ class GitHelper:
 
         # Determine if we're in a monorepo
         current_dir = Path.cwd()
-        monorepo_root = MonorepoHelper.find_monorepo_root(current_dir)
+        monorepo_root = MonorepoHelperBeta.find_monorepo_root(current_dir)
 
         # Use custom message if provided, otherwise use default
         if self.commit_message:
@@ -193,7 +193,7 @@ class GitHelper:
 
         # Determine if we're in a monorepo
         current_dir = Path.cwd()
-        monorepo_root = MonorepoHelper.find_monorepo_root(current_dir)
+        monorepo_root = MonorepoHelperBeta.find_monorepo_root(current_dir)
 
         if monorepo_root:
             # We're in a monorepo, use package-specific tag

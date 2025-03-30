@@ -34,14 +34,15 @@ class ImpactAnalyzer:
     def __init__(
         self,
         base_repo: RepoConfig | None,
-        packages: list[RepoConfig],
+        repos: list[RepoConfig],
         args: argparse.Namespace,
         logger: Logger,
     ) -> None:
         self.base_repo = base_repo
-        self.packages = packages
+        self.repos = repos
         self.logger = logger
-        self.base_commit = args.base
+        self.commit = args.commit
+        self.staged_only = args.staged_only
         self.verbose = args.verbose
 
         # Initialize empty lists for changes
@@ -71,7 +72,9 @@ class ImpactAnalyzer:
             return
 
         # Get changed files in base repo
-        self.changed_files = self.find_changed_files(self.base_repo.path, self.base_commit)
+        self.changed_files = self.find_changed_files(
+            self.base_repo.path, self.commit, self.staged_only
+        )
 
         if not self.changed_files:
             self.logger.info("✓ No Python files changed in %s.", self.base_repo.name)
@@ -105,7 +108,7 @@ class ImpactAnalyzer:
         """Display changes in repositories since their last release."""
         color_print("\n=== Repository Changes Since Last Release ===", "yellow")
 
-        for repo in self.packages:
+        for repo in self.repos:
             if repo.latest_tag:
                 if repo.changes:
                     color_print(f"\n{repo.name} (last release: {repo.latest_tag}):", "cyan")
@@ -174,7 +177,7 @@ class ImpactAnalyzer:
                 release_repos[repo_name] = [f"Affected by changes in {self.base_repo.name}"]
 
         # Add repos with their own changes
-        for repo in self.packages:
+        for repo in self.repos:
             if repo.needs_release:
                 if repo.name in release_repos:
                     release_repos[repo.name].append(
@@ -310,7 +313,7 @@ class ImpactAnalyzer:
 
     def analyze_repo_changes(self) -> None:
         """Analyze changes to repositories since their last release tag."""
-        for repo in self.packages:
+        for repo in self.repos:
             latest_tag = self.find_latest_tag(repo.path)
             repo.latest_tag = latest_tag
 
@@ -353,28 +356,28 @@ class ImpactAnalyzer:
         return imports_by_file
 
     def find_changed_files(
-        self, repo_path: Path, base_commit: str = "HEAD", include_staged: bool = True
+        self, repo_path: Path, commit: str = "HEAD", staged_only: bool = False
     ) -> list[str]:
-        """Find Python files changed in the repo compared to base_commit."""
+        """Find Python files changed in the repo compared to the given commit."""
         try:
             changed_files = []
 
-            # Get unstaged changes
-            cmd = ["git", "-C", str(repo_path), "diff", "--name-only", base_commit]
-            self.logger.debug("Running: %s", " ".join(cmd))
-            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-            unstaged = result.stdout.splitlines()
-            self.logger.debug("Found %d unstaged changes: %s", len(unstaged), unstaged)
-            changed_files.extend(unstaged)
-
-            # Get staged changes if requested
-            if include_staged:
-                cmd = ["git", "-C", str(repo_path), "diff", "--cached", "--name-only"]
+            # Get unstaged changes if requested
+            if not staged_only:
+                cmd = ["git", "-C", str(repo_path), "diff", "--name-only", commit]
                 self.logger.debug("Running: %s", " ".join(cmd))
                 result = subprocess.run(cmd, capture_output=True, text=True, check=True)
-                staged = result.stdout.splitlines()
-                self.logger.debug("Found %d staged changes: %s", len(staged), staged)
-                changed_files.extend(staged)
+                unstaged = result.stdout.splitlines()
+                self.logger.debug("Found %d unstaged changes: %s", len(unstaged), unstaged)
+                changed_files.extend(unstaged)
+
+            # Get staged changes
+            cmd = ["git", "-C", str(repo_path), "diff", "--cached", "--name-only"]
+            self.logger.debug("Running: %s", " ".join(cmd))
+            result = subprocess.run(cmd, capture_output=True, text=True, check=True)
+            staged = result.stdout.splitlines()
+            self.logger.debug("Found %d staged changes: %s", len(staged), staged)
+            changed_files.extend(staged)
 
             # Filter for Python files only
             filtered = [f for f in changed_files if f.endswith(".py")]
@@ -430,7 +433,7 @@ class ImpactAnalyzer:
         impacted_repos = {}
         base_name = self.base_repo.name
 
-        for repo in self.packages:
+        for repo in self.repos:
             imports_by_file = self.scan_repo_for_imports(repo.path, base_name)
             repo_imports = set()
 
@@ -452,7 +455,7 @@ class ImpactAnalyzer:
     def show_repo_diffs(self, repo_name: str) -> None:
         """Show detailed diffs for a specific repo since its last release."""
         # Find the repo config
-        repo = next((r for r in self.packages if r.name == repo_name), None)
+        repo = next((r for r in self.repos if r.name == repo_name), None)
         if not repo:
             self.logger.error("Repository %s not found.", repo_name)
             return
@@ -573,7 +576,7 @@ def main() -> None:
     if args.base:
         base_path = Path(args.base).resolve()
         if not base_path.exists():
-            logger.error("Base repository path %s does not exist", base_path)
+            logger.error("Base repository path %s does not exist.", base_path)
             return
 
         base_repo = RepoConfig(name=base_path.name, path=base_path)
@@ -584,15 +587,16 @@ def main() -> None:
         for repo_path_str in args.repos:
             repo_path = Path(repo_path_str).resolve()
             if not repo_path.exists():
-                logger.warning("Repository path %s does not exist, skipping", repo_path)
+                logger.warning("Repository path %s does not exist, skipping.", repo_path)
                 continue
 
             repos.append(RepoConfig(name=repo_path.name, path=repo_path))
 
-    # If no base repo specified, use the first dependent repo as the main one to analyze
-    if not base_repo and repos:
-        logger.debug("No base repo specified, analyzing %s on its own", repos[0].name)
+    if not repos and not base_repo:
+        logger.error("No valid repositories found to analyze.")
+        return
 
+    # Create analyzer with updated arguments
     analyzer = ImpactAnalyzer(base_repo, repos, args, logger)
 
     if args.diff:  # If a specific repo is specified for diff, just show that

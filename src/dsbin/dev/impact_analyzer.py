@@ -463,7 +463,10 @@ class ImpactAnalyzer:
             self.logger.error("Repository %s not found.", repo_name)
             return
 
-        # Check if the repo has a latest tag
+        # Get or refresh the latest tag if needed
+        if not repo.latest_tag:
+            repo.latest_tag = self.find_latest_tag(repo.path)
+
         if not repo.latest_tag:
             self.logger.error("No release tags found for repository %s.", repo_name)
             return
@@ -601,6 +604,9 @@ def main() -> None:
 
     # Create analyzer with updated arguments
     analyzer = ImpactAnalyzer(base_repo, repos, args, logger)
+
+    # Always analyze repo changes to get latest tags
+    analyzer.analyze_repo_changes()
 
     if args.diff:  # If a specific repo is specified for diff, just show that
         repo_name = Path(args.diff).name if "/" in args.diff else args.diff

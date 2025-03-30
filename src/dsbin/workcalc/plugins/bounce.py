@@ -6,7 +6,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from dsbase import FileManager, LocalLogger
-from dsbase.mac import get_timestamps
 
 from dsbin.workcalc.data import WorkItem
 from dsbin.workcalc.plugin import DataSourcePlugin
@@ -54,7 +53,7 @@ class BounceDataSource(DataSourcePlugin):
         """
         for file_path in self._find_audio_files():
             try:
-                ctime, mtime = get_timestamps(str(file_path))
+                ctime, mtime = FileManager.get_timestamps(file_path)
                 # Parse the creation timestamp
                 timestamp = self._parse_timestamp(ctime)
 

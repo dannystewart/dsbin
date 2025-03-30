@@ -37,7 +37,7 @@ from datetime import datetime
 from pathlib import Path
 
 from dsbase import LocalLogger
-from dsbase.mac import get_timestamps
+from dsbase.files import FileManager
 from dsbase.time import TZ
 
 
@@ -138,7 +138,7 @@ class BounceParser:
             raise ValueError(msg)
 
         title, year, month, day, version, minor_version, suffix = match.groups()
-        ctime, mtime = get_timestamps(str(path))
+        ctime, mtime = FileManager.get_timestamps(path)
 
         return Bounce(
             title=title,

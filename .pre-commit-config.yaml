@@ -1,0 +1,9 @@
+repos:
+-   repo: local
+    hooks:
+    -   id: update-readme
+        name: Update README with script list
+        entry: python -m dsbin.update_readme
+        language: system
+        pass_filenames: false
+        always_run: true

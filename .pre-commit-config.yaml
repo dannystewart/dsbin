@@ -7,7 +7,6 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        args: [--allow-files-modified]
 
     -   id: check-dependencies
         name: check interdependencies

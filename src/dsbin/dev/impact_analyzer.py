@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from dsbase import ArgParser, EnvManager, LocalLogger
+from dsbase.animate import walking_man
 from dsbase.text import color_print
 from dsbase.text.diff import show_diff
 
@@ -649,42 +650,43 @@ def main() -> None:
     logger = LocalLogger().get_logger(simple=True, env=env)
     args = parse_args()
 
-    # Create base repo config if specified
-    base_repo = None
-    if args.base:
-        base_path = Path(args.base).resolve()
-        if not base_path.exists():
-            logger.error("Base repository path %s does not exist.", base_path)
+    with walking_man(speed=0.12):
+        # Create base repo config if specified
+        base_repo = None
+        if args.base:
+            base_path = Path(args.base).resolve()
+            if not base_path.exists():
+                logger.error("Base repository path %s does not exist.", base_path)
+                return
+
+            # Check if it's a git repository
+            if not is_git_repo(base_path):
+                logger.error("%s is not a git repository.", base_path)
+                return
+
+            base_repo = RepoConfig(name=base_path.name, path=base_path)
+
+        repos, valid_repos_count, skipped_repos_count = count_valid_repos(args, logger)
+
+        if valid_repos_count > 0:
+            logger.debug("Found %d valid repositories to analyze.", valid_repos_count)
+            if skipped_repos_count > 0:
+                logger.debug("Skipped %d invalid paths.", skipped_repos_count)
+        elif not base_repo:
+            logger.error("No valid repositories found to analyze.")
             return
 
-        # Check if it's a git repository
-        if not is_git_repo(base_path):
-            logger.error("%s is not a git repository.", base_path)
-            return
+        # Create analyzer with updated arguments
+        analyzer = ImpactAnalyzer(base_repo, repos, args, logger)
 
-        base_repo = RepoConfig(name=base_path.name, path=base_path)
+        # Always analyze repo changes to get latest tags
+        analyzer.analyze_repo_changes()
 
-    repos, valid_repos_count, skipped_repos_count = count_valid_repos(args, logger)
-
-    if valid_repos_count > 0:
-        logger.debug("Found %d valid repositories to analyze.", valid_repos_count)
-        if skipped_repos_count > 0:
-            logger.debug("Skipped %d invalid paths.", skipped_repos_count)
-    elif not base_repo:
-        logger.error("No valid repositories found to analyze.")
-        return
-
-    # Create analyzer with updated arguments
-    analyzer = ImpactAnalyzer(base_repo, repos, args, logger)
-
-    # Always analyze repo changes to get latest tags
-    analyzer.analyze_repo_changes()
-
-    if args.diff:  # If a specific repo is specified for diff, just show that
-        repo_name = Path(args.diff).name if "/" in args.diff else args.diff
-        analyzer.show_repo_diffs(repo_name)
-    else:  # Otherwise run the normal analysis
-        analyzer.analyze()
+        if args.diff:  # If a specific repo is specified for diff, just show that
+            repo_name = Path(args.diff).name if "/" in args.diff else args.diff
+            analyzer.show_repo_diffs(repo_name)
+        else:  # Otherwise run the normal analysis
+            analyzer.analyze()
 
 
 if __name__ == "__main__":

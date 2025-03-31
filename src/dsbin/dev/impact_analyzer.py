@@ -239,6 +239,14 @@ class ImpactAnalyzer:
     def find_latest_tag(self, repo_path: Path) -> str | None:
         """Return the most recent version tag in the Git history, or None if not found."""
         try:
+            # First, check if this is even a git repository
+            check_git_cmd = ["git", "-C", str(repo_path), "rev-parse", "--is-inside-work-tree"]
+            result = subprocess.run(check_git_cmd, capture_output=True, text=True, check=False)
+
+            if result.returncode != 0:
+                self.logger.warning("%s is not a git repository, skipping tag search.", repo_path)
+                return None
+
             # Get all tags matching version pattern (v*.*.*)
             cmd = ["git", "-C", str(repo_path), "tag", "--sort=-v:refname", "-l", "v[0-9]*"]
             self.logger.debug("Running: %s", " ".join(cmd))
@@ -287,8 +295,13 @@ class ImpactAnalyzer:
             latest_tag = tags[0]
             self.logger.debug("Latest tag: %s", latest_tag)
             return latest_tag
+
         except subprocess.CalledProcessError as e:
-            self.logger.error("Error finding tags for %s: %s", repo_path, str(e))
+            self.logger.debug("Git error for %s: %s", repo_path, str(e))
+            return None
+
+        except Exception as e:
+            self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
             return None
 
     def get_changes_since_tag(self, repo_path: Path, tag: str) -> list[str]:
@@ -310,8 +323,13 @@ class ImpactAnalyzer:
                 "Found %d Python files changed in %s since %s", len(python_files), repo_path, tag
             )
             return python_files
+
         except subprocess.CalledProcessError as e:
-            self.logger.error("Error checking changes for %s since %s: %s", repo_path, tag, str(e))
+            self.logger.debug("Error checking changes for %s since %s: %s", repo_path, tag, str(e))
+            return []
+
+        except Exception as e:
+            self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
             return []
 
     def analyze_repo_changes(self) -> None:
@@ -386,8 +404,13 @@ class ImpactAnalyzer:
             filtered = [f for f in changed_files if f.endswith(".py")]
             self.logger.debug("After filtering for Python files: %s", filtered)
             return filtered
+
         except subprocess.CalledProcessError as e:
-            self.logger.error("Error running git diff: %s", str(e))
+            self.logger.debug("Git error for %s: %s", repo_path, str(e))
+            return []
+
+        except Exception as e:
+            self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
             return []
 
     def get_changed_modules(self, changed_files: list[str], repo_path: Path) -> set[str]:
@@ -571,6 +594,55 @@ def parse_args() -> argparse.Namespace:
     return args
 
 
+def is_git_repo(path: Path) -> bool:
+    """Check if a directory is a git repository."""
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(path), "rev-parse", "--is-inside-work-tree"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def count_valid_repos(
+    args: argparse.Namespace, logger: Logger
+) -> tuple[list[RepoConfig], int, int]:
+    """Count valid repositories in the list."""
+    repos = []
+    valid_repos_count = 0
+    skipped_repos_count = 0
+
+    for repo_path_str in args.repos:
+        repo_path = Path(repo_path_str).resolve()
+
+        # Skip non-existent paths
+        if not repo_path.exists():
+            logger.warning("Path %s does not exist, skipping.", repo_path)
+            skipped_repos_count += 1
+            continue
+
+        # Skip non-directories
+        if not repo_path.is_dir():
+            logger.debug("Path %s is not a directory, skipping.", repo_path)
+            skipped_repos_count += 1
+            continue
+
+        # Check if it's a git repository (but don't error, just skip)
+        if not is_git_repo(repo_path):
+            logger.debug("%s is not a git repository, skipping.", repo_path)
+            skipped_repos_count += 1
+            continue
+
+        repos.append(RepoConfig(name=repo_path.name, path=repo_path))
+        valid_repos_count += 1
+
+    return repos, valid_repos_count, skipped_repos_count
+
+
 def main() -> None:
     """Analyze repository changes and impact."""
     env = EnvManager(add_debug=True)
@@ -585,20 +657,20 @@ def main() -> None:
             logger.error("Base repository path %s does not exist.", base_path)
             return
 
+        # Check if it's a git repository
+        if not is_git_repo(base_path):
+            logger.error("%s is not a git repository.", base_path)
+            return
+
         base_repo = RepoConfig(name=base_path.name, path=base_path)
 
-    # Create dependent repo configs
-    repos = []
-    if args.repos:
-        for repo_path_str in args.repos:
-            repo_path = Path(repo_path_str).resolve()
-            if not repo_path.exists():
-                logger.warning("Repository path %s does not exist, skipping.", repo_path)
-                continue
+    repos, valid_repos_count, skipped_repos_count = count_valid_repos(args, logger)
 
-            repos.append(RepoConfig(name=repo_path.name, path=repo_path))
-
-    if not repos and not base_repo:
+    if valid_repos_count > 0:
+        logger.debug("Found %d valid repositories to analyze.", valid_repos_count)
+        if skipped_repos_count > 0:
+            logger.debug("Skipped %d invalid paths.", skipped_repos_count)
+    elif not base_repo:
         logger.error("No valid repositories found to analyze.")
         return
 

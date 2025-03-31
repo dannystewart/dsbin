@@ -22,9 +22,12 @@ import colorama
 import readchar
 from colorama import Fore, Style
 
-from dsbase.util import dsbase_setup
+from dsbase.util import dsbase_setup, platform_check
 
 dsbase_setup()
+
+# Check if the script is running on macOS
+platform_check()
 
 
 @dataclass

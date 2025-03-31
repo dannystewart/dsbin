@@ -33,6 +33,9 @@
       {
         "file": "code-style.md"
       }
-    ]
+    ],
+    "mypy-type-checker.args": [
+      "--config-file=mypy.ini",
+    ],
   }
 }

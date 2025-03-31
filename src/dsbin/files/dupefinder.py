@@ -20,10 +20,10 @@ def main() -> None:
     """Find duplicate files in a directory."""
     input_files = sys.argv[1:]
     if len(input_files) == 0:
-        input_files = [f for f in Path().iterdir() if f.is_file()]
+        input_files = [str(f) for f in Path().iterdir() if f.is_file()]
 
     # Convert all input files to Path objects if they aren't already
-    paths = [Path(f) if not isinstance(f, Path) else f for f in input_files]
+    paths = [Path(f) for f in input_files]
     find_duplicate_files_by_hash(paths)
 
 

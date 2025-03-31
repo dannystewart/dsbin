@@ -38,7 +38,7 @@ def run_watchtower(run_once: bool, restart: bool, schedule: bool) -> None:
         cmd.append("--include-restarting")
 
     if schedule:
-        cmd.extend(["--schedule", schedule])
+        cmd.extend(["--schedule", str(schedule)])
 
     subprocess.run(cmd, check=False)
 

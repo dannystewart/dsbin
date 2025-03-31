@@ -49,7 +49,7 @@ class ALACrity:
         self.bit_depth = 16
         self.audio_bitrate = "320k"
         self.sample_rate = "44100"
-        self.extension = None
+        self.extension: str | None = None
 
         # Run the script
         self._configure_vars_from_args(args)

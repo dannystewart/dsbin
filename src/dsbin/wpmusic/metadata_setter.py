@@ -98,23 +98,20 @@ class MetadataSetter:
     @staticmethod
     def apply_mp3_metadata(file_path: Path, audio_track: AudioTrack) -> MP3:
         """Set metadata for MP3 files."""
-        audio = MP3(file_path, ID3=ID3)
-
-        if audio.tags is None:  # Add ID3 tags if they don't exist
-            audio.add_tags()
-        assert audio.tags is not None
+        # Create a new ID3 object
+        tags = ID3()
 
         # Add metadata
-        audio.tags.add(TIT2(encoding=3, text=audio_track.track_title))
-        audio.tags.add(TRCK(encoding=3, text=str(audio_track.track_number)))
-        audio.tags.add(TALB(encoding=3, text=audio_track.album_name))
-        audio.tags.add(TPE1(encoding=3, text=audio_track.artist_name))
-        audio.tags.add(TCON(encoding=3, text=audio_track.genre))
-        audio.tags.add(TDRC(encoding=3, text=str(audio_track.year)))
+        tags.add(TIT2(encoding=3, text=audio_track.track_title))
+        tags.add(TRCK(encoding=3, text=str(audio_track.track_number)))
+        tags.add(TALB(encoding=3, text=audio_track.album_name))
+        tags.add(TPE1(encoding=3, text=audio_track.artist_name))
+        tags.add(TCON(encoding=3, text=audio_track.genre))
+        tags.add(TDRC(encoding=3, text=str(audio_track.year)))
 
         # Add cover art
         if audio_track.cover_data:
-            audio.tags.add(
+            tags.add(
                 APIC(
                     encoding=3,
                     mime="image/jpeg",
@@ -124,4 +121,6 @@ class MetadataSetter:
                 )
             )
 
-        return audio
+        # Save the new tags directly to the file and reload the MP3
+        tags.save(file_path)
+        return MP3(file_path)

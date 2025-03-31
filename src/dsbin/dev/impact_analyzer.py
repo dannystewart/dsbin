@@ -434,7 +434,7 @@ class ImpactAnalyzer:
     def analyze_impact(self, changed_modules: set[str]) -> dict[str, set[str]]:
         """Analyze which repos are impacted by changes to specific modules."""
         impacted_repos = {}
-        base_name = self.base_repo.name
+        base_name = self.base_repo.name if self.base_repo else ""
 
         for repo in self.repos:
             imports_by_file = self.scan_repo_for_imports(repo.path, base_name)

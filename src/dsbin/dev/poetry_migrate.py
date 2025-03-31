@@ -89,7 +89,7 @@ def parse_authors(authors: list[Any] | str | None) -> Array:
                 author_table["name"] = author.strip()
         elif isinstance(author, dict):
             author_table["name"] = author.get("name", "").strip()
-            if email := author.get("email"):
+            if email := author.get("email", ""):
                 author_table["email"] = email.strip()
 
         parsed.append(author_table)

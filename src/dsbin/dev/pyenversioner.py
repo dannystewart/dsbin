@@ -20,7 +20,7 @@ dsbase_setup()
 
 
 @handle_interrupt()
-def find_python_version_files(start_path: str) -> list[str]:
+def find_python_version_files(start_path: str) -> list[Path]:
     """Find .python-version files in the directory and its subdirectories.
 
     Args:

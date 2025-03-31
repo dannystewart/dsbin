@@ -61,7 +61,7 @@ def parse_authors(authors: list[Any] | str | None) -> list[dict[str, str]]:
                 parsed.append({"name": author.strip()})
         elif isinstance(author, dict):
             author_entry = {"name": author.get("name", "").strip()}
-            if email := author.get("email"):
+            if email := author.get("email", ""):
                 author_entry["email"] = email.strip()
             parsed.append(author_entry)
 

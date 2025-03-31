@@ -36,7 +36,7 @@ class UploadTracker:
         )
 
         # Track the current set of uploads before recording them to the upload log
-        self.current_upload_set = defaultdict(dict)
+        self.current_upload_set: defaultdict[str, Any] = defaultdict(dict)
 
     def log_upload_set(self) -> None:
         """Log the current set of uploads and clear the set."""
@@ -88,8 +88,8 @@ class UploadTracker:
                 formatted_date = date.strftime("%a %m.%d.%Y %I:%M %p")
 
                 # Show ✓ for tracks that have instrumentals
-                has_inst = "[bold]✓[/bold]" if has_inst else ""
-                table.add_row(filename, has_inst, formatted_date)
+                inst_text = "[bold]✓[/bold]" if has_inst else ""
+                table.add_row(filename, inst_text, formatted_date)
 
             console.print(table)
 

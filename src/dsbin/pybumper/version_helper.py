@@ -100,12 +100,13 @@ class VersionHelper:
         suffix_map = {"a": BumpType.ALPHA, "b": BumpType.BETA, "rc": BumpType.RC}
         for suffix, bump_type in suffix_map.items():
             if suffix in version:
-                version_part, pre_num = version.rsplit(suffix, 1)
+                version_part, pre_num_str = version.rsplit(suffix, 1)
                 try:
+                    pre_num = int(pre_num_str)
                     major, minor, patch = map(int, version_part.split("."))
-                    return major, minor, patch, bump_type, int(pre_num)
+                    return major, minor, patch, bump_type, pre_num
                 except ValueError:
-                    self.logger.error("Invalid pre-release number: %s", pre_num)
+                    self.logger.error("Invalid pre-release number: %s", pre_num_str)
                     sys.exit(1)
 
         try:  # Parse version numbers

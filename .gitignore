@@ -134,7 +134,7 @@ dmypy.json
 cython_debug/
 
 # PyCharm
-idea/
+.idea/
 
 # PyPI configuration file
 .pypirc

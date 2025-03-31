@@ -61,7 +61,8 @@
 - **watchtower**: Script to help with running Watchtower for Docker.
 
 ## Development Scripts
-- **check-imports**: Check for circular imports in a Python project.
+- **checkdeps**: Check all interdependencies between dsbin and dsbase.
+- **checkimports**: Check for circular imports in a Python project.
 - **code-configs**: Download configs for coding tools and compare against local versions.
 - **impactanalyzer**: Analyze the impact of changes in repositories and their dependencies.
 - **poetry-migrate**, **uvmigrate**: Process pyproject.toml file(s) based on command line arguments.

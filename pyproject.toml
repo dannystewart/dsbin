@@ -109,7 +109,8 @@ ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
 watchtower = "dsbin.tools.watchtower:main"
 
 # Development-related scripts
-check-imports = "dsbin.dev.import_checker:main"
+checkdeps = "dsbin.dev.check_dependencies:main"
+checkimports = "dsbin.dev.check_imports:main"
 code-configs = "dsbin.configs.main:main"
 impactanalyzer = "dsbin.dev.impact_analyzer:main"
 poetry-migrate = "dsbin.dev.poetry_migrate:main"

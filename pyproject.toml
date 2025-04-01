@@ -13,7 +13,7 @@ dependencies = [
     "enviromancer (>=0.1.2,<0.2.0)",
     "halo (>=0.0.31,<0.0.32)",
     "inquirer (>=3.4.0,<4.0.0)",
-    "logician (>=0.2.2,<0.3.0)",
+    "logician (>=0.2.4,<0.3.0)",
     "mutagen (>=1.47.0,<2.0.0)",
     "mysql-connector-python (>=9.2.0,<10.0.0)",
     "natsort (>=8.4.0,<9.0.0)",
@@ -30,14 +30,14 @@ dependencies = [
     "scipy (>=1.15.2,<2.0.0)",
     "scp (>=0.15.0,<0.16.0)",
     "telethon (>=1.39.0,<2.0.0)",
-    "textparse (>=0.0.1)",
-    "timecapsule (>=0.0.2)",
+    "textparse (>=0.1.0)",
+    "timecapsule (>=0.1.0)",
     "tomlkit (>=0.13.2,<0.14.0)",
     "tqdm (>=4.67.1,<5.0.0)",
     "types-paramiko (>=3.5.0.20240928,<4.0.0.0)",
     "types-pillow (>=10.2.0.20240822,<11.0.0.0)",
     "types-requests (>=2.32.0.20250328,<3.0.0.0)",
-    "walking-man (>=0.1.0,<0.2.0)",
+    "walking-man (>=0.1.0)",
 ]
 
 [tool.poetry.group.dev.dependencies]

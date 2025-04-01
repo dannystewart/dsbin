@@ -396,8 +396,8 @@ develop = true
 [package.dependencies]
 enviromancer = ">=0.1.2,<0.2.0"
 halo = ">=0.0.31"
-logician = ">=0.2.2,<0.3.0"
-masterclass = ">=0.0.3,<0.0.4"
+logician = ">=0.2.4,<0.3.0"
+masterclass = ">=0.1.0,<0.2.0"
 mysql-connector-python = ">=9.2.0,<10.0.0"
 natsort = ">=8.4.0,<9.0.0"
 packaging = ">=24.2,<25.0"
@@ -409,34 +409,19 @@ pyyaml = ">=6.0.2,<7.0.0"
 requests = ">=2.32.3,<3.0.0"
 send2trash = ">=1.8.3,<2.0.0"
 termcolor = ">=3.0.0"
-textparse = ">=0.0.1,<0.0.2"
-timecapsule = ">=0.0.2,<0.0.3"
+textparse = ">=0.1.0,<0.2.0"
+timecapsule = ">=0.1.0,<0.2.0"
 tomlkit = ">=0.13.2,<0.14.0"
 types-requests = ">=2.32.0.20250328,<3.0.0.0"
 types-send2trash = ">=1.8.2.7,<2.0.0.0"
 tzdata = ">=2025.2"
 tzlocal = ">=5.3.1,<6.0.0"
-walking-man = ">=0.1.0,<0.2.0"
+walking-man = ">=0.1.0"
 watchdog = ">=6.0.0,<7.0.0"
 
 [package.source]
 type = "directory"
 url = "../dsbase"
-
-[[package]]
-name = "dsroot"
-version = "0.0.3"
-description = "Core dependencies for DS packages"
-optional = false
-python-versions = ">=3.12"
-groups = ["main", "dev"]
-files = [
-    {file = "dsroot-0.0.3-py3-none-any.whl", hash = "sha256:2629800ce03460de65bb11285c5be2652e92b10866a9be26cc6e89b03da896ec"},
-    {file = "dsroot-0.0.3.tar.gz", hash = "sha256:e1be0937e0c2b5f1f64c67887b0abd5d91566efe42a1e5ca8e23d60a79f9d02e"},
-]
-
-[package.dependencies]
-tzlocal = ">=5.3.1,<6.0.0"
 
 [[package]]
 name = "editor"
@@ -465,8 +450,8 @@ files = []
 develop = true
 
 [package.dependencies]
-dsroot = ">=0.0.3,<0.0.4"
-logician = ">=0.2.1,<0.3.0"
+logician = ">=0.2.4,<0.3.0"
+masterclass = ">=0.1.0,<0.2.0"
 python-dotenv = ">=1.1.0"
 
 [package.source]
@@ -610,7 +595,7 @@ colorama = ">=0.3.9"
 
 [[package]]
 name = "logician"
-version = "0.2.2"
+version = "0.2.4"
 description = "The logical choice for Python logging"
 optional = false
 python-versions = ">=3.12"
@@ -724,14 +709,14 @@ files = [
 
 [[package]]
 name = "masterclass"
-version = "0.0.3"
+version = "0.1.0"
 description = "Definitive Python singleton implementation"
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
 files = [
-    {file = "masterclass-0.0.3-py3-none-any.whl", hash = "sha256:31132030be23965f2ce6cc53cc538ccdb4e059eeb951e3215faecfb7bc44c4be"},
-    {file = "masterclass-0.0.3.tar.gz", hash = "sha256:7ce360f3cd4f34a6610550033e19266684b83ed536ec7feaf0bc44d5c51954b1"},
+    {file = "masterclass-0.1.0-py3-none-any.whl", hash = "sha256:921fa913e0899deb5d2a98e91a6968bd567de57196318b1edf80b2aaca098805"},
+    {file = "masterclass-0.1.0.tar.gz", hash = "sha256:d935ceefc2d38f8b3c0d7a11ba39280153e9c63223b4a4b2aa4c0118241dc1a7"},
 ]
 
 [[package]]
@@ -1551,22 +1536,20 @@ win32 = ["pywin32 ; sys_platform == \"win32\""]
 
 [[package]]
 name = "shelper"
-version = "0.0.1"
+version = "0.1.0"
 description = "The shell helper"
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
-files = []
-develop = false
+files = [
+    {file = "shelper-0.1.0-py3-none-any.whl", hash = "sha256:0862e9daaa1bda3276020acae4b27f7e6ce66816309f7f0b28a20ccae92f259b"},
+    {file = "shelper-0.1.0.tar.gz", hash = "sha256:238085a2d2a64a57333bbbd5457f3586b711f717460dab8be172b03a05d987be"},
+]
 
 [package.dependencies]
 halo = ">=0.0.31,<0.0.32"
 logician = ">=0.2.2,<0.3.0"
 textparse = ">=0.0.1"
-
-[package.source]
-type = "directory"
-url = "../shelper"
 
 [[package]]
 name = "six"
@@ -1628,7 +1611,7 @@ tests = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "textparse"
-version = "0.0.1"
+version = "0.1.0"
 description = "The missing text toolkit for Python"
 optional = false
 python-versions = ">=3.12"
@@ -1646,7 +1629,7 @@ url = "../textparse"
 
 [[package]]
 name = "timecapsule"
-version = "0.0.2"
+version = "0.1.0"
 description = "Human-friendly datetime handling for Python"
 optional = false
 python-versions = ">=3.12"
@@ -1834,7 +1817,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 
 [[package]]
 name = "walking-man"
-version = "0.1.0"
+version = "0.2.1"
 description = "Walking Man goes on an adventure"
 optional = false
 python-versions = ">=3.12,<3.14"
@@ -1844,7 +1827,7 @@ develop = true
 
 [package.dependencies]
 blessed = ">=1.20.0,<2.0.0"
-shelper = {path = "/Users/danny/Developer/shelper"}
+shelper = ">=0.1.0,<0.2.0"
 textparse = ">=0.0.1"
 
 [package.source]
@@ -1921,4 +1904,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "b0b737acc6056f504faedbca56aa8118fad69d865752cc866b53c499febf1b82"
+content-hash = "2144ed8c0e58382f0e4239f6cdb76b3ba7505074fe5e773bacd8241aeaed7a11"

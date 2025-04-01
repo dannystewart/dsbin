@@ -8,11 +8,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from arguer import Arguer
 from enviromancer import Enviromancer
 from logician import Logician
 from walking_man import walking_man
 
-from dsbase import ArgParser
 from dsbase.text import color_print
 from dsbase.text.diff import show_diff
 
@@ -566,7 +566,7 @@ class ImpactAnalyzer:
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description=__doc__, arg_width=34)
+    parser = Arguer(description=__doc__, arg_width=34)
     parser.add_argument(
         "-b", "--base", metavar="REPO", help="path to the base repository for impact analysis"
     )

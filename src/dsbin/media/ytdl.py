@@ -14,8 +14,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+from shelper import halo_progress
+
 from dsbase import FileManager, MediaManager
-from dsbase.shell import halo_progress
 from dsbase.text import color_print
 from dsbase.util import dsbase_setup
 

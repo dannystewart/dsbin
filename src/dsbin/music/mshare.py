@@ -17,11 +17,12 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import inquirer
+from arguer import Arguer
 from logician import Logician
+from shelper import halo_progress
 from walking_man import walking_man
 
-from dsbase import ArgParser, MediaManager
-from dsbase.shell import halo_progress
+from dsbase import MediaManager
 from dsbase.text import color as colored
 from dsbase.util import dsbase_setup, handle_interrupt
 
@@ -259,7 +260,7 @@ class MusicShare:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description=__doc__)
+    parser = Arguer(description=__doc__)
     parser.add_argument("input_file", help="the file to convert")
     parser.add_argument("--upload", action="store_true", help="use URL-safe filename for uploading")
     return parser.parse_args()

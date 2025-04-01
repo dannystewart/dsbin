@@ -53,10 +53,10 @@ from typing import TYPE_CHECKING
 
 from enviromancer import Enviromancer
 from logician import Logician
+from pathkeeper import PathKeeper
+from shelper import confirm_action, is_root_user
 
-from dsbase import PathKeeper
 from dsbase.notify import TelegramSender
-from dsbase.shell import confirm_action, is_root_user
 
 if TYPE_CHECKING:
     from logging import Logger

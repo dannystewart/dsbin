@@ -5,7 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dsbase.shell import is_root_user
+from shelper import is_root_user
+
 from dsbase.text import color, print_colored
 
 from dsbin.systemd.service_list import ServiceConfigs

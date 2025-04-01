@@ -11,21 +11,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-from dsbase.shell import confirm_action, is_root_user, read_file_content, write_to_file
+from shelper import confirm_action, is_root_user
+
 from dsbase.text import color_print
-
-
-def get_current_hostname() -> str:
-    """Get the current hostname."""
-    old_hostname = socket.gethostname()
-
-    print(f"Current hostname: {old_hostname}")
-    print("Hostname command output: " + subprocess.check_output(["hostname"]).decode().strip())
-
-    if Path("/etc/hostname").exists():
-        print("Contents of /etc/hostname: " + read_file_content("/etc/hostname"))
-
-    return old_hostname
 
 
 def run_hostname_command(new_hostname: str) -> None:
@@ -36,10 +24,26 @@ def run_hostname_command(new_hostname: str) -> None:
     subprocess.run(["hostname", new_hostname], check=True)
 
 
+def get_current_hostname() -> str:
+    """Get the current hostname."""
+    old_hostname = socket.gethostname()
+
+    print(f"Current hostname: {old_hostname}")
+    print("Hostname command output: " + subprocess.check_output(["hostname"]).decode().strip())
+
+    if Path("/etc/hostname").exists():
+        print(
+            "Contents of /etc/hostname: "
+            + Path("/etc/hostname").read_text(encoding="utf-8").strip()
+        )
+
+    return old_hostname
+
+
 def update_hostname_file(new_hostname: str) -> None:
     """Update the /etc/hostname file."""
     if Path("/etc/hostname").exists():
-        write_to_file("/etc/hostname", new_hostname)
+        Path("/etc/hostname").write_text(new_hostname + "\n", encoding="utf-8")
 
 
 def update_hosts_file(old_hostname: str, new_hostname: str) -> None:

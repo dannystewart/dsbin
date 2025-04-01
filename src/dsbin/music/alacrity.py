@@ -16,10 +16,10 @@ from pathlib import Path
 from typing import ClassVar
 
 from natsort import natsorted
+from shelper import confirm_action, conversion_list_context
 
 from dsbase.files import FileManager
 from dsbase.media import MediaManager
-from dsbase.shell import confirm_action, conversion_list_context
 from dsbase.text import color_print
 from dsbase.util import dsbase_setup
 

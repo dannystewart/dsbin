@@ -14,12 +14,13 @@ from typing import TYPE_CHECKING
 
 from enviromancer import Enviromancer
 from logician import Logician
+from pathkeeper import PathKeeper
+from shelper import async_with_handle_interrupt
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
-from dsbase import PathKeeper
-from dsbase.util import async_with_handle_interrupt, dsbase_setup
+from dsbase.util import dsbase_setup
 
 from dsbin.pybounce.file_manager import FileManager
 from dsbin.pybounce.sqlite_manager import SQLiteManager

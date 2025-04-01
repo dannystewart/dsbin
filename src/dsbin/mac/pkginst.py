@@ -10,9 +10,9 @@ import subprocess
 from pathlib import Path
 
 from logician import Logician
+from shelper import confirm_action
 
 from dsbase import FileManager
-from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup
 

@@ -33,10 +33,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
+from arguer import Arguer
 from logician import Logician
+from shelper import halo_progress
 
-from dsbase import ArgParser, FileManager
-from dsbase.shell import halo_progress
+from dsbase import FileManager
 from dsbase.util import dsbase_setup, handle_interrupt, with_retries
 
 if TYPE_CHECKING:
@@ -257,7 +258,7 @@ class DMGCreator:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(
+    parser = Arguer(
         description="Creates DMG files from folders, with specific handling for Logic project folders.",
         arg_width=36,
     )

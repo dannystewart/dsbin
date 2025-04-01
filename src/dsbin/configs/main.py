@@ -18,10 +18,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import requests
+from arguer import Arguer
 from logician import Logician
+from shelper import confirm_action
 
-from dsbase import ArgParser, FileManager
-from dsbase.shell import confirm_action
+from dsbase import FileManager
 from dsbase.text.diff import show_diff
 
 if TYPE_CHECKING:
@@ -133,7 +134,7 @@ class ConfigManager:
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = ArgParser(description="Update config files from central repository")
+    parser = Arguer(description="Update config files from central repository")
     parser.add_argument("-y", action="store_true", help="update files without confirmation")
     return parser.parse_args()
 

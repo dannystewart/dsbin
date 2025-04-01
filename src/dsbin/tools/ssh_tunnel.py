@@ -9,9 +9,9 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
+from arguer import Arguer
 from logician import Logician
 
-from dsbase import ArgParser
 from dsbase.text import color_print
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ logger = Logician.get_logger()
 
 def parse_arguments() -> tuple[argparse.ArgumentParser, argparse.Namespace]:
     """Parse command-line arguments."""
-    parser = ArgParser(description="manage an SSH tunnel on a specified port", arg_width=28)
+    parser = Arguer(description="manage an SSH tunnel on a specified port", arg_width=28)
     parser.add_argument("host", type=str, help="the host for the SSH tunnel.", nargs="?")
     parser.add_argument("port", type=int, help="the port number for the SSH tunnel", nargs="?")
 

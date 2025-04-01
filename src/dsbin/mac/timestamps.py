@@ -37,7 +37,8 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import ArgParser
+from arguer import Arguer
+
 from dsbase.files import FileManager
 from dsbase.text import ColorName, color
 from dsbase.util import dsbase_setup
@@ -148,7 +149,7 @@ def copy_times_between_directories(src_dir: Path, dest_dir: Path) -> None:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments for the timestamp utility."""
-    parser = ArgParser(description=__doc__, lines=2)
+    parser = Arguer(description=__doc__, lines=2)
 
     # Positional argument for the file
     parser.add_argument("file", help="File to get or set timestamps for", nargs="?")

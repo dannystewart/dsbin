@@ -18,10 +18,10 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from arguer import Arguer
 from logician import Logician
+from shelper import halo_progress
 
-from dsbase import ArgParser
-from dsbase.shell import halo_progress
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
@@ -34,7 +34,7 @@ logger = Logician.get_logger(simple=True)
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(
+    parser = Arguer(
         description="Creates an encrypted copy of an existing DMG file.",
         arg_width=32,
     )

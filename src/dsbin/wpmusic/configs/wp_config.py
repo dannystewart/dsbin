@@ -5,8 +5,7 @@ from typing import ClassVar
 
 import paramiko
 from enviromancer import Enviromancer
-
-from dsbase import PathKeeper
+from pathkeeper import PathKeeper
 
 
 @dataclass

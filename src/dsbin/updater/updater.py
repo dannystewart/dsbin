@@ -10,9 +10,10 @@ import shutil
 import time
 from typing import TYPE_CHECKING
 
+from arguer import Arguer
 from logician import Logician
 
-from dsbase import ArgParser, Text
+from dsbase import Text
 from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup, handle_interrupt
 
@@ -228,7 +229,7 @@ class Updater:
 
 def parse_arguments() -> Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description="Update system packages and applications.", arg_width=26)
+    parser = Arguer(description="Update system packages and applications.", arg_width=26)
     parser.add_argument("--list", "-l", action="store_true", help="list all available updaters")
     parser.add_argument("--sudo", "-s", action="store_true", help="force sudo even if not needed")
     parser.add_argument("--debug", "-d", action="store_true", help="enable debug logging")

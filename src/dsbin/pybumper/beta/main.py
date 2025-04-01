@@ -7,11 +7,12 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from arguer import Arguer
 from enviromancer import Enviromancer
 from logician import Logician
+from shelper import confirm_action
 
-from dsbase import ArgParser, Text
-from dsbase.shell import confirm_action
+from dsbase import Text
 from dsbase.util import dsbase_setup, handle_interrupt
 
 from dsbin.pybumper.beta.git_helper import GitHelperBeta
@@ -208,7 +209,7 @@ class PyBumperBeta:
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description=__doc__, lines=1, arg_width=34)
+    parser = Arguer(description=__doc__, lines=1, arg_width=34)
     parser.add_argument(
         "type",
         nargs="*",

@@ -7,8 +7,9 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+from shelper import confirm_action
+
 from dsbase.files import sha256_checksum
-from dsbase.shell import confirm_action
 from dsbase.text import color as colored
 from dsbase.util import dsbase_setup
 

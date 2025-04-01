@@ -8,7 +8,8 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from dsbase import ArgParser
+from arguer import Arguer
+
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
@@ -19,7 +20,7 @@ dsbase_setup()
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description=__doc__)
+    parser = Arguer(description=__doc__)
     parser.add_argument(
         "-c", "--compress", action="store_true", help="compress output file to reduce size"
     )

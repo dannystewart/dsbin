@@ -42,7 +42,7 @@ def check_imports(package_name: str) -> bool:
     """
     try:
         package = importlib.import_module(package_name)
-        logger.info("Successfully imported %s.", package_name)
+        logger.debug("Successfully imported %s.", package_name)
     except ImportError as e:
         logger.error("Could not import %s: %s", package_name, str(e))
         return False
@@ -65,7 +65,7 @@ def check_imports(package_name: str) -> bool:
             print(f"  - {color(module, 'red')}: {error}")
         return False
 
-    logger.info("Successfully imported all %s modules in %s.", len(all_modules), package_name)
+    logger.debug("Successfully imported all %s modules in %s.", len(all_modules), package_name)
     return True
 
 
@@ -96,9 +96,9 @@ def main() -> int:
             success = False
 
     if success:
-        logger.info("\nAll dependency checks passed! 🎉")
+        logger.info("All dependency checks passed! 🎉")
     else:
-        logger.error("\nSome dependency checks failed. ☹️")
+        logger.error("Some dependency checks failed. ☹️")
 
     return 0 if success else 1
 

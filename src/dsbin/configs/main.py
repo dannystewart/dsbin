@@ -61,7 +61,10 @@ class ConfigManager:
         self.skip_confirm = skip_confirm
         self.changes_made = set()
 
-        if self._should_create_all:
+        # Determine if all configs should be created by checking if any exist locally
+        self.should_create_all = not any(config.local_path.exists() for config in self.CONFIGS)
+
+        if self.should_create_all:
             self.logger.debug(
                 "No existing configs found; downloading and creating all available configs."
             )
@@ -110,7 +113,7 @@ class ConfigManager:
                     return False
         elif not (
             self.skip_confirm
-            or self._should_create_all
+            or self.should_create_all
             or confirm_action(
                 f"{config.name} config does not exist locally. Create?",
                 default_to_yes=True,
@@ -126,10 +129,6 @@ class ConfigManager:
             config.name,
         )
         return True
-
-    @property
-    def _should_create_all(self) -> bool:
-        return not any(config.local_path.exists() for config in self.CONFIGS)
 
 
 def parse_args() -> argparse.Namespace:

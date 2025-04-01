@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING
 from logician import Logician
 
 from dsbase import ArgParser
-from dsbase.text import color, color_print
+from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
@@ -20,6 +20,16 @@ if TYPE_CHECKING:
 
 dsbase_setup()
 logger = Logician.get_logger(simple=True)
+
+DEFAULT_PACKAGES = [
+    "dsbase",
+    "dsroot",
+    "enviromancer",
+    "logician",
+    "textparse",
+    "timecapsule",
+    "walking_man",
+]
 
 
 def check_imports(package_name: str) -> bool:
@@ -64,10 +74,10 @@ def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = ArgParser(description="Check package dependencies")
     parser.add_argument(
-        "--packages", nargs="+", default=["dsbase"], help="Packages to check (default: dsbase only)"
-    )
-    parser.add_argument(
-        "--all", action="store_true", help="Check all standard packages (dsbin and dsbase)"
+        "--packages",
+        nargs="+",
+        default=DEFAULT_PACKAGES,
+        help="packages to check (defaults to all)",
     )
     return parser.parse_args()
 
@@ -79,10 +89,8 @@ def main() -> int:
         0 if all checks pass, 1 otherwise.
     """
     args = parse_args()
-    packages = ["dsbin", "dsbase"] if args.all else args.packages
+    packages = args.packages or DEFAULT_PACKAGES
     success = True
-
-    color_print("Checking package interdependencies...\n", "cyan")
 
     for pkg in packages:
         if not check_imports(pkg):

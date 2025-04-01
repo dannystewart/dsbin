@@ -23,7 +23,6 @@ logger = Logician.get_logger(simple=True)
 
 DEFAULT_PACKAGES = [
     "dsbase",
-    "dsroot",
     "enviromancer",
     "logician",
     "textparse",

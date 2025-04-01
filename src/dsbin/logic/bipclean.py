@@ -15,11 +15,11 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import inquirer
+from timecapsule import TZ
 
 from dsbase.files import FileManager
 from dsbase.text import color_print
 from dsbase.util import dsbase_setup
-from dsroot import TZ
 
 dsbase_setup()
 

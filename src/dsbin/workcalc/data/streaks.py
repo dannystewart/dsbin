@@ -5,8 +5,9 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import TYPE_CHECKING
 
+from timecapsule import TZ
+
 from dsbase import Text
-from dsroot import TZ
 
 if TYPE_CHECKING:
     from datetime import date

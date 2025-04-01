@@ -9,9 +9,9 @@ from typing import TYPE_CHECKING
 import inquirer
 from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
+from timecapsule import TZ
 
 from dsbase.files import FileManager as BaseFileManager
-from dsroot import TZ
 
 if TYPE_CHECKING:
     from logging import Logger

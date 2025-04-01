@@ -10,8 +10,7 @@ from rich import box
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-
-from dsroot import TZ
+from timecapsule import TZ
 
 from dsbin.wpmusic.configs import TableConfig
 from dsbin.wpmusic.db_manager import DatabaseManager

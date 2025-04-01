@@ -9,7 +9,7 @@ license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.12,<3.14"
 dependencies = [
-    "dsbase (>=0.4.4,<0.5.0)",
+    "dsbase (>=0.4.5,<0.5.0)",
     "dsroot (>=0.0.3,<0.0.4)",
     "halo (>=0.0.31,<0.0.32)",
     "inquirer (>=3.4.0,<4.0.0)",

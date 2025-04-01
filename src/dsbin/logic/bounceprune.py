@@ -29,8 +29,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from walking_man import walking_man
+
 from dsbase import FileManager
-from dsbase.animate import walking_man
 from dsbase.shell import confirm_action
 from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup

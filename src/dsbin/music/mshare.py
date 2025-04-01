@@ -18,9 +18,9 @@ from typing import TYPE_CHECKING, ClassVar
 
 import inquirer
 from logician import Logician
+from walking_man import walking_man
 
 from dsbase import ArgParser, MediaManager
-from dsbase.animate import walking_man
 from dsbase.shell import halo_progress
 from dsbase.text import color as colored
 from dsbase.util import dsbase_setup, handle_interrupt

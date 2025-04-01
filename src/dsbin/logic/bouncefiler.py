@@ -12,9 +12,9 @@ from pathlib import Path
 import inquirer
 from enviromancer import Enviromancer
 from logician import Logician
+from walking_man import walking_man
 
 from dsbase import FileManager
-from dsbase.animate import walking_man
 from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup

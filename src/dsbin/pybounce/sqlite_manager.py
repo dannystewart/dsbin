@@ -6,8 +6,8 @@ import sqlite3
 from typing import TYPE_CHECKING
 
 from logician import Logician
+from walking_man import walking_man
 
-from dsbase.animate import walking_man
 from dsbase.util import async_retry_on_exception, dsbase_setup
 
 if TYPE_CHECKING:

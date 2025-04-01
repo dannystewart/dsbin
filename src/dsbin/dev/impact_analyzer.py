@@ -10,9 +10,9 @@ from typing import TYPE_CHECKING
 
 from enviromancer import Enviromancer
 from logician import Logician
+from walking_man import walking_man
 
 from dsbase import ArgParser
-from dsbase.animate import walking_man
 from dsbase.text import color_print
 from dsbase.text.diff import show_diff
 

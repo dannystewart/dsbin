@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from logician import Logician
+from walking_man import walking_man
 
-from dsbase import Text, TimeAwareLogger
-from dsbase.animate import walking_man
+from dsbase import Text
 from dsbase.util import dsbase_setup
 
 from dsbin.workcalc.data import (
@@ -69,8 +69,7 @@ class WorkCalculator:
         self.config = config
         self.item_name = self._get_item_name()
 
-        self.base_logger = Logician.get_logger("workcalc", level="debug", simple=True)
-        self.logger = TimeAwareLogger(self.base_logger)
+        self.logger = Logician.get_logger("workcalc", level="debug", simple=True, time_aware=True)
 
         if not self.data_source.validate_source():
             msg = f"Invalid {self.data_source.source_name} data source"

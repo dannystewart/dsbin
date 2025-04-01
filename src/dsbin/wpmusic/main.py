@@ -24,9 +24,9 @@ from typing import TYPE_CHECKING
 
 from halo import Halo
 from logician import Logician
+from walking_man import walking_man
 
 from dsbase import MediaManager
-from dsbase.animate import walking_man
 from dsbase.text import color
 from dsbase.util import dsbase_setup, handle_interrupt
 

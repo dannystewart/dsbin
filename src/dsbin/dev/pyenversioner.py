@@ -12,7 +12,8 @@ import argparse
 import os
 from pathlib import Path
 
-from dsbase.animate import walking_man
+from walking_man import walking_man
+
 from dsbase.shell import confirm_action
 from dsbase.util import dsbase_setup, handle_interrupt
 

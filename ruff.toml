@@ -1,4 +1,4 @@
-# Ruff config version: 18
+# Ruff config version: 21
 # -----------------------
 
 # Files and directories to exclude
@@ -126,6 +126,7 @@ ignore = [
     "E501",    # Line too long
     "ISC001",  # Single-line implicit string concatenation (redundant with Ruff formatter)
     "ISC002",  # Multi-line  implicit string concatenation (redundant with Ruff formatter)
+    "LOG001",  # Use logging.getLogger(__name__) - interferes with Logician
     "PLC0415", # `import` should be at the top-level of a file
     "PLR0904", # Too many public methods
     "PLR0911", # Too many return statements
@@ -190,8 +191,8 @@ section-order = [
 ]
 
 [lint.isort.sections]
-personal_util = ["configs", "dsbase", "dsutil"]
-personal_bin = ["dsbin", "dsupdater", "evremixes", "iplookup", "prism", "pybounce", "workcalc", "wpmusic"]
+personal_util = ["dsroot", "dsbase", "dsutil"]
+personal_bin = ["dsbin", "prism"]
 
 [lint.mccabe]
 max-complexity = 10

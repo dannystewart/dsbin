@@ -427,13 +427,15 @@ description = "Core dependencies for DS packages"
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
-files = [
-    {file = "dsroot-0.0.3-py3-none-any.whl", hash = "sha256:2629800ce03460de65bb11285c5be2652e92b10866a9be26cc6e89b03da896ec"},
-    {file = "dsroot-0.0.3.tar.gz", hash = "sha256:e1be0937e0c2b5f1f64c67887b0abd5d91566efe42a1e5ca8e23d60a79f9d02e"},
-]
+files = []
+develop = true
 
 [package.dependencies]
-tzlocal = ">=5.3.1,<6.0.0"
+tzlocal = ">=5.3.1"
+
+[package.source]
+type = "directory"
+url = "../dsroot"
 
 [[package]]
 name = "editor"
@@ -458,15 +460,17 @@ description = "Gain mastery over your environment variables"
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
-files = [
-    {file = "enviromancer-0.1.2-py3-none-any.whl", hash = "sha256:b27d90faee8328671eaf3bdc991af4a221d68f81b23838fd2c06f1219d4d94c1"},
-    {file = "enviromancer-0.1.2.tar.gz", hash = "sha256:8ec77bcb6e97a05068b7ba321d4818979c928f402139d41324233ddfe5839e06"},
-]
+files = []
+develop = true
 
 [package.dependencies]
 dsroot = ">=0.0.3,<0.0.4"
 logician = ">=0.2.1,<0.3.0"
 python-dotenv = ">=1.1.0,<2.0.0"
+
+[package.source]
+type = "directory"
+url = "../enviromancer"
 
 [[package]]
 name = "filelock"
@@ -610,13 +614,15 @@ description = "The logical choice for Python logging"
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
-files = [
-    {file = "logician-0.2.1-py3-none-any.whl", hash = "sha256:46e7896cbe2d30bb40c6f11e9a31a29c2fbc77221d10c27b86bb20c8cdc8e05c"},
-    {file = "logician-0.2.1.tar.gz", hash = "sha256:8becf9f1ad8c6b82e69e88d0ef927a0c5df0b5afe17c026f8e5b84e8eabccbd5"},
-]
+files = []
+develop = true
 
 [package.dependencies]
 dsroot = ">=0.0.3"
+
+[package.source]
+type = "directory"
+url = "../logician"
 
 [[package]]
 name = "markdown-it-py"
@@ -1826,4 +1832,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "2e41346f915aa8f44e6e80c732ffbc2f59a05f05950b13f34491ba9b79606e17"
+content-hash = "d50f6be8708b091c51966617ede6baa1d071b5585c946d9fc15c6c0a7f212d45"

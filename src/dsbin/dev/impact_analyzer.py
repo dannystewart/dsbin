@@ -48,6 +48,7 @@ class ImpactAnalyzer:
         self.commit = args.commit
         self.staged_only = args.staged_only
         self.verbose = args.verbose
+        self.hide_untagged = args.hide_untagged
 
         # Initialize empty lists for changes
         self.changed_files: list[str] = []
@@ -119,7 +120,7 @@ class ImpactAnalyzer:
 
                     # Group changes by directory to reduce noise
                     self._display_grouped_changes(repo)
-            else:
+            elif not self.hide_untagged:
                 color_print(f"\nNo release tags found: {repo.name}", "red")
 
     def _display_grouped_changes(self, repo: RepoConfig) -> None:
@@ -593,6 +594,11 @@ def parse_args() -> argparse.Namespace:
         "--staged-only",
         action="store_true",
         help="show only staged changes rather than working directory",
+    )
+    parser.add_argument(
+        "--hide-untagged",
+        action="store_true",
+        help="hide repositories with no release tags in the output",
     )
     parser.add_argument("-v", "--verbose", action="store_true", help="show detailed output")
 

@@ -588,7 +588,15 @@ def parse_args() -> argparse.Namespace:
         "-c", "--commit", default="HEAD", help="Git reference to compare against (default: HEAD)"
     )
     parser.add_argument(
-        "-d", "--diff", metavar="REPO", help="show detailed diffs for the specified repository"
+        "-d",
+        "--diff",
+        action="store_true",
+        help="show detailed diffs for the specified repository",
+    )
+    parser.add_argument(
+        "--diff-repo",
+        metavar="REPO",
+        help="specify which repository to show diffs for (optional with --diff)",
     )
     parser.add_argument(
         "--staged-only",
@@ -670,6 +678,55 @@ def count_valid_repos(
     return repos, valid_repos_count, skipped_repos_count
 
 
+def setup_base_repo(args: argparse.Namespace, logger: Logger) -> RepoConfig | None:
+    """Set up the base repository if specified."""
+    if not args.base:
+        return None
+
+    base_path = Path(args.base).resolve()
+    if not base_path.exists():
+        logger.error("Base repository path %s does not exist.", base_path)
+        return None
+
+    # Check if it's a git repository
+    if not is_git_repo(base_path):
+        logger.error("%s is not a git repository.", base_path)
+        return None
+
+    return RepoConfig(name=base_path.name, path=base_path)
+
+
+def determine_diff_repo(
+    repos: list[RepoConfig], base_repo: RepoConfig | None, args: argparse.Namespace, logger: Logger
+) -> str | None:
+    """Determine which repository to show diffs for."""
+    if args.diff_repo:
+        # If a specific repo was mentioned with --diff-repo, use that
+        return Path(args.diff_repo).name if "/" in args.diff_repo else args.diff_repo
+
+    if len(repos) == 1:
+        # If only one repo was specified with -r, use that
+        return repos[0].name
+
+    if base_repo and not repos:
+        # If only a base repo was specified with -b, use that
+        return base_repo.name
+
+    if len(repos) > 1:
+        # If multiple repos were specified, use the first one but warn the user
+        repo_name = repos[0].name
+        logger.warning(
+            "Multiple repositories specified with -r but no --diff-repo. "
+            "Showing diffs for the first one: %s",
+            repo_name,
+        )
+        return repo_name
+
+    # This shouldn't happen due to earlier validation
+    logger.error("No repository specified for diffs.")
+    return None
+
+
 def main() -> None:
     """Analyze repository changes and impact."""
     env = Enviromancer(add_debug=True)
@@ -678,19 +735,7 @@ def main() -> None:
 
     with walking_man(speed=0.12):
         # Create base repo config if specified
-        base_repo = None
-        if args.base:
-            base_path = Path(args.base).resolve()
-            if not base_path.exists():
-                logger.error("Base repository path %s does not exist.", base_path)
-                return
-
-            # Check if it's a git repository
-            if not is_git_repo(base_path):
-                logger.error("%s is not a git repository.", base_path)
-                return
-
-            base_repo = RepoConfig(name=base_path.name, path=base_path)
+        base_repo = setup_base_repo(args, logger)
 
         # Process exclusions - normalize paths for accurate comparison
         excluded_paths = []
@@ -716,9 +761,10 @@ def main() -> None:
         # Always analyze repo changes to get latest tags
         analyzer.analyze_repo_changes()
 
-        if args.diff:  # If a specific repo is specified for diff, just show that
-            repo_name = Path(args.diff).name if "/" in args.diff else args.diff
-            analyzer.show_repo_diffs(repo_name)
+        if args.diff:  # If diff flag is set
+            repo_name = determine_diff_repo(repos, base_repo, args, logger)
+            if repo_name:
+                analyzer.show_repo_diffs(repo_name)
         else:  # Otherwise run the normal analysis
             analyzer.analyze()
 

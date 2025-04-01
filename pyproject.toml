@@ -31,6 +31,7 @@ dependencies = [
     "scipy (>=1.15.2,<2.0.0)",
     "scp (>=0.15.0,<0.16.0)",
     "telethon (>=1.39.0,<2.0.0)",
+    "textparse (>=0.0.1)",
     "timecapsule (>=0.0.2)",
     "tomlkit (>=0.13.2,<0.14.0)",
     "tqdm (>=4.67.1,<5.0.0)",
@@ -48,6 +49,8 @@ dsbase = {path = "../dsbase", develop = true}
 dsroot = { path = "../dsroot", develop = true }
 enviromancer = { path = "../enviromancer", develop = true }
 logician = { path = "../logician", develop = true }
+textparse = { path = "../textparse", develop = true }
+timecapsule = { path = "../timecapsule", develop = true }
 
 [build-system]
 requires = ["poetry-core>=2.0"]

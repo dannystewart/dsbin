@@ -398,6 +398,7 @@ dsroot = ">=0.0.3,<0.0.4"
 enviromancer = ">=0.1.2,<0.2.0"
 halo = ">=0.0.31"
 logician = ">=0.2.1,<0.3.0"
+masterclass = ">=0.0.3,<0.0.4"
 mysql-connector-python = ">=9.2.0,<10.0.0"
 natsort = ">=8.4.0,<9.0.0"
 packaging = ">=24.2,<25.0"
@@ -409,6 +410,8 @@ pyyaml = ">=6.0.2,<7.0.0"
 requests = ">=2.32.3,<3.0.0"
 send2trash = ">=1.8.3,<2.0.0"
 termcolor = ">=3.0.0"
+textparse = ">=0.0.1,<0.0.2"
+timecapsule = ">=0.0.2,<0.0.3"
 tomlkit = ">=0.13.2,<0.14.0"
 types-requests = ">=2.32.0.20250328,<3.0.0.0"
 types-send2trash = ">=1.8.2.7,<2.0.0.0"
@@ -1607,21 +1610,40 @@ files = [
 tests = ["pytest", "pytest-cov"]
 
 [[package]]
+name = "textparse"
+version = "0.0.1"
+description = "The missing text toolkit for Python"
+optional = false
+python-versions = ">=3.12"
+groups = ["main", "dev"]
+files = []
+develop = true
+
+[package.dependencies]
+logician = ">=0.2.1,<0.3.0"
+
+[package.source]
+type = "directory"
+url = "../textparse"
+
+[[package]]
 name = "timecapsule"
 version = "0.0.2"
 description = "Human-friendly datetime handling for Python"
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
-files = [
-    {file = "timecapsule-0.0.2-py3-none-any.whl", hash = "sha256:4c05f671461f1b1b91a1dfd2df25f5174d5f46bf3898b846e15c5f42122f71f5"},
-    {file = "timecapsule-0.0.2.tar.gz", hash = "sha256:f215d969da0003606d71ff0c3c80fb5716d122b7ce49cc024a6d063459ba8a6f"},
-]
+files = []
+develop = true
 
 [package.dependencies]
 masterclass = ">=0.0.2"
 python-dateutil = ">=2.9.0.post0"
 tzlocal = ">=5.3.1"
+
+[package.source]
+type = "directory"
+url = "../timecapsule"
 
 [[package]]
 name = "tomlkit"
@@ -1862,4 +1884,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "3d5788a09306c3512c6553e13d00e3d714733552d4cb1491d0522ba7c23ec03a"
+content-hash = "d4679d875d8580b3ea5c0c6a5e12cd6a8d3e060f248158bbfbffe21b4ac822e4"

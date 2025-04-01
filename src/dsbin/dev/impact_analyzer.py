@@ -113,15 +113,11 @@ class ImpactAnalyzer:
         color_print("\n=== Repository Changes Since Last Release ===", "yellow")
 
         for repo in self.repos:
-            if repo.latest_tag:
-                if repo.changes:
-                    color_print(f"\n{repo.name} (last release: {repo.latest_tag}):", "cyan")
+            if repo.latest_tag and repo.changes:
+                color_print(f"\n{repo.name} (last release: {repo.latest_tag}):", "cyan")
 
-                    # Group changes by directory to reduce noise
-                    self._display_grouped_changes(repo)
-            else:
-                color_print(f"\n{repo.name}:", "red")
-                print("  No release tags found")
+                # Group changes by directory to reduce noise
+                self._display_grouped_changes(repo)
 
     def _display_grouped_changes(self, repo: RepoConfig) -> None:
         """Display changes grouped by directory to reduce output noise."""

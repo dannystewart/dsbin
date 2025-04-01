@@ -395,6 +395,7 @@ develop = true
 
 [package.dependencies]
 dsroot = ">=0.0.3,<0.0.4"
+enviromancer = ">=0.1.2,<0.2.0"
 halo = ">=0.0.31"
 logician = ">=0.2.1,<0.3.0"
 mysql-connector-python = ">=9.2.0,<10.0.0"
@@ -449,6 +450,23 @@ files = [
 [package.dependencies]
 runs = "*"
 xmod = "*"
+
+[[package]]
+name = "enviromancer"
+version = "0.1.2"
+description = "Gain mastery over your environment variables"
+optional = false
+python-versions = ">=3.12"
+groups = ["main", "dev"]
+files = [
+    {file = "enviromancer-0.1.2-py3-none-any.whl", hash = "sha256:b27d90faee8328671eaf3bdc991af4a221d68f81b23838fd2c06f1219d4d94c1"},
+    {file = "enviromancer-0.1.2.tar.gz", hash = "sha256:8ec77bcb6e97a05068b7ba321d4818979c928f402139d41324233ddfe5839e06"},
+]
+
+[package.dependencies]
+dsroot = ">=0.0.3,<0.0.4"
+logician = ">=0.2.1,<0.3.0"
+python-dotenv = ">=1.1.0,<2.0.0"
 
 [[package]]
 name = "filelock"
@@ -1808,4 +1826,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "7592fcd7237092e21a8678bfed99223ea8faa658ed3671031b0ebcf96ab8aefb"
+content-hash = "e0d5dcb1d91f3cb16dea156368c82e8a99c9352b622224b8516cecea6ce3073b"

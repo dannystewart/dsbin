@@ -396,7 +396,7 @@ develop = true
 [package.dependencies]
 enviromancer = ">=0.1.2,<0.2.0"
 halo = ">=0.0.31"
-logician = ">=0.2.1,<0.3.0"
+logician = ">=0.2.2,<0.3.0"
 masterclass = ">=0.0.3,<0.0.4"
 mysql-connector-python = ">=9.2.0,<10.0.0"
 natsort = ">=8.4.0,<9.0.0"
@@ -416,6 +416,7 @@ types-requests = ">=2.32.0.20250328,<3.0.0.0"
 types-send2trash = ">=1.8.2.7,<2.0.0.0"
 tzdata = ">=2025.2"
 tzlocal = ">=5.3.1,<6.0.0"
+walking-man = ">=0.1.0,<0.2.0"
 watchdog = ">=6.0.0,<7.0.0"
 
 [package.source]
@@ -1549,6 +1550,25 @@ objc = ["pyobjc-framework-Cocoa ; sys_platform == \"darwin\""]
 win32 = ["pywin32 ; sys_platform == \"win32\""]
 
 [[package]]
+name = "shelper"
+version = "0.0.1"
+description = "The shell helper"
+optional = false
+python-versions = ">=3.12"
+groups = ["main", "dev"]
+files = []
+develop = false
+
+[package.dependencies]
+halo = ">=0.0.31,<0.0.32"
+logician = ">=0.2.2,<0.3.0"
+textparse = ">=0.0.1"
+
+[package.source]
+type = "directory"
+url = "../shelper"
+
+[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -1618,6 +1638,7 @@ develop = true
 
 [package.dependencies]
 logician = ">=0.2.1,<0.3.0"
+termcolor = ">=3.0.0,<4.0.0"
 
 [package.source]
 type = "directory"
@@ -1819,11 +1840,12 @@ optional = false
 python-versions = ">=3.12,<3.14"
 groups = ["main", "dev"]
 files = []
-develop = false
+develop = true
 
 [package.dependencies]
 blessed = ">=1.20.0,<2.0.0"
-dsbase = ">=0.4.3,<0.5.0"
+shelper = {path = "/Users/danny/Developer/shelper"}
+textparse = ">=0.0.1"
 
 [package.source]
 type = "directory"
@@ -1899,4 +1921,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "db56ca846019f179f6fc70f7ff87f5b76a2cae705a41bb4e9d9477a756dcc525"
+content-hash = "b0b737acc6056f504faedbca56aa8118fad69d865752cc866b53c499febf1b82"

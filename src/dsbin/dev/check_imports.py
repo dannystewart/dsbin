@@ -210,6 +210,9 @@ def main() -> None:
 
         if summary:
             print_colored(f"\nFound {' and '.join(summary)}.", "yellow")
+        import sys
+
+        sys.exit(1)
     else:
         print_colored("No circular imports found! 🎉", "green")
 

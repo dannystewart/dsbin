@@ -696,21 +696,61 @@ def setup_base_repo(args: argparse.Namespace, logger: Logger) -> RepoConfig | No
     return RepoConfig(name=base_path.name, path=base_path)
 
 
+def create_repo_config(repo_str: str, logger: Logger) -> RepoConfig | None:
+    """Create a repository config from a repository string."""
+    repo_path = Path(repo_str).resolve()
+
+    # Skip non-existent paths
+    if not repo_path.exists():
+        logger.warning("Path %s does not exist, skipping.", repo_path)
+        return None
+
+    # Skip non-directories
+    if not repo_path.is_dir():
+        logger.debug("Path %s is not a directory, skipping.", repo_path)
+        return None
+
+    # Check if it's a git repository
+    if not is_git_repo(repo_path):
+        logger.debug("%s is not a git repository, skipping.", repo_path)
+        return None
+
+    return RepoConfig(name=repo_path.name, path=repo_path)
+
+
 def determine_diff_repo(
     repos: list[RepoConfig], base_repo: RepoConfig | None, args: argparse.Namespace, logger: Logger
-) -> str | None:
-    """Determine which repository to show diffs for."""
+) -> tuple[str | None, RepoConfig | None]:
+    """Determine which repository to show diffs for.
+
+    Returns:
+        A tuple of (repo_name, repo_config) where repo_name is the name of the repository
+        and repo_config is the corresponding RepoConfig object, or None if not found.
+    """
+    diff_repo_config = None
+
     if args.diff_repo:
         # If a specific repo was mentioned with --diff-repo, use that
-        return Path(args.diff_repo).name if "/" in args.diff_repo else args.diff_repo
+        diff_repo_name = Path(args.diff_repo).name if "/" in args.diff_repo else args.diff_repo
+
+        # First, check if it's already in our repos list
+        diff_repo_config = next((r for r in repos if r.name == diff_repo_name), None)
+
+        # If not found in repos list but it's a path, try to create a config for it
+        if not diff_repo_config and "/" in args.diff_repo:
+            diff_repo_config = create_repo_config(args.diff_repo, logger)
+            if diff_repo_config:
+                diff_repo_name = diff_repo_config.name
+
+        return diff_repo_name, diff_repo_config
 
     if len(repos) == 1:
         # If only one repo was specified with -r, use that
-        return repos[0].name
+        return repos[0].name, repos[0]
 
     if base_repo and not repos:
         # If only a base repo was specified with -b, use that
-        return base_repo.name
+        return base_repo.name, base_repo
 
     if len(repos) > 1:
         # If multiple repos were specified, use the first one but warn the user
@@ -720,11 +760,11 @@ def determine_diff_repo(
             "Showing diffs for the first one: %s",
             repo_name,
         )
-        return repo_name
+        return repo_name, repos[0]
 
     # This shouldn't happen due to earlier validation
     logger.error("No repository specified for diffs.")
-    return None
+    return None, None
 
 
 def main() -> None:
@@ -743,15 +783,10 @@ def main() -> None:
             excluded_paths = [Path(path).resolve() for path in args.exclude]
             logger.debug("Excluding %d repositories from analysis.", len(excluded_paths))
 
-        repos, valid_repos_count, skipped_repos_count = count_valid_repos(
-            args, logger, excluded_paths
-        )
+        repos, valid_repos_count, _ = count_valid_repos(args, logger, excluded_paths)
 
-        if valid_repos_count > 0:
-            logger.debug("Found %d valid repositories to analyze.", valid_repos_count)
-            if skipped_repos_count > 0:
-                logger.debug("Skipped %d invalid or excluded paths.", skipped_repos_count)
-        elif not base_repo:
+        # Validate we have something to work with
+        if not args.diff_repo and valid_repos_count == 0 and not base_repo:
             logger.error("No valid repositories found to analyze.")
             return
 
@@ -762,9 +797,18 @@ def main() -> None:
         analyzer.analyze_repo_changes()
 
         if args.diff:  # If diff flag is set
-            repo_name = determine_diff_repo(repos, base_repo, args, logger)
-            if repo_name:
+            repo_name, diff_repo_config = determine_diff_repo(repos, base_repo, args, logger)
+
+            if repo_name and diff_repo_config:
+                # If the diff repo wasn't in our original list, add it temporarily for analysis
+                if diff_repo_config not in analyzer.repos:
+                    analyzer.repos.append(diff_repo_config)
+                    # Get its latest tag
+                    diff_repo_config.latest_tag = analyzer.find_latest_tag(diff_repo_config.path)
+
                 analyzer.show_repo_diffs(repo_name)
+            elif repo_name:  # We have a name but no config
+                logger.error("Could not find repository configuration for %s.", repo_name)
         else:  # Otherwise run the normal analysis
             analyzer.analyze()
 

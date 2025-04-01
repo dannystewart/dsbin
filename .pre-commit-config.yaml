@@ -14,7 +14,7 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-        stages: [post-commit]
+        verbose: true
 
     -   id: check-imports
         name: check for circular imports
@@ -23,7 +23,7 @@ repos:
         args: [src]
         pass_filenames: false
         always_run: true
-        stages: [post-commit]
+        verbose: true
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.2

@@ -11,12 +11,12 @@ import pexpect
 
 from dsbase.util import handle_interrupt
 
-from dsbin.updater.output_processor import OutputProcessor
+from .output_processor import OutputProcessor
 
 if TYPE_CHECKING:
     from logging import Logger
 
-    from dsbin.updater.updater import Updater
+    from .updater import Updater
 
 type LogLevel = Literal["debug", "info", "warning", "error"]
 

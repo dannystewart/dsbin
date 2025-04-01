@@ -16,9 +16,9 @@ from dsbase import ArgParser, Text
 from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup, handle_interrupt
 
-from dsbin.updater.privilege_helper import PrivilegeHelper
-from dsbin.updater.update_manager import UpdateManager
-from dsbin.updater.updaters.macos import MacOSSoftwareUpdate
+from .privilege_helper import PrivilegeHelper
+from .update_manager import UpdateManager
+from .updaters.macos import MacOSSoftwareUpdate
 
 if TYPE_CHECKING:
     from argparse import Namespace

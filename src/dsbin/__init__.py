@@ -1,10 +1,12 @@
 """This is my personal collection of Python scripts, built up over many years of solving problems most people don't care about (or don't *know* they care about… until they discover my scripts).
 
-## Meta Scripts
+## Script List
+
+### Meta Scripts
 - **dsver**: Show installed versions of my packages.
 - **lsbin**: Lists executable files and their descriptions based on docstrings. What you're looking at now.
 
-## File Management
+### File Management
 - **backupsort**: Sorts saved backup files by adding a timestamp suffix to the filename.
 - **bigfiles**: Finds the top N file types in a directory by cumulative size.
 - **dupefinder**: Find duplicate files in a directory.
@@ -13,16 +15,16 @@
 - **rsyncer**: Build an rsync command interactively.
 - **workcalc**: Calculate how much time went into a project.
 
-## Text Processing Scripts
+### Text Processing Scripts
 - **pycompare**: Compare two lists and output common/unique elements.
 - **w11renamer**: Generates non-stupid filenames for Windows 11 ISO files from stupid ones.
 
-## Media Scripts
+### Media Scripts
 - **ffgif**: Converts a video file to a GIF using ffmpeg.
 - **fftrim**: Use ffmpeg to trim a video file without re-encoding.
 - **ytdl**: Custom yt-dlp command to ensure highest quality MP4.
 
-## Music Scripts
+### Music Scripts
 - **aif2wav**, **wav2aif**: Convert AIFF to WAV or WAV to AIFF, with optional Logic metadata.
 - **alacrity**: Converts files in a directory to ALAC, with additional formats and options.
 - **hpfilter**: Apply a highpass filter to cut bass frequencies for HomePod playback.
@@ -33,7 +35,7 @@
 - **rmp3**: Removes MP3 files if there is an AIFF or WAV file with the same name.
 - **wpmusic**: Uploads and replaces song remixes on WordPress.
 
-## Mac Scripts
+### Mac Scripts
 - **dmg-encrypt**: Encrypts DMG files with AES-256 encryption.
 - **dmgify**: Creates DMG files from folders, with specific handling for Logic projects.
 - **mvdmg**: Recursively moves nested DMG files to a desired location.
@@ -43,14 +45,14 @@
 - **spacepurger**: Generate large files to fill the disk and free up purgeable space.
 - **timestamps**: Quick and easy timestamp getting/setting for macOS.
 
-## Logic Pro Scripts
+### Logic Pro Scripts
 - **bipclean**: Identify and delete recently created AIFF files (default 2 hours).
 - **bouncefiler**: Sort files into folders based on filename suffix.
 - **bounceprune**: Prunes and consolidates bounces from Logic projects.
 - **bounces**: CLI tool for working with Logic bounce files using BounceParser.
 - **oldprojects**: Moves old Logic projects out of folders then deletes empty folders.
 
-## System Tools
+### System Tools
 - **changehostname**: Changes the system hostname in all the relevant places.
 - **dockermounter**: Checks to see if mount points are mounted, and act accordingly.
 - **dsservice**: Main function for managing systemd services.
@@ -60,7 +62,7 @@
 - **ssh-tunnel**: Create or kill an SSH tunnel on the specified port.
 - **watchtower**: Script to help with running Watchtower for Docker.
 
-## Development Scripts
+### Development Scripts
 - **checkdeps**: Check all interdependencies between dsbin and dsbase.
 - **checkimports**: Check for circular imports in a Python project.
 - **code-configs**: Download configs for coding tools and compare against local versions.

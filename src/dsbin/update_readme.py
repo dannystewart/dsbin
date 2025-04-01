@@ -20,9 +20,12 @@ logger = LocalLogger().get_logger()
 # Constants for README generation
 README_PATH: Path = Path("README.md")
 README_TITLE: str = "# DSBin"
+START_MARKER: str = "## Script List"
+END_MARKER: str = "## License"
+
 INTRO_TEXT: str = (
     "This is my personal collection of Python scripts, built up over many years of solving problems "
-    "most people don't care about (or don't *know* they care about… until they discover my scripts)."
+    "most people don't care about (or don't *know* they care about… until they discover my scripts).\n\n"
 )
 
 # Categories for organizing scripts
@@ -149,14 +152,14 @@ def generate_readme_content(
     Returns:
         Formatted README content.
     """
-    content = [README_TITLE, "", INTRO_TEXT, ""]
+    content = [""]
 
     # Add each category and its scripts
     for category, scripts in categories.items():
         if not scripts:
             continue
 
-        content.append(f"## {category}")
+        content.append(f"### {category}")
 
         # Group scripts by description
         desc_to_scripts: dict[str, list[str]] = {}
@@ -194,14 +197,30 @@ def update_readme(readme_path: Path, new_content: str) -> bool:
         return False
 
     content = readme_path.read_text(encoding="utf-8")
-    end_marker = "## License"
 
-    # Split at end marker if it exists
-    if end_marker in content:
-        parts = content.split(end_marker, 1)
-        new_full_content = f"{new_content.rstrip()}\n\n{end_marker}{parts[1]}"
+    # Check for start marker
+    if START_MARKER in content:
+        # If both markers exist, replace content between them
+        if END_MARKER in content:
+            parts = content.split(START_MARKER, 1)
+            before_start = parts[0]
+
+            after_start = parts[1].split(END_MARKER, 1)
+            after_end = after_start[1] if len(after_start) > 1 else ""
+
+            new_full_content = (
+                f"{before_start}{START_MARKER}\n{new_content.rstrip()}\n\n{END_MARKER}{after_end}"
+            )
+        else:
+            # Start marker exists but no end marker
+            parts = content.split(START_MARKER, 1)
+            new_full_content = f"{parts[0]}{START_MARKER}\n{new_content.rstrip()}"
+    # No start marker, check for end marker only
+    elif END_MARKER in content:
+        parts = content.split(END_MARKER, 1)
+        new_full_content = f"{new_content.rstrip()}\n\n{END_MARKER}{parts[1]}"
     else:
-        # If end marker doesn't exist, replace the entire content
+        # If neither marker exists, replace the entire content
         new_full_content = new_content
 
     # Only write if content changed
@@ -233,7 +252,7 @@ def update_init_file(content: str) -> bool:
     current_content = init_path.read_text(encoding="utf-8")
 
     # Format for Python docstring
-    docstring_content = f'"""{content}\n"""  # noqa: D415, W505\n'
+    docstring_content = f'"""{INTRO_TEXT}{START_MARKER}\n\n{content}\n"""  # noqa: D415, W505\n'
 
     # Check if there's already a docstring
     docstring_pattern = r'^""".*?""".*?\n'

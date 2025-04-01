@@ -577,6 +577,13 @@ def parse_args() -> argparse.Namespace:
         help="paths to package repos to analyze (accepts multiple)",
     )
     parser.add_argument(
+        "-e",
+        "--exclude",
+        metavar="REPO",
+        nargs="+",
+        help="paths to package repos to exclude from analysis (accepts multiple)",
+    )
+    parser.add_argument(
         "-c", "--commit", default="HEAD", help="Git reference to compare against (default: HEAD)"
     )
     parser.add_argument(
@@ -612,15 +619,26 @@ def is_git_repo(path: Path) -> bool:
 
 
 def count_valid_repos(
-    args: argparse.Namespace, logger: Logger
+    args: argparse.Namespace, logger: Logger, excluded_paths: list[Path] | None = None
 ) -> tuple[list[RepoConfig], int, int]:
     """Count valid repositories in the list."""
     repos = []
     valid_repos_count = 0
     skipped_repos_count = 0
 
+    if args.repos is None:
+        return repos, valid_repos_count, skipped_repos_count
+
+    excluded_paths = excluded_paths or []
+
     for repo_path_str in args.repos:
         repo_path = Path(repo_path_str).resolve()
+
+        # Skip excluded paths
+        if repo_path in excluded_paths:
+            logger.debug("Path %s is excluded, skipping.", repo_path)
+            skipped_repos_count += 1
+            continue
 
         # Skip non-existent paths
         if not repo_path.exists():
@@ -668,12 +686,20 @@ def main() -> None:
 
             base_repo = RepoConfig(name=base_path.name, path=base_path)
 
-        repos, valid_repos_count, skipped_repos_count = count_valid_repos(args, logger)
+        # Process exclusions - normalize paths for accurate comparison
+        excluded_paths = []
+        if args.exclude:
+            excluded_paths = [Path(path).resolve() for path in args.exclude]
+            logger.debug("Excluding %d repositories from analysis.", len(excluded_paths))
+
+        repos, valid_repos_count, skipped_repos_count = count_valid_repos(
+            args, logger, excluded_paths
+        )
 
         if valid_repos_count > 0:
             logger.debug("Found %d valid repositories to analyze.", valid_repos_count)
             if skipped_repos_count > 0:
-                logger.debug("Skipped %d invalid paths.", skipped_repos_count)
+                logger.debug("Skipped %d invalid or excluded paths.", skipped_repos_count)
         elif not base_repo:
             logger.error("No valid repositories found to analyze.")
             return

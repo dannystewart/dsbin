@@ -14,6 +14,21 @@ files = [
 ]
 
 [[package]]
+name = "arguer"
+version = "0.1.0"
+description = "Customizable drop-in replacement for argparse"
+optional = false
+python-versions = ">=3.12"
+groups = ["main"]
+files = [
+    {file = "arguer-0.1.0-py3-none-any.whl", hash = "sha256:47f8b5154eae3bd815a04dc59f3ad405d87f4171bb56d26d002f3fefcfa38b27"},
+    {file = "arguer-0.1.0.tar.gz", hash = "sha256:722d1119096df06bbbc65483738d83fb6ef3b4d634b85beeb2aeefba1ac302df"},
+]
+
+[package.dependencies]
+pkgversioner = ">=0.0.2,<0.2.0"
+
+[[package]]
 name = "bcrypt"
 version = "4.3.0"
 description = "Modern password hashing for your software and your servers"
@@ -401,6 +416,7 @@ masterclass = ">=0.1.0,<0.2.0"
 mysql-connector-python = ">=9.2.0,<10.0.0"
 natsort = ">=8.4.0,<9.0.0"
 packaging = ">=24.2,<25.0"
+pathkeeper = ">=0.1.0,<0.2.0"
 platformdirs = ">=4.3.7,<5.0.0"
 pygments = ">=2.19.1,<3.0.0"
 python-dateutil = ">=2.9.0.post0,<3.0.0"
@@ -978,6 +994,24 @@ gssapi = ["gssapi (>=1.4.1) ; platform_system != \"Windows\"", "pyasn1 (>=0.1.7)
 invoke = ["invoke (>=2.0)"]
 
 [[package]]
+name = "pathkeeper"
+version = "0.1.0"
+description = "Easy path access for Python projects"
+optional = false
+python-versions = ">=3.12"
+groups = ["main", "dev"]
+files = []
+develop = true
+
+[package.dependencies]
+enviromancer = ">=0.1.3,<0.2.0"
+platformdirs = ">=4.3.7,<5.0.0"
+
+[package.source]
+type = "directory"
+url = "../pathkeeper"
+
+[[package]]
 name = "pdoc"
 version = "15.0.1"
 description = "API Documentation for Python Projects"
@@ -1097,6 +1131,18 @@ test-arrow = ["pyarrow"]
 tests = ["check-manifest", "coverage (>=7.4.2)", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout", "trove-classifiers (>=2024.10.12)"]
 typing = ["typing-extensions ; python_version < \"3.10\""]
 xmp = ["defusedxml"]
+
+[[package]]
+name = "pkgversioner"
+version = "0.0.2"
+description = "Package versioning tools for Python projects"
+optional = false
+python-versions = ">=3.12"
+groups = ["main"]
+files = [
+    {file = "pkgversioner-0.0.2-py3-none-any.whl", hash = "sha256:637bc7db5836c146e658b946b1fb71cc5aab1ce9cd57ea60d652d7b3575078dd"},
+    {file = "pkgversioner-0.0.2.tar.gz", hash = "sha256:e162ab789899fcd4f7817efb733ec2eb6508e30b18c6ea44fbc625fc1b5e6741"},
+]
 
 [[package]]
 name = "platformdirs"
@@ -1904,4 +1950,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "c6a64b97fa8d2935e517134b407adb94f71422f7ab8186f74fab8e9598573bae"
+content-hash = "c3ec95a48554e247e612f68e85d957419e9ec7c119304d66fecc234c37c98fc1"

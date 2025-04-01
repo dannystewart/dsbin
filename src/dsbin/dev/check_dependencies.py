@@ -9,9 +9,9 @@ import pkgutil
 import sys
 from typing import TYPE_CHECKING
 
+from arguer import Arguer
 from logician import Logician
 
-from dsbase import ArgParser
 from dsbase.text import color
 from dsbase.util import dsbase_setup
 
@@ -21,10 +21,14 @@ if TYPE_CHECKING:
 dsbase_setup()
 logger = Logician.get_logger(simple=True)
 
-DEFAULT_PACKAGES = [
+DEFAULT_PACKAGES: list[str] = [
+    "arguer",
     "dsbase",
     "enviromancer",
     "logician",
+    "masterclass",
+    "pathkeeper",
+    "shelper",
     "textparse",
     "timecapsule",
     "walking_man",
@@ -71,7 +75,7 @@ def check_imports(package_name: str) -> bool:
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = ArgParser(description="Check package dependencies")
+    parser = Arguer(description="Check package dependencies")
     parser.add_argument(
         "--packages",
         nargs="+",

@@ -10,7 +10,7 @@ license-files = ["LICENSE"]
 requires-python = ">=3.12,<3.14"
 dependencies = [
     "dsbase (>=0.4.6,<0.5.0)",
-    "enviromancer (>=0.1.2,<0.2.0)",
+    "enviromancer (>=0.1.3,<0.2.0)",
     "halo (>=0.0.31,<0.0.32)",
     "inquirer (>=3.4.0,<4.0.0)",
     "logician (>=0.2.4,<0.3.0)",
@@ -37,7 +37,7 @@ dependencies = [
     "types-paramiko (>=3.5.0.20240928,<4.0.0.0)",
     "types-pillow (>=10.2.0.20240822,<11.0.0.0)",
     "types-requests (>=2.32.0.20250328,<3.0.0.0)",
-    "walking-man (>=0.1.0)",
+    "walking-man (>=0.2.1)",
 ]
 
 [tool.poetry.group.dev.dependencies]

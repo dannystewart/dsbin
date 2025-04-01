@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import inquirer
-import logician
+from logician import Logician
 
 from dsbase.text import color as colored
 
@@ -23,7 +23,7 @@ class TrackIdentifier:
 
     def __init__(self, config: WPConfig):
         self.config = config
-        self.logger = logician.Logger(
+        self.logger = Logician.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

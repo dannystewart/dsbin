@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol
 
-import logician
+from logician import Logician
 
 from dsbase.util import dsbase_setup
 
@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 dsbase_setup()
 
-logger = logician.Logger(level="info")
+logger = Logician.get_logger(level="info")
 
 
 class TelegramClientProtocol(Protocol):

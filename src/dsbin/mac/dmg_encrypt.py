@@ -18,7 +18,7 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import logician
+from logician import Logician
 
 from dsbase import ArgParser
 from dsbase.shell import halo_progress
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 dsbase_setup()
 
-logger = logician.Logger(simple=True)
+logger = Logician.get_logger(simple=True)
 
 
 def parse_arguments() -> argparse.Namespace:

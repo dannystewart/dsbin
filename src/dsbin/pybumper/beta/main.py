@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import logician
+from logician import Logician
 
 from dsbase import ArgParser, EnvManager, Text
 from dsbase.shell import confirm_action
@@ -39,7 +39,7 @@ class PyBumperBeta:
         env.add_debug_var()
 
         # Create logger with debug flag; use simple logger if debug is off
-        self.logger = logician.Logger(env.log_level, simple=not env.debug)
+        self.logger = Logician.get_logger(env.log_level, simple=not env.debug)
 
         # Parse command-line arguments into instance variables
         self.no_increment = args.no_increment

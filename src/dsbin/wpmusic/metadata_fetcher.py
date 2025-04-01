@@ -4,8 +4,8 @@ import json
 from io import BytesIO
 from typing import TYPE_CHECKING, Any
 
-import logician
 import requests
+from logician import Logician
 from PIL import Image
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ class MetadataFetcher:
 
     def __init__(self, config: WPConfig):
         self.config = config
-        self.logger = logician.Logger(
+        self.logger = Logician.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

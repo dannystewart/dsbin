@@ -9,13 +9,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-import logician
+from logician import Logician
 
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
-logger = logician.Logger("metacopy")
+logger = Logician.get_logger("metacopy")
 
 
 def copy_metadata(file: Path, metadata_source: Path | None, rename_flag: bool) -> None:

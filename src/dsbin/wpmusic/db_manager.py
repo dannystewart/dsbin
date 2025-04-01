@@ -7,8 +7,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-import logician
 import mysql.connector
+from logician import Logician
 
 from dsbase.util.db import MySQLHelper, SQLiteHelper
 
@@ -26,7 +26,7 @@ class DatabaseManager:
 
     def __init__(self, config: WPConfig):
         self.config = config
-        self.logger = logician.Logger(
+        self.logger = Logician.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

@@ -8,14 +8,14 @@ import re
 import subprocess
 from pathlib import Path
 
-import logician
 import tomlkit
+from logician import Logician
 
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
-logger = logician.Logger()
+logger = Logician.get_logger()
 
 # Constants for README generation
 README_PATH: Path = Path("README.md")

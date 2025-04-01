@@ -9,7 +9,7 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-import logician
+from logician import Logician
 
 from dsbase import ArgParser
 from dsbase.text import color_print
@@ -17,7 +17,7 @@ from dsbase.text import color_print
 if TYPE_CHECKING:
     import argparse
 
-logger = logician.Logger()
+logger = Logician.get_logger()
 
 
 def parse_arguments() -> tuple[argparse.ArgumentParser, argparse.Namespace]:

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import inquirer
-import logician
+from logician import Logician
 
 from dsbase import ArgParser, MediaManager
 from dsbase.animate import walking_man
@@ -56,7 +56,7 @@ class MusicShare:
     OUTPUT_PATH: ClassVar[Path] = Path.home() / "Downloads"
 
     def __init__(self, input_file: Path, bit_depth: int, upload: bool = False):
-        self.logger = logician.Logger(simple=True)
+        self.logger = Logician.get_logger(simple=True)
         self.input_file = input_file
         self.bit_depth = bit_depth
         self.upload = upload

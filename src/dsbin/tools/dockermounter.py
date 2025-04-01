@@ -51,7 +51,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import logician
+from logician import Logician
 
 from dsbase import EnvManager, PathKeeper
 from dsbase.notify import TelegramSender
@@ -62,7 +62,7 @@ if TYPE_CHECKING:
 
 paths = PathKeeper("dockermounter")
 LOG_FILE_PATH = paths.from_log("dockermounter.log")
-logger = logician.Logger(log_file=LOG_FILE_PATH)
+logger = Logician.get_logger(log_file=LOG_FILE_PATH)
 
 POSSIBLE_SHARES = ["USER", "Downloads", "Music", "Media", "Storage"]
 
@@ -130,7 +130,7 @@ class ShareManager:
 
         # Setup environment and notifications
         self.env = setup_env()
-        self.logger = logician.Logger()
+        self.logger = Logician.get_logger()
 
         self.telegram = None
         if self.env.telegram_bot_token and self.env.telegram_chat_id:

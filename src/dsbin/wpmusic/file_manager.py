@@ -5,9 +5,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import inquirer
-import logician
 import paramiko  # type: ignore
 import pyperclip
+from logician import Logician
 from scp import SCPClient
 
 from dsbase import FileManager as BaseFileManager
@@ -26,7 +26,7 @@ class FileManager:
     def __init__(self, config: WPConfig, upload_tracker: UploadTracker):
         self.config = config
         self.upload_tracker = upload_tracker
-        self.logger = logician.Logger(
+        self.logger = Logician.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

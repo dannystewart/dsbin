@@ -10,7 +10,7 @@ import shutil
 import time
 from typing import TYPE_CHECKING
 
-import logician
+from logician import Logician
 
 from dsbase import ArgParser, Text
 from dsbase.text import color, print_colored
@@ -31,7 +31,7 @@ class Updater:
 
     def __init__(self, args: Namespace | None = None) -> None:
         self.debug = args.debug if args else False
-        self.logger = logician.Logger(level="debug" if self.debug else "info")
+        self.logger = Logician.get_logger(level="debug" if self.debug else "info")
 
         # Start measuring total update time
         self.start_time = time.time()

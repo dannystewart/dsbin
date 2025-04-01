@@ -33,7 +33,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-import logician
+from logician import Logician
 
 from dsbase import ArgParser, FileManager
 from dsbase.shell import halo_progress
@@ -96,7 +96,7 @@ class DMGCreator:
     logger: Logger = field(init=False)
 
     def __post_init__(self):
-        self.logger = logician.Logger(simple=True)
+        self.logger = Logician.get_logger(simple=True)
         self.files = FileManager(logger=self.logger)
 
         # Always preserve top-level folder for Logic projects

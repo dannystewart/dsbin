@@ -8,15 +8,15 @@ from contextlib import contextmanager
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-import logician
 import mysql.connector
+from logician import Logician
 
 from dsbin.wpmusic.configs import WPConfig
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-logger = logician.Logger()
+logger = Logician.get_logger()
 
 
 def run(command: str) -> tuple[bool, str]:

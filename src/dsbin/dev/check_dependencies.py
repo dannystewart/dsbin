@@ -9,7 +9,7 @@ import pkgutil
 import sys
 from typing import TYPE_CHECKING
 
-import logician
+from logician import Logician
 
 from dsbase import ArgParser
 from dsbase.text import color, color_print
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     import argparse
 
 dsbase_setup()
-logger = logician.Logger(simple=True)
+logger = Logician.get_logger(simple=True)
 
 
 def check_imports(package_name: str) -> bool:

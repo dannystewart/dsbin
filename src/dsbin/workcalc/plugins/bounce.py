@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-import logician
+from logician import Logician
 
 from dsbase import FileManager
 
@@ -28,7 +28,7 @@ class BounceDataSource(DataSourcePlugin):
 
     def __post_init__(self):
         self.directory = Path(self.bounce_dir)
-        self.logger = logician.Logger()
+        self.logger = Logician.get_logger()
 
     @property
     def source_name(self) -> str:

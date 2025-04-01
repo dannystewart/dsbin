@@ -10,7 +10,7 @@ import sys
 from pathlib import Path
 
 import inquirer
-import logician
+from logician import Logician
 
 from dsbase import EnvManager, FileManager
 from dsbase.animate import walking_man
@@ -25,7 +25,7 @@ dsbase_setup()
 env_man = EnvManager()
 env_man.add_debug_var()
 files = FileManager()
-logger = logician.Logger(level=env_man.log_level, simple=True)
+logger = Logician.get_logger(level=env_man.log_level, simple=True)
 
 
 def get_unique_suffixes(bounces: list[Bounce]) -> list[str]:

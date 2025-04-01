@@ -36,7 +36,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-import logician
+from logician import Logician
 
 from dsbase.files import FileManager
 from dsroot import TZ
@@ -92,7 +92,7 @@ class BounceParser:
 
     BOUNCE_PATTERN = r"(.+) (\d{2})\.(\d{1,2})\.(\d{1,2})(?:_(\d+)([a-z]?))?(?: (.+))?"
 
-    logger = logician.Logger()
+    logger = Logician.get_logger()
 
     @classmethod
     def get_bounce(cls, file_path: Path) -> Bounce:

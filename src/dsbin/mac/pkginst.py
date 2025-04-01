@@ -9,7 +9,7 @@ import os
 import subprocess
 from pathlib import Path
 
-import logician
+from logician import Logician
 
 from dsbase import FileManager
 from dsbase.shell import confirm_action
@@ -18,7 +18,7 @@ from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
-logger = logician.Logger()
+logger = Logician.get_logger()
 
 
 def install_pkg(

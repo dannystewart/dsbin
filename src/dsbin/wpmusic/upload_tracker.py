@@ -5,7 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-import logician
+from logician import Logician
 from rich import box
 from rich.console import Console
 from rich.table import Table
@@ -29,7 +29,7 @@ class UploadTracker:
         self.config = config
         self.table_config = TableConfig()
         self.db = DatabaseManager(config)
-        self.logger = logician.Logger(
+        self.logger = Logician.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

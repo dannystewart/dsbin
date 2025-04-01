@@ -22,8 +22,8 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-import logician
 from halo import Halo
+from logician import Logician
 
 from dsbase import MediaManager
 from dsbase.animate import walking_man
@@ -67,7 +67,7 @@ class WPMusic:
             keep_files=should_keep,
             no_cache=args.no_cache,
         )
-        self.logger = logician.Logger(
+        self.logger = Logician.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

@@ -38,7 +38,7 @@ from pathlib import Path
 
 from dsbase import LocalLogger
 from dsbase.files import FileManager
-from dsbase.time import TZ
+from dsroot import TZ
 
 
 @dataclass

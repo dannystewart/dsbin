@@ -11,7 +11,7 @@ from rich.table import Table
 from rich.text import Text
 
 from dsbase import LocalLogger
-from dsbase.time import TZ
+from dsroot import TZ
 
 from dsbin.wpmusic.configs import TableConfig
 from dsbin.wpmusic.db_manager import DatabaseManager

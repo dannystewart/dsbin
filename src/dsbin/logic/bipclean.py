@@ -18,8 +18,8 @@ import inquirer
 
 from dsbase.files import FileManager
 from dsbase.text import color_print
-from dsbase.time import TZ
 from dsbase.util import dsbase_setup
+from dsroot import TZ
 
 dsbase_setup()
 

@@ -7,9 +7,10 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from enviromancer import Enviromancer
 from logician import Logician
 
-from dsbase import ArgParser, EnvManager, Text
+from dsbase import ArgParser, Text
 from dsbase.shell import confirm_action
 from dsbase.util import dsbase_setup, handle_interrupt
 
@@ -34,8 +35,8 @@ class PyBumperBeta:
     """
 
     def __init__(self, args: argparse.Namespace, package_name: str) -> None:
-        # Use EnvManager for debug flag
-        env = EnvManager()
+        # Use Enviromancer for debug flag
+        env = Enviromancer()
         env.add_debug_var()
 
         # Create logger with debug flag; use simple logger if debug is off

@@ -14,17 +14,17 @@ import re
 import time
 from pathlib import Path
 
+from enviromancer import Enviromancer
 from natsort import natsorted
 
-from dsbase import EnvManager
 from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
-env_man = EnvManager()
-env_man.add_var("BACKUPSORT_PATH", description="Path to move renamed files to")
+env = Enviromancer()
+env.add_var("BACKUPSORT_PATH", description="Path to move renamed files to")
 
 
 def is_already_renamed(filename: str) -> int:
@@ -130,7 +130,7 @@ def perform_operations(planned_changes: list[tuple[str, str]], args: argparse.Na
             final_path = new_name
             action_str = "Renamed"
             if not args.rename_only:
-                final_path = env_man.backupsort_path / new_name
+                final_path = env.backupsort_path / new_name
                 action_str = "Renamed and moved"
             Path(old_name).rename(final_path)
             print(color(f"{action_str} {old_name}", "blue") + " ➔ " + color(final_path, "green"))

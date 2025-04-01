@@ -4,8 +4,9 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 import paramiko
+from enviromancer import Enviromancer
 
-from dsbase import EnvManager, PathKeeper
+from dsbase import PathKeeper
 
 
 @dataclass
@@ -69,7 +70,7 @@ class WPConfig:
 
     def initialize_env_vars(self) -> None:
         """Get environment variables."""
-        self.env = EnvManager()
+        self.env = Enviromancer()
         self.env.add_debug_var()
         self.env.add_var(
             "SSH_PASSPHRASE",

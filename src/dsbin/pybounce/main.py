@@ -12,12 +12,13 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from enviromancer import Enviromancer
 from logician import Logician
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
-from dsbase import EnvManager, PathKeeper
+from dsbase import PathKeeper
 from dsbase.util import async_with_handle_interrupt, dsbase_setup
 
 from dsbin.pybounce.file_manager import FileManager
@@ -32,8 +33,8 @@ dsbase_setup()
 class TelegramUploader:
     """Manages the Telegram client and uploads files to a channel."""
 
-    def __init__(self, env: EnvManager, files: FileManager, logger: Logger) -> None:
-        self.env: EnvManager = env
+    def __init__(self, env: Enviromancer, files: FileManager, logger: Logger) -> None:
+        self.env: Enviromancer = env
         self.files: FileManager = files
         self.logger: Logger = logger
 
@@ -161,7 +162,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-async def pybounce(env: EnvManager, logger: Logger) -> None:
+async def pybounce(env: Enviromancer, logger: Logger) -> None:
     """Upload files to a Telegram channel."""
     args = parse_arguments()
     files = FileManager(logger)
@@ -198,7 +199,7 @@ async def pybounce(env: EnvManager, logger: Logger) -> None:
 
 def main() -> None:
     """Run the main function with asyncio."""
-    env = EnvManager()
+    env = Enviromancer()
     env.add_debug_var()
     env.add_var("PYBOUNCE_TELEGRAM_API_ID", attr_name="api_id", var_type=str)
     env.add_var("PYBOUNCE_TELEGRAM_API_HASH", attr_name="api_hash", var_type=str, secret=True)

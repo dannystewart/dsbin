@@ -51,9 +51,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from enviromancer import Enviromancer
 from logician import Logician
 
-from dsbase import EnvManager, PathKeeper
+from dsbase import PathKeeper
 from dsbase.notify import TelegramSender
 from dsbase.shell import confirm_action, is_root_user
 
@@ -67,28 +68,28 @@ logger = Logician.get_logger(log_file=LOG_FILE_PATH)
 POSSIBLE_SHARES = ["USER", "Downloads", "Music", "Media", "Storage"]
 
 
-def setup_env() -> EnvManager:
+def setup_env() -> Enviromancer:
     """Setup environment configuration."""
-    env_man = EnvManager()
-    env_man.add_var(
+    env = Enviromancer()
+    env.add_var(
         "TELEGRAM_BOT_TOKEN",
         description="Telegram Bot API token for notifications",
         secret=True,
         required=False,
     )
-    env_man.add_var(
+    env.add_var(
         "TELEGRAM_CHAT_ID",
         description="Telegram chat ID for notifications",
         required=False,
     )
-    env_man.add_var(
+    env.add_var(
         "NOTIFY_ON_CHECK",
         description="Send notification even when all mounts are okay",
         required=False,
         default="false",
         var_type=lambda x: x.lower() == "true",
     )
-    return env_man
+    return env
 
 
 @dataclass
@@ -108,7 +109,7 @@ class ShareManager:
     docker_compose: Path | None
     auto: bool
 
-    env: EnvManager = field(init=False)
+    env: Enviromancer = field(init=False)
     telegram: TelegramSender | None = field(init=False)
     logger: Logger = field(init=False)
 

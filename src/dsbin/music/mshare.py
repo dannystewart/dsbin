@@ -17,8 +17,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import inquirer
+import logician
 
-from dsbase import ArgParser, LocalLogger, MediaManager
+from dsbase import ArgParser, MediaManager
 from dsbase.animate import walking_man
 from dsbase.shell import halo_progress
 from dsbase.text import color as colored
@@ -55,7 +56,7 @@ class MusicShare:
     OUTPUT_PATH: ClassVar[Path] = Path.home() / "Downloads"
 
     def __init__(self, input_file: Path, bit_depth: int, upload: bool = False):
-        self.logger = LocalLogger().get_logger(simple=True)
+        self.logger = logician.Logger(simple=True)
         self.input_file = input_file
         self.bit_depth = bit_depth
         self.upload = upload

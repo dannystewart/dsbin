@@ -9,14 +9,16 @@ import os
 import subprocess
 from pathlib import Path
 
-from dsbase import FileManager, LocalLogger
+import logician
+
+from dsbase import FileManager
 from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
-logger = LocalLogger().get_logger()
+logger = logician.Logger()
 
 
 def install_pkg(

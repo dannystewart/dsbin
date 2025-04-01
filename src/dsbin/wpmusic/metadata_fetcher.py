@@ -4,10 +4,9 @@ import json
 from io import BytesIO
 from typing import TYPE_CHECKING, Any
 
+import logician
 import requests
 from PIL import Image
-
-from dsbase import LocalLogger
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.configs import WPConfig
@@ -18,7 +17,7 @@ class MetadataFetcher:
 
     def __init__(self, config: WPConfig):
         self.config = config
-        self.logger = LocalLogger().get_logger(
+        self.logger = logician.Logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

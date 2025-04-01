@@ -5,8 +5,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import inquirer
+import logician
 
-from dsbase import LocalLogger
 from dsbase.text import color as colored
 
 from dsbin.wpmusic.audio_track import AudioTrack
@@ -23,7 +23,7 @@ class TrackIdentifier:
 
     def __init__(self, config: WPConfig):
         self.config = config
-        self.logger = LocalLogger().get_logger(
+        self.logger = logician.Logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

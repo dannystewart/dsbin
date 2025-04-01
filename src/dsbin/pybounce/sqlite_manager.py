@@ -5,7 +5,8 @@ from __future__ import annotations
 import sqlite3
 from typing import TYPE_CHECKING
 
-from dsbase import LocalLogger
+import logician
+
 from dsbase.animate import walking_man
 from dsbase.util import async_retry_on_exception, dsbase_setup
 
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 
 dsbase_setup()
 
-logger = LocalLogger().get_logger(level="info")
+logger = logician.Logger(level="info")
 
 
 class SQLiteManager:

@@ -8,7 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import LocalLogger, Text, TimeAwareLogger
+import logician
+
+from dsbase import Text, TimeAwareLogger
 from dsbase.animate import walking_man
 from dsbase.util import dsbase_setup
 
@@ -67,7 +69,7 @@ class WorkCalculator:
         self.config = config
         self.item_name = self._get_item_name()
 
-        self.base_logger = LocalLogger().get_logger("workcalc", level="debug", simple=True)
+        self.base_logger = logician.Logger("workcalc", level="debug", simple=True)
         self.logger = TimeAwareLogger(self.base_logger)
 
         if not self.data_source.validate_source():

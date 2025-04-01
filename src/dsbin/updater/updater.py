@@ -10,7 +10,9 @@ import shutil
 import time
 from typing import TYPE_CHECKING
 
-from dsbase import ArgParser, LocalLogger, Text
+import logician
+
+from dsbase import ArgParser, Text
 from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup, handle_interrupt
 
@@ -29,7 +31,7 @@ class Updater:
 
     def __init__(self, args: Namespace | None = None) -> None:
         self.debug = args.debug if args else False
-        self.logger = LocalLogger().get_logger(level="debug" if self.debug else "info")
+        self.logger = logician.Logger(level="debug" if self.debug else "info")
 
         # Start measuring total update time
         self.start_time = time.time()

@@ -9,7 +9,9 @@ import pkgutil
 import sys
 from typing import TYPE_CHECKING
 
-from dsbase import ArgParser, LocalLogger
+import logician
+
+from dsbase import ArgParser
 from dsbase.text import color, color_print
 from dsbase.util import dsbase_setup
 
@@ -17,7 +19,7 @@ if TYPE_CHECKING:
     import argparse
 
 dsbase_setup()
-logger = LocalLogger().get_logger(simple=True)
+logger = logician.Logger(simple=True)
 
 
 def check_imports(package_name: str) -> bool:

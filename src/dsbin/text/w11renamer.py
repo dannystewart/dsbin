@@ -14,14 +14,15 @@ import re
 import sys
 from pathlib import Path
 
-from dsbase import LocalLogger
+import logician
+
 from dsbase.shell import confirm_action
 from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
-logger = LocalLogger().get_logger(simple=True, color=False)
+logger = logician.Logger(simple=True, color=False)
 
 
 def parse_arguments() -> argparse.Namespace:

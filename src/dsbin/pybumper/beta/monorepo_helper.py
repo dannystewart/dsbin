@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import LocalLogger
+import logician
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class MonorepoHelperBeta:
     """Helper for monorepo detection and package management."""
 
-    logger: Logger = LocalLogger().get_logger()
+    logger: Logger = logician.Logger()
 
     @staticmethod
     def is_monorepo(directory: Path) -> bool:

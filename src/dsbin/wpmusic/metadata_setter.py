@@ -2,13 +2,12 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import logician
 from mutagen.flac import FLAC, Picture
 from mutagen.id3 import ID3
 from mutagen.id3._frames import APIC, TALB, TCON, TDRC, TIT2, TPE1, TRCK  # noqa: PLC2701
 from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4, MP4Cover
-
-from dsbase import LocalLogger
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -22,7 +21,7 @@ class MetadataSetter:
 
     def __init__(self, config: WPConfig):
         self.config = config
-        self.logger = LocalLogger().get_logger(
+        self.logger = logician.Logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

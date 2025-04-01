@@ -8,7 +8,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import ArgParser, EnvManager, LocalLogger
+import logician
+
+from dsbase import ArgParser, EnvManager
 from dsbase.animate import walking_man
 from dsbase.text import color_print
 from dsbase.text.diff import show_diff
@@ -647,7 +649,7 @@ def count_valid_repos(
 def main() -> None:
     """Analyze repository changes and impact."""
     env = EnvManager(add_debug=True)
-    logger = LocalLogger().get_logger(simple=True, env=env)
+    logger = logician.Logger(simple=True, env=env)
     args = parse_args()
 
     with walking_man(speed=0.12):

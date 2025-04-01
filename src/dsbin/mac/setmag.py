@@ -6,13 +6,14 @@ from __future__ import annotations
 
 import subprocess
 
-from dsbase import LocalLogger
+import logician
+
 from dsbase.util import dsbase_setup, platform_check
 
 dsbase_setup()
 platform_check("Darwin")
 
-logger = LocalLogger().get_logger("setmag")
+logger = logician.Logger("setmag")
 
 
 def main() -> None:

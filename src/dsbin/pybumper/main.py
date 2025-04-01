@@ -28,7 +28,9 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import ArgParser, EnvManager, LocalLogger
+import logician
+
+from dsbase import ArgParser, EnvManager
 from dsbase.shell import confirm_action
 from dsbase.util import dsbase_setup, handle_interrupt
 
@@ -51,9 +53,7 @@ class PyBumper:
         env.add_debug_var()
 
         # Create logger with debug flag; use simple logger if debug is off
-        self.logger = LocalLogger().get_logger(
-            level="debug" if env.debug else "info", simple=not env.debug
-        )
+        self.logger = logician.Logger(level="debug" if env.debug else "info", simple=not env.debug)
 
         # Parse command-line arguments into instance variables
         self.no_increment = args.no_increment

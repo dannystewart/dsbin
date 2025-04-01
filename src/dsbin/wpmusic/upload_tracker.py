@@ -5,12 +5,12 @@ from collections import defaultdict
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
+import logician
 from rich import box
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
 
-from dsbase import LocalLogger
 from dsroot import TZ
 
 from dsbin.wpmusic.configs import TableConfig
@@ -29,7 +29,7 @@ class UploadTracker:
         self.config = config
         self.table_config = TableConfig()
         self.db = DatabaseManager(config)
-        self.logger = LocalLogger().get_logger(
+        self.logger = logician.Logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

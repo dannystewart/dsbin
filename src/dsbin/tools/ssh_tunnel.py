@@ -9,13 +9,15 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from dsbase import ArgParser, LocalLogger
+import logician
+
+from dsbase import ArgParser
 from dsbase.text import color_print
 
 if TYPE_CHECKING:
     import argparse
 
-logger = LocalLogger().get_logger()
+logger = logician.Logger()
 
 
 def parse_arguments() -> tuple[argparse.ArgumentParser, argparse.Namespace]:

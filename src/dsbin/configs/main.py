@@ -17,9 +17,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
+import logician
 import requests
 
-from dsbase import ArgParser, FileManager, LocalLogger
+from dsbase import ArgParser, FileManager
 from dsbase.shell import confirm_action
 from dsbase.text.diff import show_diff
 
@@ -55,7 +56,7 @@ class ConfigManager:
     ]
 
     def __init__(self, skip_confirm: bool = False):
-        self.logger = LocalLogger().get_logger()
+        self.logger = logician.Logger()
         self.files = FileManager()
         self.skip_confirm = skip_confirm
         self.changes_made = set()

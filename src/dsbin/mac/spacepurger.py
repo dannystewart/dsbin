@@ -18,7 +18,8 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import LocalLogger
+import logician
+
 from dsbase.shell import halo_progress
 from dsbase.util import dsbase_setup, handle_interrupt
 
@@ -27,7 +28,7 @@ if TYPE_CHECKING:
 
 dsbase_setup()
 
-logger = LocalLogger().get_logger()
+logger = logician.Logger()
 
 # macOS becomes unstable with less than 20GB of free space
 MIN_FREE_SPACE_GB = 20

@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase import LocalLogger
+import logician
 
 from dsbin.workcalc import DataSourcePlugin
 from dsbin.workcalc.data import WorkItem
@@ -25,7 +25,7 @@ class GitDataSource(DataSourcePlugin):
 
     def __post_init__(self):
         self.repo_path = Path(self.repo_dir)
-        self.logger = LocalLogger().get_logger()
+        self.logger = logician.Logger()
 
     @property
     def source_name(self) -> str:

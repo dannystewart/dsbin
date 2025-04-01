@@ -12,11 +12,12 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+import logician
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
-from dsbase import EnvManager, LocalLogger, PathKeeper
+from dsbase import EnvManager, PathKeeper
 from dsbase.util import async_with_handle_interrupt, dsbase_setup
 
 from dsbin.pybounce.file_manager import FileManager
@@ -204,7 +205,7 @@ def main() -> None:
     env.add_var("PYBOUNCE_TELEGRAM_PHONE", attr_name="phone", var_type=str)
     env.add_var("PYBOUNCE_TELEGRAM_CHANNEL_URL", attr_name="channel_url", var_type=str)
 
-    logger = LocalLogger().get_logger(level=env.log_level)
+    logger = logician.Logger(level=env.log_level)
 
     async_with_handle_interrupt(pybounce, env, logger, message="Upload canceled.", logger=logger)
 

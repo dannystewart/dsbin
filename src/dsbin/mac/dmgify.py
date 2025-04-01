@@ -33,7 +33,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbase import ArgParser, FileManager, LocalLogger
+import logician
+
+from dsbase import ArgParser, FileManager
 from dsbase.shell import halo_progress
 from dsbase.util import dsbase_setup, handle_interrupt, with_retries
 
@@ -94,7 +96,7 @@ class DMGCreator:
     logger: Logger = field(init=False)
 
     def __post_init__(self):
-        self.logger = LocalLogger().get_logger(simple=True)
+        self.logger = logician.Logger(simple=True)
         self.files = FileManager(logger=self.logger)
 
         # Always preserve top-level folder for Logic projects

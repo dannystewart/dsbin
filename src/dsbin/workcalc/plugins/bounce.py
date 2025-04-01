@@ -5,7 +5,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbase import FileManager, LocalLogger
+import logician
+
+from dsbase import FileManager
 
 from dsbin.workcalc.data import WorkItem
 from dsbin.workcalc.plugin import DataSourcePlugin
@@ -26,7 +28,7 @@ class BounceDataSource(DataSourcePlugin):
 
     def __post_init__(self):
         self.directory = Path(self.bounce_dir)
-        self.logger = LocalLogger().get_logger()
+        self.logger = logician.Logger()
 
     @property
     def source_name(self) -> str:

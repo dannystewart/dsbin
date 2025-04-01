@@ -5,11 +5,11 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
+import logician
 import tomlkit
 import tomlkit.toml_document
 from tomlkit.items import Array
 
-from dsbase import LocalLogger
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
@@ -42,7 +42,7 @@ POETRY_SPECIFIC_FIELDS = {
     "extras",
 }
 
-logger = LocalLogger().get_logger(simple=True)
+logger = logician.Logger(simple=True)
 
 
 def find_pyproject_files(start_path: Path) -> list[Path]:

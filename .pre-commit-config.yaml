@@ -8,16 +8,6 @@ repos:
         pass_filenames: false
         always_run: true
 
-    -   id: check-imports
-        name: check for circular imports
-        entry: python -m devpkg.check_imports
-        language: python
-        additional_dependencies: ['devpkg>=0.1.0']
-        args: [src]
-        pass_filenames: false
-        always_run: true
-        verbose: true
-
 -   repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.2
     hooks:

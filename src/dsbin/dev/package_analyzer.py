@@ -155,12 +155,136 @@ def analyze_package_dependencies(
     return reverse_graph, cycles
 
 
+def calculate_impact_scores(
+    reverse_graph: dict[str, set[str]], packages: list[str]
+) -> dict[str, int]:
+    """Calculate how many packages each package affects directly or indirectly."""
+    impact_scores = {}
+
+    for package in packages:
+        # Use BFS to find all packages affected by this one
+        affected = set()
+        queue = list(reverse_graph.get(package, set()))
+        visited = set(queue)
+
+        while queue:
+            current = queue.pop(0)
+            affected.add(current)
+
+            for dependent in reverse_graph.get(current, set()):
+                if dependent not in visited:
+                    visited.add(dependent)
+                    queue.append(dependent)
+
+        impact_scores[package] = len(affected)
+
+    return impact_scores
+
+
+def create_topological_graph(dependency_graph: dict[str, set[str]]) -> dict[str, set[str]]:
+    """Create a reversed graph suitable for topological sorting."""
+    topo_graph = defaultdict(set)
+    for package, deps in dependency_graph.items():
+        for dep in deps:
+            # Reverse the edges for topological sort
+            topo_graph[dep].add(package)
+    return topo_graph
+
+
+def modified_topological_sort(
+    topo_graph: dict[str, set[str]], packages: list[str], impact_scores: dict[str, int]
+) -> list[str]:
+    """Perform topological sort that respects impact scores."""
+    result = []
+    visited = set()
+
+    def visit(pkg: str) -> None:
+        if pkg in visited:
+            return
+        visited.add(pkg)
+
+        # Visit dependencies
+        for dependent in sorted(
+            topo_graph.get(pkg, set()), key=lambda x: impact_scores.get(x, 0), reverse=True
+        ):
+            visit(dependent)
+
+        result.append(pkg)
+
+    # Start with packages sorted by impact score (highest first)
+    for package in sorted(packages, key=lambda x: impact_scores.get(x, 0), reverse=True):
+        visit(package)
+
+    return result
+
+
+def calculate_version_bump_order(
+    dependency_graph: dict[str, set[str]], reverse_graph: dict[str, set[str]], packages: list[str]
+) -> list[str]:
+    """Calculate the optimal order for bumping package versions.
+
+    This uses a topological sort with priority given to packages that affect the most other packages
+    (directly or indirectly).
+
+    Args:
+        dependency_graph: Dictionary mapping packages to their dependencies.
+        reverse_graph: Dictionary mapping packages to packages that import them.
+        packages: List of all packages to consider.
+
+    Returns:
+        List of packages in optimal bumping order (most affecting to least affecting).
+    """
+    # Calculate impact scores
+    impact_scores = calculate_impact_scores(reverse_graph, packages)
+
+    # Create graph for topological sorting
+    topo_graph = create_topological_graph(dependency_graph)
+
+    # Perform modified topological sort
+    return modified_topological_sort(topo_graph, packages, impact_scores)
+
+    # Reverse to get the correct order
+
+
+def print_version_bump_order(
+    dependency_graph: dict[str, set[str]], reverse_graph: dict[str, set[str]], packages: list[str]
+) -> None:
+    """Print the optimal order for bumping package versions.
+
+    Args:
+        dependency_graph: Dictionary mapping packages to their dependencies
+        reverse_graph: Dictionary mapping packages to packages that import them
+        packages: List of all packages analyzed
+    """
+    bump_order = calculate_version_bump_order(dependency_graph, reverse_graph, packages)
+
+    print_color("\n=== Optimal Version Bump Order ===\n", "yellow")
+    print("Bump packages in this order to minimize update cascades:")
+
+    for i, package in enumerate(bump_order, 1):
+        # Calculate what this affects
+        direct_affects = reverse_graph.get(package, set())
+
+        if direct_affects:
+            affects_str = f"directly affects {len(direct_affects)} package(s)"
+        else:
+            affects_str = "terminal package (affects nothing)"
+
+        print(f"{i}. {color(package, 'green')} - {affects_str}")
+
+    print("\nThis order ensures that when you bump a package version:")
+    print("1. You bump the most fundamental packages first")
+    print("2. Each bump only requires updating packages that haven't been bumped yet")
+    print("3. Terminal packages (those that don't affect others) are bumped last")
+
+
 def print_dependency_report(
     dependency_graph: dict[str, set[str]],
     reverse_graph: dict[str, set[str]],
     cycles: list[tuple[str, str]],
     packages: list[str],
     stats: bool = False,
+    bump_order: bool = False,
 ) -> None:
     """Print a comprehensive dependency report.
 
@@ -170,8 +294,11 @@ def print_dependency_report(
         cycles: List of dependency cycles.
         packages: List of all packages analyzed.
         stats: Whether to show statistics or detailed package information.
+        bump_order: Whether to show the optimal version bump order.
     """
-    if stats:
+    if bump_order:
+        print_version_bump_order(dependency_graph, reverse_graph, packages)
+    elif stats:
         print_dependency_statistics(dependency_graph, reverse_graph, packages)
     else:
         print_color("\n=== Package Dependency Report ===", "yellow")
@@ -326,7 +453,8 @@ def parse_args() -> argparse.Namespace:
         default=[Path.cwd(), Path("~/Developer").expanduser()],
         help="paths to search for packages",
     )
-    parser.add_argument("--stats", action="store_true", help="Show dependency statistics")
+    parser.add_argument("--stats", action="store_true", help="show dependency statistics")
+    parser.add_argument("--bump-order", action="store_true", help="show optimal version bump order")
     return parser.parse_args()
 
 
@@ -341,7 +469,9 @@ def main() -> int:
     reverse_graph, cycles = analyze_package_dependencies(dependency_graph)
 
     # Print report
-    print_dependency_report(dependency_graph, reverse_graph, cycles, args.packages, args.stats)
+    print_dependency_report(
+        dependency_graph, reverse_graph, cycles, args.packages, args.stats, args.bump_order
+    )
 
     # Exit with error code if cycles found
     return 1 if cycles else 0

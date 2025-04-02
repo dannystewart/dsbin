@@ -185,6 +185,10 @@ class ImpactAnalyzer:
 
     def _display_base_repo_impact(self) -> None:
         """Display repositories impacted by changes in the base repo."""
+        if not self.base_repo:
+            print_color("No base repository specified.", "red")
+            return
+
         if self.impacted_repos:
             print_color(f"\n  Impacted by changes in {self.base_repo.name}:", "magenta")
             for repo_name in self.impacted_repos:

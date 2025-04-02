@@ -400,7 +400,7 @@ files = [
 
 [[package]]
 name = "dsbase"
-version = "0.5.0b1"
+version = "0.5.0b2"
 description = "Delightful Python utility library with power and personality"
 optional = false
 python-versions = ">=3.12,<3.14"
@@ -418,7 +418,7 @@ send2trash = ">=1.8.3,<2.0.0"
 textparse = ">=0.1.0"
 types-requests = ">=2.32.0.20250328,<3.0.0.0"
 types-send2trash = ">=1.8.2.7,<2.0.0.0"
-walking-man = ">=0.2.1"
+walking-man = ">=0.2.2"
 
 [package.source]
 type = "directory"
@@ -1119,21 +1119,21 @@ xmp = ["defusedxml"]
 
 [[package]]
 name = "pkgversioner"
-version = "0.1.3"
+version = "0.1.4"
 description = "Package versioning tools for Python projects"
 optional = false
 python-versions = ">=3.12"
 groups = ["main"]
 files = [
-    {file = "pkgversioner-0.1.3-py3-none-any.whl", hash = "sha256:21faa9c2b89aa64eeaffe4b316b73b966c42ff563425f1adc266854ae90223ea"},
-    {file = "pkgversioner-0.1.3.tar.gz", hash = "sha256:a4742a63ae573e445bdeca0591c3d7448e0a08eaf61c0a4b4dc26297bf99b13a"},
+    {file = "pkgversioner-0.1.4-py3-none-any.whl", hash = "sha256:72c2a267bba13f0c9e67d46a25ac35123cf35b5128e4132b6c92eb40fd00013a"},
+    {file = "pkgversioner-0.1.4.tar.gz", hash = "sha256:deb3c129676b4be5257ec74dbfe8ac0e3c7bd5f663a261ba181b78c6b45c3129"},
 ]
 
 [package.dependencies]
 arguer = ">=0.1.0,<0.2.0"
 packaging = ">=24.2,<25.0"
 requests = ">=2.32.3,<3.0.0"
-textparse = ">=0.1.0,<0.2.0"
+textparse = ">=0.1.0"
 
 [[package]]
 name = "platformdirs"
@@ -1857,7 +1857,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 
 [[package]]
 name = "walking-man"
-version = "0.2.1"
+version = "0.2.2"
 description = "A friendly companion while you wait"
 optional = false
 python-versions = ">=3.12,<3.14"
@@ -1900,4 +1900,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "1bb13777eb7acea2eacb6c35933e6cd10f185806d985fdc8ec6dd1ad82f64e14"
+content-hash = "a014ea30713771ab802ef2b7c7e75251e419637d817ed3bde0435767dd59e4a7"

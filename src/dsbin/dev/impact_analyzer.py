@@ -373,7 +373,9 @@ class ImpactAnalyzer:
             self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
             return None
 
-    def get_changes_since_tag(self, repo_path: Path, tag: str) -> list[str]:
+    def get_changes_since_tag(
+        self, repo_path: Path, tag: str, include_pyproject: bool = False
+    ) -> list[str]:
         """Get files changed in a repo since the specified tag."""
         try:
             cmd = ["git", "-C", str(repo_path), "diff", "--name-only", f"{tag}..HEAD"]
@@ -387,11 +389,13 @@ class ImpactAnalyzer:
             changed_files = result.stdout.strip().splitlines()
 
             # Filter for Python files only
-            python_files = [f for f in changed_files if f.endswith(".py")]
+            included = [f for f in changed_files if f.endswith(".py")]
+            if include_pyproject:
+                included += [f for f in changed_files if f == "pyproject.toml"]
             self.logger.debug(
-                "Found %d Python files changed in %s since %s", len(python_files), repo_path, tag
+                "Found %d files changed in %s since %s.", len(included), repo_path, tag
             )
-            return python_files
+            return included
 
         except subprocess.CalledProcessError as e:
             self.logger.debug("Error checking changes for %s since %s: %s", repo_path, tag, str(e))
@@ -401,14 +405,14 @@ class ImpactAnalyzer:
             self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
             return []
 
-    def analyze_repo_changes(self) -> None:
+    def analyze_repo_changes(self, include_pyproject: bool = False) -> None:
         """Analyze changes to repositories since their last release tag."""
         for repo in self.repos:
             latest_tag = self.find_latest_tag(repo.path)
             repo.latest_tag = latest_tag
 
             if latest_tag:
-                changes = self.get_changes_since_tag(repo.path, latest_tag)
+                changes = self.get_changes_since_tag(repo.path, latest_tag, include_pyproject)
                 repo.changes = changes
                 repo.needs_release = len(changes) > 0
 
@@ -547,7 +551,7 @@ class ImpactAnalyzer:
 
         return impacted_repos
 
-    def show_repo_diffs(self, repo_name: str) -> None:
+    def show_repo_diffs(self, repo_name: str, include_pyproject: bool = False) -> None:
         """Show detailed diffs for a specific repo since its last release."""
         # Find the repo config
         repo = next((r for r in self.repos if r.name == repo_name), None)
@@ -564,7 +568,7 @@ class ImpactAnalyzer:
             return
 
         # Get changed files
-        changed_files = self.get_changes_since_tag(repo.path, repo.latest_tag)
+        changed_files = self.get_changes_since_tag(repo.path, repo.latest_tag, include_pyproject)
 
         if not changed_files:
             self.logger.info("No changes detected in %s since %s.", repo_name, repo.latest_tag)
@@ -627,60 +631,6 @@ class ImpactAnalyzer:
         except Exception as e:
             self.logger.error("Error showing diff for %s: %s", file_path, str(e))
             return False
-
-
-def parse_args() -> argparse.Namespace:
-    """Parse command-line arguments."""
-    parser = Arguer(description=__doc__, arg_width=34)
-    parser.add_argument(
-        "-b", "--base", metavar="REPO", help="path to the base repository for impact analysis"
-    )
-    parser.add_argument(
-        "-r",
-        "--repos",
-        metavar="REPO",
-        nargs="+",
-        help="paths to package repos to analyze (accepts multiple)",
-    )
-    parser.add_argument(
-        "-e",
-        "--exclude",
-        metavar="REPO",
-        nargs="+",
-        help="paths to package repos to exclude from analysis (accepts multiple)",
-    )
-    parser.add_argument(
-        "-c", "--commit", default="HEAD", help="Git reference to compare against (default: HEAD)"
-    )
-    parser.add_argument(
-        "-d",
-        "--diff",
-        action="store_true",
-        help="show detailed diffs for the specified repository",
-    )
-    parser.add_argument(
-        "--diff-repo",
-        metavar="REPO",
-        help="specify which repository to show diffs for (optional with --diff)",
-    )
-    parser.add_argument(
-        "--staged-only",
-        action="store_true",
-        help="show only staged changes rather than working directory",
-    )
-    parser.add_argument(
-        "--hide-untagged",
-        action="store_true",
-        help="hide repositories with no release tags in the output",
-    )
-    parser.add_argument("-v", "--verbose", action="store_true", help="show detailed output")
-
-    # Ensure at least one repo is specified
-    args = parser.parse_args()
-    if not args.base and not args.repos:
-        parser.error("At least one repository must be specified with -b or -r")
-
-    return args
 
 
 def is_git_repo(path: Path) -> bool:
@@ -830,6 +780,65 @@ def determine_diff_repo(
     # This shouldn't happen due to earlier validation
     logger.error("No repository specified for diffs.")
     return None, None
+
+
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = Arguer(description=__doc__, arg_width=34)
+    parser.add_argument(
+        "-b", "--base", metavar="REPO", help="path to the base repository for impact analysis"
+    )
+    parser.add_argument(
+        "-r",
+        "--repos",
+        metavar="REPO",
+        nargs="+",
+        help="paths to package repos to analyze (accepts multiple)",
+    )
+    parser.add_argument(
+        "-e",
+        "--exclude",
+        metavar="REPO",
+        nargs="+",
+        help="paths to package repos to exclude from analysis (accepts multiple)",
+    )
+    parser.add_argument(
+        "-c", "--commit", default="HEAD", help="Git reference to compare against (default: HEAD)"
+    )
+    parser.add_argument(
+        "-d",
+        "--diff",
+        action="store_true",
+        help="show detailed diffs for the specified repository",
+    )
+    parser.add_argument(
+        "--diff-repo",
+        metavar="REPO",
+        help="specify which repository to show diffs for (optional with --diff)",
+    )
+    parser.add_argument(
+        "--staged-only",
+        action="store_true",
+        help="show only staged changes rather than working directory",
+    )
+    parser.add_argument(
+        "--hide-untagged",
+        action="store_true",
+        help="hide repositories with no release tags in the output",
+    )
+    parser.add_argument(
+        "--include-pyproject",
+        action="store_true",
+        help="consider pyproject.toml changes as well",
+    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="show detailed output")
+
+    # Ensure at least one repo is specified
+    args = parser.parse_args()
+    if not args.base and not args.repos:
+        parser.error("At least one repository must be specified with -b or -r")
+
+    return args
 
 
 def main() -> None:

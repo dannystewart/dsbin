@@ -110,7 +110,10 @@ class ImpactAnalyzer:
 
     def display_repo_changes(self) -> None:
         """Display changes in repositories since their last release."""
-        print_color("\n=== Repository Changes Since Last Release ===", "yellow")
+        if self.base_repo:
+            print_color("\n=== Repository Changes Since Last Release (Independent) ===", "yellow")
+        else:
+            print_color("\n=== Repository Changes Since Last Release ===", "yellow")
 
         for repo in self.repos:
             if repo.latest_tag:
@@ -172,12 +175,65 @@ class ImpactAnalyzer:
     def display_release_recommendations(self) -> None:
         """Display recommendations for repos that need new releases."""
         print_color("\nRepositories requiring new releases:", "yellow")
-        release_repos = {}  # Map repo names to reasons for release
+
+        if self.base_repo:
+            self._display_base_repo_impact()
+            self._display_repos_with_changes()
+            self._display_release_summary()
+        else:
+            self._display_simple_release_recommendations()
+
+    def _display_base_repo_impact(self) -> None:
+        """Display repositories impacted by changes in the base repo."""
+        if self.impacted_repos:
+            print_color(f"\n  Impacted by changes in {self.base_repo.name}:", "magenta")
+            for repo_name in self.impacted_repos:
+                print_color(f"    - {repo_name}", "green")
+        elif self.changed_files:
+            print_color(
+                f"\n  No repositories impacted by changes in {self.base_repo.name}", "magenta"
+            )
+
+    def _display_repos_with_changes(self) -> None:
+        """Display repositories with their own independent changes since last release."""
+        print_color("\n  With independent changes:", "magenta")
+
+        repos_with_changes = [repo for repo in self.repos if repo.needs_release]
+
+        if repos_with_changes:
+            for repo in repos_with_changes:
+                if repo.name in self.impacted_repos:
+                    print_color(f"    - {repo.name} (also impacted by base changes)", "green")
+                else:
+                    print_color(f"    - {repo.name}", "green")
+        else:
+            print_color("    None", "green")
+
+    def _display_release_summary(self) -> None:
+        """Display a summary of repositories requiring releases and the reasons."""
+        release_repos = self._get_release_repos_with_reasons()
+
+        if release_repos:
+            print_color("\n  Summary of required releases:", "magenta")
+            for repo_name, reasons in sorted(release_repos.items()):
+                print_color(f"    - {repo_name}:", "green")
+                for reason in reasons:
+                    print(f"        {reason}")
+        elif self.changed_files:
+            print_color(
+                f"\n  No dependent repositories need releases, but consider releasing {self.base_repo.name}",
+                "yellow",
+            )
+        else:
+            print_color("\n  No releases required", "green")
+
+    def _get_release_repos_with_reasons(self) -> dict[str, list[str]]:
+        """Get a dictionary mapping repo names to reasons for release."""
+        release_repos = {}
 
         # Add repos impacted by base changes
-        if self.base_repo:
-            for repo_name in self.impacted_repos:
-                release_repos[repo_name] = [f"Affected by changes in {self.base_repo.name}"]
+        for repo_name in self.impacted_repos:
+            release_repos[repo_name] = [f"Affected by changes in {self.base_repo.name}"]
 
         # Add repos with their own changes
         for repo in self.repos:
@@ -191,16 +247,22 @@ class ImpactAnalyzer:
                         f"Has changes since last release ({repo.latest_tag})"
                     ]
 
+        return release_repos
+
+    def _display_simple_release_recommendations(self) -> None:
+        """Display simple release recommendations when no base repo is specified."""
+        release_repos = {}
+
+        # Add repos with their own changes
+        for repo in self.repos:
+            if repo.needs_release:
+                release_repos[repo.name] = [f"Has changes since last release ({repo.latest_tag})"]
+
         if release_repos:
             for repo_name, reasons in sorted(release_repos.items()):
                 print_color(f"  - {repo_name}:", "green")
                 for reason in reasons:
                     print(f"      {reason}")
-        elif self.base_repo and self.changed_files:
-            print_color(
-                f"  None (but you should still release a new version of {self.base_repo.name})",
-                "yellow",
-            )
         else:
             print_color("  None", "green")
 

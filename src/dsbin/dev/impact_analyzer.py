@@ -223,9 +223,9 @@ class ImpactAnalyzer:
                 print_color(f"    - {repo_name}:", "green")
                 for reason in reasons:
                     print(f"        {reason}")
-        elif self.changed_files:
+        elif self.changed_files and self.base_repo:
             print_color(
-                f"\n  No dependent repositories need releases, but consider releasing {self.base_repo.name}",
+                f"\n  No dependent repositories need releases, but consider releasing {self.base_repo.name}.",
                 "yellow",
             )
         else:

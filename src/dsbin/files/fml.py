@@ -5,12 +5,10 @@
 from __future__ import annotations
 
 import argparse
-import os
-import sys
 from pathlib import Path
 
 import requests
-from dotenv import load_dotenv
+from enviromancer import Enviromancer
 from requests import Session
 from requests.auth import HTTPBasicAuth
 from textparse import print_color as colored
@@ -20,9 +18,9 @@ from dsbase.util import dsbase_setup
 dsbase_setup()
 
 # Load environment variables
-script_directory = Path(__file__).resolve().parent
-env_path = script_directory / ".env"
-load_dotenv(dotenv_path=env_path)
+env = Enviromancer()
+env.add_var("FASTMAIL_USERNAME", attr_name="username")
+env.add_var("FASTMAIL_PASSWORD", attr_name="password")
 
 # Set WebDAV URL and user agent
 WEBDAV_URL = "https://myfiles.fastmail.com/Storage/"
@@ -71,18 +69,6 @@ def upload_file(
 def main() -> None:
     """Main function."""
     args = parse_arguments()
-    username = os.environ.get("FASTMAIL_USERNAME")
-    password = os.environ.get("FASTMAIL_PASSWORD")
-
-    if not username or not password:
-        print(
-            colored(
-                "Error: The FASTMAIL_USERNAME and FASTMAIL_PASSWORD environment variables must be set.",
-                "red",
-            )
-        )
-        sys.exit(1)
-
     file_path = args.file_path
     force_upload = args.force
 
@@ -90,11 +76,13 @@ def main() -> None:
         with requests.Session() as session:
             session.headers.update({"User-Agent": USER_AGENT})
 
-            if not force_upload and file_exists(session, WEBDAV_URL, username, password, file_path):
+            if not force_upload and file_exists(
+                session, WEBDAV_URL, env.username, env.password, file_path
+            ):
                 print(colored(f"File already exists: {file_path}", "yellow"))
                 return
 
-            if upload_file(session, WEBDAV_URL, username, password, file_path):
+            if upload_file(session, WEBDAV_URL, env.username, env.password, file_path):
                 print(colored(f"Upload completed: {file_path}", "green"))
             else:
                 print(colored(f"Upload failed: {file_path}", "red"))

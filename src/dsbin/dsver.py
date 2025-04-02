@@ -7,9 +7,8 @@ from __future__ import annotations
 from typing import Any
 
 from packaging import version
+from pkgversioner import PackageSource, VersionChecker, VersionInfo
 from textparse import color
-
-from dsbase.version import PackageSource, VersionChecker, VersionInfo
 
 
 def format_version_info(versions: VersionInfo) -> tuple[str, str]:

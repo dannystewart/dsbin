@@ -3,9 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import ClassVar
 
+from pkgversioner import VersionChecker
 from shelper import handle_interrupt
-
-from dsbase.version import VersionChecker
 
 from dsbin.updater.update_manager import UpdateManager, UpdateStage
 

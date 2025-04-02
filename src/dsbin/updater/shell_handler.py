@@ -5,9 +5,10 @@ import platform
 import re
 import subprocess
 import sys
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Any
 
 import pexpect
+from logician import LogLevel
 from shelper import handle_interrupt
 
 from .output_processor import OutputProcessor
@@ -17,10 +18,8 @@ if TYPE_CHECKING:
 
     from .updater import Updater
 
-type LogLevel = Literal["debug", "info", "warning", "error"]
 
-
-class ShellHelper:
+class ShellHandler:
     """Helper class for shell interactions."""
 
     def __init__(self, updater: Updater):
@@ -43,9 +42,9 @@ class ShellHelper:
             command: The shell command to run.
             sudo: If True, run the command with sudo.
             capture_output: If True, capture the command output and return it. Otherwise, print the
-                output to the console.
+                            output to the console.
             filter_output: If True, filter the command output to remove any lines that contain
-                phrases defined in FILTER_PHRASES.
+                           phrases defined in FILTER_PHRASES.
             raise_error: If True, don't print the error to the log, since it will be raised.
 
         Returns:
@@ -209,7 +208,7 @@ class ShellHelper:
         output: str | None,
         search_string: str,
         log_message: str,
-        log_level: LogLevel = "error",
+        log_level: LogLevel = LogLevel.ERROR,
     ) -> bool:
         """Check command output to see if it contains a specified string. Used to handle specific
         conditions identified within the output of an updater.

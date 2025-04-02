@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from devpkg import PackageSource, VersionChecker, VersionInfo
 from packaging import version
-from pkgversioner import PackageSource, VersionChecker, VersionInfo
 from textparse import color
 
 

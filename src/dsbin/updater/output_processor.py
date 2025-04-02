@@ -5,7 +5,7 @@ import sys
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
-from dsbin.updater.filter_phrases import FILTER_PHRASES
+from .filter_phrases import FILTER_PHRASES
 
 if TYPE_CHECKING:
     from logging import Logger

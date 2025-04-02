@@ -10,9 +10,9 @@ repos:
 
     -   id: check-imports
         name: check for circular imports
-        entry: python -m pkgversioner.check_imports
+        entry: python -m devpkg.check_imports
         language: python
-        additional_dependencies: ['pkgversioner>=0.1.3']
+        additional_dependencies: ['devpkg>=0.1.0']
         args: [src]
         pass_filenames: false
         always_run: true

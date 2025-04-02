@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from shelper import handle_interrupt
 
-from .shell_helper import ShellHelper
+from .shell_handler import ShellHandler
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -95,7 +95,7 @@ class UpdateManager(ABC):
         self.logger: Logger = self.updater.logger
         self.debug: bool = self.updater.debug
         self.privileges: PrivilegeHelper = self.updater.privileges
-        self.shell: ShellHelper = ShellHelper(self.updater)
+        self.shell: ShellHandler = ShellHandler(self.updater)
 
     @handle_interrupt()
     def update(self) -> None:

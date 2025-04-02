@@ -299,8 +299,8 @@ class VersionHelper:
             # Progress to next pre-release stage (e.g., alpha1 -> beta1)
             new_version_str = f"{version.major}.{version.minor}.{version.patch}{new_suffix}1"
         else:
-            # Start new pre-release series - increment patch version first
-            new_version_str = f"{version.major}.{version.minor}.{version.patch + 1}{new_suffix}1"
+            # Start new pre-release series
+            new_version_str = f"{version.major}.{version.minor}.{version.patch}{new_suffix}1"
 
         return self.parse_version(new_version_str)
 

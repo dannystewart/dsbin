@@ -300,7 +300,11 @@ class VersionHelper:
             new_version_str = f"{version.major}.{version.minor}.{version.patch}{new_suffix}1"
         else:
             # Start new pre-release series
-            new_version_str = f"{version.major}.{version.minor}.{version.patch}{new_suffix}1"
+            if not version.pre_type and version.patch != 0:
+                patch = version.patch + 1
+            else:
+                patch = version.patch
+            new_version_str = f"{version.major}.{version.minor}.{patch}{new_suffix}1"
 
         return self.parse_version(new_version_str)
 

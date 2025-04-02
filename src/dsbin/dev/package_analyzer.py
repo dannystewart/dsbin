@@ -13,8 +13,12 @@ from textparse import color, print_color
 # Default packages to analyze
 DEFAULT_PACKAGES: list[str] = [
     "arguer",
+    "devpkg",
     "dsbase",
+    "dsbin",
     "enviromancer",
+    "evremixes",
+    "iplooker",
     "logician",
     "masterclass",
     "pathkeeper",

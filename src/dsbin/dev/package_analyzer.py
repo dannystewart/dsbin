@@ -155,76 +155,13 @@ def analyze_package_dependencies(
     return reverse_graph, cycles
 
 
-def calculate_impact_scores(
-    reverse_graph: dict[str, set[str]], packages: list[str]
-) -> dict[str, int]:
-    """Calculate how many packages each package affects directly or indirectly."""
-    impact_scores = {}
-
-    for package in packages:
-        # Use BFS to find all packages affected by this one
-        affected = set()
-        queue = list(reverse_graph.get(package, set()))
-        visited = set(queue)
-
-        while queue:
-            current = queue.pop(0)
-            affected.add(current)
-
-            for dependent in reverse_graph.get(current, set()):
-                if dependent not in visited:
-                    visited.add(dependent)
-                    queue.append(dependent)
-
-        impact_scores[package] = len(affected)
-
-    return impact_scores
-
-
-def create_topological_graph(dependency_graph: dict[str, set[str]]) -> dict[str, set[str]]:
-    """Create a reversed graph suitable for topological sorting."""
-    topo_graph = defaultdict(set)
-    for package, deps in dependency_graph.items():
-        for dep in deps:
-            # Reverse the edges for topological sort
-            topo_graph[dep].add(package)
-    return topo_graph
-
-
-def modified_topological_sort(
-    topo_graph: dict[str, set[str]], packages: list[str], impact_scores: dict[str, int]
-) -> list[str]:
-    """Perform topological sort that respects impact scores."""
-    result = []
-    visited = set()
-
-    def visit(pkg: str) -> None:
-        if pkg in visited:
-            return
-        visited.add(pkg)
-
-        # Visit dependencies
-        for dependent in sorted(
-            topo_graph.get(pkg, set()), key=lambda x: impact_scores.get(x, 0), reverse=True
-        ):
-            visit(dependent)
-
-        result.append(pkg)
-
-    # Start with packages sorted by impact score (highest first)
-    for package in sorted(packages, key=lambda x: impact_scores.get(x, 0), reverse=True):
-        visit(package)
-
-    return result
-
-
 def calculate_version_bump_order(
     dependency_graph: dict[str, set[str]], reverse_graph: dict[str, set[str]], packages: list[str]
 ) -> list[str]:
     """Calculate the optimal order for bumping package versions.
 
-    This uses a topological sort with priority given to packages that affect the most other packages
-    (directly or indirectly).
+    This identifies the dependency hierarchy from foundational packages to terminal packages,
+    ensuring that when you bump a package, you've already bumped all the packages it depends on.
 
     Args:
         dependency_graph: Dictionary mapping packages to their dependencies.
@@ -232,18 +169,35 @@ def calculate_version_bump_order(
         packages: List of all packages to consider.
 
     Returns:
-        List of packages in optimal bumping order (most affecting to least affecting).
+        List of packages in optimal bumping order (most foundational to most dependent).
     """
-    # Calculate impact scores
-    impact_scores = calculate_impact_scores(reverse_graph, packages)
+    result = []
+    remaining = set(packages)
 
-    # Create graph for topological sorting
-    topo_graph = create_topological_graph(dependency_graph)
+    # Helper function to check if all dependencies of a package are in result
+    def dependencies_satisfied(pkg: str) -> bool:
+        return all(dep in result for dep in dependency_graph.get(pkg, set()))
 
-    # Perform modified topological sort
-    return modified_topological_sort(topo_graph, packages, impact_scores)
+    # Process packages in order of "most imported by others" first
+    pkg_priority = {pkg: len(reverse_graph.get(pkg, set())) for pkg in packages}
 
-    # Reverse to get the correct order
+    while remaining:
+        # Find packages whose dependencies are all satisfied
+        ready = [pkg for pkg in remaining if dependencies_satisfied(pkg)]
+
+        if not ready:
+            # If we have a cycle, just pick the most imported package
+            ready = [max(remaining, key=lambda p: pkg_priority.get(p, 0))]
+
+        # Sort ready packages by how many other packages import them
+        ready.sort(key=lambda p: pkg_priority.get(p, 0), reverse=True)
+
+        # Add the highest priority ready package
+        next_pkg = ready[0]
+        result.append(next_pkg)
+        remaining.remove(next_pkg)
+
+    return result
 
 
 def print_version_bump_order(
@@ -271,11 +225,6 @@ def print_version_bump_order(
             affects_str = "terminal package (affects nothing)"
 
         print(f"{i}. {color(package, 'green')} - {affects_str}")
-
-    print("\nThis order ensures that when you bump a package version:")
-    print("1. You bump the most fundamental packages first")
-    print("2. Each bump only requires updating packages that haven't been bumped yet")
-    print("3. Terminal packages (those that don't affect others) are bumped last")
 
 
 def print_dependency_report(

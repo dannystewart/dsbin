@@ -8,8 +8,7 @@ import sys
 from typing import TYPE_CHECKING, Any, Literal
 
 import pexpect
-
-from dsbase.util import handle_interrupt
+from shelper import handle_interrupt
 
 from .output_processor import OutputProcessor
 

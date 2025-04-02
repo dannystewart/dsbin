@@ -6,8 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import inquirer
 from logician import Logician
-
-from dsbase.text import color as colored
+from textparse import print_color as colored
 
 from dsbin.wpmusic.audio_track import AudioTrack
 from dsbin.wpmusic.metadata_fetcher import MetadataFetcher

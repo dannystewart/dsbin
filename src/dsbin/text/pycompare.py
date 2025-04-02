@@ -12,9 +12,10 @@ import argparse
 from pathlib import Path
 
 import inquirer
+from shelper import handle_interrupt
+from textparse import color, print_color
 
-from dsbase.text import color, print_colored
-from dsbase.util import dsbase_setup, handle_interrupt
+from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
@@ -64,7 +65,7 @@ def process_lists(
         additional_matches = count_case_insensitive_matches(list1, list2, common_elements)
         if additional_matches > 0:
             note = f"\nNote: {additional_matches} additional elements would match if case sensitivity were ignored."
-            print_colored(note, "yellow")
+            print_color(note, "yellow")
             if output_file:
                 output_lines.extend(("", note))
 
@@ -73,11 +74,11 @@ def process_lists(
             output_path = Path(output_file)
             output_path.parent.mkdir(parents=True, exist_ok=True)
             output_path.write_text("\n".join(output_lines))
-            print_colored(f"\nResults saved to {output_path}.", "green")
+            print_color(f"\nResults saved to {output_path}.", "green")
         except OSError as e:
-            print_colored(f"\nError writing to file {output_path}: {e}", "red")
+            print_color(f"\nError writing to file {output_path}: {e}", "red")
         except Exception as e:
-            print_colored(f"\nUnexpected error: {e}", "red")
+            print_color(f"\nUnexpected error: {e}", "red")
 
 
 def count_case_insensitive_matches(
@@ -145,8 +146,8 @@ def print_results(
     else:
         elements = "\n".join(elements_list) if elements_list else "None"
 
-    print_colored(header_text, "yellow")
-    print_colored(elements, "blue")
+    print_color(header_text, "yellow")
+    print_color(elements, "blue")
 
     if output_lines is not None and output_lines:
         # If this isn't the first section, add a blank line before the header
@@ -221,10 +222,10 @@ def main() -> None:
         ):
             title2 = title2_in
 
-    print_colored(f"Paste the {title1} list (type '.' and press Enter to finish):", "green")
+    print_color(f"Paste the {title1} list (type '.' and press Enter to finish):", "green")
     list1 = input_until_sentinel()
 
-    print_colored(f"\nPaste the {title2} list (type '.' and press Enter to finish):", "green")
+    print_color(f"\nPaste the {title2} list (type '.' and press Enter to finish):", "green")
     list2 = input_until_sentinel()
 
     process_lists(ignore_case, list1, list2, title1, title2, args.comma_separated, args.output)

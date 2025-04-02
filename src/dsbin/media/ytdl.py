@@ -15,9 +15,9 @@ import sys
 from pathlib import Path
 
 from shelper import halo_progress
+from textparse import print_color
 
 from dsbase import FileManager, MediaManager
-from dsbase.text import color_print
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
@@ -79,7 +79,7 @@ def main() -> None:
     if original_filename != target_filename:
         files.delete(original_file)
         if files.move(target_file, clean_file, overwrite=True, show_output=False):
-            color_print(f"Saved {clean_filename}!", "green")
+            print_color(f"Saved {clean_filename}!", "green")
 
 
 if __name__ == "__main__":

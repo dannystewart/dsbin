@@ -12,10 +12,10 @@ from typing import TYPE_CHECKING
 
 from arguer import Arguer
 from logician import Logician
+from shelper import handle_interrupt
+from textparse import TextParse, color, print_color
 
-from dsbase import Text
-from dsbase.text import color, print_colored
-from dsbase.util import dsbase_setup, handle_interrupt
+from dsbase.util import dsbase_setup
 
 from .privilege_helper import PrivilegeHelper
 from .update_manager import UpdateManager
@@ -93,7 +93,7 @@ class Updater:
         """List all available updaters."""
         available, unavailable = self._get_updaters_by_availability()
 
-        print_colored("\nAvailable updaters:", "green")
+        print_color("\nAvailable updaters:", "green")
         for updater_class in available:
             print(f"- {color(updater_class.display_name, 'green')}: {updater_class.description}")
 
@@ -106,7 +106,7 @@ class Updater:
                 )
 
         print("\nRun an individual updater with ", end="")
-        print_colored("`updater <name>`", "cyan")
+        print_color("`updater <name>`", "cyan")
 
     def initialize_updaters(self) -> None:
         """Initialize all updaters and add them to the appropriate update list."""
@@ -218,7 +218,7 @@ class Updater:
     def _get_elapsed_time(self) -> str:
         elapsed_time = time.time() - self.start_time
         minutes, seconds = divmod(int(elapsed_time), 60)
-        return Text.format_duration(0, minutes, seconds)
+        return TextParse.format_duration(0, minutes, seconds)
 
     def _log_completion_status(self) -> None:
         if not self.anything_updated:

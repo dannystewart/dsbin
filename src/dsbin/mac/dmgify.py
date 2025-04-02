@@ -35,10 +35,10 @@ from typing import TYPE_CHECKING, ClassVar
 
 from arguer import Arguer
 from logician import Logician
-from shelper import halo_progress
+from shelper import halo_progress, handle_interrupt
 
 from dsbase import FileManager
-from dsbase.util import dsbase_setup, handle_interrupt, with_retries
+from dsbase.util import dsbase_setup, with_retries
 
 if TYPE_CHECKING:
     import argparse

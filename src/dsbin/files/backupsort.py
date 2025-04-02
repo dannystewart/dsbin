@@ -17,8 +17,8 @@ from pathlib import Path
 from enviromancer import Enviromancer
 from natsort import natsorted
 from shelper import confirm_action
+from textparse import color
 
-from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

@@ -30,10 +30,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from shelper import confirm_action
+from textparse import color, print_color
 from walking_man import walking_man
 
 from dsbase import FileManager
-from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
@@ -219,31 +219,31 @@ def execute_actions(actions: BounceActions) -> None:
             )
 
         completion_message = ", ".join(completion_message_parts) + "."
-        print_colored(completion_message, "green")
+        print_color(completion_message, "green")
     else:
-        print_colored("Actions canceled.", "red")
+        print_color("Actions canceled.", "red")
 
 
 def print_actions(trash_files: list[str], rename_files: list[str]) -> None:
     """Print the actions to be performed on files."""
     if not trash_files and not rename_files:
-        print_colored("No actions to perform.", "green")
+        print_color("No actions to perform.", "green")
         return
 
     if trash_files:
-        print_colored("Files to Trash:", "red")
+        print_color("Files to Trash:", "red")
         for line in trash_files:
-            print_colored(line, "red")
+            print_color(line, "red")
     else:
-        print_colored("No files to trash.", "green")
+        print_color("No files to trash.", "green")
 
     if rename_files:
-        print_colored("\nFiles to Rename:", "yellow")
+        print_color("\nFiles to Rename:", "yellow")
         for line in rename_files:
             old_name, new_name = line.split(" → ")
             print(old_name + color(" → ", "yellow") + color(new_name, "green"))
     else:
-        print_colored("No files to rename.", "green")
+        print_color("No files to rename.", "green")
 
     print()
 

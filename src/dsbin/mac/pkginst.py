@@ -11,9 +11,9 @@ from pathlib import Path
 
 from logician import Logician
 from shelper import confirm_action
+from textparse import color
 
 from dsbase import FileManager
-from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

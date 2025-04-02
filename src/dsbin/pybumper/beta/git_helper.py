@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase.util import handle_interrupt
+from shelper import handle_interrupt
 
 from dsbin.pybumper.beta.monorepo_helper import MonorepoHelperBeta
 

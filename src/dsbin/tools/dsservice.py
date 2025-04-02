@@ -6,8 +6,7 @@ import sys
 from pathlib import Path
 
 from shelper import is_root_user
-
-from dsbase.text import color, print_colored
+from textparse import color, print_color
 
 from dsbin.systemd.service_list import ServiceConfigs
 from dsbin.systemd.systemd import SystemdServiceTemplate
@@ -108,7 +107,7 @@ def list_services(search_term: str = "") -> None:
         ]
 
     if not services:
-        print_colored(
+        print_color(
             f"No services found{f" matching '{search_term}'" if search_term else ''}.", "yellow"
         )
         return
@@ -116,7 +115,7 @@ def list_services(search_term: str = "") -> None:
     service_width = max(len(name) for name, _ in services) + COLUMN_BUFFER
 
     print()
-    print_colored(
+    print_color(
         f"{'Service Name':<{service_width}} {'Description':<{DESC_WIDTH}}",
         "cyan",
         attrs=["bold", "underline"],
@@ -144,18 +143,18 @@ def handle_services(args: argparse.Namespace) -> int:
             break
 
     if not service_config:
-        print_colored(f"Service '{args.service}' not found.", "red")
+        print_color(f"Service '{args.service}' not found.", "red")
         return 1
 
     if args.command == "install":
         if manager.install_service(service_config):
-            print_colored(f"Successfully installed {args.service} service.", "green")
+            print_color(f"Successfully installed {args.service} service.", "green")
             return 0
         return 1
 
     if args.command == "remove":
         if manager.remove_service(args.service):
-            print_colored(f"Successfully removed {args.service} service.", "green")
+            print_color(f"Successfully removed {args.service} service.", "green")
             return 0
         return 1
     msg = "Unknown command."
@@ -174,7 +173,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     """Main function for managing systemd services."""
     if not is_root_user():
-        print_colored("This script must be run as root.", "red")
+        print_color("This script must be run as root.", "red")
         return 1
 
     args = parse_args()
@@ -184,7 +183,7 @@ def main() -> int:
         return 0
 
     if not args.service:
-        print_colored(f"Service name required for {args.command} command.", "red")
+        print_color(f"Service name required for {args.command} command.", "red")
         return 1
 
     return handle_services(args)

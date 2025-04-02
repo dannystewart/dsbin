@@ -8,9 +8,9 @@ import shutil
 from pathlib import Path
 
 from shelper import confirm_action
+from textparse import print_color as colored
 
 from dsbase.files import sha256_checksum
-from dsbase.text import color as colored
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

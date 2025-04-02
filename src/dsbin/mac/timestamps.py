@@ -38,13 +38,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from arguer import Arguer
+from textparse import color
 
 from dsbase.files import FileManager
-from dsbase.text import ColorName, color
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse
+
+    from textparse.types import ColorName
 
 dsbase_setup()
 

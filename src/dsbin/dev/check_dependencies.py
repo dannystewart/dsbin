@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING
 
 from arguer import Arguer
 from logician import Logician
+from textparse import color
 
-from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:

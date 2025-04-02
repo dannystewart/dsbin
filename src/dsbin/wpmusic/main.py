@@ -24,11 +24,12 @@ from typing import TYPE_CHECKING
 
 from halo import Halo
 from logician import Logician
+from shelper import handle_interrupt
+from textparse import color
 from walking_man import walking_man
 
 from dsbase import MediaManager
-from dsbase.text import color
-from dsbase.util import dsbase_setup, handle_interrupt
+from dsbase.util import dsbase_setup
 
 from dsbin.wpmusic.configs import WPConfig
 from dsbin.wpmusic.file_manager import FileManager

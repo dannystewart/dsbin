@@ -12,7 +12,8 @@ import operator
 from collections import defaultdict
 from pathlib import Path
 
-from dsbase.text import color as colored
+from textparse import print_color as colored
+
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from dsbase.util import handle_interrupt
+from shelper import handle_interrupt
 
 if TYPE_CHECKING:
     from logging import Logger

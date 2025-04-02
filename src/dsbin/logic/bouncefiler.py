@@ -13,10 +13,10 @@ import inquirer
 from enviromancer import Enviromancer
 from logician import Logician
 from shelper import confirm_action
+from textparse import color
 from walking_man import walking_man
 
 from dsbase import FileManager
-from dsbase.text import color
 from dsbase.util import dsbase_setup
 
 from dsbin.logic import Bounce, BounceParser

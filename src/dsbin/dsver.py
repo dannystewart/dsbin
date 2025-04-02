@@ -7,8 +7,8 @@ from __future__ import annotations
 from typing import Any
 
 from packaging import version
+from textparse import color
 
-from dsbase.text import color
 from dsbase.version import PackageSource, VersionChecker, VersionInfo
 
 

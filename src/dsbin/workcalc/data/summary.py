@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from dsbase import Text
+from textparse import TextParse
 
 from dsbin.workcalc.data import FormattedTime
 
@@ -79,8 +79,8 @@ class SummaryAnalyzer:
         """Format summary statistics for display."""
         formatted_time = FormattedTime.from_minutes(stats.total_time)
         return [
-            f"Total {Text.plural(item_name, stats.total_items, with_count=True)}",
-            f"Active {Text.plural('day', stats.active_days, with_count=True)}",
-            f"Average {Text.plural(item_name, stats.total_items)} per active day: {stats.avg_items_per_day:.1f}",
+            f"Total {TextParse.plural(item_name, stats.total_items, with_count=True)}",
+            f"Active {TextParse.plural('day', stats.active_days, with_count=True)}",
+            f"Average {TextParse.plural(item_name, stats.total_items)} per active day: {stats.avg_items_per_day:.1f}",
             f"\nTotal work time: {formatted_time}",
         ]

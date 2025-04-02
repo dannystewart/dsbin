@@ -31,9 +31,9 @@ from typing import TYPE_CHECKING
 from arguer import Arguer
 from enviromancer import Enviromancer
 from logician import Logician
-from shelper import confirm_action
+from shelper import confirm_action, handle_interrupt
 
-from dsbase.util import dsbase_setup, handle_interrupt
+from dsbase.util import dsbase_setup
 
 from dsbin.pybumper.bump_type import BumpType
 from dsbin.pybumper.git_helper import GitHelper

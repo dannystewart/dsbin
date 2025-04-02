@@ -8,10 +8,8 @@ import re
 import subprocess
 import sys
 
-from shelper import confirm_action
-
-from dsbase.text import color_print
-from dsbase.util import handle_interrupt
+from shelper import confirm_action, handle_interrupt
+from textparse import print_color
 
 
 def run_git_command(command: str | list[str]) -> str:
@@ -25,7 +23,7 @@ def check_if_tag_exists(tag: str) -> None:
     try:
         run_git_command(["git", "show-ref", "--tags", tag])
     except subprocess.CalledProcessError:
-        color_print(f"Tag '{tag}' does not exist.", "yellow")
+        print_color(f"Tag '{tag}' does not exist.", "yellow")
         sys.exit(1)
 
 
@@ -33,16 +31,16 @@ def update_tag_in_repo(tag: str, new_tag: str, description: str) -> None:
     """Update an existing Git tag with a new tag name and description."""
     try:  # Delete existing tag
         run_git_command(["git", "tag", "-d", tag])
-        color_print(f"Deleted local tag '{tag}'", "green")
+        print_color(f"Deleted local tag '{tag}'", "green")
 
         if description:  # Create new tag with description if provided
             run_git_command(["git", "tag", "-a", new_tag, "-m", description])
         else:
             run_git_command(["git", "tag", new_tag])
 
-        color_print(f"Created tag '{new_tag}'", "green")
+        print_color(f"Created tag '{new_tag}'", "green")
     except subprocess.CalledProcessError as e:
-        color_print(f"Failed to update tag: {e}", "red")
+        print_color(f"Failed to update tag: {e}", "red")
         sys.exit(1)
 
 
@@ -57,7 +55,7 @@ def get_updated_name_and_description(tag: str, new_tag: str | None = None) -> tu
             )
             if validate_tag_name(new_tag):
                 break
-            color_print("Invalid characters in tag name. Please try again.", "red")
+            print_color("Invalid characters in tag name. Please try again.", "red")
 
     description = input("Enter a tag description (press Enter to skip): ").strip()
     return new_tag, description
@@ -69,12 +67,12 @@ def push_tags_if_desired() -> None:
     if confirm_action("Do you want to push the tags to remote?"):
         try:
             run_git_command(["git", "push", "origin", "--tags"])
-            color_print("Tags pushed to remote.", "green")
+            print_color("Tags pushed to remote.", "green")
         except subprocess.CalledProcessError as e:
-            color_print(f"Failed to push tags: {e}", "red")
+            print_color(f"Failed to push tags: {e}", "red")
             sys.exit(1)
     else:
-        color_print("Tags were not pushed to remote.", "green")
+        print_color("Tags were not pushed to remote.", "green")
 
 
 def validate_tag_name(tag: str) -> bool:
@@ -88,7 +86,7 @@ def main() -> None:
     tag = sys.argv[1].strip() if len(sys.argv) >= 2 else None
     new_tag = sys.argv[2].strip() if len(sys.argv) == 3 else None
     if not tag:
-        color_print("Usage: tagreplace <tag_name> [new_tag_name]", "cyan")
+        print_color("Usage: tagreplace <tag_name> [new_tag_name]", "cyan")
         sys.exit(1)
 
     check_if_tag_exists(tag)

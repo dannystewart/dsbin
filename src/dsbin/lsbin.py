@@ -15,7 +15,8 @@ import re
 from importlib.metadata import entry_points
 from pathlib import Path
 
-from dsbase.text import color, print_colored
+from textparse import color, print_color
+
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
@@ -77,7 +78,7 @@ def get_module_or_function_docstring(module_path: str, function_name: str) -> st
 
         return None
     except Exception as e:
-        print_colored(f"Error reading docstring for {module_path}: {e}", "red")
+        print_color(f"Error reading docstring for {module_path}: {e}", "red")
         return None
 
 
@@ -100,13 +101,13 @@ def display_list(scripts: list[tuple[str, str, str | None]], search_term: str = 
     """
     if not scripts:
         if search_term:
-            print_colored(f"No results found for search term '{search_term}'.", "yellow")
+            print_color(f"No results found for search term '{search_term}'.", "yellow")
         else:
-            print_colored("No scripts found.", "yellow")
+            print_color("No scripts found.", "yellow")
         return
 
     if search_term:
-        print_colored(f"Showing only results containing '{search_term}':", "cyan")
+        print_color(f"Showing only results containing '{search_term}':", "cyan")
         print()
 
     # Group by description to find aliases
@@ -121,7 +122,7 @@ def display_list(scripts: list[tuple[str, str, str | None]], search_term: str = 
     )
 
     print()
-    print_colored(
+    print_color(
         f"{'Script Name':<{script_width}} {'Description':<{DESC_WIDTH}}",
         "cyan",
         attrs=["bold", "underline"],
@@ -172,7 +173,7 @@ def main() -> int:
             scripts = filter_results(scripts, args.search_term)
         display_list(scripts, args.search_term)
     except Exception as e:
-        print_colored(f"Error: {e}", "red")
+        print_color(f"Error: {e}", "red")
         return 1
     return 0
 

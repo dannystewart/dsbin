@@ -15,10 +15,10 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import inquirer
+from textparse import print_color
 from timecapsule import TZ
 
 from dsbase.files import FileManager
-from dsbase.text import color_print
 from dsbase.util import dsbase_setup
 
 dsbase_setup()
@@ -73,28 +73,28 @@ def main() -> None:
 
     s = "s" if hours != 1 else ""
     if not recent_files:
-        color_print(f"No AIFF files from within the last {hours} hour{s}.", "green")
+        print_color(f"No AIFF files from within the last {hours} hour{s}.", "green")
         if hours == DEFAULT_HOURS:
-            color_print("Use --hours to specify a different time period.", "cyan")
+            print_color("Use --hours to specify a different time period.", "cyan")
         return
 
-    color_print(f"Found {len(aiff_files)} AIFF files from the last {hours} hour{s}:", "green")
+    print_color(f"Found {len(aiff_files)} AIFF files from the last {hours} hour{s}:", "green")
     selected_files = select_files(aiff_files)
 
     if not selected_files:
-        color_print("No files selected for deletion.", "yellow")
+        print_color("No files selected for deletion.", "yellow")
         return
 
-    color_print("\nThe following files will be deleted:", "yellow")
+    print_color("\nThe following files will be deleted:", "yellow")
     for file in selected_files:
         print(f"- {file}")
 
     if len(selected_files) < len(aiff_files):
         skipped = len(aiff_files) - len(selected_files)
-        color_print(f"\n{skipped} file{'s' if skipped != 1 else ''} will be kept.", "cyan")
+        print_color(f"\n{skipped} file{'s' if skipped != 1 else ''} will be kept.", "cyan")
 
     files.delete(selected_files)
-    color_print("\nSelected files have been deleted.", "green")
+    print_color("\nSelected files have been deleted.", "green")
 
 
 if __name__ == "__main__":

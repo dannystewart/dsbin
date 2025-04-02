@@ -8,8 +8,9 @@ import argparse
 import sys
 from pathlib import Path
 
+from textparse import print_color as colored
+
 from dsbase import FileManager, MediaManager
-from dsbase.text import color as colored
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

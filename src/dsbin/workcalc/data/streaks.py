@@ -5,9 +5,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import TYPE_CHECKING
 
+from textparse import TextParse
 from timecapsule import TZ
-
-from dsbase import Text
 
 if TYPE_CHECKING:
     from datetime import date
@@ -87,14 +86,14 @@ class StreakAnalyzer:
         if stats.longest_start:
             streak_end = stats.longest_start + timedelta(days=stats.longest_length - 1)
             messages.append(
-                f"Longest {item_name} streak: {Text.plural('day', stats.longest_length, with_count=True)} "
+                f"Longest {item_name} streak: {TextParse.plural('day', stats.longest_length, with_count=True)} "
                 f"({stats.longest_start:%B %-d, %Y} to {streak_end:%B %-d, %Y})"
             )
 
         if stats.current_length > 0:
             post_status = "including today" if stats.today_completed else "• not completed today"
             messages.append(
-                f"Current {item_name} streak: {Text.plural('day', stats.current_length, with_count=True)} "
+                f"Current {item_name} streak: {TextParse.plural('day', stats.current_length, with_count=True)} "
                 f"(since {stats.current_start:%B %-d, %Y}) {post_status}"
             )
 

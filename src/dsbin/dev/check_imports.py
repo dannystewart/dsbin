@@ -9,7 +9,7 @@ import ast
 import os
 from pathlib import Path
 
-from dsbase.text import color, print_colored
+from textparse import color, print_color
 
 
 def find_imports(file_path: str) -> list[tuple[str, int]]:
@@ -190,7 +190,7 @@ def main() -> None:
     circular_deps = 0
 
     if cycles:
-        print_colored("Circular imports detected:\n", "yellow")
+        print_color("Circular imports detected:\n", "yellow")
         for cycle in cycles:
             if len(cycle) == 2 and cycle[0][0] == cycle[1][0]:  # Self-import case
                 print_self_import_cycle(cycle)
@@ -209,12 +209,12 @@ def main() -> None:
             )
 
         if summary:
-            print_colored(f"\nFound {' and '.join(summary)}.", "yellow")
+            print_color(f"\nFound {' and '.join(summary)}.", "yellow")
         import sys
 
         sys.exit(1)
     else:
-        print_colored("No circular imports found! 🎉", "green")
+        print_color("No circular imports found! 🎉", "green")
 
 
 if __name__ == "__main__":

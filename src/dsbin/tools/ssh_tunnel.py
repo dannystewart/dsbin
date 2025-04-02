@@ -11,8 +11,7 @@ from typing import TYPE_CHECKING
 
 from arguer import Arguer
 from logician import Logician
-
-from dsbase.text import color_print
+from textparse import print_color
 
 if TYPE_CHECKING:
     import argparse
@@ -78,8 +77,8 @@ def _print_tunnel_list(tunnels: list[str]) -> None:
     time_width = 13
     cmd_width = 40
     header = f"\n{'PID':<{pid_width}} {'Start Time':<{time_width}} {'Command':<{cmd_width}}"
-    color_print(header, "cyan")
-    color_print("-" * len(header), "cyan")
+    print_color(header, "cyan")
+    print_color("-" * len(header), "cyan")
     for tunnel in tunnels:
         parts = tunnel.split()
         pid = parts[1]

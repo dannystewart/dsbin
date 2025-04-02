@@ -9,10 +9,10 @@ import paramiko  # type: ignore
 import pyperclip
 from logician import Logician
 from scp import SCPClient
+from shelper import handle_interrupt
+from textparse import color as colored
 
 from dsbase import FileManager as BaseFileManager
-from dsbase.text import color as colored
-from dsbase.util import handle_interrupt
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack

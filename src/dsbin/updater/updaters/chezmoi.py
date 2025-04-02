@@ -4,7 +4,7 @@ import platform
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from dsbase.util import handle_interrupt
+from shelper import handle_interrupt
 
 from dsbin.updater.update_manager import UpdateManager, UpdateStage, UpdateStageFailedError
 

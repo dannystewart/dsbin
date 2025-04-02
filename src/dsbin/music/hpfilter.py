@@ -31,8 +31,8 @@ import scipy.io.wavfile
 from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
+from textparse import color, print_color
 
-from dsbase.text import color, print_colored
 from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
@@ -413,7 +413,7 @@ def process_all_files(
         input_path = Path(input_pattern)
         if input_path.is_dir() and "*" not in str(input_pattern):
             suggestion = str(input_path / "*")
-            print_colored(
+            print_color(
                 f"Warning: '{input_pattern}' is a directory. To process all files in this directory, use '{suggestion}' instead.",
                 "yellow",
             )

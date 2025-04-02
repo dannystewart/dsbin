@@ -12,8 +12,7 @@ import sys
 from pathlib import Path
 
 from shelper import confirm_action, is_root_user
-
-from dsbase.text import color_print
+from textparse import print_color
 
 
 def run_hostname_command(new_hostname: str) -> None:
@@ -70,15 +69,15 @@ def validate_hostname(old_hostname: str, new_hostname: str) -> bool:
         True if the hostname is valid, False otherwise.
     """
     if new_hostname == old_hostname:
-        color_print("The new hostname is the same as the current hostname. Exiting.", "red")
+        print_color("The new hostname is the same as the current hostname. Exiting.", "red")
         return False
 
     if not 1 <= len(new_hostname) <= 253:
-        color_print("Hostname must be between 1 and 253 characters long.", "red")
+        print_color("Hostname must be between 1 and 253 characters long.", "red")
         return False
 
     if not re.match(r"^(?!-)[A-Za-z0-9-]+(?<!-)$", new_hostname):
-        color_print("Hostname contains invalid characters or starts/ends with a hyphen.", "red")
+        print_color("Hostname contains invalid characters or starts/ends with a hyphen.", "red")
         return False
 
     return True
@@ -89,24 +88,24 @@ def main() -> None:
     old_hostname = get_current_hostname()
 
     if not is_root_user():
-        color_print("\nPlease run with root privileges to modify hostname.", "red")
+        print_color("\nPlease run with root privileges to modify hostname.", "red")
         sys.exit(1)
 
     new_hostname = input("\nEnter new hostname: ")
 
     if not new_hostname:
-        color_print("No hostname provided. Exiting.", "red")
+        print_color("No hostname provided. Exiting.", "red")
         sys.exit(1)
 
     if not confirm_action(f"Proceed with changing hostname to {new_hostname}?"):
-        color_print("Exiting.", "red")
+        print_color("Exiting.", "red")
         sys.exit(0)
 
     run_hostname_command(new_hostname)
     update_hostname_file(new_hostname)
     update_hosts_file(old_hostname, new_hostname)
 
-    color_print("Please reboot to finalize changes.", "yellow")
+    print_color("Please reboot to finalize changes.", "yellow")
 
 
 if __name__ == "__main__":

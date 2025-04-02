@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from dsbase.util import handle_interrupt
+from shelper import handle_interrupt
 
 from dsbin.updater.update_manager import UpdateManager, UpdateStage, UpdateStageFailedError
 

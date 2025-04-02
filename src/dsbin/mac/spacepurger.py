@@ -19,9 +19,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from logician import Logician
-from shelper import halo_progress
+from shelper import halo_progress, handle_interrupt
 
-from dsbase.util import dsbase_setup, handle_interrupt
+from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     from types import FrameType

@@ -11,10 +11,9 @@ from typing import TYPE_CHECKING
 from arguer import Arguer
 from enviromancer import Enviromancer
 from logician import Logician
+from textparse import print_color
+from textparse.diff import show_diff
 from walking_man import walking_man
-
-from dsbase.text import color_print
-from dsbase.text.diff import show_diff
 
 if TYPE_CHECKING:
     import argparse
@@ -85,15 +84,15 @@ class ImpactAnalyzer:
             self.logger.info("✓ No Python files changed in %s.", self.base_repo.name)
             return
 
-        color_print("\n=== Current Changes Detected ===\n", "yellow")
+        print_color("\n=== Current Changes Detected ===\n", "yellow")
 
-        color_print(f"Changed files in {self.base_repo.name}:", "blue")
+        print_color(f"Changed files in {self.base_repo.name}:", "blue")
         for file in self.changed_files:
             print(f"  {file}")
 
         # Convert to module paths
         self.changed_modules = self.get_changed_modules(self.changed_files, self.base_repo.path)
-        color_print("\nChanged modules:", "blue")
+        print_color("\nChanged modules:", "blue")
         for module in sorted(self.changed_modules):
             print(f"  {module}")
 
@@ -101,9 +100,9 @@ class ImpactAnalyzer:
         self.impacted_repos = self.analyze_impact(self.changed_modules)
 
         if self.impacted_repos:
-            color_print("\n=== Current Impacted Repositories ===", "yellow")
+            print_color("\n=== Current Impacted Repositories ===", "yellow")
             for repo_name, imports in self.impacted_repos.items():
-                color_print(f"\n{repo_name} (uses {len(imports)} affected modules):", "cyan")
+                print_color(f"\n{repo_name} (uses {len(imports)} affected modules):", "cyan")
                 for import_path in sorted(imports):
                     print(f"  - {import_path}")
         else:
@@ -111,17 +110,17 @@ class ImpactAnalyzer:
 
     def display_repo_changes(self) -> None:
         """Display changes in repositories since their last release."""
-        color_print("\n=== Repository Changes Since Last Release ===", "yellow")
+        print_color("\n=== Repository Changes Since Last Release ===", "yellow")
 
         for repo in self.repos:
             if repo.latest_tag:
                 if repo.changes:
-                    color_print(f"\n{repo.name} (last release: {repo.latest_tag}):", "cyan")
+                    print_color(f"\n{repo.name} (last release: {repo.latest_tag}):", "cyan")
 
                     # Group changes by directory to reduce noise
                     self._display_grouped_changes(repo)
             elif not self.hide_untagged:
-                color_print(f"\nNo release tags found: {repo.name}", "red")
+                print_color(f"\nNo release tags found: {repo.name}", "red")
 
     def _display_grouped_changes(self, repo: RepoConfig) -> None:
         """Display changes grouped by directory to reduce output noise."""
@@ -163,16 +162,16 @@ class ImpactAnalyzer:
         # Display the grouped changes
         for group, files in sorted(grouped_changes.items()):
             if group == "root":
-                color_print(f"    Root directory ({len(files)} files):", "blue")
+                print_color(f"    Root directory ({len(files)} files):", "blue")
             else:
-                color_print(f"    {group}/ ({len(files)} files):", "blue")
+                print_color(f"    {group}/ ({len(files)} files):", "blue")
 
             for file in sorted(files):
                 print(f"      - {file}")
 
     def display_release_recommendations(self) -> None:
         """Display recommendations for repos that need new releases."""
-        color_print("\nRepositories requiring new releases:", "yellow")
+        print_color("\nRepositories requiring new releases:", "yellow")
         release_repos = {}  # Map repo names to reasons for release
 
         # Add repos impacted by base changes
@@ -194,16 +193,16 @@ class ImpactAnalyzer:
 
         if release_repos:
             for repo_name, reasons in sorted(release_repos.items()):
-                color_print(f"  - {repo_name}:", "green")
+                print_color(f"  - {repo_name}:", "green")
                 for reason in reasons:
                     print(f"      {reason}")
         elif self.base_repo and self.changed_files:
-            color_print(
+            print_color(
                 f"  None (but you should still release a new version of {self.base_repo.name})",
                 "yellow",
             )
         else:
-            color_print("  None", "green")
+            print_color("  None", "green")
 
     def find_imports_in_file(self, file_path: Path, base_name: str) -> set[str]:
         """Find all imports from the base library in a given file."""
@@ -348,7 +347,7 @@ class ImpactAnalyzer:
                 repo.needs_release = len(changes) > 0
 
                 if self.verbose and changes:
-                    color_print(
+                    print_color(
                         f"\nDetected {len(changes)} files changed in {repo.name} since {latest_tag}",
                         "blue",
                     )
@@ -364,14 +363,14 @@ class ImpactAnalyzer:
         imports_by_file = {}
 
         if self.verbose:
-            color_print(f"Scanning {repo_path} for imports...", "blue")
+            print_color(f"Scanning {repo_path} for imports...", "blue")
 
         # Find all Python files
         for py_file in repo_path.glob("**/*.py"):
             if imports := self.find_imports_in_file(py_file, base_name):
                 imports_by_file[str(py_file)] = imports
                 if self.verbose:
-                    color_print(
+                    print_color(
                         f"  Found {len(imports)} imports in {py_file.relative_to(repo_path)}",
                         "cyan",
                     )
@@ -505,7 +504,7 @@ class ImpactAnalyzer:
             self.logger.info("No changes detected in %s since %s.", repo_name, repo.latest_tag)
             return
 
-        color_print(f"\n=== Detailed Changes in {repo_name} since {repo.latest_tag} ===", "yellow")
+        print_color(f"\n=== Detailed Changes in {repo_name} since {repo.latest_tag} ===", "yellow")
 
         # Track new files separately
         new_files = []
@@ -517,7 +516,7 @@ class ImpactAnalyzer:
 
         # Display new files separately
         if new_files:
-            color_print("\nNew files:", "green")
+            print_color("\nNew files:", "green")
             for file_path in new_files:
                 print(f"  + {file_path}")
 
@@ -545,7 +544,7 @@ class ImpactAnalyzer:
             new_content = current_path.read_text(encoding="utf-8")
 
             # Show diff only if the file existed before
-            color_print(f"\nChanges in {file_path}:", "cyan")
+            print_color(f"\nChanges in {file_path}:", "cyan")
             diff_result = show_diff(old=old_content, new=new_content)
 
             # Print summary

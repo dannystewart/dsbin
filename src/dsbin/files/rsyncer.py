@@ -10,9 +10,10 @@ from pathlib import Path
 
 import inquirer
 import pyperclip
+from shelper import handle_interrupt
+from textparse import print_color
 
-from dsbase.text import color_print
-from dsbase.util import dsbase_setup, handle_interrupt
+from dsbase.util import dsbase_setup
 
 dsbase_setup()
 
@@ -67,18 +68,18 @@ def get_paths() -> tuple[dict[str, Path] | None, bool]:
         return None, False
 
     if not paths["source"] or not paths["destination"]:
-        color_print("\nBoth source and destination paths are required.\n", "red")
+        print_color("\nBoth source and destination paths are required.\n", "red")
         return paths, False
 
     source_path = Path(paths["source"]).expanduser().resolve()
     dest_path = Path(paths["destination"]).expanduser().resolve()
 
     if not source_path.exists():
-        color_print(f"\nSource path does not exist: {source_path}", "red")
+        print_color(f"\nSource path does not exist: {source_path}", "red")
         return paths, False
 
     if not dest_path.exists():
-        color_print(f"\nDestination path does not exist: {dest_path}", "red")
+        print_color(f"\nDestination path does not exist: {dest_path}", "red")
         return paths, False
 
     # Update paths with resolved paths
@@ -105,14 +106,14 @@ def clarify_result(paths: dict[str, Path]) -> bool:
             # Otherwise, we're copying the directory itself
             dest_path = destination / source_base / first_item.relative_to(source)
 
-        color_print("In the source path, the first item is at:", "cyan")
-        color_print(f" {first_item}", "yellow")
-        color_print("In the destination path, it will be at:", "cyan")
-        color_print(f" {dest_path}", "yellow")
+        print_color("In the source path, the first item is at:", "cyan")
+        print_color(f" {first_item}", "yellow")
+        print_color("In the destination path, it will be at:", "cyan")
+        print_color(f" {dest_path}", "yellow")
 
         return inquirer.confirm("Is this correct?", default=True)
 
-    color_print(
+    print_color(
         "\nCouldn't find any items in the source folder. Please check the path and try again.",
         "red",
     )
@@ -162,11 +163,11 @@ def main() -> None:
     if paths:
         final_command = f"{command} '{paths['source']}' '{paths['destination']}'"
 
-    color_print("\nYour rsync command:", "green")
-    color_print(final_command, "cyan")
+    print_color("\nYour rsync command:", "green")
+    print_color(final_command, "cyan")
 
     pyperclip.copy(final_command)
-    color_print("\nThe command has been copied to your clipboard.", "green")
+    print_color("\nThe command has been copied to your clipboard.", "green")
 
 
 if __name__ == "__main__":

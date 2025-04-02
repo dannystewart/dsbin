@@ -19,12 +19,12 @@ from typing import TYPE_CHECKING, ClassVar
 import inquirer
 from arguer import Arguer
 from logician import Logician
-from shelper import halo_progress
+from shelper import halo_progress, handle_interrupt
+from textparse import color as colored
 from walking_man import walking_man
 
 from dsbase import MediaManager
-from dsbase.text import color as colored
-from dsbase.util import dsbase_setup, handle_interrupt
+from dsbase.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse

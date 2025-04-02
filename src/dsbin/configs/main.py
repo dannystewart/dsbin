@@ -21,9 +21,9 @@ import requests
 from arguer import Arguer
 from logician import Logician
 from shelper import confirm_action
+from textparse.diff import show_diff
 
 from dsbase import FileManager
-from dsbase.text.diff import show_diff
 
 if TYPE_CHECKING:
     import argparse

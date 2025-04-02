@@ -13,8 +13,8 @@ import requests
 from dotenv import load_dotenv
 from requests import Session
 from requests.auth import HTTPBasicAuth
+from textparse import print_color as colored
 
-from dsbase.text import color as colored
 from dsbase.util import dsbase_setup
 
 dsbase_setup()

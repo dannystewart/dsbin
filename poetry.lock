@@ -1009,7 +1009,7 @@ files = []
 develop = true
 
 [package.dependencies]
-enviromancer = ">=0.1.3,<0.2.0"
+enviromancer = ">=0.1.3"
 platformdirs = ">=4.3.7,<5.0.0"
 
 [package.source]

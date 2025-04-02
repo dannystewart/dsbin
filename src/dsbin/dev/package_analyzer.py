@@ -110,7 +110,7 @@ def build_package_dependency_graph(
 
 def analyze_package_dependencies(
     dependency_graph: dict[str, set[str]],
-) -> tuple[dict[str, set[str]], list[tuple[str, str]]]:
+) -> tuple[defaultdict[str, set[str]], list[tuple[str, str]]]:
     """Analyze package dependencies to find import relationships and cycles.
 
     Args:

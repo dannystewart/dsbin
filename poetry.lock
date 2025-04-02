@@ -388,7 +388,7 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "devpkg"
-version = "0.1.0"
+version = "0.1.1"
 description = "Dev tools for Python packages"
 optional = false
 python-versions = ">=3.12"
@@ -1670,7 +1670,7 @@ tests = ["pytest", "pytest-cov"]
 
 [[package]]
 name = "textparse"
-version = "0.1.0"
+version = "0.1.1"
 description = "The missing text toolkit for Python"
 optional = false
 python-versions = ">=3.12"
@@ -1920,4 +1920,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "8f2551af1d8b3307ee6604ebf6c9deb4e676ffd25e4d17c3691feb662d25fa06"
+content-hash = "9b86d2fc3effa509c454e3ba10aa37f4341d5f276e0fbbab834eab883176c8ac"

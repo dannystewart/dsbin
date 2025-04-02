@@ -33,14 +33,14 @@ dependencies = [
     "scp (>=0.15.0,<0.16.0)",
     "shelper (>=0.1.2)",
     "telethon (>=1.39.0,<2.0.0)",
-    "textparse (>=0.1.0)",
+    "textparse (>=0.1.1)",
     "timecapsule (>=0.1.0)",
     "tomlkit (>=0.13.2,<0.14.0)",
     "tqdm (>=4.67.1,<5.0.0)",
     "types-paramiko (>=3.5.0.20240928,<4.0.0.0)",
     "types-pillow (>=10.2.0.20240822,<11.0.0.0)",
     "types-requests (>=2.32.0.20250328,<3.0.0.0)",
-    "walking-man (>=0.2.2)",
+    "walking-man (>=0.2.3)",
 ]
 
 [tool.poetry.group.dev.dependencies]

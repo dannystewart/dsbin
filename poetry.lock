@@ -435,10 +435,10 @@ logician = ">=0.3.0"
 natsort = ">=8.4.0,<9.0.0"
 requests = ">=2.32.3,<3.0.0"
 send2trash = ">=1.8.3,<2.0.0"
-textparse = ">=0.1.0"
+textparse = ">=0.1.1"
 types-requests = ">=2.32.0.20250328,<3.0.0.0"
 types-send2trash = ">=1.8.2.7,<2.0.0.0"
-walking-man = ">=0.2.2"
+walking-man = ">=0.2.3"
 
 [package.source]
 type = "directory"
@@ -1604,7 +1604,7 @@ develop = true
 [package.dependencies]
 halo = ">=0.0.31,<0.0.32"
 logician = ">=0.3.0"
-textparse = ">=0.1.0"
+textparse = ">=0.1.1"
 
 [package.source]
 type = "directory"
@@ -1877,7 +1877,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 
 [[package]]
 name = "walking-man"
-version = "0.2.2"
+version = "0.2.3"
 description = "A friendly companion while you wait"
 optional = false
 python-versions = ">=3.12"
@@ -1887,7 +1887,7 @@ develop = true
 
 [package.dependencies]
 shelper = ">=0.1.2,<0.2.0"
-textparse = ">=0.1.0,<0.2.0"
+textparse = ">=0.1.1,<0.2.0"
 
 [package.source]
 type = "directory"
@@ -1920,4 +1920,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "9b86d2fc3effa509c454e3ba10aa37f4341d5f276e0fbbab834eab883176c8ac"
+content-hash = "83700bd6a419dac9b09598fa730b64435dcf639203e5f8aa295dfe65b84c510b"

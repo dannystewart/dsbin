@@ -8,7 +8,7 @@ import sys
 from typing import TYPE_CHECKING, Any
 
 import pexpect
-from logician import LogLevel
+from logician.types import LogLevel
 from shelper import handle_interrupt
 
 from .output_processor import OutputProcessor

@@ -215,6 +215,9 @@ def print_version_bump_order(
     print_color("\n=== Optimal Version Bump Order ===\n", "yellow")
     print("Bump packages in this order to minimize update cascades:")
 
+    # Calculate the width needed for the numbers (based on the total count)
+    num_width = len(str(len(bump_order)))
+
     for i, package in enumerate(bump_order, 1):
         # Calculate what this affects
         direct_affects = reverse_graph.get(package, set())
@@ -224,7 +227,8 @@ def print_version_bump_order(
         else:
             affects_str = "terminal package (affects nothing)"
 
-        print(f"{i}. {color(package, 'green')} - {affects_str}")
+        # Format with right-aligned numbers of fixed width
+        print(f"{i:>{num_width}}. {color(package, 'green')} - {affects_str}")
 
 
 def print_dependency_report(

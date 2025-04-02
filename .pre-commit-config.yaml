@@ -8,18 +8,11 @@ repos:
         pass_filenames: false
         always_run: true
 
-    -   id: check-dependencies
-        name: check interdependencies
-        entry: python -m dsbin.dev.check_dependencies
-        language: system
-        pass_filenames: false
-        always_run: true
-        verbose: true
-
     -   id: check-imports
         name: check for circular imports
-        entry: python -m dsbin.dev.check_imports
-        language: system
+        entry: python -m pkgversioner.check_imports
+        language: python
+        additional_dependencies: ['pkgversioner>=0.1.3']
         args: [src]
         pass_filenames: false
         always_run: true

@@ -31,7 +31,6 @@ dependencies = [
     "rsa (>=4.9,<5.0)",
     "scipy (>=1.15.2,<2.0.0)",
     "scp (>=0.15.0,<0.16.0)",
-    "shelper (>=0.1.0,<0.2.0)",
     "telethon (>=1.39.0,<2.0.0)",
     "textparse (>=0.1.0)",
     "timecapsule (>=0.1.0)",
@@ -41,6 +40,7 @@ dependencies = [
     "types-pillow (>=10.2.0.20240822,<11.0.0.0)",
     "types-requests (>=2.32.0.20250328,<3.0.0.0)",
     "walking-man (>=0.2.1)",
+    "shelper (>=0.1.2,<0.2.0)",
 ]
 
 [tool.poetry.group.dev.dependencies]
@@ -52,6 +52,7 @@ dsbase = {path = "../dsbase", develop = true}
 enviromancer = { path = "../enviromancer", develop = true }
 logician = { path = "../logician", develop = true }
 pathkeeper = { path = "../pathkeeper", develop = true }
+shelper = { path = "../shelper", develop = true }
 textparse = { path = "../textparse", develop = true }
 timecapsule = { path = "../timecapsule", develop = true }
 walking-man = {path = "../walking-man", develop = true }

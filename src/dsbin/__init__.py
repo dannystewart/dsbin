@@ -67,6 +67,7 @@
 - **checkimports**: Check for circular imports in a Python project.
 - **code-configs**: Download configs for coding tools and compare against local versions.
 - **impactanalyzer**: Analyze the impact of changes in repositories and their dependencies.
+- **packageanalyzer**: Analyze package dependencies and import relationships.
 - **poetry-migrate**, **uvmigrate**: Process pyproject.toml file(s) based on command line arguments.
 - **pybumper**: Version management tool for Python projects.
 - **pyenversioner**: Updates .python-version files recursively.

@@ -10,6 +10,7 @@ license-files = ["LICENSE"]
 requires-python = ">=3.12,<3.14"
 dependencies = [
     "arguer (>=0.1.0)",
+    "devpkg (>=0.1.0)",
     "dsbase (>=0.4.6)",
     "enviromancer (>=0.1.3)",
     "halo (>=0.0.31,<0.0.32)",
@@ -48,6 +49,7 @@ mypy = ">=1.15.0"
 pdoc = ">=15.0.1"
 pre-commit = ">=4.2.0"
 ruff = ">=0.11.2"
+devpkg = {path = "../devpkg", develop = true}
 dsbase = {path = "../dsbase", develop = true}
 enviromancer = { path = "../enviromancer", develop = true }
 logician = { path = "../logician", develop = true }
@@ -128,6 +130,7 @@ checkdeps = "dsbin.dev.check_dependencies:main"
 checkimports = "dsbin.dev.check_imports:main"
 code-configs = "dsbin.configs.main:main"
 impactanalyzer = "dsbin.dev.impact_analyzer:main"
+packageanalyzer = "dsbin.dev.package_analyzer:main"
 poetry-migrate = "dsbin.dev.poetry_migrate:main"
 pybumper = "dsbin.pybumper.main:main"
 pyenversioner = "dsbin.dev.pyenversioner:main"

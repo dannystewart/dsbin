@@ -63,7 +63,7 @@ def main() -> None:
         target_filename = clean_filename
 
     with halo_progress(clean_filename):
-        MediaManager().video.ffmpeg_video(
+        MediaManager().ffmpeg_video(
             input_files=Path(original_filename),
             output_format="mp4",
             output_file=target_filename,

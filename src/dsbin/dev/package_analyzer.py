@@ -156,6 +156,7 @@ def print_dependency_report(
     reverse_graph: dict[str, set[str]],
     cycles: list[tuple[str, str]],
     packages: list[str],
+    stats: bool = False,
 ) -> None:
     """Print a comprehensive dependency report.
 
@@ -164,12 +165,14 @@ def print_dependency_report(
         reverse_graph: Dictionary mapping packages to packages that import them.
         cycles: List of dependency cycles.
         packages: List of all packages analyzed.
+        stats: Whether to show statistics or detailed package information.
     """
-    print_color("\n=== Package Dependency Report ===", "yellow")
-
-    print_package_details(dependency_graph, reverse_graph, packages)
-    print_dependency_statistics(dependency_graph, reverse_graph, packages)
-    print_circular_dependencies(cycles)
+    if stats:
+        print_dependency_statistics(dependency_graph, reverse_graph, packages)
+    else:
+        print_color("\n=== Package Dependency Report ===", "yellow")
+        print_package_details(dependency_graph, reverse_graph, packages)
+        print_circular_dependencies(cycles)
 
 
 def print_package_details(
@@ -304,23 +307,28 @@ def print_circular_dependencies(cycles: list[tuple[str, str]]) -> None:
         print_color("\nNo circular dependencies found! 🎉", "green")
 
 
-def main() -> int:
-    """Main entry point for the package dependency analyzer."""
+def parse_args() -> argparse.Namespace:
+    """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Analyze package dependencies")
     parser.add_argument(
         "--packages",
         nargs="+",
         default=DEFAULT_PACKAGES,
-        help="Packages to analyze (defaults to predefined list)",
+        help="packages to analyze (defaults to predefined list)",
     )
     parser.add_argument(
         "--search-paths",
         nargs="+",
         default=[Path.cwd(), Path("~/Developer").expanduser()],
-        help="Paths to search for packages",
+        help="paths to search for packages",
     )
+    parser.add_argument("--stats", action="store_true", help="Show dependency statistics")
+    return parser.parse_args()
 
-    args = parser.parse_args()
+
+def main() -> int:
+    """Main entry point for the package dependency analyzer."""
+    args = parse_args()
 
     # Build dependency graph
     dependency_graph = build_package_dependency_graph(args.packages, args.search_paths)
@@ -329,7 +337,7 @@ def main() -> int:
     reverse_graph, cycles = analyze_package_dependencies(dependency_graph)
 
     # Print report
-    print_dependency_report(dependency_graph, reverse_graph, cycles, args.packages)
+    print_dependency_report(dependency_graph, reverse_graph, cycles, args.packages, args.stats)
 
     # Exit with error code if cycles found
     return 1 if cycles else 0

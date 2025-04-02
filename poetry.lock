@@ -420,7 +420,7 @@ files = [
 
 [[package]]
 name = "dsbase"
-version = "0.5.0b2"
+version = "0.5.0"
 description = "Delightful Python utility library with power and personality"
 optional = false
 python-versions = ">=3.12,<3.14"
@@ -1920,4 +1920,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "83700bd6a419dac9b09598fa730b64435dcf639203e5f8aa295dfe65b84c510b"
+content-hash = "886fb95cd1b7f88d79dbf497a154d838dba3c9f18925eb4d256c3ad9f97a231b"

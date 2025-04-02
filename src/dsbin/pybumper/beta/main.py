@@ -136,7 +136,9 @@ class PyBumperBeta:
         return regular_bumps + prerelease_bumps + post_bumps
 
     @handle_interrupt()
-    def update_version(self, bump_type: BumpType | str | list[BumpType], new_version: str) -> None:
+    def update_version(
+        self, bump_type: BumpType | str | list[BumpType] | None, new_version: str
+    ) -> None:
         """Update version, create git tag, and push changes."""
         try:
             self.git.check_git_state()

@@ -90,7 +90,7 @@ def build_package_dependency_graph(
                 package_path = src_path
                 break
 
-        if not package_found:
+        if not package_found or not package_path:
             print_color(f"Package {package_name} not found in search paths", "yellow")
             continue
 

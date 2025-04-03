@@ -14,13 +14,11 @@ from textparse import color, print_color
 DEFAULT_PACKAGES: list[str] = [
     "arguer",
     "devpkg",
-    "dsbase",
     "dsbin",
     "enviromancer",
     "evremixes",
     "iplooker",
     "logician",
-    "masterclass",
     "pathkeeper",
     "shelper",
     "textparse",

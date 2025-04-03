@@ -73,4 +73,5 @@
 - **pyenversioner**: Updates .python-version files recursively.
 - **scriptdep**: Analyze dependencies and imports across scripts to help separate concerns.
 - **tagreplace**: Replace an existing Git tag with a new tag name and description.
+- **updatedeps**: Package management utility for working with multiple Poetry projects.
 """  # noqa: D415, W505

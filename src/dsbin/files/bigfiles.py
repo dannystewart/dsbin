@@ -14,9 +14,9 @@ from pathlib import Path
 
 from textparse import print_color as colored
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 
 def bytes_to_readable(size_in_bytes: float) -> str:

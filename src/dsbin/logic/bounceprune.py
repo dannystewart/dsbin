@@ -35,12 +35,12 @@ from walking_man import walking_man
 
 from dsbin.files import FileManager
 from dsbin.logic.bounce_parser import Bounce, BounceParser
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     from datetime import datetime
 
-dsbase_setup()
+dsbin_setup()
 
 
 @dataclass

@@ -9,9 +9,9 @@ import os
 import shutil
 from pathlib import Path
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 
 def parse_arguments() -> argparse.Namespace:

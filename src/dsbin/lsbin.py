@@ -17,9 +17,9 @@ from pathlib import Path
 
 from textparse import color, print_color
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 # Define column widths
 COLUMN_BUFFER = 2

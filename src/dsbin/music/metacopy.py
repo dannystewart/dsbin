@@ -11,9 +11,9 @@ from pathlib import Path
 
 from logician import Logician
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 logger = Logician.get_logger("metacopy")
 

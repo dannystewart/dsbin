@@ -39,7 +39,7 @@ def main() -> None:
     # Define packages and their sources
     pypi_source: PackageSource = PackageSource.PYPI
     packages: list[dict[str, Any]] = [
-        {"name": "dsbase", "source": pypi_source},
+        {"name": "dsbin", "source": pypi_source},
         {"name": "dsbin", "source": pypi_source},
     ]
 

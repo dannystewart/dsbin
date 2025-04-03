@@ -19,9 +19,9 @@ from natsort import natsorted
 from shelper import confirm_action
 from textparse import color
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 env = Enviromancer()
 env.add_var("BACKUPSORT_PATH", description="Path to move renamed files to")

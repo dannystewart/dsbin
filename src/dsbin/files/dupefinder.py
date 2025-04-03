@@ -11,9 +11,9 @@ import sys
 from pathlib import Path
 
 from dsbin.files import FileManager
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 
 def main() -> None:

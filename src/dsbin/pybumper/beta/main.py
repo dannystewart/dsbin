@@ -17,12 +17,12 @@ from dsbin.pybumper.beta.git_helper import GitHelperBeta
 from dsbin.pybumper.beta.monorepo_helper import MonorepoHelperBeta
 from dsbin.pybumper.bump_type import BumpType
 from dsbin.pybumper.version_helper import VersionHelper
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     import argparse
 
-dsbase_setup()
+dsbin_setup()
 
 
 class PyBumperBeta:
@@ -221,7 +221,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "-p",
         "--package",
-        help="package name to bump (e.g., dsbase, dsbin). Auto-detected if not provided.",
+        help="package name to bump (e.g., dsbin, dsbin). Auto-detected if not provided.",
     )
     parser.add_argument("-f", "--force", action="store_true", help="skip confirmation prompt")
     parser.add_argument(

@@ -191,7 +191,7 @@ section-order = [
 ]
 
 [lint.isort.sections]
-personal_util = ["dsroot", "dsbase", "dsutil"]
+personal_util = ["dsroot", "dsbin", "dsutil"]
 personal_bin = ["dsbin", "prism"]
 
 [lint.mccabe]

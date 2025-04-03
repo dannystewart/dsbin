@@ -70,7 +70,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - **watchtower**: Script to help with running Watchtower for Docker.
 
 ### Development Scripts
-- **checkdeps**: Check all interdependencies between dsbin and dsbase.
+- **checkdeps**: Check all interdependencies between dsbin and dsbin.
 - **checkimports**: Check for circular imports in a Python project.
 - **code-configs**: Download configs for coding tools and compare against local versions.
 - **impactanalyzer**: Analyze the impact of changes in repositories and their dependencies.

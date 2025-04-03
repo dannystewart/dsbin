@@ -17,9 +17,9 @@ from textparse import print_color
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 LOGIC_VERSION_PATTERN = re.compile(r"^(10|11)\.\d+(?:\.\d+)?$")
 

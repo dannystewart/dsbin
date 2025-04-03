@@ -8,9 +8,9 @@ import subprocess
 
 from logician import Logician
 
-from dsbin.util import dsbase_setup, platform_check
+from dsbin.util import dsbin_setup, platform_check
 
-dsbase_setup()
+dsbin_setup()
 platform_check("Darwin")
 
 logger = Logician.get_logger("setmag")

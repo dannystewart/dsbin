@@ -36,12 +36,12 @@ from shelper import confirm_action, handle_interrupt
 from dsbin.pybumper.bump_type import BumpType
 from dsbin.pybumper.git_helper import GitHelper
 from dsbin.pybumper.version_helper import VersionHelper
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     import argparse
 
-dsbase_setup()
+dsbin_setup()
 
 
 class PyBumper:

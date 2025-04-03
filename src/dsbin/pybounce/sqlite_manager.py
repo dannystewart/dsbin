@@ -8,12 +8,12 @@ from typing import TYPE_CHECKING
 from logician import Logician
 from walking_man import walking_man
 
-from dsbin.util import async_retry_on_exception, dsbase_setup
+from dsbin.util import async_retry_on_exception, dsbin_setup
 
 if TYPE_CHECKING:
     from dsbin.pybounce.client_protocol import TelegramClientProtocol
 
-dsbase_setup()
+dsbin_setup()
 
 logger = Logician.get_logger(level="info")
 

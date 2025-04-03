@@ -8,9 +8,9 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 
 def convert_to_hhmmss(time_str: str) -> str:

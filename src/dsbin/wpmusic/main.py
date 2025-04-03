@@ -29,7 +29,7 @@ from textparse import color
 from walking_man import walking_man
 
 from dsbin.media import MediaManager
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 from dsbin.wpmusic.configs import WPConfig
 from dsbin.wpmusic.file_manager import FileManager
 from dsbin.wpmusic.metadata_setter import MetadataSetter
@@ -39,7 +39,7 @@ from dsbin.wpmusic.upload_tracker import UploadTracker
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack
 
-dsbase_setup()
+dsbin_setup()
 
 
 class WPMusic:

@@ -21,12 +21,12 @@ from typing import TYPE_CHECKING
 from logician import Logician
 from shelper import halo_progress, handle_interrupt
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     from types import FrameType
 
-dsbase_setup()
+dsbin_setup()
 
 logger = Logician.get_logger()
 

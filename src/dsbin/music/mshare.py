@@ -24,12 +24,12 @@ from textparse import color as colored
 from walking_man import walking_man
 
 from dsbin.media import MediaManager
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     import argparse
 
-dsbase_setup()
+dsbin_setup()
 
 
 @dataclass

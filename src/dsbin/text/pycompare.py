@@ -15,9 +15,9 @@ import inquirer
 from shelper import handle_interrupt
 from textparse import color, print_color
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 
 def process_lists(

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Check all interdependencies between dsbin and dsbase."""
+"""Check all interdependencies between dsbin and dsbin."""
 
 from __future__ import annotations
 
@@ -13,17 +13,17 @@ from arguer import Arguer
 from logician import Logician
 from textparse import color
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     import argparse
 
-dsbase_setup()
+dsbin_setup()
 logger = Logician.get_logger(simple=True)
 
 DEFAULT_PACKAGES: list[str] = [
     "arguer",
-    "dsbase",
+    "dsbin",
     "enviromancer",
     "logician",
     "masterclass",

@@ -9,7 +9,7 @@ from logician import Logician
 from dsbin.util.traceback import log_traceback
 
 
-def dsbase_setup() -> VersionInfo:
+def dsbin_setup() -> VersionInfo:
     """Configure the system with standard setup options.
 
     Sets up exception handling and automatically records version information.

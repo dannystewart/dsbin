@@ -13,9 +13,9 @@ import pyperclip
 from shelper import handle_interrupt
 from textparse import print_color
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 
 def get_full_path(path: Path, filename: Path) -> Path:

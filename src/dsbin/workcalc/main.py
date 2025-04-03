@@ -12,7 +12,7 @@ from logician import Logician
 from textparse import TextParse
 from walking_man import walking_man
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 from dsbin.workcalc.data import (
     SessionAnalyzer,
     StreakAnalyzer,
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from dsbin.workcalc import DataSourcePlugin
     from dsbin.workcalc.data import WorkItem
 
-dsbase_setup()
+dsbin_setup()
 
 
 def parse_date(date_str: str) -> datetime.date:

@@ -17,4 +17,4 @@ COMMAND_PATH = Path.home() / ".pyenv/shims/dockermounter"
     ),
 )
 class ServiceConfigs(ServiceConfigBase):
-    """Collection of service configurations for dsbase."""
+    """Collection of service configurations for dsbin."""

@@ -47,7 +47,7 @@ class MySQLHelper:
         if not mysql_available:
             msg = (
                 "MySQL functionality requires the mysql-connector-python package. "
-                "Install it with: pip install 'dsbase[database]'"
+                "Install it with: pip install 'dsbin[database]'"
             )
             self.logger.error(msg)
             raise ImportError(msg)

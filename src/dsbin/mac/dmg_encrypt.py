@@ -22,12 +22,12 @@ from arguer import Arguer
 from logician import Logician
 from shelper import halo_progress
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     import argparse
 
-dsbase_setup()
+dsbin_setup()
 
 logger = Logician.get_logger(simple=True)
 

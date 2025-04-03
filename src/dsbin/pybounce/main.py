@@ -22,12 +22,12 @@ from tqdm.asyncio import tqdm as async_tqdm
 
 from dsbin.pybounce.file_manager import FileManager
 from dsbin.pybounce.sqlite_manager import SQLiteManager
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     from logging import Logger
 
-dsbase_setup()
+dsbin_setup()
 
 
 class TelegramUploader:

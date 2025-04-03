@@ -15,7 +15,7 @@ from logician import Logician
 from shelper import handle_interrupt
 from textparse import TextParse, color, print_color
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 from .privilege_helper import PrivilegeHelper
 from .update_manager import UpdateManager
@@ -24,7 +24,7 @@ from .updaters.macos import MacOSSoftwareUpdate
 if TYPE_CHECKING:
     from argparse import Namespace
 
-dsbase_setup()
+dsbin_setup()
 
 
 class Updater:

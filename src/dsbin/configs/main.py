@@ -4,9 +4,9 @@ This script is designed to download configuration files for various coding tools
 to compare against files with the same name in the directory where the script is run. This is to
 ensure that I always have the latest versions of my preferred configurations for all my projects.
 
-Note that these config files live in the dsbase repository: https://github.com/dannystewart/dsbase
+Note that these config files live in the dsbin repository: https://github.com/dannystewart/dsbin
 
-The script also saves the updated config files to the package root, which is the root of the dsbase
+The script also saves the updated config files to the package root, which is the root of the dsbin
 repository itself, thereby creating a virtuous cycle where the repo is always up-to-date with the
 latest versions of the config files for other projects to pull from.
 """
@@ -35,7 +35,7 @@ class ConfigFile:
 
     # Base URL for the repository
     CONFIG_ROOT: ClassVar[str] = (
-        "https://raw.githubusercontent.com/dannystewart/dsbase/refs/heads/main"
+        "https://raw.githubusercontent.com/dannystewart/dsbin/refs/heads/main"
     )
 
     name: str

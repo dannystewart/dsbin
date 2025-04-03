@@ -33,7 +33,7 @@ from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
 from textparse import color, print_color
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -43,7 +43,7 @@ type NPArray = np.ndarray[Any, Any]
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 warnings.filterwarnings("ignore", category=scipy.io.wavfile.WavFileWarning)
 
-dsbase_setup()
+dsbin_setup()
 
 
 # Default cutoff frequency if not specified

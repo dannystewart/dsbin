@@ -13,9 +13,9 @@ from requests import Session
 from requests.auth import HTTPBasicAuth
 from textparse import print_color as colored
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 # Load environment variables
 env = Enviromancer()

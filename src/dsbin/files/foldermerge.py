@@ -11,9 +11,9 @@ from shelper import confirm_action
 from textparse import print_color as colored
 
 from dsbin.files import FileManager
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 
 def merge_folders(first_folder: str, second_folder: str, dry_run: bool = False) -> None:

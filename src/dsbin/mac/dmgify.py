@@ -38,14 +38,14 @@ from logician import Logician
 from shelper import halo_progress, handle_interrupt
 
 from dsbin.files import FileManager
-from dsbin.util import dsbase_setup, with_retries
+from dsbin.util import dsbin_setup, with_retries
 
 if TYPE_CHECKING:
     import argparse
     from collections.abc import Iterator
     from logging import Logger
 
-dsbase_setup()
+dsbin_setup()
 
 
 @contextmanager

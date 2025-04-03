@@ -10,14 +10,14 @@ import tomlkit.toml_document
 from logician import Logician
 from tomlkit.items import Array
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from tomlkit.items import Array
 
-dsbase_setup()
+dsbin_setup()
 
 POETRY_TO_PEP621_MAPPING = {
     "name": "name",

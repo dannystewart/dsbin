@@ -12,9 +12,9 @@ from textparse import print_color as colored
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 allowed_extensions = [".aiff", ".aif", ".wav", ".m4a", ".flac"]
 

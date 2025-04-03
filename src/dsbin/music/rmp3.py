@@ -13,9 +13,9 @@ import argparse
 from pathlib import Path
 
 from dsbin.files import FileManager
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 
 def delete_mp3(directory: Path, dry_run: bool = False) -> None:

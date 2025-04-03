@@ -10,9 +10,9 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 
 def run_tool(cmd: list, cwd: str | None = None) -> tuple[str, str]:
@@ -88,41 +88,41 @@ def print_imports_by_file(imports_by_file: dict, title: str) -> None:
             print(f"  - {imp}")
 
 
-def categorize_imports(dsbase_imports: dict, scripts_imports: dict) -> tuple[set, set, set]:
-    """Categorize imports into dsbase-only, scripts-only, and shared."""
+def categorize_imports(dsbin_imports: dict, scripts_imports: dict) -> tuple[set, set, set]:
+    """Categorize imports into dsbin-only, scripts-only, and shared."""
     all_imports = set()
-    for imports in dsbase_imports.values():
+    for imports in dsbin_imports.values():
         all_imports.update(imports)
     for imports in scripts_imports.values():
         all_imports.update(imports)
 
-    dsbase_only = set()
+    dsbin_only = set()
     scripts_only = set()
     shared = set()
 
     for imp in all_imports:
-        in_dsbase = any(imp in imports for imports in dsbase_imports.values())
+        in_dsbin = any(imp in imports for imports in dsbin_imports.values())
         in_scripts = any(imp in imports for imports in scripts_imports.values())
 
-        if in_dsbase and in_scripts:
+        if in_dsbin and in_scripts:
             shared.add(imp)
-        elif in_dsbase:
-            dsbase_only.add(imp)
+        elif in_dsbin:
+            dsbin_only.add(imp)
         else:
             scripts_only.add(imp)
 
-    return dsbase_only, scripts_only, shared
+    return dsbin_only, scripts_only, shared
 
 
 def print_categorized_imports(
-    dsbase_only: set, scripts_only: set, shared: set, installed_packages: set
+    dsbin_only: set, scripts_only: set, shared: set, installed_packages: set
 ) -> None:
     """Print categorized imports."""
     print("\nPotential package assignments:")
     print("-" * 30)
 
-    print("\ndsbase-specific imports:")
-    for imp in sorted(dsbase_only):
+    print("\ndsbin-specific imports:")
+    for imp in sorted(dsbin_only):
         if imp.lower() in installed_packages:
             print(f"  - {imp}")
 
@@ -145,10 +145,10 @@ def analyze_dependencies() -> None:
     print(unused_imports)
 
     exclude_dirs = [".venv", "tests", "build", "dist"]
-    dsbase_imports = analyze_imports(Path("dsbase"), "dsbase", exclude_dirs)
+    dsbin_imports = analyze_imports(Path("dsbin"), "dsbin", exclude_dirs)
     scripts_imports = analyze_imports(Path(), "scripts", exclude_dirs)
 
-    dsbase_imports = analyze_imports(Path("dsbase"), "dsbase", exclude_dirs)
+    dsbin_imports = analyze_imports(Path("dsbin"), "dsbin", exclude_dirs)
     scripts_imports = analyze_imports(Path(), "scripts", exclude_dirs)
 
     installed_packages = get_installed_packages()
@@ -156,15 +156,15 @@ def analyze_dependencies() -> None:
     print("\nDependency Analysis Report")
     print("=" * 50)
 
-    print_imports_by_file(dsbase_imports, "dsbase")
+    print_imports_by_file(dsbin_imports, "dsbin")
     print_imports_by_file(scripts_imports, "scripts")
 
-    dsbase_only, scripts_only, shared = categorize_imports(dsbase_imports, scripts_imports)
-    print_categorized_imports(dsbase_only, scripts_only, shared, installed_packages)
+    dsbin_only, scripts_only, shared = categorize_imports(dsbin_imports, scripts_imports)
+    print_categorized_imports(dsbin_only, scripts_only, shared, installed_packages)
 
 
 def main() -> None:
-    """Analyze dependencies and imports across dsbase and scripts."""
+    """Analyze dependencies and imports across dsbin and scripts."""
     analyze_dependencies()
 
 

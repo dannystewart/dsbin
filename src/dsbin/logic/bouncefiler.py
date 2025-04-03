@@ -18,9 +18,9 @@ from walking_man import walking_man
 
 from dsbin.files import FileManager
 from dsbin.logic import Bounce, BounceParser
-from dsbin.util import dsbase_setup
+from dsbin.util import dsbin_setup
 
-dsbase_setup()
+dsbin_setup()
 
 env = Enviromancer()
 env.add_debug_var()

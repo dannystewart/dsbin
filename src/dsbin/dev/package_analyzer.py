@@ -206,28 +206,20 @@ def format_affects_message(
     """Format a message describing what packages are affected by this one.
 
     Args:
-        package: The package to describe
-        reverse_graph: Dictionary mapping packages to packages that import them
-        filter_packages: Optional list of packages to filter the results to
+        package: The package to describe.
+        reverse_graph: Dictionary mapping packages to packages that import them.
+        filter_packages: Optional list of packages to filter the results to.
 
     Returns:
-        A formatted string describing what this package affects
+        A formatted string describing what this package affects.
     """
-    direct_affects = reverse_graph.get(package, set())
+    directly_affected = reverse_graph.get(package, set())
 
-    if not direct_affects:
+    if not directly_affected:
         return "terminal package" + (" (affects nothing)" if not filter_packages else "")
 
-    if filter_packages:
-        # Count only the specified packages that are affected
-        specified_affects = [p for p in direct_affects if p in filter_packages]
-        if specified_affects:
-            return f"affects {len(specified_affects)} of your specified package{'s' if len(specified_affects) != 1 else ''}"
-        return "doesn't affect other specified packages"
-    # Regular output for all packages
-    return (
-        f"directly affects {len(direct_affects)} package{'s' if len(direct_affects) != 1 else ''}"
-    )
+    total = len(directly_affected)
+    return f"directly affects {total} package{'s' if total != 1 else ''}"
 
 
 def print_missing_packages_warning(found: list[str], requested: list[str]) -> None:

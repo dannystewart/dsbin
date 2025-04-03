@@ -5,8 +5,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from parseutil import color, print_color
 from shelper import is_root_user
-from textparse import color, print_color
 
 from dsbin.systemd.service_list import ServiceConfigs
 from dsbin.systemd.systemd import SystemdServiceTemplate

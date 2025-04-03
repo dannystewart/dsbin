@@ -12,8 +12,8 @@ from typing import TYPE_CHECKING
 
 from arguer import Arguer
 from logician import Logician
+from parseutil import Text, color, print_color
 from shelper import handle_interrupt
-from textparse import TextParse, color, print_color
 
 from dsbin.util import dsbin_setup
 
@@ -218,7 +218,7 @@ class Updater:
     def _get_elapsed_time(self) -> str:
         elapsed_time = time.time() - self.start_time
         minutes, seconds = divmod(int(elapsed_time), 60)
-        return TextParse.format_duration(0, minutes, seconds)
+        return Text.format_duration(0, minutes, seconds)
 
     def _log_completion_status(self) -> None:
         if not self.anything_updated:

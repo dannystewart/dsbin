@@ -12,8 +12,8 @@ import argparse
 from pathlib import Path
 
 import inquirer
+from parseutil import color, print_color
 from shelper import handle_interrupt
-from textparse import color, print_color
 
 from dsbin.util import dsbin_setup
 

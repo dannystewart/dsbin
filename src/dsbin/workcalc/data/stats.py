@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from textparse import TextParse
+from parseutil import Text
 
 if TYPE_CHECKING:
     from datetime import date, datetime
@@ -29,10 +29,10 @@ class FormattedTime:
 
     def __str__(self) -> str:
         """Format the time as a string."""
-        days_str = f"{TextParse.plural('day', self.days, with_count=True)}, " if self.days else ""
+        days_str = f"{Text.plural('day', self.days, with_count=True)}, " if self.days else ""
         return (
-            f"{days_str}{TextParse.plural('hour', self.hours, with_count=True)}, "
-            f"{TextParse.plural('minute', self.minutes, with_count=True)} "
+            f"{days_str}{Text.plural('hour', self.hours, with_count=True)}, "
+            f"{Text.plural('minute', self.minutes, with_count=True)} "
             f"({self.total_hours} hours)"
         )
 

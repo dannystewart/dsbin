@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from logician import Logician
-from textparse import TextParse
+from parseutil import Text
 from walking_man import walking_man
 
 from dsbin.util import dsbin_setup
@@ -77,8 +77,8 @@ class WorkCalculator:
         # Log configuration details
         self.logger.debug(
             "Considering %s to be a session break with a minimum of %s per %s.",
-            TextParse.plural("minute", self.config.break_time, with_count=True),
-            TextParse.plural("minute", self.config.min_work_per_item, with_count=True),
+            Text.plural("minute", self.config.break_time, with_count=True),
+            Text.plural("minute", self.config.min_work_per_item, with_count=True),
             self.item_name,
         )
 

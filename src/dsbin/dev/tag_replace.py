@@ -8,8 +8,8 @@ import re
 import subprocess
 import sys
 
+from parseutil import print_color
 from shelper import confirm_action, handle_interrupt
-from textparse import print_color
 
 
 def run_git_command(command: str | list[str]) -> str:

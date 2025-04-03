@@ -15,8 +15,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import inquirer
-from textparse import print_color
-from timecapsule import TZ
+from parseutil import TZ, print_color
 
 from dsbin.files import FileManager
 from dsbin.util import dsbin_setup

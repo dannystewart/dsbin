@@ -38,7 +38,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from arguer import Arguer
-from textparse import color
+from parseutil import color
 
 from dsbin.files import FileManager
 from dsbin.util import dsbin_setup
@@ -46,7 +46,7 @@ from dsbin.util import dsbin_setup
 if TYPE_CHECKING:
     import argparse
 
-    from textparse.types import ColorName
+    from parseutil.types import ColorName
 
 dsbin_setup()
 

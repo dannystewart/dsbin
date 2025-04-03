@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import inquirer
 from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
-from timecapsule import TZ
+from parseutil import TZ
 
 from dsbin.files import FileManager as BaseFileManager
 

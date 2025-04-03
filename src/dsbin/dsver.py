@@ -8,7 +8,7 @@ from typing import Any
 
 from devpkg import PackageSource, VersionChecker, VersionInfo
 from packaging import version
-from textparse import color
+from parseutil import color
 
 
 def format_version_info(versions: VersionInfo) -> tuple[str, str]:

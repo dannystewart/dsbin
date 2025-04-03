@@ -12,8 +12,8 @@ from pathlib import Path
 import inquirer
 from enviromancer import Enviromancer
 from logician import Logician
+from parseutil import color
 from shelper import confirm_action
-from textparse import color
 from walking_man import walking_man
 
 from dsbin.files import FileManager

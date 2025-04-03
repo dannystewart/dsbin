@@ -15,7 +15,7 @@ import re
 from importlib.metadata import entry_points
 from pathlib import Path
 
-from textparse import color, print_color
+from parseutil import color, print_color
 
 from dsbin.util import dsbin_setup
 

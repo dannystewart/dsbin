@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 from arguer import Arguer
 from logician import Logician
-from textparse import print_color
+from parseutil import print_color
 
 if TYPE_CHECKING:
     import argparse

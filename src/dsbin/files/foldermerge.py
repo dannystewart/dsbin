@@ -7,8 +7,8 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+from parseutil import print_color as colored
 from shelper import confirm_action
-from textparse import print_color as colored
 
 from dsbin.files import FileManager
 from dsbin.util import dsbin_setup

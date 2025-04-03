@@ -961,6 +961,25 @@ gssapi = ["gssapi (>=1.4.1) ; platform_system != \"Windows\"", "pyasn1 (>=0.1.7)
 invoke = ["invoke (>=2.0)"]
 
 [[package]]
+name = "parseutil"
+version = "0.1.1"
+description = "The missing text and time parsing toolkit for Python"
+optional = false
+python-versions = ">=3.12"
+groups = ["main"]
+files = [
+    {file = "parseutil-0.1.1-py3-none-any.whl", hash = "sha256:35f234332534bd99006ed9ac6fdb4c8708093e5176fd3bc4cb76a8d4676d5a28"},
+    {file = "parseutil-0.1.1.tar.gz", hash = "sha256:b1914e470e2850903a9b5ae284b65aa14dc25db5ba806efa7930c408b83c4390"},
+]
+
+[package.dependencies]
+devpkg = ">=0.2.0"
+logician = ">=0.3.3"
+python-dateutil = ">=2.9.0.post0"
+termcolor = ">=3.0.1,<4.0.0"
+tzlocal = ">=5.3.1"
+
+[[package]]
 name = "pathkeeper"
 version = "0.1.0"
 description = "Easy path access for Python projects"
@@ -1619,16 +1638,14 @@ description = "The missing text toolkit for Python"
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
-files = []
-develop = true
+files = [
+    {file = "textparse-0.1.2-py3-none-any.whl", hash = "sha256:bfc56065a10cc3ebc959a7788d8d3df9470eccb540bff76ad6b0d2106f59996d"},
+    {file = "textparse-0.1.2.tar.gz", hash = "sha256:71ee0eb421b26658bb16590f83f6e21d2b2345465c852cd847f6adeffc786c08"},
+]
 
 [package.dependencies]
-logician = ">=0.3.3"
+logician = ">=0.3.2"
 termcolor = ">=3.0.1,<4.0.0"
-
-[package.source]
-type = "directory"
-url = "../textparse"
 
 [[package]]
 name = "timecapsule"
@@ -1637,17 +1654,15 @@ description = "Human-friendly datetime handling for Python"
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
-files = []
-develop = true
+files = [
+    {file = "timecapsule-0.1.2-py3-none-any.whl", hash = "sha256:b15f9dfb832b1ca669b5761c59a5e6ce4568f1624b86796ba87a6795a7beffb6"},
+    {file = "timecapsule-0.1.2.tar.gz", hash = "sha256:9df1517c185bf180a1b04494c79cc6877e95b927298b33c98f8e90d6ca581868"},
+]
 
 [package.dependencies]
 devpkg = ">=0.2.0"
 python-dateutil = ">=2.9.0.post0"
 tzlocal = ">=5.3.1"
-
-[package.source]
-type = "directory"
-url = "../timecapsule"
 
 [[package]]
 name = "tomlkit"
@@ -1864,4 +1879,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "5299d68cf4b53498d852e3d254f34f86e82662f7491642a855d7c0d0ff847f91"
+content-hash = "158423e570f9998409e777797be1ec0c53077d9b4c5456a460a2fe56a27ae11f"

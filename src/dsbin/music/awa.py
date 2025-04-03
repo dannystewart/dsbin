@@ -13,7 +13,7 @@ import sys
 from enum import StrEnum
 from pathlib import Path
 
-from textparse import print_color
+from parseutil import print_color
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager

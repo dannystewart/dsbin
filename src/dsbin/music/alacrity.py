@@ -16,8 +16,8 @@ from pathlib import Path
 from typing import ClassVar
 
 from natsort import natsorted
+from parseutil import print_color
 from shelper import confirm_action, conversion_list_context
-from textparse import print_color
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager

@@ -12,7 +12,7 @@ import operator
 from collections import defaultdict
 from pathlib import Path
 
-from textparse import print_color as colored
+from parseutil import print_color as colored
 
 from dsbin.util import dsbin_setup
 

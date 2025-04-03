@@ -9,9 +9,9 @@ from pathlib import Path
 
 import requests
 from enviromancer import Enviromancer
+from parseutil import print_color as colored
 from requests import Session
 from requests.auth import HTTPBasicAuth
-from textparse import print_color as colored
 
 from dsbin.util import dsbin_setup
 

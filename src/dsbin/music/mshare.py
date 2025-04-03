@@ -19,8 +19,8 @@ from typing import TYPE_CHECKING, ClassVar
 import inquirer
 from arguer import Arguer
 from logician import Logician
+from parseutil import color as colored
 from shelper import halo_progress, handle_interrupt
-from textparse import color as colored
 from walking_man import walking_man
 
 from dsbin.media import MediaManager

@@ -29,8 +29,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from parseutil import color, print_color
 from shelper import confirm_action
-from textparse import color, print_color
 from walking_man import walking_man
 
 from dsbin.files import FileManager

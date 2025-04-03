@@ -10,8 +10,8 @@ import sys
 import time
 from typing import Any
 
+from parseutil import print_color as colored
 from shelper import acquire_sudo, confirm_action
-from textparse import print_color as colored
 
 from dsbin.util import dsbin_setup
 

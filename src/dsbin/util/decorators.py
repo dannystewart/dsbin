@@ -6,7 +6,7 @@ from functools import wraps
 from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar
 
 from halo import Halo
-from textparse import print_color
+from parseutil import print_color
 
 if TYPE_CHECKING:
     import logging

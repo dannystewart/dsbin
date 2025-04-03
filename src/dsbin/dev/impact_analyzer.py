@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING
 from arguer import Arguer
 from enviromancer import Enviromancer
 from logician import Logician
-from textparse import print_color
-from textparse.diff import show_diff
+from parseutil import print_color
+from parseutil.diff import show_diff
 from walking_man import WalkingMan, walking_man
 
 if TYPE_CHECKING:

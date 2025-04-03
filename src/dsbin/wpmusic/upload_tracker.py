@@ -6,11 +6,11 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from logician import Logician
+from parseutil import TZ
 from rich import box
 from rich.console import Console
 from rich.table import Table
 from rich.text import Text
-from timecapsule import TZ
 
 from dsbin.wpmusic.configs import TableConfig
 from dsbin.wpmusic.db_manager import DatabaseManager

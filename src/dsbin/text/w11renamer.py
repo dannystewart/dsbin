@@ -15,8 +15,8 @@ import sys
 from pathlib import Path
 
 from logician import Logician
+from parseutil import color
 from shelper import confirm_action
-from textparse import color
 
 from dsbin.util import dsbin_setup
 

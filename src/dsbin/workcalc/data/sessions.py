@@ -4,7 +4,7 @@ import operator
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from textparse import TextParse
+from parseutil import Text
 
 if TYPE_CHECKING:
     from datetime import date, datetime
@@ -43,24 +43,24 @@ class SessionAnalyzer:
         """Format session statistics for display."""
         messages = [
             f"Number of work sessions: {stats.count}",
-            f"Most active day by {TextParse.plural(item_name, stats.most_active_day_items[1])}: "
+            f"Most active day by {Text.plural(item_name, stats.most_active_day_items[1])}: "
             f"{stats.most_active_day_items[0]:%B %-d, %Y} "
-            f"({TextParse.plural(item_name, stats.most_active_day_items[1], with_count=True)})",
+            f"({Text.plural(item_name, stats.most_active_day_items[1], with_count=True)})",
         ]
 
         day_hours, day_minutes = divmod(round(stats.most_active_day_time[1]), 60)
         messages.append(
             f"Most active day by time: {stats.most_active_day_time[0]:%B %-d, %Y} "
-            f"({TextParse.plural('hour', day_hours, with_count=True)}, "
-            f"{TextParse.plural('minute', day_minutes, with_count=True)})"
+            f"({Text.plural('hour', day_hours, with_count=True)}, "
+            f"{Text.plural('minute', day_minutes, with_count=True)})"
         )
 
         if stats.longest_session[0]:
             session_hours, session_minutes = divmod(round(stats.longest_session[1]), 60)
             messages.append(
                 f"Longest work session: {stats.longest_session[0]:%B %-d, %Y} "
-                f"({TextParse.plural('hour', session_hours, with_count=True)}, "
-                f"{TextParse.plural('minute', session_minutes, with_count=True)})"
+                f"({Text.plural('hour', session_hours, with_count=True)}, "
+                f"{Text.plural('minute', session_minutes, with_count=True)})"
             )
 
         return messages

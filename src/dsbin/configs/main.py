@@ -20,8 +20,8 @@ from typing import TYPE_CHECKING, ClassVar
 import requests
 from arguer import Arguer
 from logician import Logician
+from parseutil.diff import show_diff
 from shelper import confirm_action
-from textparse.diff import show_diff
 
 from dsbin.files import FileManager
 

@@ -31,7 +31,7 @@ import scipy.io.wavfile
 from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
-from textparse import color, print_color
+from parseutil import color, print_color
 
 from dsbin.util import dsbin_setup
 

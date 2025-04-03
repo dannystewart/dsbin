@@ -14,8 +14,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from parseutil import print_color
 from shelper import halo_progress
-from textparse import print_color
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager

@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from textparse import print_color
+from parseutil import print_color
 
 # List of all your package directories
 PACKAGES = [
@@ -20,8 +20,8 @@ PACKAGES = [
     "logician",
     "pathkeeper",
     "shelper",
-    "textparse",
-    "timecapsule",
+    "parseutil",
+    "parseutil",
     "walking-man",
 ]
 

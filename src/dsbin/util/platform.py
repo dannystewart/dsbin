@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from textparse import print_color
+from parseutil import print_color
 
 
 def is_doc_tool() -> bool:

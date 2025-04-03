@@ -8,7 +8,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from textparse import color, print_color
+from parseutil import color, print_color
 
 # Default packages to analyze
 DEFAULT_PACKAGES: list[str] = [
@@ -21,8 +21,8 @@ DEFAULT_PACKAGES: list[str] = [
     "logician",
     "pathkeeper",
     "shelper",
-    "textparse",
-    "timecapsule",
+    "parseutil",
+    "parseutil",
     "walking_man",
 ]
 

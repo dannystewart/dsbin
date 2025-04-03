@@ -21,6 +21,7 @@ dependencies = [
     "numpy (>=2.2.4,<3.0.0)",
     "packaging (>=24.2,<25.0)",
     "paramiko (>=3.5.1,<4.0.0)",
+    "parseutil (>=0.1.1)",
     "pathkeeper (>=0.1.0)",
     "pexpect (>=4.9.0,<5.0.0)",
     "pillow (>=11.1.0,<12.0.0)",
@@ -33,8 +34,6 @@ dependencies = [
     "send2trash (>=1.8.3,<2.0.0)",
     "shelper (>=0.1.4)",
     "telethon (>=1.39.0,<2.0.0)",
-    "textparse (>=0.1.2)",
-    "timecapsule (>=0.1.2)",
     "tomlkit (>=0.13.2,<0.14.0)",
     "tqdm (>=4.67.1,<5.0.0)",
     "types-paramiko (>=3.5.0.20240928,<4.0.0.0)",
@@ -55,8 +54,6 @@ enviromancer = { path = "../enviromancer", develop = true }
 logician = { path = "../logician", develop = true }
 pathkeeper = { path = "../pathkeeper", develop = true }
 shelper = { path = "../shelper", develop = true }
-textparse = { path = "../textparse", develop = true }
-timecapsule = { path = "../timecapsule", develop = true }
 walking-man = {path = "../walking-man", develop = true }
 
 [build-system]

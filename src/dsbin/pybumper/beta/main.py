@@ -10,8 +10,8 @@ from typing import TYPE_CHECKING
 from arguer import Arguer
 from enviromancer import Enviromancer
 from logician import Logician
+from parseutil import Text
 from shelper import confirm_action, handle_interrupt
-from textparse import TextParse
 
 from dsbin.pybumper.beta.git_helper import GitHelperBeta
 from dsbin.pybumper.beta.monorepo_helper import MonorepoHelperBeta
@@ -100,10 +100,10 @@ class PyBumperBeta:
             tag_name = self.git.generate_tag_name(new_version_str, self.package_name)
 
             # Show version info
-            self.logger.info("Package:         %s", TextParse.color(self.package_name, "yellow"))
-            self.logger.info("Current version: %s", TextParse.color(self.current_ver_str, "cyan"))
-            self.logger.info("Will bump to:    %s", TextParse.color(new_version_str, "blue"))
-            self.logger.info("Tag name:        %s", TextParse.color(tag_name, "green"))
+            self.logger.info("Package:         %s", Text.color(self.package_name, "yellow"))
+            self.logger.info("Current version: %s", Text.color(self.current_ver_str, "cyan"))
+            self.logger.info("Will bump to:    %s", Text.color(new_version_str, "blue"))
+            self.logger.info("Tag name:        %s", Text.color(tag_name, "green"))
 
             # Prompt for confirmation unless --force is used
             if not self.force and not confirm_action(

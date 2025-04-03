@@ -10,8 +10,8 @@ from pathlib import Path
 
 import inquirer
 import pyperclip
+from parseutil import print_color
 from shelper import handle_interrupt
-from textparse import print_color
 
 from dsbin.util import dsbin_setup
 

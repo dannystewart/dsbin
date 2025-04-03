@@ -8,7 +8,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from textparse import print_color as colored
+from parseutil import print_color as colored
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager

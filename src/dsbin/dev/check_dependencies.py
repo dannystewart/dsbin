@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 
 from arguer import Arguer
 from logician import Logician
-from textparse import color
+from parseutil import color
 
 from dsbin.util import dsbin_setup
 
@@ -29,8 +29,7 @@ DEFAULT_PACKAGES: list[str] = [
     "masterclass",
     "pathkeeper",
     "shelper",
-    "textparse",
-    "timecapsule",
+    "parseutil",
     "walking_man",
 ]
 

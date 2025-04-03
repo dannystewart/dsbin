@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from arguer import Arguer
-from textparse import color
+from parseutil import color
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 

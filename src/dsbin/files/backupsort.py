@@ -16,8 +16,8 @@ from pathlib import Path
 
 from enviromancer import Enviromancer
 from natsort import natsorted
+from parseutil import color
 from shelper import confirm_action
-from textparse import color
 
 from dsbin.util import dsbin_setup
 

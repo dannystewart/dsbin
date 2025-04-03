@@ -24,8 +24,8 @@ from typing import TYPE_CHECKING
 
 from halo import Halo
 from logician import Logician
+from parseutil import color
 from shelper import handle_interrupt
-from textparse import color
 from walking_man import walking_man
 
 from dsbin.media import MediaManager

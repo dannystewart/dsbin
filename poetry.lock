@@ -19,14 +19,16 @@ version = "0.1.1"
 description = "Customizable drop-in replacement for argparse"
 optional = false
 python-versions = ">=3.12"
-groups = ["main"]
-files = [
-    {file = "arguer-0.1.1-py3-none-any.whl", hash = "sha256:1c04730b9895c7f2dde0091c5a1664012b99bbc8738f21e15db896cce661bcdf"},
-    {file = "arguer-0.1.1.tar.gz", hash = "sha256:443575d6d5cd8632c6beb36b8c2e81d1370e3e91ea84fb820bd2c59c1f049852"},
-]
+groups = ["main", "dev"]
+files = []
+develop = true
 
 [package.dependencies]
 devpkg = ">=0.2.0"
+
+[package.source]
+type = "directory"
+url = "../arguer"
 
 [[package]]
 name = "bcrypt"
@@ -434,7 +436,7 @@ xmod = "*"
 
 [[package]]
 name = "enviromancer"
-version = "0.1.5"
+version = "0.1.6"
 description = "Gain mastery over your environment variables"
 optional = false
 python-versions = ">=3.12"
@@ -969,7 +971,7 @@ files = []
 develop = true
 
 [package.dependencies]
-enviromancer = ">=0.1.5"
+enviromancer = ">=0.1.6"
 platformdirs = ">=4.3.7,<5.0.0"
 
 [package.source]
@@ -1862,4 +1864,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "bcb302e2886e414e7cf588b6d428203623120da3af0b5f737621cfc4efce1fc8"
+content-hash = "5299d68cf4b53498d852e3d254f34f86e82662f7491642a855d7c0d0ff847f91"

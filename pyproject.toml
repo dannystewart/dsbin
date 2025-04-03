@@ -125,7 +125,7 @@ watchtower = "dsbin.tools.watchtower:main"
 # Development-related scripts
 checkdeps = "dsbin.dev.check_dependencies:main"
 checkimports = "dsbin.dev.check_imports:main"
-code-configs = "dsbin.code_configs.code_configs:main"
+codeconfigs = "dsbin.dev.code_configs.code_configs:main"
 impactanalyzer = "dsbin.dev.impact_analyzer:main"
 packageanalyzer = "dsbin.dev.package_analyzer:main"
 poetry-migrate = "dsbin.dev.poetry_migrate:main"

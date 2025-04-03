@@ -32,9 +32,15 @@ def run_command(cmd: str, cwd: Path) -> int:
     return process.returncode
 
 
-def run_in_all(command: str, description: str, packages: list[str], base_dir: Path) -> None:
+def run_in_all(
+    command: str, description: str, packages: list[str], base_dir: Path, clear_cache: bool = False
+) -> None:
     """Run a command in all package directories."""
     print_color(f"\n===== {description} =====", "green")
+
+    if clear_cache:
+        print_color("\nClearing Poetry cache...", "yellow")
+        run_command("poetry cache clear PyPI --all -n", base_dir)
 
     for pkg in packages:
         pkg_dir = base_dir / pkg
@@ -92,6 +98,7 @@ def main() -> int:
             "Updating dependencies to latest versions",
             args.packages,
             args.dir,
+            clear_cache=True,
         )
     elif args.command == "lock":
         run_in_all(

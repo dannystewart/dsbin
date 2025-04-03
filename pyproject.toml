@@ -10,7 +10,7 @@ license-files = ["LICENSE"]
 requires-python = ">=3.12,<3.14"
 dependencies = [
     "arguer (>=0.1.1)",
-    "devpkg (>=0.2.0)",
+    "devpkg (>=0.2.1)",
     "enviromancer (>=0.1.6)",
     "halo (>=0.0.31)",
     "inquirer (>=3.4.0,<4.0.0)",

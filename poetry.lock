@@ -24,7 +24,7 @@ files = []
 develop = true
 
 [package.dependencies]
-devpkg = ">=0.2.0"
+devpkg = ">=0.2.1"
 
 [package.source]
 type = "directory"
@@ -390,7 +390,7 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "devpkg"
-version = "0.2.0"
+version = "0.2.1"
 description = "Dev tools for Python packages"
 optional = false
 python-versions = ">=3.12"
@@ -1879,4 +1879,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "f311ff3dc44ffe8780c3d1e4251c1f9193794cc1d5e342797dab82d35c75b237"
+content-hash = "341716d3a90d2b55eb57687481324d2fa08b3b0e9084f9a463b9802510ac25fe"

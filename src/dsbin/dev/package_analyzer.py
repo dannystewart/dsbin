@@ -223,7 +223,7 @@ def print_version_bump_order(
         direct_affects = reverse_graph.get(package, set())
 
         if direct_affects:
-            affects_str = f"directly affects {len(direct_affects)} package(s)"
+            affects_str = f"directly affects {len(direct_affects)} package{'s' if len(direct_affects) != 1 else ''}"
         else:
             affects_str = "terminal package (affects nothing)"
 

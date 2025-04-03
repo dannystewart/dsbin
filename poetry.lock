@@ -1648,7 +1648,7 @@ url = "../textparse"
 
 [[package]]
 name = "timecapsule"
-version = "0.1.1"
+version = "0.1.2"
 description = "Human-friendly datetime handling for Python"
 optional = false
 python-versions = ">=3.12"

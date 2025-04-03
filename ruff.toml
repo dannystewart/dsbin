@@ -1,4 +1,4 @@
-# Ruff config version: 21
+# Ruff config version: 22
 # -----------------------
 
 # Files and directories to exclude
@@ -184,15 +184,13 @@ section-order = [
     "future",
     "standard-library",
     "third-party",
-    "personal_util",
-    "personal_bin",
+    "personal",
     "first-party",
     "local-folder",
 ]
 
 [lint.isort.sections]
-personal_util = ["dsroot", "dsbin", "dsutil"]
-personal_bin = ["dsbin", "prism"]
+personal = ["dsbin", "prism"]
 
 [lint.mccabe]
 max-complexity = 10

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
 from logician import Logician
 
-from dsbin.dev.db import DatabaseError, QueryResult
+from dsbin.util.db import DatabaseError, QueryResult
 
 if TYPE_CHECKING:
     from collections.abc import Generator

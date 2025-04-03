@@ -49,6 +49,7 @@ mypy = ">=1.15.0"
 pdoc = ">=15.0.1"
 pre-commit = ">=4.2.0"
 ruff = ">=0.11.2"
+arguer = { path = "../arguer", develop = true }
 devpkg = {path = "../devpkg", develop = true}
 enviromancer = { path = "../enviromancer", develop = true }
 logician = { path = "../logician", develop = true }

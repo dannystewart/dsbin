@@ -200,8 +200,70 @@ def calculate_version_bump_order(
     return result
 
 
+def format_affects_message(
+    package: str, reverse_graph: dict[str, set[str]], filter_packages: list[str] | None = None
+) -> str:
+    """Format a message describing what packages are affected by this one.
+
+    Args:
+        package: The package to describe
+        reverse_graph: Dictionary mapping packages to packages that import them
+        filter_packages: Optional list of packages to filter the results to
+
+    Returns:
+        A formatted string describing what this package affects
+    """
+    direct_affects = reverse_graph.get(package, set())
+
+    if not direct_affects:
+        return "terminal package" + (" (affects nothing)" if not filter_packages else "")
+
+    if filter_packages:
+        # Count only the specified packages that are affected
+        specified_affects = [p for p in direct_affects if p in filter_packages]
+        if specified_affects:
+            return f"affects {len(specified_affects)} of your specified package{'s' if len(specified_affects) != 1 else ''}"
+        return "doesn't affect other specified packages"
+    # Regular output for all packages
+    return (
+        f"directly affects {len(direct_affects)} package{'s' if len(direct_affects) != 1 else ''}"
+    )
+
+
+def print_missing_packages_warning(found: list[str], requested: list[str]) -> None:
+    """Print a warning about packages that were requested but not found.
+
+    Args:
+        found: List of packages that were found
+        requested: List of packages that were requested
+    """
+    missing = set(requested) - set(found)
+    if missing:
+        print_color(f"\nWarning: {len(missing)} specified packages were not found:", "red")
+        for pkg in sorted(missing):
+            print(f"  - {pkg}")
+
+
+def print_bump_order_header(is_filtered: bool, count: int) -> None:
+    """Print the header for the bump order report.
+
+    Args:
+        is_filtered: Whether we're showing a filtered list
+        count: Number of packages being shown
+    """
+    if is_filtered:
+        print_color("\n=== Optimal Version Bump Order (Filtered) ===\n", "yellow")
+        print(f"Bump these {count} packages in this order:")
+    else:
+        print_color("\n=== Optimal Version Bump Order ===\n", "yellow")
+        print("Bump packages in this order to minimize update cascades:")
+
+
 def print_version_bump_order(
-    dependency_graph: dict[str, set[str]], reverse_graph: dict[str, set[str]], packages: list[str]
+    dependency_graph: dict[str, set[str]],
+    reverse_graph: dict[str, set[str]],
+    packages: list[str],
+    filter_packages: list[str] | None = None,
 ) -> None:
     """Print the optimal order for bumping package versions.
 
@@ -209,54 +271,36 @@ def print_version_bump_order(
         dependency_graph: Dictionary mapping packages to their dependencies
         reverse_graph: Dictionary mapping packages to packages that import them
         packages: List of all packages analyzed
+        filter_packages: Optional list of packages to filter the results to
     """
+    # Get the complete bump order
     bump_order = calculate_version_bump_order(dependency_graph, reverse_graph, packages)
 
-    print_color("\n=== Optimal Version Bump Order ===\n", "yellow")
-    print("Bump packages in this order to minimize update cascades:")
+    # Filter to specified packages if requested
+    if filter_packages:
+        filtered_order = [pkg for pkg in bump_order if pkg in filter_packages]
+        packages_to_show = filtered_order
+        is_filtered = True
+    else:
+        packages_to_show = bump_order
+        is_filtered = False
 
-    # Calculate the width needed for the numbers (based on the total count)
-    num_width = len(str(len(bump_order)))
+    # Print the header
+    print_bump_order_header(is_filtered, len(packages_to_show))
 
-    for i, package in enumerate(bump_order, 1):
-        # Calculate what this affects
-        direct_affects = reverse_graph.get(package, set())
+    # Calculate the width needed for the numbers
+    num_width = len(str(len(packages_to_show)))
 
-        if direct_affects:
-            affects_str = f"directly affects {len(direct_affects)} package{'s' if len(direct_affects) != 1 else ''}"
-        else:
-            affects_str = "terminal package (affects nothing)"
-
-        # Format with right-aligned numbers of fixed width
+    # Print each package in order
+    for i, package in enumerate(packages_to_show, 1):
+        affects_str = format_affects_message(
+            package, reverse_graph, filter_packages if is_filtered else None
+        )
         print(f"{i:>{num_width}}. {color(package, 'green')} - {affects_str}")
 
-
-def print_dependency_report(
-    dependency_graph: dict[str, set[str]],
-    reverse_graph: dict[str, set[str]],
-    cycles: list[tuple[str, str]],
-    packages: list[str],
-    stats: bool = False,
-    bump_order: bool = False,
-) -> None:
-    """Print a comprehensive dependency report.
-
-    Args:
-        dependency_graph: Dictionary mapping packages to their dependencies.
-        reverse_graph: Dictionary mapping packages to packages that import them.
-        cycles: List of dependency cycles.
-        packages: List of all packages analyzed.
-        stats: Whether to show statistics or detailed package information.
-        bump_order: Whether to show the optimal version bump order.
-    """
-    if bump_order:
-        print_version_bump_order(dependency_graph, reverse_graph, packages)
-    elif stats:
-        print_dependency_statistics(dependency_graph, reverse_graph, packages)
-    else:
-        print_color("\n=== Package Dependency Report ===", "yellow")
-        print_package_details(dependency_graph, reverse_graph, packages)
-        print_circular_dependencies(cycles)
+    # Print warning for missing packages
+    if is_filtered and filter_packages:
+        print_missing_packages_warning(filtered_order, filter_packages)
 
 
 def print_package_details(
@@ -395,6 +439,11 @@ def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = argparse.ArgumentParser(description="Analyze package dependencies")
     parser.add_argument(
+        "filter_packages",
+        nargs="*",
+        help="specific packages to analyze (filters the results)",
+    )
+    parser.add_argument(
         "--packages",
         nargs="+",
         default=DEFAULT_PACKAGES,
@@ -406,8 +455,8 @@ def parse_args() -> argparse.Namespace:
         default=[Path.cwd(), Path("~/Developer").expanduser()],
         help="paths to search for packages",
     )
-    parser.add_argument("--stats", action="store_true", help="show dependency statistics")
-    parser.add_argument("--bump-order", action="store_true", help="show optimal version bump order")
+    parser.add_argument("--stats", action="store_true", help="Show dependency statistics")
+    parser.add_argument("--bump-order", action="store_true", help="Show optimal version bump order")
     return parser.parse_args()
 
 
@@ -415,16 +464,32 @@ def main() -> int:
     """Main entry point for the package dependency analyzer."""
     args = parse_args()
 
-    # Build dependency graph
-    dependency_graph = build_package_dependency_graph(args.packages, args.search_paths)
+    # Always analyze all packages to build the complete dependency graph
+    all_packages = args.packages.copy()
+
+    # Add any filter packages that aren't in the default list
+    if args.filter_packages:
+        for pkg in args.filter_packages:
+            if pkg not in all_packages:
+                all_packages.append(pkg)
+
+    # Build dependency graph for all packages
+    dependency_graph = build_package_dependency_graph(all_packages, args.search_paths)
 
     # Analyze dependencies
     reverse_graph, cycles = analyze_package_dependencies(dependency_graph)
 
-    # Print report
-    print_dependency_report(
-        dependency_graph, reverse_graph, cycles, args.packages, args.stats, args.bump_order
-    )
+    # Print the appropriate report
+    if args.bump_order or args.filter_packages:
+        print_version_bump_order(
+            dependency_graph, reverse_graph, all_packages, args.filter_packages or None
+        )
+    elif args.stats:
+        print_dependency_statistics(dependency_graph, reverse_graph, all_packages)
+    else:
+        print_color("\n=== Package Dependency Report ===", "yellow")
+        print_package_details(dependency_graph, reverse_graph, all_packages)
+        print_circular_dependencies(cycles)
 
     # Exit with error code if cycles found
     return 1 if cycles else 0

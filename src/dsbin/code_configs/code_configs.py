@@ -13,6 +13,7 @@ latest versions of the config files for other projects to pull from.
 
 from __future__ import annotations
 
+import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
@@ -20,6 +21,7 @@ from typing import TYPE_CHECKING, ClassVar
 import requests
 from arguer import Arguer
 from logician import Logician
+from parseutil import color
 from parseutil.diff import show_diff
 from shelper import confirm_action
 
@@ -33,33 +35,40 @@ if TYPE_CHECKING:
 class ConfigFile:
     """Represents a config file that can be updated from a remote source."""
 
-    # Base URL for the repository
-    CONFIG_ROOT: ClassVar[str] = (
-        "https://raw.githubusercontent.com/dannystewart/dsbin/refs/heads/main"
-    )
+    BASE_URL: ClassVar[str] = "https://raw.githubusercontent.com/dannystewart"
+    REPO: ClassVar[str] = "dsbin"
+    FOLDER: ClassVar[str] = "configs"
 
     name: str
     url: str = field(init=False)
     local_path: Path = field(init=False)
+    post_update_command: str | list[str] | None = None
 
     def __post_init__(self):
-        self.url = f"{self.CONFIG_ROOT}/{self.name}"
+        self.url = f"{self.BASE_URL}/{self.REPO}/refs/heads/main/{self.FOLDER}/{self.name}"
         self.local_path = Path.cwd() / self.name
 
 
 class ConfigManager:
     """Manages downloading and updating config files from a remote repository."""
 
-    # Define the configs to manage
     CONFIGS: ClassVar[list[ConfigFile]] = [
         ConfigFile("ruff.toml"),
         ConfigFile("mypy.ini"),
+        ConfigFile(".github/workflows/docs.yml"),
+        ConfigFile(".github/workflows/python-publish.yml"),
+        ConfigFile(".github/copilot-instructions.md"),
+        ConfigFile("code-style.md"),
+        ConfigFile(
+            ".pre-commit-config.yaml",
+            post_update_command=["pre-commit", "uninstall", "&&", "pre-commit", "install"],
+        ),
     ]
 
-    def __init__(self, skip_confirm: bool = False):
+    def __init__(self, no_confirm: bool = False):
         self.logger = Logician.get_logger()
         self.files = FileManager()
-        self.skip_confirm = skip_confirm
+        self.no_confirm = no_confirm
         self.changes_made = set()
 
         # Determine if all configs should be created by checking if any exist locally
@@ -76,16 +85,20 @@ class ConfigManager:
             remote_content = self.fetch_remote_content(config)
             if not remote_content:
                 self.logger.error(
-                    "Failed to update %s config - not available remotely.", config.name
+                    "Failed to update %s config as it was not available.", config.name
                 )
                 continue
 
             if self.process_config(config, remote_content):
                 self.changes_made.add(config.name)
+                # Run post-update command if specified and file was updated
+                if config.post_update_command:
+                    self.run_post_update_command(config)
 
         # Report unchanged configs
         if unchanged := [c.name for c in self.CONFIGS if c.name not in self.changes_made]:
-            self.logger.info("No changes needed for: %s", ", ".join(unchanged))
+            unchanged.sort()
+            self.logger.info("No changes made for:\n- %s", "\n- ".join(unchanged))
 
     def fetch_remote_content(self, config: ConfigFile) -> str | None:
         """Fetch content from remote URL."""
@@ -103,20 +116,38 @@ class ConfigManager:
         Returns:
             True if the config was updated or created, False otherwise.
         """
+        if "/" in config.name or "\\" in config.name:  # Ensure parent directories exist
+            parent_dir = config.local_path.parent
+            if not parent_dir.exists():
+                if (
+                    self.no_confirm
+                    or self.should_create_all
+                    or confirm_action(
+                        f"Directory {parent_dir} does not exist. Create?", default_to_yes=True
+                    )
+                ):
+                    parent_dir.mkdir(parents=True, exist_ok=True)
+                    self.logger.info("Created directory %s", parent_dir)
+                else:
+                    self.logger.info(
+                        "Skipping %s as parent directory creation was declined.", config.name
+                    )
+                    return False
+
         if config.local_path.exists():
             local_content = config.local_path.read_text()
             if local_content == remote_content:
                 return False
 
-            if not self.skip_confirm:
+            if not self.no_confirm:
                 show_diff(local_content, remote_content, config.local_path.name)
                 if not confirm_action(f"Update {config.name} config?", default_to_yes=True):
                     return False
         elif not (
-            self.skip_confirm
+            self.no_confirm
             or self.should_create_all
             or confirm_action(
-                f"{config.name} config does not exist locally. Create?",
+                color(f"{config.name} config does not exist locally. Create?", "yellow"),
                 default_to_yes=True,
             )
         ):
@@ -131,6 +162,29 @@ class ConfigManager:
         )
         return True
 
+    def run_post_update_command(self, config: ConfigFile) -> None:
+        """Run post-update command for a config file."""
+        if config.post_update_command is None:
+            return
+
+        try:
+            cmd = config.post_update_command
+            self.logger.info("Running post-update command for %s.", config.name)
+
+            # Convert list to string if needed and run the command
+            cmd_str = " ".join(cmd) if isinstance(cmd, list) else cmd
+            self.logger.debug("Executing: %s", cmd_str)
+            subprocess.run(cmd_str, shell=True, check=True)
+
+            self.logger.info("Post-update command for %s completed successfully!", config.name)
+
+        except subprocess.CalledProcessError as e:
+            self.logger.error(
+                "Post-update command for %s failed. Exit code: %d.", config.name, e.returncode
+            )
+        except Exception as e:
+            self.logger.error("Failed to run post-update command for %s: %s", config.name, str(e))
+
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
@@ -142,7 +196,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     """Fetch and update the config files."""
     args = parse_args()
-    manager = ConfigManager(skip_confirm=args.y)
+    manager = ConfigManager(no_confirm=args.y)
     manager.update_configs()
 
 

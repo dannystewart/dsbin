@@ -112,7 +112,7 @@ def build_package_dependency_graph(
 
 def analyze_package_dependencies(
     dependency_graph: dict[str, set[str]],
-) -> tuple[defaultdict[str, set[str]], list[tuple[str, str]]]:
+) -> tuple[defaultdict[str, set[str]], list[tuple[str, ...]]]:
     """Analyze package dependencies to find import relationships and cycles.
 
     Args:
@@ -408,7 +408,7 @@ def print_core_packages(reverse_graph: dict[str, set[str]]) -> None:
             print(f"  - {package}: imported by {', '.join(sorted(importers))}")
 
 
-def print_circular_dependencies(cycles: list[tuple[str, str]]) -> None:
+def print_circular_dependencies(cycles: list[tuple[str, ...]]) -> None:
     """Print any circular dependencies found between packages.
 
     Args:

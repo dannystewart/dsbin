@@ -431,7 +431,7 @@ develop = true
 [package.dependencies]
 enviromancer = ">=0.1.4"
 halo = ">=0.0.31"
-logician = ">=0.3.1"
+logician = ">=0.3.2"
 natsort = ">=8.4.0,<9.0.0"
 requests = ">=2.32.3,<3.0.0"
 send2trash = ">=1.8.3,<2.0.0"
@@ -471,7 +471,7 @@ files = []
 develop = true
 
 [package.dependencies]
-logician = ">=0.3.1"
+logician = ">=0.3.2"
 masterclass = ">=0.1.0"
 python-dotenv = ">=1.1.0"
 
@@ -616,7 +616,7 @@ colorama = ">=0.3.9"
 
 [[package]]
 name = "logician"
-version = "0.3.1"
+version = "0.3.2"
 description = "The logical choice for Python logging"
 optional = false
 python-versions = ">=3.12"
@@ -1603,7 +1603,7 @@ develop = true
 
 [package.dependencies]
 halo = ">=0.0.31,<0.0.32"
-logician = ">=0.3.1"
+logician = ">=0.3.2"
 textparse = ">=0.1.1"
 
 [package.source]
@@ -1679,7 +1679,7 @@ files = []
 develop = true
 
 [package.dependencies]
-logician = ">=0.3.1"
+logician = ">=0.3.2"
 termcolor = ">=3.0.1,<4.0.0"
 
 [package.source]
@@ -1920,4 +1920,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "172cab87a574b755c46cee3390f851e26224064df0a6035c071e66a4280546ed"
+content-hash = "8ed0678208e45b860bdb48df7633aea420dfbc1736fa3c5d989d75f8178ab92e"

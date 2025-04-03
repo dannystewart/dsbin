@@ -8,8 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from halo import Halo
-from textparse import color, print_color
+from textparse import print_color
 
 # List of all your package directories
 PACKAGES = [
@@ -27,45 +26,32 @@ PACKAGES = [
 ]
 
 
-def run_command(cmd: str, cwd: Path) -> tuple[int, str, str]:
+def run_command(cmd: str, cwd: Path) -> int:
     """Run a shell command and return exit code, stdout, and stderr."""
-    process = subprocess.Popen(
-        cmd,
-        shell=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-        cwd=cwd,
-    )
-    stdout, stderr = process.communicate()
-    return process.returncode, stdout.strip(), stderr.strip()
+    process = subprocess.run(cmd, shell=True, cwd=cwd, stdout=None, stderr=None, check=False)
+    return process.returncode
 
 
 def run_in_all(command: str, description: str, packages: list[str], base_dir: Path) -> None:
     """Run a command in all package directories."""
-    print_color(f"\n===== {description} =====\n", "yellow")
+    print_color(f"\n===== {description} =====", "green")
 
     for pkg in packages:
         pkg_dir = base_dir / pkg
 
         if not pkg_dir.is_dir():
-            print_color(f"Skipping {pkg} (directory not found)...", "yellow")
+            print_color(f">>> Skipping {pkg} (directory not found)", "yellow")
             continue
 
-        spinner = Halo(text=color(f"Processing {pkg}...", "cyan"), spinner="dots")
-        spinner.start()
+        print_color(f"\n>>> Processing {pkg}...", "yellow")
 
-        exit_code, stdout, stderr = run_command(command, pkg_dir)
-        spinner.stop()
-
-        if stdout:
-            print_color(stdout, "cyan")
+        exit_code = run_command(command, pkg_dir)
+        if exit_code == 0:
             print_color(f"\n✓ {pkg} completed successfully!", "green")
-        if exit_code != 0:
-            print_color(stderr, "red")
-        print()
+        else:
+            print_color(f"\n>>> Error processing {pkg} (exit code: {exit_code})", "red")
 
-    print_color("✓ All operations completed!", "green")
+    print_color("\n===== All operations completed! =====", "green")
 
 
 def parse_args() -> argparse.Namespace:

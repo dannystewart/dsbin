@@ -174,23 +174,20 @@ def calculate_version_bump_order(
     result = []
     remaining = set(packages)
 
-    # Helper function to check if all dependencies of a package are in result
-    def dependencies_satisfied(pkg: str) -> bool:
-        return all(dep in result for dep in dependency_graph.get(pkg, set()))
-
-    # Process packages in order of "most imported by others" first
-    pkg_priority = {pkg: len(reverse_graph.get(pkg, set())) for pkg in packages}
-
     while remaining:
-        # Find packages whose dependencies are all satisfied
-        ready = [pkg for pkg in remaining if dependencies_satisfied(pkg)]
+        # Find packages with no unsatisfied dependencies
+        ready = []
+        for pkg in remaining:
+            deps = dependency_graph.get(pkg, set())
+            if all(dep not in remaining for dep in deps):
+                ready.append(pkg)
 
         if not ready:
             # If we have a cycle, just pick the most imported package
-            ready = [max(remaining, key=lambda p: pkg_priority.get(p, 0))]
+            ready = [max(remaining, key=lambda p: len(reverse_graph.get(p, set())))]
 
         # Sort ready packages by how many other packages import them
-        ready.sort(key=lambda p: pkg_priority.get(p, 0), reverse=True)
+        ready.sort(key=lambda p: len(reverse_graph.get(p, set())), reverse=True)
 
         # Add the highest priority ready package
         next_pkg = ready[0]

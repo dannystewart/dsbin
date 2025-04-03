@@ -420,7 +420,7 @@ files = [
 
 [[package]]
 name = "dsbase"
-version = "0.5.1"
+version = "0.5.2"
 description = "Delightful Python utility library with power and personality"
 optional = false
 python-versions = ">=3.12,<3.14"
@@ -1877,7 +1877,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 
 [[package]]
 name = "walking-man"
-version = "0.2.4"
+version = "0.2.5"
 description = "A friendly companion while you wait"
 optional = false
 python-versions = ">=3.12"
@@ -1920,4 +1920,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "1635f55e466bd79ae41ec750afde953bf5685891976b02d9c9b05083c1f7d92a"
+content-hash = "6c82f33c78c9bf7e6d8b51a0b443f13eedd977e8885db1b72cb0fc94c50c7ead"

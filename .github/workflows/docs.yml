@@ -15,11 +15,27 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.13'
+          python-version: "3.13"
 
-      - run: pip install -e .
-      - run: pip install pdoc
-      - run: pdoc -o docs -d google dsbin
+      - name: Install package and documentation tools
+        run: |
+          pip install -e .
+          pip install pdoc
+
+      - name: Generate documentation
+        run: |
+          # Get package name from pyproject.toml (PEP-compliant format)
+          PKG_NAME=$(grep -m 1 "name\s*=" pyproject.toml | sed -E 's/name\s*=\s*"([^"]+)".*/\1/; s/name\s*=\s*'\''([^'\'']+)'\''.*/\1/')
+          echo "Detected package name: $PKG_NAME"
+
+          # Check for src/package structure (your standard layout)
+          if [ -d "src/$PKG_NAME" ]; then
+            echo "Generating docs for src/$PKG_NAME"
+            pdoc -o docs -d google "src/$PKG_NAME"
+          else
+            echo "Error: Expected package not found at src/$PKG_NAME"
+            exit 1
+          fi
 
       - uses: actions/upload-pages-artifact@v3
         with:

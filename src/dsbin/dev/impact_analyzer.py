@@ -848,6 +848,11 @@ def main() -> None:
     logger = Logician.get_logger(simple=True, level=env.log_level)
     args = parse_args()
 
+    # Initialize variables we'll need later
+    analyzer = None
+    repo_name = None
+    diff_repo_config = None
+
     with walking_man(speed=0.12):
         # Create base repo config if specified
         base_repo = setup_base_repo(args, logger)
@@ -874,17 +879,15 @@ def main() -> None:
         if args.diff:  # If diff flag is set
             repo_name, diff_repo_config = determine_diff_repo(repos, base_repo, args, logger)
 
-            if repo_name and diff_repo_config:
-                # If the diff repo wasn't in our original list, add it temporarily for analysis
-                if diff_repo_config not in analyzer.repos:
-                    analyzer.repos.append(diff_repo_config)
-                    # Get its latest tag
-                    diff_repo_config.latest_tag = analyzer.find_latest_tag(diff_repo_config.path)
+            # If the diff repo wasn't in our original list, add it temporarily for analysis
+            if repo_name and diff_repo_config and diff_repo_config not in analyzer.repos:
+                analyzer.repos.append(diff_repo_config)
+                diff_repo_config.latest_tag = analyzer.find_latest_tag(diff_repo_config.path)
 
-                analyzer.show_repo_diffs(repo_name)
-            elif repo_name:  # We have a name but no config
-                logger.error("Could not find repository configuration for %s.", repo_name)
-        else:  # Otherwise run the normal analysis
+    if analyzer:
+        if args.diff and repo_name and diff_repo_config:
+            analyzer.show_repo_diffs(repo_name)
+        elif not args.diff:  # Otherwise run the normal analysis
             analyzer.analyze()
 
 

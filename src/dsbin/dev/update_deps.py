@@ -59,7 +59,7 @@ def run_in_all(command: str, description: str, packages: list[str], base_dir: Pa
         spinner.stop()
 
         if stdout:
-            print_color(stdout, "blue")
+            print_color(stdout, "cyan")
             print_color(f"\n✓ {pkg} completed successfully!", "green")
         if exit_code != 0:
             print_color(stderr, "red")

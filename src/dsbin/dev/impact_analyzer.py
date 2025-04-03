@@ -48,6 +48,7 @@ class ImpactAnalyzer:
         self.staged_only = args.staged_only
         self.verbose = args.verbose
         self.hide_untagged = args.hide_untagged
+        self.include_pyproject = args.include_pyproject
 
         # Initialize empty lists for changes
         self.changed_files: list[str] = []
@@ -373,9 +374,7 @@ class ImpactAnalyzer:
             self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
             return None
 
-    def get_changes_since_tag(
-        self, repo_path: Path, tag: str, include_pyproject: bool = False
-    ) -> list[str]:
+    def get_changes_since_tag(self, repo_path: Path, tag: str) -> list[str]:
         """Get files changed in a repo since the specified tag."""
         try:
             cmd = ["git", "-C", str(repo_path), "diff", "--name-only", f"{tag}..HEAD"]
@@ -388,14 +387,16 @@ class ImpactAnalyzer:
             )
             changed_files = result.stdout.strip().splitlines()
 
-            # Filter for Python files only
-            included = [f for f in changed_files if f.endswith(".py")]
-            if include_pyproject:
-                included += [f for f in changed_files if f == "pyproject.toml"]
+            # Filter for Python files only (and pyproject.toml if requested)
+            included_files = [f for f in changed_files if f.endswith(".py")]
+            if self.include_pyproject:
+                pyproject_files = [f for f in changed_files if Path(f).name == "pyproject.toml"]
+                included_files.extend(pyproject_files)
+
             self.logger.debug(
-                "Found %d files changed in %s since %s.", len(included), repo_path, tag
+                "Found %d files changed in %s since %s.", len(included_files), repo_path, tag
             )
-            return included
+            return included_files
 
         except subprocess.CalledProcessError as e:
             self.logger.debug("Error checking changes for %s since %s: %s", repo_path, tag, str(e))
@@ -405,14 +406,14 @@ class ImpactAnalyzer:
             self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
             return []
 
-    def analyze_repo_changes(self, include_pyproject: bool = False) -> None:
+    def analyze_repo_changes(self) -> None:
         """Analyze changes to repositories since their last release tag."""
         for repo in self.repos:
             latest_tag = self.find_latest_tag(repo.path)
             repo.latest_tag = latest_tag
 
             if latest_tag:
-                changes = self.get_changes_since_tag(repo.path, latest_tag, include_pyproject)
+                changes = self.get_changes_since_tag(repo.path, latest_tag)
                 repo.changes = changes
                 repo.needs_release = len(changes) > 0
 
@@ -551,7 +552,7 @@ class ImpactAnalyzer:
 
         return impacted_repos
 
-    def show_repo_diffs(self, repo_name: str, include_pyproject: bool = False) -> None:
+    def show_repo_diffs(self, repo_name: str) -> None:
         """Show detailed diffs for a specific repo since its last release."""
         # Find the repo config
         repo = next((r for r in self.repos if r.name == repo_name), None)
@@ -568,7 +569,7 @@ class ImpactAnalyzer:
             return
 
         # Get changed files
-        changed_files = self.get_changes_since_tag(repo.path, repo.latest_tag, include_pyproject)
+        changed_files = self.get_changes_since_tag(repo.path, repo.latest_tag)
 
         if not changed_files:
             self.logger.info("No changes detected in %s since %s.", repo_name, repo.latest_tag)

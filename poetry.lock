@@ -14,21 +14,6 @@ files = [
 ]
 
 [[package]]
-name = "arguer"
-version = "0.1.0"
-description = "Customizable drop-in replacement for argparse"
-optional = false
-python-versions = ">=3.12"
-groups = ["main"]
-files = [
-    {file = "arguer-0.1.0-py3-none-any.whl", hash = "sha256:47f8b5154eae3bd815a04dc59f3ad405d87f4171bb56d26d002f3fefcfa38b27"},
-    {file = "arguer-0.1.0.tar.gz", hash = "sha256:722d1119096df06bbbc65483738d83fb6ef3b4d634b85beeb2aeefba1ac302df"},
-]
-
-[package.dependencies]
-pkgversioner = ">=0.0.2,<0.2.0"
-
-[[package]]
 name = "bcrypt"
 version = "4.3.0"
 description = "Modern password hashing for your software and your servers"
@@ -1096,24 +1081,6 @@ mic = ["olefile"]
 tests = ["check-manifest", "coverage (>=7.4.2)", "defusedxml", "markdown2", "olefile", "packaging", "pyroma", "pytest", "pytest-cov", "pytest-timeout", "trove-classifiers (>=2024.10.12)"]
 typing = ["typing-extensions ; python_version < \"3.10\""]
 xmp = ["defusedxml"]
-
-[[package]]
-name = "pkgversioner"
-version = "0.1.4"
-description = "Package versioning tools for Python projects"
-optional = false
-python-versions = ">=3.12"
-groups = ["main"]
-files = [
-    {file = "pkgversioner-0.1.4-py3-none-any.whl", hash = "sha256:72c2a267bba13f0c9e67d46a25ac35123cf35b5128e4132b6c92eb40fd00013a"},
-    {file = "pkgversioner-0.1.4.tar.gz", hash = "sha256:deb3c129676b4be5257ec74dbfe8ac0e3c7bd5f663a261ba181b78c6b45c3129"},
-]
-
-[package.dependencies]
-arguer = ">=0.1.0,<0.2.0"
-packaging = ">=24.2,<25.0"
-requests = ">=2.32.3,<3.0.0"
-textparse = ">=0.1.0"
 
 [[package]]
 name = "platformdirs"

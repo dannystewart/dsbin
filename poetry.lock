@@ -429,7 +429,7 @@ files = []
 develop = true
 
 [package.dependencies]
-enviromancer = ">=0.1.4"
+enviromancer = ">=0.1.5"
 halo = ">=0.0.31"
 logician = ">=0.3.2"
 natsort = ">=8.4.0,<9.0.0"
@@ -462,7 +462,7 @@ xmod = "*"
 
 [[package]]
 name = "enviromancer"
-version = "0.1.4"
+version = "0.1.5"
 description = "Gain mastery over your environment variables"
 optional = false
 python-versions = ">=3.12"
@@ -1009,7 +1009,7 @@ files = []
 develop = true
 
 [package.dependencies]
-enviromancer = ">=0.1.4"
+enviromancer = ">=0.1.5"
 platformdirs = ">=4.3.7,<5.0.0"
 
 [package.source]
@@ -1920,4 +1920,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "89289d88c54bb646b1b83636c5dd8d2afdc060613740577919b8fbe28ad25b09"
+content-hash = "1635f55e466bd79ae41ec750afde953bf5685891976b02d9c9b05083c1f7d92a"

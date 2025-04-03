@@ -1593,7 +1593,7 @@ win32 = ["pywin32 ; sys_platform == \"win32\""]
 
 [[package]]
 name = "shelper"
-version = "0.1.3"
+version = "0.1.4"
 description = "The shell helper"
 optional = false
 python-versions = ">=3.12"
@@ -1604,7 +1604,7 @@ develop = true
 [package.dependencies]
 halo = ">=0.0.31,<0.0.32"
 logician = ">=0.3.2"
-textparse = ">=0.1.1"
+textparse = ">=0.1.2"
 
 [package.source]
 type = "directory"
@@ -1886,8 +1886,8 @@ files = []
 develop = true
 
 [package.dependencies]
-shelper = ">=0.1.3"
-textparse = ">=0.1.1"
+shelper = ">=0.1.4"
+textparse = ">=0.1.2"
 
 [package.source]
 type = "directory"
@@ -1920,4 +1920,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "4d36682594e0942905e3343c157874d930b4a63225d3332596d1aeab88721504"
+content-hash = "89289d88c54bb646b1b83636c5dd8d2afdc060613740577919b8fbe28ad25b09"

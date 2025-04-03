@@ -438,7 +438,7 @@ send2trash = ">=1.8.3,<2.0.0"
 textparse = ">=0.1.2"
 types-requests = ">=2.32.0.20250328,<3.0.0.0"
 types-send2trash = ">=1.8.2.7,<2.0.0.0"
-walking-man = ">=0.2.4"
+walking-man = ">=0.2.6"
 
 [package.source]
 type = "directory"
@@ -1877,7 +1877,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 
 [[package]]
 name = "walking-man"
-version = "0.2.5"
+version = "0.2.6"
 description = "A friendly companion while you wait"
 optional = false
 python-versions = ">=3.12"
@@ -1920,4 +1920,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "6c82f33c78c9bf7e6d8b51a0b443f13eedd977e8885db1b72cb0fc94c50c7ead"
+content-hash = "a17bc533d29a47569712d5ab25935ff249d17a92b31eeb0f5178171fb8c36f4f"

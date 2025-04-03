@@ -13,7 +13,7 @@ from enviromancer import Enviromancer
 from logician import Logician
 from textparse import print_color
 from textparse.diff import show_diff
-from walking_man import walking_man
+from walking_man import WalkingMan, walking_man
 
 if TYPE_CHECKING:
     import argparse
@@ -111,6 +111,7 @@ class ImpactAnalyzer:
 
     def display_repo_changes(self) -> None:
         """Display changes in repositories since their last release."""
+        WalkingMan.clear(line_above=True)
         if self.base_repo:
             print_color("\n=== Repository Changes Since Last Release (Independent) ===", "yellow")
         else:
@@ -237,8 +238,9 @@ class ImpactAnalyzer:
         release_repos = {}
 
         # Add repos impacted by base changes
-        for repo_name in self.impacted_repos:
-            release_repos[repo_name] = [f"Affected by changes in {self.base_repo.name}"]
+        if self.base_repo:
+            for repo_name in self.impacted_repos:
+                release_repos[repo_name] = [f"Affected by changes in {self.base_repo.name}"]
 
         # Add repos with their own changes
         for repo in self.repos:

@@ -445,7 +445,7 @@ files = []
 develop = true
 
 [package.dependencies]
-devpkg = ">=0.2.0"
+devpkg = ">=0.2.1"
 logician = ">=0.3.3"
 python-dotenv = ">=1.1.0"
 
@@ -599,7 +599,7 @@ files = []
 develop = true
 
 [package.dependencies]
-devpkg = ">=0.2.0"
+devpkg = ">=0.2.1"
 timecapsule = ">=0.1.2"
 
 [package.source]

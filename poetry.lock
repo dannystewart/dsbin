@@ -14,6 +14,21 @@ files = [
 ]
 
 [[package]]
+name = "arguer"
+version = "0.1.1"
+description = "Customizable drop-in replacement for argparse"
+optional = false
+python-versions = ">=3.12"
+groups = ["main"]
+files = [
+    {file = "arguer-0.1.1-py3-none-any.whl", hash = "sha256:1c04730b9895c7f2dde0091c5a1664012b99bbc8738f21e15db896cce661bcdf"},
+    {file = "arguer-0.1.1.tar.gz", hash = "sha256:443575d6d5cd8632c6beb36b8c2e81d1370e3e91ea84fb820bd2c59c1f049852"},
+]
+
+[package.dependencies]
+devpkg = ">=0.2.0"
+
+[[package]]
 name = "bcrypt"
 version = "4.3.0"
 description = "Modern password hashing for your software and your servers"
@@ -429,7 +444,7 @@ develop = true
 
 [package.dependencies]
 devpkg = ">=0.2.0"
-logician = ">=0.3.2"
+logician = ">=0.3.3"
 python-dotenv = ">=1.1.0"
 
 [package.source]
@@ -573,7 +588,7 @@ colorama = ">=0.3.9"
 
 [[package]]
 name = "logician"
-version = "0.3.2"
+version = "0.3.3"
 description = "The logical choice for Python logging"
 optional = false
 python-versions = ">=3.12"
@@ -583,7 +598,7 @@ develop = true
 
 [package.dependencies]
 devpkg = ">=0.2.0"
-timecapsule = ">=0.1.1"
+timecapsule = ">=0.1.2"
 
 [package.source]
 type = "directory"
@@ -1530,7 +1545,7 @@ develop = true
 
 [package.dependencies]
 halo = ">=0.0.31,<0.0.32"
-logician = ">=0.3.2"
+logician = ">=0.3.3"
 textparse = ">=0.1.2"
 
 [package.source]
@@ -1606,7 +1621,7 @@ files = []
 develop = true
 
 [package.dependencies]
-logician = ">=0.3.2"
+logician = ">=0.3.3"
 termcolor = ">=3.0.1,<4.0.0"
 
 [package.source]
@@ -1847,4 +1862,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "cc054eacda9b7400edfd0d2517e1b629dcf39eacec4c4cb201dd11914bc4232e"
+content-hash = "786c8d03354cf4e33e577d0840bbf431376d85597f96392e55e102f22c16eebe"

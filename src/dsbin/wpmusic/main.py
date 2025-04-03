@@ -28,9 +28,8 @@ from shelper import handle_interrupt
 from textparse import color
 from walking_man import walking_man
 
-from dsbase import MediaManager
-from dsbase.util import dsbase_setup
-
+from dsbin.media import MediaManager
+from dsbin.util import dsbase_setup
 from dsbin.wpmusic.configs import WPConfig
 from dsbin.wpmusic.file_manager import FileManager
 from dsbin.wpmusic.metadata_setter import MetadataSetter

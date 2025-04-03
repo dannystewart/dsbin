@@ -419,32 +419,6 @@ files = [
 ]
 
 [[package]]
-name = "dsbase"
-version = "0.5.2"
-description = "Delightful Python utility library with power and personality"
-optional = false
-python-versions = ">=3.12,<3.14"
-groups = ["main", "dev"]
-files = []
-develop = true
-
-[package.dependencies]
-enviromancer = ">=0.1.5"
-halo = ">=0.0.31"
-logician = ">=0.3.2"
-natsort = ">=8.4.0,<9.0.0"
-requests = ">=2.32.3,<3.0.0"
-send2trash = ">=1.8.3,<2.0.0"
-textparse = ">=0.1.2"
-types-requests = ">=2.32.0.20250328,<3.0.0.0"
-types-send2trash = ">=1.8.2.7,<2.0.0.0"
-walking-man = ">=0.2.6"
-
-[package.source]
-type = "directory"
-url = "../dsbase"
-
-[[package]]
 name = "editor"
 version = "1.6.6"
 description = "🖋 Open the default text editor 🖋"
@@ -877,7 +851,7 @@ version = "8.4.0"
 description = "Simple yet flexible natural sorting in Python."
 optional = false
 python-versions = ">=3.7"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "natsort-8.4.0-py3-none-any.whl", hash = "sha256:4732914fb471f56b5cce04d7bae6f164a592c7712e1c85f9ef585e197299521c"},
     {file = "natsort-8.4.0.tar.gz", hash = "sha256:45312c4a0e5507593da193dedd04abb1469253b601ecaf63445ad80f0a1ea581"},
@@ -1580,7 +1554,7 @@ version = "1.8.3"
 description = "Send file to trash natively under Mac OS X, Windows and Linux"
 optional = false
 python-versions = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,>=2.7"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "Send2Trash-1.8.3-py3-none-any.whl", hash = "sha256:0c31227e0bd08961c7665474a3d1ef7193929fedda4233843689baa056be46c9"},
     {file = "Send2Trash-1.8.3.tar.gz", hash = "sha256:b18e7a3966d99871aefeb00cfbcfdced55ce4871194810fc71f4aa484b953abf"},
@@ -1772,7 +1746,7 @@ version = "2.32.0.20250328"
 description = "Typing stubs for requests"
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "types_requests-2.32.0.20250328-py3-none-any.whl", hash = "sha256:72ff80f84b15eb3aa7a8e2625fffb6a93f2ad5a0c20215fc1dcfa61117bcb2a2"},
     {file = "types_requests-2.32.0.20250328.tar.gz", hash = "sha256:c9e67228ea103bd811c96984fac36ed2ae8da87a36a633964a21f199d60baf32"},
@@ -1787,7 +1761,7 @@ version = "1.8.2.7"
 description = "Typing stubs for Send2Trash"
 optional = false
 python-versions = "*"
-groups = ["main", "dev"]
+groups = ["main"]
 files = [
     {file = "types-Send2Trash-1.8.2.7.tar.gz", hash = "sha256:f471c0dcb6c0f6682eebdbf4498a2f4fe16b4c9c25e64969450334734ac1649c"},
     {file = "types_Send2Trash-1.8.2.7-py3-none-any.whl", hash = "sha256:e4796fa3888ad0272ed73e5e2f983f75f5a171ca0b553a7362d902c553478334"},
@@ -1920,4 +1894,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "a17bc533d29a47569712d5ab25935ff249d17a92b31eeb0f5178171fb8c36f4f"
+content-hash = "15603f7a0b3822fe8b4a28c11661537d821d2c93a4f282d2233c1cdd6613d29a"

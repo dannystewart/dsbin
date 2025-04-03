@@ -10,8 +10,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from dsbase.files import find_duplicate_files_by_hash
-from dsbase.util import dsbase_setup
+from dsbin.files import FileManager
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 
@@ -24,7 +24,7 @@ def main() -> None:
 
     # Convert all input files to Path objects if they aren't already
     paths = [Path(f) for f in input_files]
-    find_duplicate_files_by_hash(paths)
+    FileManager().find_dupes_by_hash(paths)
 
 
 if __name__ == "__main__":

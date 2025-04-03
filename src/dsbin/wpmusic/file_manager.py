@@ -12,7 +12,7 @@ from scp import SCPClient
 from shelper import handle_interrupt
 from textparse import color as colored
 
-from dsbase import FileManager as BaseFileManager
+from dsbin.files import FileManager as BaseFileManager
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack

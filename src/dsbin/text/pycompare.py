@@ -15,7 +15,7 @@ import inquirer
 from shelper import handle_interrupt
 from textparse import color, print_color
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

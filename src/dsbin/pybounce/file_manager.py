@@ -11,7 +11,7 @@ from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
 from timecapsule import TZ
 
-from dsbase.files import FileManager as BaseFileManager
+from dsbin.files import FileManager as BaseFileManager
 
 if TYPE_CHECKING:
     from logging import Logger

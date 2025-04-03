@@ -19,9 +19,9 @@ from natsort import natsorted
 from shelper import confirm_action, conversion_list_context
 from textparse import print_color
 
-from dsbase.files import FileManager
-from dsbase.media import MediaManager
-from dsbase.util import dsbase_setup
+from dsbin.files import FileManager
+from dsbin.media import MediaManager
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

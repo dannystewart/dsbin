@@ -39,7 +39,7 @@ from pathlib import Path
 from logician import Logician
 from timecapsule import TZ
 
-from dsbase.files import FileManager
+from dsbin.files import FileManager
 
 
 @dataclass

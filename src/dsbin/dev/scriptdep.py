@@ -10,7 +10,7 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

@@ -13,7 +13,7 @@ from arguer import Arguer
 from logician import Logician
 from textparse import color
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse

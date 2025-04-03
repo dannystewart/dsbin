@@ -33,11 +33,10 @@ from enviromancer import Enviromancer
 from logician import Logician
 from shelper import confirm_action, handle_interrupt
 
-from dsbase.util import dsbase_setup
-
 from dsbin.pybumper.bump_type import BumpType
 from dsbin.pybumper.git_helper import GitHelper
 from dsbin.pybumper.version_helper import VersionHelper
+from dsbin.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse

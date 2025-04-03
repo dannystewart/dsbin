@@ -11,7 +11,7 @@ from pathlib import Path
 
 from logician import Logician
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

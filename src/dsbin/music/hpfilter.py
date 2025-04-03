@@ -33,7 +33,7 @@ from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
 from textparse import color, print_color
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable

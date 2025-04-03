@@ -18,7 +18,7 @@ from logician import Logician
 from shelper import confirm_action
 from textparse import color
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

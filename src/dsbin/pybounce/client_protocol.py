@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any, Protocol
 
 from logician import Logician
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable

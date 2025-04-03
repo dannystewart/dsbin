@@ -17,8 +17,9 @@ from pathlib import Path
 from shelper import halo_progress
 from textparse import print_color
 
-from dsbase import FileManager, MediaManager
-from dsbase.util import dsbase_setup
+from dsbin.files import FileManager
+from dsbin.media import MediaManager
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

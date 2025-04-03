@@ -15,7 +15,7 @@ from pathlib import Path
 from shelper import confirm_action, handle_interrupt
 from walking_man import walking_man
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

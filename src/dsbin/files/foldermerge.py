@@ -10,8 +10,8 @@ from pathlib import Path
 from shelper import confirm_action
 from textparse import print_color as colored
 
-from dsbase.files import sha256_checksum
-from dsbase.util import dsbase_setup
+from dsbin.files import FileManager
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 
@@ -24,6 +24,7 @@ def merge_folders(first_folder: str, second_folder: str, dry_run: bool = False) 
         second_folder: The path to the second folder.
         dry_run: Whether to perform a dry run. Defaults to False.
     """
+    files = FileManager()
     first_folder_path = Path(first_folder)
     second_folder_path = Path(second_folder)
 
@@ -32,7 +33,9 @@ def merge_folders(first_folder: str, second_folder: str, dry_run: bool = False) 
             first_file_path = first_folder_path / second_file_path.name
 
             if first_file_path.exists():
-                if sha256_checksum(first_file_path) == sha256_checksum(second_file_path):
+                if files.sha256_checksum(first_file_path) == files.sha256_checksum(
+                    second_file_path
+                ):
                     print(f"Trashing duplicate: {second_file_path.name}")
                     if not dry_run:
                         second_file_path.unlink()

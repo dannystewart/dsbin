@@ -23,7 +23,7 @@ from logician import Logician
 from shelper import confirm_action
 from textparse.diff import show_diff
 
-from dsbase import FileManager
+from dsbin.files import FileManager
 
 if TYPE_CHECKING:
     import argparse

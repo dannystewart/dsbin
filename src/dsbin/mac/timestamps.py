@@ -40,8 +40,8 @@ from typing import TYPE_CHECKING
 from arguer import Arguer
 from textparse import color
 
-from dsbase.files import FileManager
-from dsbase.util import dsbase_setup
+from dsbin.files import FileManager
+from dsbin.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse

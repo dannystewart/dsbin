@@ -56,7 +56,7 @@ from logician import Logician
 from pathkeeper import PathKeeper
 from shelper import confirm_action, is_root_user
 
-from dsbase.notify import TelegramSender
+from dsbin.util.notify import TelegramSender
 
 if TYPE_CHECKING:
     from logging import Logger

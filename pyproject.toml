@@ -11,9 +11,8 @@ requires-python = ">=3.12,<3.14"
 dependencies = [
     "arguer (>=0.1.0)",
     "devpkg (>=0.1.1)",
-    "dsbase (>=0.5.2)",
     "enviromancer (>=0.1.5)",
-    "halo (>=0.0.31,<0.0.32)",
+    "halo (>=0.0.31)",
     "inquirer (>=3.4.0,<4.0.0)",
     "logician (>=0.3.2)",
     "mutagen (>=1.47.0,<2.0.0)",
@@ -31,6 +30,7 @@ dependencies = [
     "rsa (>=4.9,<5.0)",
     "scipy (>=1.15.2,<2.0.0)",
     "scp (>=0.15.0,<0.16.0)",
+    "send2trash (>=1.8.3,<2.0.0)",
     "shelper (>=0.1.4)",
     "telethon (>=1.39.0,<2.0.0)",
     "textparse (>=0.1.2)",
@@ -40,6 +40,7 @@ dependencies = [
     "types-paramiko (>=3.5.0.20240928,<4.0.0.0)",
     "types-pillow (>=10.2.0.20240822,<11.0.0.0)",
     "types-requests (>=2.32.0.20250328,<3.0.0.0)",
+    "types-send2trash (>=1.8.2.7,<2.0.0.0)",
     "walking-man (>=0.2.6)",
 ]
 
@@ -49,7 +50,6 @@ pdoc = ">=15.0.1"
 pre-commit = ">=4.2.0"
 ruff = ">=0.11.2"
 devpkg = {path = "../devpkg", develop = true}
-dsbase = {path = "../dsbase", develop = true}
 enviromancer = { path = "../enviromancer", develop = true }
 logician = { path = "../logician", develop = true }
 pathkeeper = { path = "../pathkeeper", develop = true }

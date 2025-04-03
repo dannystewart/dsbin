@@ -12,8 +12,7 @@ from logician import Logician
 from textparse import TextParse
 from walking_man import walking_man
 
-from dsbase.util import dsbase_setup
-
+from dsbin.util import dsbase_setup
 from dsbin.workcalc.data import (
     SessionAnalyzer,
     StreakAnalyzer,

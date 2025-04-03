@@ -8,7 +8,7 @@ import subprocess
 
 from logician import Logician
 
-from dsbase.util import dsbase_setup, platform_check
+from dsbin.util import dsbase_setup, platform_check
 
 dsbase_setup()
 platform_check("Darwin")

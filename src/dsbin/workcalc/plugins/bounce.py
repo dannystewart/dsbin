@@ -7,8 +7,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from logician import Logician
 
-from dsbase import FileManager
-
+from dsbin.files import FileManager
 from dsbin.workcalc.data import WorkItem
 from dsbin.workcalc.plugin import DataSourcePlugin
 

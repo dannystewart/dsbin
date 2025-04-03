@@ -23,8 +23,8 @@ from shelper import halo_progress, handle_interrupt
 from textparse import color as colored
 from walking_man import walking_man
 
-from dsbase import MediaManager
-from dsbase.util import dsbase_setup
+from dsbin.media import MediaManager
+from dsbin.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse

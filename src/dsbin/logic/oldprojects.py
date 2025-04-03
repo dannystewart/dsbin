@@ -22,7 +22,7 @@ import colorama
 import readchar
 from colorama import Fore, Style
 
-from dsbase.util import dsbase_setup, platform_check
+from dsbin.util import dsbase_setup, platform_check
 
 dsbase_setup()
 

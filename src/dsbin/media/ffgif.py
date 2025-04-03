@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 
 from arguer import Arguer
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse

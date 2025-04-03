@@ -13,12 +13,11 @@ from logician import Logician
 from shelper import confirm_action, handle_interrupt
 from textparse import TextParse
 
-from dsbase.util import dsbase_setup
-
 from dsbin.pybumper.beta.git_helper import GitHelperBeta
 from dsbin.pybumper.beta.monorepo_helper import MonorepoHelperBeta
 from dsbin.pybumper.bump_type import BumpType
 from dsbin.pybumper.version_helper import VersionHelper
+from dsbin.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse

@@ -18,8 +18,8 @@ import inquirer
 from textparse import print_color
 from timecapsule import TZ
 
-from dsbase.files import FileManager
-from dsbase.util import dsbase_setup
+from dsbin.files import FileManager
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

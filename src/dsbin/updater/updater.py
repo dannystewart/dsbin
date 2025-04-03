@@ -15,7 +15,7 @@ from logician import Logician
 from shelper import handle_interrupt
 from textparse import TextParse, color, print_color
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 from .privilege_helper import PrivilegeHelper
 from .update_manager import UpdateManager

@@ -22,7 +22,7 @@ from arguer import Arguer
 from logician import Logician
 from shelper import halo_progress
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 if TYPE_CHECKING:
     import argparse

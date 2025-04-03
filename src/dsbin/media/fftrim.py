@@ -8,7 +8,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

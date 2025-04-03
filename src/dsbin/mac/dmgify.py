@@ -37,8 +37,8 @@ from arguer import Arguer
 from logician import Logician
 from shelper import halo_progress, handle_interrupt
 
-from dsbase import FileManager
-from dsbase.util import dsbase_setup, with_retries
+from dsbin.files import FileManager
+from dsbin.util import dsbase_setup, with_retries
 
 if TYPE_CHECKING:
     import argparse

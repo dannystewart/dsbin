@@ -14,7 +14,7 @@ from pathlib import Path
 
 from textparse import print_color as colored
 
-from dsbase.util import dsbase_setup
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

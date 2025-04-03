@@ -12,8 +12,8 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dsbase import FileManager
-from dsbase.util import dsbase_setup
+from dsbin.files import FileManager
+from dsbin.util import dsbase_setup
 
 dsbase_setup()
 

@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
-## [0.6.2] - 2025-04-03
+## [0.6.3] - 2025-04-03
+
+**Hotfix for 0.6.2 using an invalid entrypoint.**
 
 ### Added
 - Adds support for post-update commands and improves configuration management in `ConfigManager`.
@@ -46,7 +48,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.6.2...HEAD
-[0.6.2]: https://github.com/dannystewart/dsbin/compare/v0.6.1...v0.6.2
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.6.3...HEAD
+[0.6.3]: https://github.com/dannystewart/dsbin/compare/v0.6.1...v0.6.3
 [0.6.1]: https://github.com/dannystewart/dsbin/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/dannystewart/dsbin/releases/tag/v0.6.0

@@ -21,7 +21,6 @@ PACKAGES = [
     "pathkeeper",
     "shelper",
     "parseutil",
-    "parseutil",
     "walking-man",
 ]
 

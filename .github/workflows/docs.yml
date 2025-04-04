@@ -24,18 +24,12 @@ jobs:
 
       - name: Generate documentation
         run: |
-          # Get package name from pyproject.toml (PEP-compliant format)
-          PKG_NAME=$(grep -m 1 "name\s*=" pyproject.toml | sed -E 's/name\s*=\s*"([^"]+)".*/\1/; s/name\s*=\s*'\''([^'\'']+)'\''.*/\1/')
-          echo "Detected package name: $PKG_NAME"
+          # Get package name from pyproject.toml
+          PKG_NAME=$(grep -m 1 "name" pyproject.toml | cut -d'"' -f2 | cut -d"'" -f2 | tr -d ' ')
+          echo "Package name: $PKG_NAME"
 
-          # Check for src/package structure (your standard layout)
-          if [ -d "src/$PKG_NAME" ]; then
-            echo "Generating docs for src/$PKG_NAME"
-            pdoc -o docs -d google "src/$PKG_NAME"
-          else
-            echo "Error: Expected package not found at src/$PKG_NAME"
-            exit 1
-          fi
+          # Generate docs - using src/package structure
+          pdoc -o docs -d google "src/$PKG_NAME"
 
       - uses: actions/upload-pages-artifact@v3
         with:

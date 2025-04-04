@@ -20,7 +20,7 @@ def print_bounce(bounce: Bounce) -> None:
     """Print a bounce with color-coded components for easier visual parsing."""
     title = color(bounce.title, "blue")
     date = color(bounce.date.strftime("%y."), "blue")
-    date += color(bounce.date.strftime("%-m.%-d"), "green", attrs=["bold"])
+    date += color(bounce.date.strftime("%-m.%-d"), "green", style=["bold"])
     version = color(f"_{bounce.full_version}", "green")
     suffix = color(f" {bounce.suffix}", "green") if bounce.suffix else ""
     ext = color(f".{bounce.file_format}", "blue")

@@ -46,7 +46,7 @@ from dsbin.util import dsbin_setup
 if TYPE_CHECKING:
     import argparse
 
-    from parseutil.types import ColorName
+    from parseutil.types import TextColor
 
 dsbin_setup()
 
@@ -88,7 +88,7 @@ def set_times(
 def get_times(
     file: Path,
     message: str = "File timestamps",
-    color_name: ColorName = "yellow",
+    color_name: TextColor = "yellow",
     ctime: str | None = None,
     mtime: str | None = None,
 ) -> None:

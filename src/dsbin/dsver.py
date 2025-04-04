@@ -17,18 +17,18 @@ def format_version_info(versions: VersionInfo) -> tuple[str, str]:
     latest_version = color(f"{versions.latest}", "yellow")
 
     if not versions.current:
-        symbol = color("✗", "red", attrs=["bold"])
+        symbol = color("✗", "red", style=["bold"])
         ver = color("Not installed", "red")
         if versions.latest:
             ver = f"{ver}\n     Latest version: {latest_version}"
         return symbol, ver
 
     if versions.latest and version.parse(versions.latest) > version.parse(versions.current):
-        symbol = color("⚠", "yellow", attrs=["bold"])
+        symbol = color("⚠", "yellow", style=["bold"])
         ver = f"{current_version} ({latest_version} available)"
         return symbol, ver
 
-    symbol = color("✓", "green", attrs=["bold"])
+    symbol = color("✓", "green", style=["bold"])
     return symbol, current_version
 
 
@@ -53,7 +53,7 @@ def main() -> None:
         info = checker.check_package(pkg_name, source=source, **pkg)
 
         # Format and display the information
-        name = color(f"{pkg_name}:", "cyan", attrs=["bold"])
+        name = color(f"{pkg_name}:", "cyan", style=["bold"])
         symbol, version_str = format_version_info(info)
 
         print(f"{symbol} {name} {version_str}")

@@ -125,7 +125,7 @@ def display_list(scripts: list[tuple[str, str, str | None]], search_term: str = 
     print_color(
         f"{'Script Name':<{script_width}} {'Description':<{DESC_WIDTH}}",
         "cyan",
-        attrs=["bold", "underline"],
+        style=["bold", "underline"],
     )
 
     # Sort by the shortest name in each group (typically the main command)

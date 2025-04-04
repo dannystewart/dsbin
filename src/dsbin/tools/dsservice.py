@@ -118,7 +118,7 @@ def list_services(search_term: str = "") -> None:
     print_color(
         f"{'Service Name':<{service_width}} {'Description':<{DESC_WIDTH}}",
         "cyan",
-        attrs=["bold", "underline"],
+        style=["bold", "underline"],
     )
 
     for name, desc in sorted(services):

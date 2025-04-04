@@ -10,31 +10,77 @@ This is my personal collection of Python scripts, built up over many years of so
 ## Script List
 
 ### Meta Scripts
-- **dsver**, **lsbin**: *(No description available)*
+- **dsver**: Show installed versions of my packages.
+- **lsbin**: Lists executable files and their descriptions based on docstrings. What you're looking at now.
 
 ### File Management
-- **backupsort**, **bigfiles**, **dupefinder**, **fml**, **foldermerge**, **rsyncer**, **workcalc**: *(No description available)*
+- **backupsort**: Sorts saved backup files by adding a timestamp suffix to the filename.
+- **bigfiles**: Finds the top N file types in a directory by cumulative size.
+- **dupefinder**: Find duplicate files in a directory.
+- **fml**: Uploads a file to Fastmail's file storage using WebDAV.
+- **foldermerge**: Tries to merge two folders, accounting for duplicates and name conflicts.
+- **rsyncer**: Build an rsync command interactively.
+- **workcalc**: Calculate how much time went into a project.
 
 ### Text Processing Scripts
-- **pycompare**, **w11renamer**: *(No description available)*
+- **pycompare**: Compare two lists and output common/unique elements.
+- **w11renamer**: Generates non-stupid filenames for Windows 11 ISO files from stupid ones.
 
 ### Media Scripts
-- **ffgif**, **fftrim**, **ytdl**: *(No description available)*
+- **ffgif**: Converts a video file to a GIF using ffmpeg.
+- **fftrim**: Use ffmpeg to trim a video file without re-encoding.
+- **ytdl**: Custom yt-dlp command to ensure highest quality MP4.
 
 ### Music Scripts
-- **aif2wav**, **alacrity**, **hpfilter**, **metacopy**, **mp3ify**, **mshare**, **pybounce**, **rmp3**, **wav2aif**, **wpmusic**: *(No description available)*
+- **aif2wav**, **wav2aif**: Convert AIFF to WAV or WAV to AIFF, with optional Logic metadata.
+- **alacrity**: Converts files in a directory to ALAC, with additional formats and options.
+- **hpfilter**: Apply a highpass filter to cut bass frequencies for HomePod playback.
+- **metacopy**: Copy audio metadata from a known file to a new file.
+- **mp3ify**: Converts files to MP3.
+- **mshare**: A script for sharing music bounces in a variety of formats.
+- **pybounce**: Uploads audio files to a Telegram channel.
+- **rmp3**: Removes MP3 files if there is an AIFF or WAV file with the same name.
+- **wpmusic**: Uploads and replaces song remixes on WordPress.
 
 ### Mac Scripts
-- **dmg-encrypt**, **dmgify**, **mvdmg**, **netreset**, **pkginst**, **setmag**, **spacepurger**, **timestamps**: *(No description available)*
+- **dmg-encrypt**: Encrypts DMG files with AES-256 encryption.
+- **dmgify**: Creates DMG files from folders, with specific handling for Logic projects.
+- **mvdmg**: Recursively moves nested DMG files to a desired location.
+- **netreset**: macOS network reset script.
+- **pkginst**: Wrapper for the macOS Installer command-line utility.
+- **setmag**: Set MagSafe light according to power status.
+- **spacepurger**: Generate large files to fill the disk and free up purgeable space.
+- **timestamps**: Quick and easy timestamp getting/setting for macOS.
 
 ### Logic Pro Scripts
-- **bipclean**, **bouncefiler**, **bounceprune**, **bounces**, **oldprojects**: *(No description available)*
+- **bipclean**: Identify and delete recently created AIFF files (default 2 hours).
+- **bouncefiler**: Sort files into folders based on filename suffix.
+- **bounceprune**: Prunes and consolidates bounces from Logic projects.
+- **bounces**: CLI tool for working with Logic bounce files using BounceParser.
+- **oldprojects**: Moves old Logic projects out of folders then deletes empty folders.
 
 ### System Tools
-- **changehostname**, **dockermounter**, **dsservice**, **dsupdater**, **dsupdater-install**, **envsync**, **ssh-tunnel**, **watchtower**: *(No description available)*
+- **changehostname**: Changes the system hostname in all the relevant places.
+- **dockermounter**: Checks to see if mount points are mounted, and act accordingly.
+- **dsservice**: Main function for managing systemd services.
+- **dsupdater**: Comprehensive update installer for Linux and macOS.
+- **dsupdater-install**: Entry point for installer.
+- **envsync**: Synchronize two .env files by merging their content.
+- **ssh-tunnel**: Create or kill an SSH tunnel on the specified port.
+- **watchtower**: Script to help with running Watchtower for Docker.
 
 ### Development Scripts
-- **checkdeps**, **checkimports**, **codeconfigs**, **impactanalyzer**, **packageanalyzer**, **poetry-migrate**, **pybumper**, **pyenversioner**, **scriptdep**, **tagreplace**, **updatedeps**, **uvmigrate**: *(No description available)*
+- **checkdeps**: Check all interdependencies between dsbin and dsbin.
+- **checkimports**: Check for circular imports in a Python project.
+- **codeconfigs**: *(No description available)*
+- **impactanalyzer**: Analyze the impact of changes in repositories and their dependencies.
+- **packageanalyzer**: Analyze package dependencies and generate an import graph.
+- **poetry-migrate**, **uvmigrate**: Process pyproject.toml file(s) based on command line arguments.
+- **pybumper**: Version management tool for Python projects.
+- **pyenversioner**: Updates .python-version files recursively.
+- **scriptdep**: Analyze dependencies and imports across scripts to help separate concerns.
+- **tagreplace**: Replace an existing Git tag with a new tag name and description.
+- **updatedeps**: Package management utility for working with multiple Poetry projects.
 
 ## License
 This project is licensed under the LGPL-3.0 License. See the [LICENSE](https://github.com/dannystewart/dsbin/blob/main/LICENSE) file for details.

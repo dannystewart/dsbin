@@ -72,7 +72,7 @@ This is my personal collection of Python scripts, built up over many years of so
 ### Development Scripts
 - **checkdeps**: Check all interdependencies between dsbin and dsbin.
 - **checkimports**: Check for circular imports in a Python project.
-- **codeconfigs**: *(No description available)*
+- **codeconfigs**: Download configs for coding tools and compare against local versions.
 - **impactanalyzer**: Analyze the impact of changes in repositories and their dependencies.
 - **packageanalyzer**: Analyze package dependencies and generate an import graph.
 - **poetry-migrate**, **uvmigrate**: Process pyproject.toml file(s) based on command line arguments.

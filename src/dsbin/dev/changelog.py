@@ -2,16 +2,17 @@
 
 from __future__ import annotations
 
-import argparse
 import re
 import subprocess
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from arguer import Arguer
 from logician import Logician
 
 if TYPE_CHECKING:
+    import argparse
     from collections.abc import Sequence
 
 logger = Logician.get_logger()
@@ -34,7 +35,7 @@ def get_latest_version() -> str:
         msg = "Version not found in pyproject.toml"
         raise ValueError(msg)
     except Exception as e:
-        logger.error("Failed to get version from pyproject.toml: %s", e)
+        logger.error("Failed to get version from pyproject.toml: %s", str(e))
         raise
 
 
@@ -47,14 +48,14 @@ def get_previous_version() -> str:
             return match.group(1)
         return "0.0.0"  # Fallback if no versions found
     except Exception as e:
-        logger.error("Failed to get previous version from changelog: %s", e)
+        logger.error("Failed to get previous version from changelog: %s", str(e))
         return "0.0.0"
 
 
 def create_version_entry(version: str, sections: dict[str, list[str]]) -> str:
     """Create a new version entry for the changelog."""
     today = time.strftime("%Y-%m-%d")
-    entry = f"## [{version}] - {today}\n\n"
+    entry = f"## [{version}] - {today}\n\n\n"
 
     for section, items in sections.items():
         if items:
@@ -107,27 +108,41 @@ def update_version_links(content: str, version: str, prev_version: str) -> str:
         r"\[unreleased\]: .*", f"[unreleased]: {REPO_URL}/compare/v{version}...HEAD", content
     )
 
-    # Add new version link if it doesn't exist
-    version_link_pattern = f"\\[{version}\\]: "
-    if version_link_pattern not in content:
-        if prev_version == "0.0.0":
-            # First version
-            version_link = f"[{version}]: {REPO_URL}/releases/tag/v{version}"
-        else:
-            # Compare with previous version
-            version_link = f"[{version}]: {REPO_URL}/compare/v{prev_version}...v{version}"
+    # Extract all existing version links
+    links = {}
+    for match in re.finditer(r"\[([\d\.]+)\]: (.*)", content):
+        ver, url = match.groups()
+        links[ver] = url
 
-        # Add the link in the right section
-        if "<!-- Versions -->" in content:
-            content = re.sub(
-                r"(<!-- Versions -->.*?)(\n\n|$)",
-                f"\\1\n{version_link}\\2",
-                content,
-                flags=re.DOTALL,
-            )
+    # Only add the new version link if it doesn't exist
+    if version not in links:
+        if prev_version == "0.0.0":
+            links[version] = f"{REPO_URL}/releases/tag/v{version}"
         else:
-            # Add Versions section if it doesn't exist
-            content += f"\n<!-- Versions -->\n{version_link}\n"
+            links[version] = f"{REPO_URL}/compare/v{prev_version}...v{version}"
+
+    # Sort versions and recreate the links section
+    from packaging import version as pkg_version
+
+    sorted_versions = sorted(links.keys(), key=pkg_version.parse, reverse=True)
+
+    # Build the new versions section
+    new_links_section = "<!-- Versions -->\n"
+    new_links_section += f"[unreleased]: {REPO_URL}/compare/v{version}...HEAD\n"
+    for ver in sorted_versions:
+        new_links_section += f"[{ver}]: {links[ver]}\n"
+
+    # Replace the entire versions section
+    if "<!-- Versions -->" in content:
+        content = re.sub(
+            r"<!-- Versions -->.*?(\n\n|$)",
+            new_links_section + "\n",
+            content,
+            flags=re.DOTALL,
+        )
+    else:
+        # Add Versions section if it doesn't exist
+        content += f"\n{new_links_section}\n"
 
     return content
 
@@ -153,10 +168,10 @@ def update_changelog(version: str, sections: dict[str, list[str]]) -> None:
         content = update_version_links(content, version, prev_version)
 
         CHANGELOG_PATH.write_text(content)
-        logger.info("Updated changelog with version %s", version)
+        logger.info("Updated changelog with version %s.", version)
 
     except Exception as e:
-        logger.error("Failed to update changelog: %s", e)
+        logger.error("Failed to update changelog: %s", str(e))
         raise
 
 
@@ -172,11 +187,11 @@ def get_git_range(prev_version: str) -> str:
         )
 
         if tag not in result.stdout:
-            logger.warning("Previous version tag %s not found, using all commits", tag)
+            logger.warning("Previous version tag %s not found, using all commits.", tag)
             return ""
         return f"{tag}..HEAD"
     except subprocess.CalledProcessError as e:
-        logger.error("Git command failed while determining range: %s", e)
+        logger.error("Git command failed while determining range: %s", str(e))
         return ""
 
 
@@ -191,7 +206,7 @@ def fetch_commit_messages(git_range: str) -> list[str]:
         )
         return [line.strip() for line in result.stdout.splitlines() if line.strip()]
     except subprocess.CalledProcessError as e:
-        logger.error("Git command failed while fetching commits: %s", e)
+        logger.error("Git command failed while fetching commits: %s", str(e))
         return []
 
 
@@ -234,7 +249,7 @@ def get_git_changes(prev_version: str) -> dict[str, list[str]]:
         commit_messages = fetch_commit_messages(git_range)
         return categorize_commits(commit_messages)
     except Exception as e:
-        logger.error("Failed to get git changes: %s", e)
+        logger.error("Failed to get git changes: %s", str(e))
         return {}
 
 
@@ -246,25 +261,25 @@ def edit_changelog() -> None:
         editor = os.environ.get("EDITOR", "vim")
         subprocess.run([editor, CHANGELOG_PATH], check=True)
     except Exception as e:
-        logger.error("Failed to open editor: %s", e)
+        logger.error("Failed to open editor: %s", str(e))
 
 
 def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = argparse.ArgumentParser(description="Update CHANGELOG.md with a new version")
+    parser = Arguer(description=__doc__, add_version=False)
     parser.add_argument(
-        "--version", "-v", help="Version to add (defaults to version from pyproject.toml)"
+        "--version", "-v", help="version to add (defaults to version from pyproject.toml)"
     )
     parser.add_argument(
         "--auto",
         "-a",
         action="store_true",
-        help="Automatically generate changelog entries from git commits",
+        help="automatically generate changelog entries from git commits",
     )
     parser.add_argument(
         "--no-edit",
         action="store_true",
-        help="Don't open the changelog in an editor after updating",
+        help="don't open the changelog in an editor after updating",
     )
     return parser.parse_args(args)
 
@@ -300,7 +315,7 @@ def main() -> int:
 
         return 0
     except Exception as e:
-        logger.error("Failed to update changelog: %s", e)
+        logger.error("Failed to update changelog: %s", str(e))
         return 1
 
 

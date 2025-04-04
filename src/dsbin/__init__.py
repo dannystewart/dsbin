@@ -63,6 +63,7 @@
 - **watchtower**: Script to help with running Watchtower for Docker.
 
 ### Development Scripts
+- **changelog**, **repo-run**: *(No description available)*
 - **checkdeps**: Check all interdependencies between dsbin and dsbin.
 - **checkimports**: Check for circular imports in a Python project.
 - **codeconfigs**: Download configs for coding tools and compare against local versions.
@@ -73,5 +74,4 @@
 - **pyenversioner**: Updates .python-version files recursively.
 - **scriptdep**: Analyze dependencies and imports across scripts to help separate concerns.
 - **tagreplace**: Replace an existing Git tag with a new tag name and description.
-- **updatedeps**: Package management utility for working with multiple Poetry projects.
 """  # noqa: D415, W505

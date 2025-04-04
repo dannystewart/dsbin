@@ -417,7 +417,7 @@ xmod = "*"
 
 [[package]]
 name = "enviromancer"
-version = "0.1.6"
+version = "0.1.7"
 description = "Gain mastery over your environment variables"
 optional = false
 python-versions = ">=3.12"
@@ -426,8 +426,8 @@ files = []
 develop = true
 
 [package.dependencies]
-logician = ">=0.3.3"
-polykit = ">=0.1.0"
+logician = ">=0.3.4"
+polykit = ">=0.1.1"
 python-dotenv = ">=1.1.0"
 
 [package.source]
@@ -571,7 +571,7 @@ colorama = ">=0.3.9"
 
 [[package]]
 name = "logician"
-version = "0.3.3"
+version = "0.3.4"
 description = "The logical choice for Python logging"
 optional = false
 python-versions = ">=3.12"
@@ -580,7 +580,7 @@ files = []
 develop = true
 
 [package.dependencies]
-polykit = ">=0.1.0"
+polykit = ">=0.1.1"
 
 [package.source]
 type = "directory"
@@ -969,7 +969,7 @@ files = []
 develop = true
 
 [package.dependencies]
-enviromancer = ">=0.1.6"
+enviromancer = ">=0.1.7"
 platformdirs = ">=4.3.7,<5.0.0"
 
 [package.source]
@@ -1116,7 +1116,7 @@ type = ["mypy (>=1.14.1)"]
 
 [[package]]
 name = "polykit"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python toolkit"
 optional = false
 python-versions = ">=3.12"
@@ -1126,7 +1126,7 @@ develop = true
 
 [package.dependencies]
 halo = ">=0.0.31"
-logician = ">=0.3.3"
+logician = ">=0.3.4"
 packaging = ">=24.2"
 python-dateutil = ">=2.9.0.post0,<3.0.0"
 requests = ">=2.32.3"
@@ -1785,7 +1785,7 @@ test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess
 
 [[package]]
 name = "walking-man"
-version = "0.2.6"
+version = "0.2.8"
 description = "A friendly companion while you wait"
 optional = false
 python-versions = ">=3.12"
@@ -1794,7 +1794,7 @@ files = []
 develop = true
 
 [package.dependencies]
-polykit = ">=0.1.0"
+polykit = ">=0.1.1"
 
 [package.source]
 type = "directory"
@@ -1827,4 +1827,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "d815d5c92c1d7f61f6dd8ef49d47d2ba2460ee7ac5190d341cf37d479e3bdc01"
+content-hash = "21192742a12f65e3bb09fa2658458e85bb6e3f40236762079d4bb30d9095e938"

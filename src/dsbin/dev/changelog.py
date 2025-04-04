@@ -18,7 +18,39 @@ if TYPE_CHECKING:
 logger = Logician.get_logger()
 
 CHANGELOG_PATH = Path("CHANGELOG.md")
-REPO_URL = "https://github.com/dannystewart/dsbin"
+
+
+def get_repo_url(repo_override: str | None = None) -> str:
+    """Get the GitHub repository URL."""
+    if repo_override:
+        return f"https://github.com/dannystewart/{repo_override}"
+
+    # Try to get repo name from git remote
+    try:
+        result = subprocess.run(
+            ["git", "config", "--get", "remote.origin.url"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        url = result.stdout.strip()
+
+        # Extract repo name from URL
+        if "github.com" in url:
+            if url.startswith("git@github.com:"):
+                # SSH format: git@github.com:username/repo.git
+                repo_name = url.split(":")[-1].split("/")[-1].rstrip(".git")
+            else:
+                # HTTPS format: https://github.com/username/repo.git
+                repo_name = url.split("/")[-1].rstrip(".git")
+
+            return f"https://github.com/dannystewart/{repo_name}"
+    except subprocess.CalledProcessError:
+        logger.warning("Failed to get git remote URL, falling back to directory name.")
+
+    # Fallback to directory name
+    repo_name = Path.cwd().name
+    return f"https://github.com/dannystewart/{repo_name}"
 
 
 def get_latest_version() -> str:
@@ -55,7 +87,7 @@ def get_previous_version() -> str:
 def create_version_entry(version: str, sections: dict[str, list[str]]) -> str:
     """Create a new version entry for the changelog."""
     today = time.strftime("%Y-%m-%d")
-    entry = f"## [{version}] - {today}\n\n\n"
+    entry = f"## [{version}] - {today}\n\n"
 
     for section, items in sections.items():
         if items:
@@ -67,7 +99,7 @@ def create_version_entry(version: str, sections: dict[str, list[str]]) -> str:
     return entry
 
 
-def create_new_changelog(version: str, new_entry: str) -> str:
+def create_new_changelog(version: str, new_entry: str, repo_url: str) -> str:
     """Create a new changelog file with the given version entry."""
     return f"""# Changelog
 
@@ -75,19 +107,29 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog], and this project adheres to [Semantic Versioning].
 
+## [Unreleased]
+
 {new_entry}
 <!-- Links -->
 [Keep a Changelog]: https://keepachangelog.com/en/1.1.0/
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: {REPO_URL}/compare/v{version}...HEAD
-[{version}]: {REPO_URL}/releases/tag/v{version}
+[unreleased]: {repo_url}/compare/v{version}...HEAD
+[{version}]: {repo_url}/releases/tag/v{version}
 """
 
 
 def insert_version_into_changelog(content: str, new_entry: str) -> str:
     """Insert a new version entry into an existing changelog."""
+    # Find the Unreleased section
+    unreleased_match = re.search(r"## \[Unreleased\].*?\n(?:\n|$)", content, re.IGNORECASE)
+    if unreleased_match:
+        # Insert after the Unreleased section
+        pos = unreleased_match.end()
+        return f"{content[:pos]}{new_entry}{content[pos:]}"
+
+    # No Unreleased section, find the first version
     match = re.search(r"## \[\d+\.\d+\.\d+\]", content)
     if not match:
         # No versions yet, insert after the intro
@@ -98,14 +140,14 @@ def insert_version_into_changelog(content: str, new_entry: str) -> str:
 
     # Insert before the first version
     pos = match.start()
-    return f"{content[:pos]}{new_entry}\n{content[pos:]}"
+    return f"{content[:pos]}{new_entry}{content[pos:]}"
 
 
-def update_version_links(content: str, version: str, prev_version: str) -> str:
+def update_version_links(content: str, version: str, prev_version: str, repo_url: str) -> str:
     """Update the version links section in the changelog."""
     # Update unreleased link
     content = re.sub(
-        r"\[unreleased\]: .*", f"[unreleased]: {REPO_URL}/compare/v{version}...HEAD", content
+        r"\[unreleased\]: .*", f"[unreleased]: {repo_url}/compare/v{version}...HEAD", content
     )
 
     # Extract all existing version links
@@ -117,9 +159,9 @@ def update_version_links(content: str, version: str, prev_version: str) -> str:
     # Only add the new version link if it doesn't exist
     if version not in links:
         if prev_version == "0.0.0":
-            links[version] = f"{REPO_URL}/releases/tag/v{version}"
+            links[version] = f"{repo_url}/releases/tag/v{version}"
         else:
-            links[version] = f"{REPO_URL}/compare/v{prev_version}...v{version}"
+            links[version] = f"{repo_url}/compare/v{prev_version}...v{version}"
 
     # Sort versions and recreate the links section
     from packaging import version as pkg_version
@@ -128,7 +170,7 @@ def update_version_links(content: str, version: str, prev_version: str) -> str:
 
     # Build the new versions section
     new_links_section = "<!-- Versions -->\n"
-    new_links_section += f"[unreleased]: {REPO_URL}/compare/v{version}...HEAD\n"
+    new_links_section += f"[unreleased]: {repo_url}/compare/v{version}...HEAD\n"
     for ver in sorted_versions:
         new_links_section += f"[{ver}]: {links[ver]}\n"
 
@@ -147,28 +189,39 @@ def update_version_links(content: str, version: str, prev_version: str) -> str:
     return content
 
 
-def update_changelog(version: str, sections: dict[str, list[str]]) -> None:
+def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str) -> None:
     """Update the changelog with a new version entry and update all links."""
     try:
         new_entry = create_version_entry(version, sections)
 
         if not CHANGELOG_PATH.exists():
             # Create a new changelog if it doesn't exist
-            content = create_new_changelog(version, new_entry)
+            content = create_new_changelog(version, new_entry, repo_url)
             CHANGELOG_PATH.write_text(content)
             logger.info("Created new changelog with version %s.", version)
             return
 
         # Update existing changelog
         content = CHANGELOG_PATH.read_text()
-        content = insert_version_into_changelog(content, new_entry)
+
+        # Check if version already exists
+        if re.search(rf"## \[{re.escape(version)}\]", content):
+            logger.warning(
+                "Version %s already exists in changelog, skipping entry creation.", version
+            )
+            section_exists = True
+        else:
+            content = insert_version_into_changelog(content, new_entry)
+            section_exists = False
 
         # Update version links
         prev_version = get_previous_version()
-        content = update_version_links(content, version, prev_version)
+        content = update_version_links(content, version, prev_version, repo_url)
 
         CHANGELOG_PATH.write_text(content)
-        logger.info("Updated changelog with version %s.", version)
+
+        if not section_exists:
+            logger.info("Updated changelog with version %s.", version)
 
     except Exception as e:
         logger.error("Failed to update changelog: %s", str(e))
@@ -281,6 +334,9 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="don't open the changelog in an editor after updating",
     )
+    parser.add_argument(
+        "--repo", "-r", help="repository name to use for links (defaults to auto-detection)"
+    )
     return parser.parse_args(args)
 
 
@@ -289,6 +345,9 @@ def main() -> int:
     args = parse_args()
 
     try:
+        # Get repo URL
+        repo_url = get_repo_url(args.repo)
+
         # Get the version to add
         version = args.version or get_latest_version()
         logger.info("Adding version %s to changelog.", version)
@@ -307,7 +366,7 @@ def main() -> int:
             sections = {"Added": [], "Changed": [], "Fixed": []}
 
         # Update the changelog
-        update_changelog(version, sections)
+        update_changelog(version, sections, repo_url)
 
         # Open in editor if requested
         if not args.no_edit:

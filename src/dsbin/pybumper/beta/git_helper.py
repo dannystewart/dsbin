@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from polykit.cli import confirm_action
 from polykit.shell import handle_interrupt
 
 from dsbin.pybumper.beta.monorepo_helper import MonorepoHelperBeta
@@ -108,10 +109,13 @@ class GitHelperBeta:
         try:
             has_other_changes = self.commit_version_change(current_version, package_name)
             if has_other_changes:
-                self.logger.info(
+                self.logger.warning(
                     "Committed pyproject.toml without version change. "
-                    "Other changes in the working directory were skipped and preserved."
+                    "Other changes in the working directory will be preserved."
                 )
+                if not confirm_action("Commit and push anyway?", prompt_color="yellow"):
+                    self.logger.warning("Bump aborted.")
+                    sys.exit(1)
         except subprocess.CalledProcessError as e:
             # If there are no changes to commit, just proceed with tagging
             if "nothing to commit" in str(e):

@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from polykit.cli import confirm_action
 from polykit.shell import handle_interrupt
 
 if TYPE_CHECKING:
@@ -105,10 +106,13 @@ class GitHelper:
         # Create a new commit with the current version number
         has_other_changes = self.commit_version_change(current_version)
         if has_other_changes:
-            self.logger.info(
+            self.logger.warning(
                 "Committed pyproject.toml without version change. "
-                "Other changes in the working directory were skipped and preserved."
+                "Other changes in the working directory will be preserved."
             )
+            if not confirm_action("Commit and push anyway?", prompt_color="yellow"):
+                self.logger.warning("Bump aborted.")
+                sys.exit(1)
 
         # Create tag
         subprocess.run(["git", "tag", tag_name], check=True)

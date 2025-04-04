@@ -183,6 +183,23 @@ class GitHelper:
 
         # Handle version bump commit if needed
         if bump_type is not None:
+            # Check for uncommitted changes BEFORE making any commits
+            result = subprocess.run(
+                ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+            )
+            has_other_changes = any(
+                not line.endswith("pyproject.toml") for line in result.stdout.splitlines()
+            )
+
+            if has_other_changes:
+                self.logger.warning(
+                    "There are uncommitted changes in the working directory besides pyproject.toml."
+                )
+                if not confirm_action("Continue with version bump anyway?", prompt_color="yellow"):
+                    self.logger.warning("Version bump aborted.")
+                    sys.exit(1)
+
+            # Now proceed with the commit
             has_other_changes = self.commit_version_change(new_version)
             if has_other_changes:
                 self.logger.info(
@@ -190,7 +207,8 @@ class GitHelper:
                     "Other changes in the working directory were skipped and preserved."
                 )
 
-        if (  # Create tag, first checking if it already exists
+        # Check if tag already exists
+        if (
             subprocess.run(
                 ["git", "rev-parse", tag_name], capture_output=True, check=False
             ).returncode
@@ -199,6 +217,7 @@ class GitHelper:
             self.logger.error("Tag %s already exists.", tag_name)
             sys.exit(1)
 
+        # Create tag
         subprocess.run(["git", "tag", tag_name], check=True)
 
         if self.push_to_remote:  # Push changes and tags

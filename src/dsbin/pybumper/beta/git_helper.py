@@ -235,10 +235,28 @@ class GitHelperBeta:
             bump_type: The type of version bump performed.
             package_name: The name of the package being versioned.
         """
-        tag_name = self.generate_tag_name(new_version, package_name)
+        version_prefix = self.detect_version_prefix()
+        tag_name = f"{version_prefix}{new_version}"
 
         # Handle version bump commit if needed
         if bump_type is not None:
+            # Check for uncommitted changes BEFORE making any commits
+            result = subprocess.run(
+                ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+            )
+            has_other_changes = any(
+                not line.endswith("pyproject.toml") for line in result.stdout.splitlines()
+            )
+
+            if has_other_changes:
+                self.logger.warning(
+                    "There are uncommitted changes in the working directory besides pyproject.toml."
+                )
+                if not confirm_action("Continue with version bump anyway?", prompt_color="yellow"):
+                    self.logger.warning("Version bump aborted.")
+                    sys.exit(1)
+
+            # Now proceed with the commit
             has_other_changes = self.commit_version_change(new_version, package_name)
             if has_other_changes:
                 self.logger.info(
@@ -246,7 +264,8 @@ class GitHelperBeta:
                     "Other changes in the working directory were skipped and preserved."
                 )
 
-        if (  # Create tag, first checking if it already exists
+        # Check if tag already exists
+        if (
             subprocess.run(
                 ["git", "rev-parse", tag_name], capture_output=True, check=False
             ).returncode
@@ -255,6 +274,7 @@ class GitHelperBeta:
             self.logger.error("Tag %s already exists.", tag_name)
             sys.exit(1)
 
+        # Create tag
         subprocess.run(["git", "tag", tag_name], check=True)
 
         if self.push_to_remote:  # Push changes and tags

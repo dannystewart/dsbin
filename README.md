@@ -70,7 +70,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - **watchtower**: Script to help with running Watchtower for Docker.
 
 ### Development Scripts
-- **changelog**, **repo-run**: *(No description available)*
+- **changelog**: Update CHANGELOG.md with a new version and automatically manage links.
 - **checkdeps**: Check all interdependencies between dsbin and dsbin.
 - **checkimports**: Check for circular imports in a Python project.
 - **codeconfigs**: Download configs for coding tools and compare against local versions.
@@ -79,6 +79,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - **poetry-migrate**, **uvmigrate**: Process pyproject.toml file(s) based on command line arguments.
 - **pybumper**: Version management tool for Python projects.
 - **pyenversioner**: Updates .python-version files recursively.
+- **repo-run**: *(No description available)*
 - **scriptdep**: Analyze dependencies and imports across scripts to help separate concerns.
 - **tagreplace**: Replace an existing Git tag with a new tag name and description.
 

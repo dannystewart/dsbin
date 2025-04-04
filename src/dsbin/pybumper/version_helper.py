@@ -259,7 +259,7 @@ class VersionHelper:
             sys.exit(1)
         else:
             # Add post-release to regular version
-            new_version_str = f"{version.major}.{version.minor}.{version.patch}.post1"
+            new_version_str = f"{version.major}.{version.minor}.{version.patch}.post0"
 
         return self.parse_version(new_version_str)
 

@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.6.5.post0] - 2025-04-03
+
+### Fixed
+
+- Updates license to LGPL as it was intended to be.
+- Corrects the `repo-run` description in the README.
+- Fixes incorrect module path in the `repo-run` entry of `pyproject.toml`.
+
 ## [0.6.5] - 2025-04-03
 
 ### Added
@@ -74,7 +82,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.6.5...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.6.5.post0...HEAD
+[0.6.5.post0]: https://github.com/dannystewart/dsbin/compare/v0.6.5...v0.6.5.post0
 [0.6.5]: https://github.com/dannystewart/dsbin/compare/v0.6.4...v0.6.5
 [0.6.4]: https://github.com/dannystewart/dsbin/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/dannystewart/dsbin/compare/v0.6.1...v0.6.3

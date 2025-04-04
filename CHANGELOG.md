@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 - Renames the package management utility for managing multiple Poetry projects from `updatedeps` to `repo-run`.
 - Updates documentation to include a description for `codeconfigs` in README and initialization files.
+- Updates README to improve style by adding a newline after the category header in content generation.
 
 ## [0.6.4] - 2025-04-03
 

@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.6.8] - 2025-04-04
+
+### Fixed
+
+- Fixes a duplicate entry for `parseutil` in the `PACKAGES` list of `repo_run.py`.
+
 ## [0.6.7] - 2025-04-04
 
 ### Added
@@ -93,7 +99,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.6.7...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.6.8...HEAD
+[0.6.8]: https://github.com/dannystewart/dsbin/compare/v0.6.7...v0.6.8
 [0.6.7]: https://github.com/dannystewart/dsbin/compare/v0.6.6...v0.6.7
 [0.6.6]: https://github.com/dannystewart/dsbin/compare/v0.6.5...v0.6.6
 [0.6.5]: https://github.com/dannystewart/dsbin/compare/v0.6.4...v0.6.5

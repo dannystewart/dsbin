@@ -171,6 +171,13 @@ class ConfigManager:
             cmd = config.post_update_command
             self.logger.info("Running post-update command for %s.", config.name)
 
+            # Special handling for pre-commit
+            if config.name == ".pre-commit-config.yaml" and not is_git_repository():
+                self.logger.warning(
+                    "Skipping pre-commit hook installation as this is not a Git repository."
+                )
+                return
+
             # Convert list to string if needed and run the command
             cmd_str = " ".join(cmd) if isinstance(cmd, list) else cmd
             self.logger.debug("Executing: %s", cmd_str)
@@ -186,16 +193,39 @@ class ConfigManager:
             self.logger.error("Failed to run post-update command for %s: %s", config.name, str(e))
 
 
+def is_git_repository() -> bool:
+    """Check if the current directory is in a Git repository."""
+    try:
+        subprocess.run(
+            ["git", "rev-parse", "--is-inside-work-tree"],
+            check=True,
+            capture_output=True,
+        )
+        return True
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = Arguer(description="Update config files from central repository")
     parser.add_argument("-y", action="store_true", help="update files without confirmation")
+    parser.add_argument(
+        "-f", "--force", action="store_true", help="force update even if not in a Git repository"
+    )
     return parser.parse_args()
 
 
 def main() -> None:
     """Fetch and update the config files."""
     args = parse_args()
+
+    # Check if we're in a Git repository
+    if not is_git_repository() and not args.force:
+        logger = Logician.get_logger()
+        logger.error("This is intended to run inside of a Git repository. Use --force to override.")
+        return
+
     manager = ConfigManager(no_confirm=args.y)
     manager.update_configs()
 

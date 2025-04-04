@@ -11,8 +11,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-from parseutil import print_color
-from shelper import confirm_action, is_root_user
+from polykit.cli import confirm_action
+from polykit.parsers import print_color
+from polykit.shell import is_root_user
 
 
 def run_hostname_command(new_hostname: str) -> None:

@@ -6,18 +6,16 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import tomlkit
-import tomlkit.toml_document
 from logician import Logician
+from polykit import polykit_setup
 from tomlkit.items import Array
-
-from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
 
     from tomlkit.items import Array
 
-dsbin_setup()
+polykit_setup()
 
 POETRY_TO_PEP621_MAPPING = {
     "name": "name",

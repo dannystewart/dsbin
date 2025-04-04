@@ -9,7 +9,7 @@ import ast
 import os
 from pathlib import Path
 
-from parseutil import color, print_color
+from polykit.parsers import color, print_color
 
 
 def find_imports(file_path: str) -> list[tuple[str, int]]:
@@ -92,9 +92,10 @@ def find_cycles(
     def dfs(node: str):
         if node in path:
             cycle_start_idx = path.index(node)
-            cycle = path[cycle_start_idx:] + [node]
-            cycle_info = path_info[cycle_start_idx:] + [
-                path_info[cycle_start_idx] if cycle_start_idx < len(path_info) else None
+            cycle = [*path[cycle_start_idx:], node]
+            cycle_info = [
+                *path_info[cycle_start_idx:],
+                path_info[cycle_start_idx] if cycle_start_idx < len(path_info) else None,
             ]
             cycles.append(list(zip(cycle, cycle_info, strict=False)))
             return

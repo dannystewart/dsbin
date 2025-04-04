@@ -16,12 +16,11 @@ from pathlib import Path
 
 from enviromancer import Enviromancer
 from natsort import natsorted
-from parseutil import color
-from shelper import confirm_action
+from polykit import polykit_setup
+from polykit.cli import confirm_action
+from polykit.parsers import color
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 env = Enviromancer()
 env.add_var("BACKUPSORT_PATH", description="Path to move renamed files to")
@@ -58,7 +57,7 @@ def split_filename(filename: str) -> tuple[str, str]:
         return filename, ""
 
     base = parts[0]
-    extension = ".".join([""] + parts[1:])  # Prepend empty string to add leading dot
+    extension = ".".join(["", *parts[1:]])  # Prepend empty string to add leading dot
     return base, extension
 
 

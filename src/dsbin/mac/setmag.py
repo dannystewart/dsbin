@@ -7,10 +7,10 @@ from __future__ import annotations
 import subprocess
 
 from logician import Logician
+from polykit import polykit_setup
+from polykit.core import platform_check
 
-from dsbin.util import dsbin_setup, platform_check
-
-dsbin_setup()
+polykit_setup()
 platform_check("Darwin")
 
 logger = Logician.get_logger("setmag")

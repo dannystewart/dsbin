@@ -10,12 +10,12 @@ import sys
 import time
 from typing import Any
 
-from parseutil import print_color as colored
-from shelper import acquire_sudo, confirm_action
+from polykit import polykit_setup
+from polykit.cli import confirm_action
+from polykit.parsers import print_color as colored
+from polykit.shell import acquire_sudo
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 IP_TO_PING = "9.9.9.9"
 

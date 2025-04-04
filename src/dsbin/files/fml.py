@@ -9,13 +9,12 @@ from pathlib import Path
 
 import requests
 from enviromancer import Enviromancer
-from parseutil import print_color as colored
+from polykit import polykit_setup
+from polykit.parsers import print_color as colored
 from requests import Session
 from requests.auth import HTTPBasicAuth
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 # Load environment variables
 env = Enviromancer()

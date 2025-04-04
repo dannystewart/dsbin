@@ -12,12 +12,11 @@ import argparse
 from pathlib import Path
 
 import inquirer
-from parseutil import color, print_color
-from shelper import handle_interrupt
+from polykit import polykit_setup
+from polykit.parsers import color, print_color
+from polykit.shell import handle_interrupt
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 
 def process_lists(

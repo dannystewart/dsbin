@@ -8,21 +8,17 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from parseutil import color, print_color
+from polykit.parsers import color, print_color
 
 # Default packages to analyze
 DEFAULT_PACKAGES: list[str] = [
-    "arguer",
-    "devpkg",
     "dsbin",
     "enviromancer",
     "evremixes",
     "iplooker",
     "logician",
     "pathkeeper",
-    "shelper",
-    "parseutil",
-    "parseutil",
+    "polykit",
     "walking_man",
 ]
 
@@ -133,7 +129,7 @@ def analyze_package_dependencies(
     def find_cycles_dfs(node: str, path: list[str], visited: set[str]):
         if node in path:
             cycle_start = path.index(node)
-            cycles.append(tuple(path[cycle_start:] + [node]))
+            cycles.append((*path[cycle_start:], node))
             return
 
         if node in visited:

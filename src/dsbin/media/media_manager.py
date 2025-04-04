@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from logician import Logician
-from shelper import halo_progress
+from polykit.cli import halo_progress
 from walking_man import conditional_walking_man
 
 if TYPE_CHECKING:

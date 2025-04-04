@@ -17,19 +17,19 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import inquirer
-from arguer import Arguer
 from logician import Logician
-from parseutil import color as colored
-from shelper import halo_progress, handle_interrupt
+from polykit import polykit_setup
+from polykit.cli import ArgParser, halo_progress
+from polykit.parsers import color as colored
+from polykit.shell import handle_interrupt
 from walking_man import walking_man
 
 from dsbin.media import MediaManager
-from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     import argparse
 
-dsbin_setup()
+polykit_setup()
 
 
 @dataclass
@@ -260,7 +260,7 @@ class MusicShare:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = Arguer(description=__doc__)
+    parser = ArgParser(description=__doc__)
     parser.add_argument("input_file", help="the file to convert")
     parser.add_argument("--upload", action="store_true", help="use URL-safe filename for uploading")
     return parser.parse_args()

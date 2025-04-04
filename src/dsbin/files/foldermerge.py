@@ -7,13 +7,13 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from parseutil import print_color as colored
-from shelper import confirm_action
+from polykit import polykit_setup
+from polykit.cli import confirm_action
+from polykit.parsers import print_color as colored
 
 from dsbin.files import FileManager
-from dsbin.util import dsbin_setup
 
-dsbin_setup()
+polykit_setup()
 
 
 def merge_folders(first_folder: str, second_folder: str, dry_run: bool = False) -> None:

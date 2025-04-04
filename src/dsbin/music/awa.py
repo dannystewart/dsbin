@@ -13,13 +13,13 @@ import sys
 from enum import StrEnum
 from pathlib import Path
 
-from parseutil import print_color
+from polykit import polykit_setup
+from polykit.parsers import print_color
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager
-from dsbin.util import dsbin_setup
 
-dsbin_setup()
+polykit_setup()
 
 LOGIC_VERSION_PATTERN = re.compile(r"^(10|11)\.\d+(?:\.\d+)?$")
 

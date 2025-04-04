@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from shelper import handle_interrupt
+from polykit.shell import handle_interrupt
 
 if TYPE_CHECKING:
     from argparse import Namespace

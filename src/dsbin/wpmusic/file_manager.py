@@ -8,9 +8,9 @@ import inquirer
 import paramiko  # type: ignore
 import pyperclip
 from logician import Logician
-from parseutil import color as colored
+from polykit.parsers import color as colored
+from polykit.shell import handle_interrupt
 from scp import SCPClient
-from shelper import handle_interrupt
 
 from dsbin.files import FileManager as BaseFileManager
 

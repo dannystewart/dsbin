@@ -33,19 +33,20 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from arguer import Arguer
 from logician import Logician
-from shelper import halo_progress, handle_interrupt
+from polykit import polykit_setup
+from polykit.cli import ArgParser, halo_progress
+from polykit.core import with_retries
+from polykit.shell import handle_interrupt
 
 from dsbin.files import FileManager
-from dsbin.util import dsbin_setup, with_retries
 
 if TYPE_CHECKING:
     import argparse
     from collections.abc import Iterator
     from logging import Logger
 
-dsbin_setup()
+polykit_setup()
 
 
 @contextmanager
@@ -258,7 +259,7 @@ class DMGCreator:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = Arguer(
+    parser = ArgParser(
         description="Creates DMG files from folders, with specific handling for Logic project folders.",
         arg_width=36,
     )

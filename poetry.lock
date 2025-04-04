@@ -14,23 +14,6 @@ files = [
 ]
 
 [[package]]
-name = "arguer"
-version = "0.1.1"
-description = "Customizable drop-in replacement for argparse"
-optional = false
-python-versions = ">=3.12"
-groups = ["main", "dev"]
-files = []
-develop = true
-
-[package.dependencies]
-devpkg = ">=0.2.1"
-
-[package.source]
-type = "directory"
-url = "../arguer"
-
-[[package]]
 name = "bcrypt"
 version = "4.3.0"
 description = "Modern password hashing for your software and your servers"
@@ -390,21 +373,19 @@ test-randomorder = ["pytest-randomly"]
 
 [[package]]
 name = "devpkg"
-version = "0.2.1"
+version = "0.2.2"
 description = "Dev tools for Python packages"
 optional = false
 python-versions = ">=3.12"
-groups = ["main", "dev"]
-files = []
-develop = true
+groups = ["main"]
+files = [
+    {file = "devpkg-0.2.2-py3-none-any.whl", hash = "sha256:c34c53c1a96b74895404c3f995aeb9d7cfca643a6af0586efc29f2c9d62b9637"},
+    {file = "devpkg-0.2.2.tar.gz", hash = "sha256:7e3fc05f8a7f37fef3a6b1a96cdaec8998607ec58061a03d5328bcad2d97f322"},
+]
 
 [package.dependencies]
 packaging = ">=24.2"
 requests = ">=2.32.3"
-
-[package.source]
-type = "directory"
-url = "../devpkg"
 
 [[package]]
 name = "distlib"
@@ -445,8 +426,8 @@ files = []
 develop = true
 
 [package.dependencies]
-devpkg = ">=0.2.1"
 logician = ">=0.3.3"
+polykit = ">=0.1.0"
 python-dotenv = ">=1.1.0"
 
 [package.source]
@@ -599,8 +580,7 @@ files = []
 develop = true
 
 [package.dependencies]
-devpkg = ">=0.2.1"
-timecapsule = ">=0.1.2"
+polykit = ">=0.1.0"
 
 [package.source]
 type = "directory"
@@ -1135,6 +1115,28 @@ test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=8.3.4)", "pytest-
 type = ["mypy (>=1.14.1)"]
 
 [[package]]
+name = "polykit"
+version = "0.1.0"
+description = "Python toolkit"
+optional = false
+python-versions = ">=3.12"
+groups = ["main", "dev"]
+files = []
+develop = true
+
+[package.dependencies]
+halo = ">=0.0.31"
+logician = ">=0.3.3"
+packaging = ">=24.2"
+python-dateutil = ">=2.9.0.post0,<3.0.0"
+requests = ">=2.32.3"
+tzlocal = ">=5.3.1"
+
+[package.source]
+type = "directory"
+url = "../polykit"
+
+[[package]]
 name = "pre-commit"
 version = "4.2.0"
 description = "A framework for managing and maintaining multi-language pre-commit hooks."
@@ -1416,30 +1418,30 @@ pyasn1 = ">=0.1.3"
 
 [[package]]
 name = "ruff"
-version = "0.11.3"
+version = "0.11.4"
 description = "An extremely fast Python linter and code formatter, written in Rust."
 optional = false
 python-versions = ">=3.7"
 groups = ["dev"]
 files = [
-    {file = "ruff-0.11.3-py3-none-linux_armv6l.whl", hash = "sha256:cb893a5eedff45071d52565300a20cd4ac088869e156b25e0971cb98c06f5dd7"},
-    {file = "ruff-0.11.3-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:58edd48af0e201e2f494789de80f5b2f2b46c9a2991a12ea031254865d5f6aa3"},
-    {file = "ruff-0.11.3-py3-none-macosx_11_0_arm64.whl", hash = "sha256:520f6ade25cea98b2e5cb29eb0906f6a0339c6b8e28a024583b867f48295f1ed"},
-    {file = "ruff-0.11.3-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:d1ca4405a93ebbc05e924358f872efceb1498c3d52a989ddf9476712a5480b16"},
-    {file = "ruff-0.11.3-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:f4341d38775a6be605ce7cd50e951b89de65cbd40acb0399f95b8e1524d604c8"},
-    {file = "ruff-0.11.3-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:72bf5b49e4b546f4bea6c05448ab71919b09cf75363adf5e3bf5276124afd31c"},
-    {file = "ruff-0.11.3-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:9fa791ee6c3629ba7f9ba2c8f2e76178b03f3eaefb920e426302115259819237"},
-    {file = "ruff-0.11.3-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:2c81d3fe718f4d303aaa4ccdcd0f43e23bb2127da3353635f718394ca9b26721"},
-    {file = "ruff-0.11.3-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:4e4c38e9b6c01caaba46b6d8e732791f4c78389a9923319991d55b298017ce02"},
-    {file = "ruff-0.11.3-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:9686f5d1a2b4c918b5a6e9876bfe7f47498a990076624d41f57d17aadd02a4dd"},
-    {file = "ruff-0.11.3-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:4800ddc4764d42d8961ce4cb972bcf5cc2730d11cca3f11f240d9f7360460408"},
-    {file = "ruff-0.11.3-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:e63a2808879361aa9597d88d86380d8fb934953ef91f5ff3dafe18d9cb0b1e14"},
-    {file = "ruff-0.11.3-py3-none-musllinux_1_2_i686.whl", hash = "sha256:8f8b1c4ae62638cc220df440140c21469232d8f2cb7f5059f395f7f48dcdb59e"},
-    {file = "ruff-0.11.3-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:3ea2026be50f6b1fbedd2d1757d004e1e58bd0f414efa2a6fa01235468d4c82a"},
-    {file = "ruff-0.11.3-py3-none-win32.whl", hash = "sha256:73d8b90d12674a0c6e98cd9e235f2dcad09d1a80e559a585eac994bb536917a3"},
-    {file = "ruff-0.11.3-py3-none-win_amd64.whl", hash = "sha256:faf1bfb0a51fb3a82aa1112cb03658796acef978e37c7f807d3ecc50b52ecbf6"},
-    {file = "ruff-0.11.3-py3-none-win_arm64.whl", hash = "sha256:67f8b68d7ab909f08af1fb601696925a89d65083ae2bb3ab286e572b5dc456aa"},
-    {file = "ruff-0.11.3.tar.gz", hash = "sha256:8d5fcdb3bb359adc12b757ed832ee743993e7474b9de714bb9ea13c4a8458bf9"},
+    {file = "ruff-0.11.4-py3-none-linux_armv6l.whl", hash = "sha256:d9f4a761ecbde448a2d3e12fb398647c7f0bf526dbc354a643ec505965824ed2"},
+    {file = "ruff-0.11.4-py3-none-macosx_10_12_x86_64.whl", hash = "sha256:8c1747d903447d45ca3d40c794d1a56458c51e5cc1bc77b7b64bd2cf0b1626cc"},
+    {file = "ruff-0.11.4-py3-none-macosx_11_0_arm64.whl", hash = "sha256:51a6494209cacca79e121e9b244dc30d3414dac8cc5afb93f852173a2ecfc906"},
+    {file = "ruff-0.11.4-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:3f171605f65f4fc49c87f41b456e882cd0c89e4ac9d58e149a2b07930e1d466f"},
+    {file = "ruff-0.11.4-py3-none-manylinux_2_17_armv7l.manylinux2014_armv7l.whl", hash = "sha256:ebf99ea9af918878e6ce42098981fc8c1db3850fef2f1ada69fb1dcdb0f8e79e"},
+    {file = "ruff-0.11.4-py3-none-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:edad2eac42279df12e176564a23fc6f4aaeeb09abba840627780b1bb11a9d223"},
+    {file = "ruff-0.11.4-py3-none-manylinux_2_17_ppc64.manylinux2014_ppc64.whl", hash = "sha256:f103a848be9ff379fc19b5d656c1f911d0a0b4e3e0424f9532ececf319a4296e"},
+    {file = "ruff-0.11.4-py3-none-manylinux_2_17_ppc64le.manylinux2014_ppc64le.whl", hash = "sha256:193e6fac6eb60cc97b9f728e953c21cc38a20077ed64f912e9d62b97487f3f2d"},
+    {file = "ruff-0.11.4-py3-none-manylinux_2_17_s390x.manylinux2014_s390x.whl", hash = "sha256:7af4e5f69b7c138be8dcffa5b4a061bf6ba6a3301f632a6bce25d45daff9bc99"},
+    {file = "ruff-0.11.4-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:126b1bf13154aa18ae2d6c3c5efe144ec14b97c60844cfa6eb960c2a05188222"},
+    {file = "ruff-0.11.4-py3-none-musllinux_1_2_aarch64.whl", hash = "sha256:e8806daaf9dfa881a0ed603f8a0e364e4f11b6ed461b56cae2b1c0cab0645304"},
+    {file = "ruff-0.11.4-py3-none-musllinux_1_2_armv7l.whl", hash = "sha256:5d94bb1cc2fc94a769b0eb975344f1b1f3d294da1da9ddbb5a77665feb3a3019"},
+    {file = "ruff-0.11.4-py3-none-musllinux_1_2_i686.whl", hash = "sha256:995071203d0fe2183fc7a268766fd7603afb9996785f086b0d76edee8755c896"},
+    {file = "ruff-0.11.4-py3-none-musllinux_1_2_x86_64.whl", hash = "sha256:7a37ca937e307ea18156e775a6ac6e02f34b99e8c23fe63c1996185a4efe0751"},
+    {file = "ruff-0.11.4-py3-none-win32.whl", hash = "sha256:0e9365a7dff9b93af933dab8aebce53b72d8f815e131796268709890b4a83270"},
+    {file = "ruff-0.11.4-py3-none-win_amd64.whl", hash = "sha256:5a9fa1c69c7815e39fcfb3646bbfd7f528fa8e2d4bebdcf4c2bd0fa037a255fb"},
+    {file = "ruff-0.11.4-py3-none-win_arm64.whl", hash = "sha256:d435db6b9b93d02934cf61ef332e66af82da6d8c69aefdea5994c89997c7a0fc"},
+    {file = "ruff-0.11.4.tar.gz", hash = "sha256:f45bd2fb1a56a5a85fae3b95add03fb185a0b30cf47f5edc92aa0355ca1d7407"},
 ]
 
 [[package]]
@@ -1554,25 +1556,6 @@ objc = ["pyobjc-framework-Cocoa ; sys_platform == \"darwin\""]
 win32 = ["pywin32 ; sys_platform == \"win32\""]
 
 [[package]]
-name = "shelper"
-version = "0.1.4"
-description = "The shell helper"
-optional = false
-python-versions = ">=3.12"
-groups = ["main", "dev"]
-files = []
-develop = true
-
-[package.dependencies]
-halo = ">=0.0.31,<0.0.32"
-logician = ">=0.3.3"
-textparse = ">=0.1.2"
-
-[package.source]
-type = "directory"
-url = "../shelper"
-
-[[package]]
 name = "six"
 version = "1.17.0"
 description = "Python 2 and 3 compatibility utilities"
@@ -1629,39 +1612,6 @@ files = [
 
 [package.extras]
 tests = ["pytest", "pytest-cov"]
-
-[[package]]
-name = "textparse"
-version = "0.1.2"
-description = "The missing text toolkit for Python"
-optional = false
-python-versions = ">=3.12"
-groups = ["main", "dev"]
-files = [
-    {file = "textparse-0.1.2-py3-none-any.whl", hash = "sha256:bfc56065a10cc3ebc959a7788d8d3df9470eccb540bff76ad6b0d2106f59996d"},
-    {file = "textparse-0.1.2.tar.gz", hash = "sha256:71ee0eb421b26658bb16590f83f6e21d2b2345465c852cd847f6adeffc786c08"},
-]
-
-[package.dependencies]
-logician = ">=0.3.2"
-termcolor = ">=3.0.1,<4.0.0"
-
-[[package]]
-name = "timecapsule"
-version = "0.1.2"
-description = "Human-friendly datetime handling for Python"
-optional = false
-python-versions = ">=3.12"
-groups = ["main", "dev"]
-files = [
-    {file = "timecapsule-0.1.2-py3-none-any.whl", hash = "sha256:b15f9dfb832b1ca669b5761c59a5e6ce4568f1624b86796ba87a6795a7beffb6"},
-    {file = "timecapsule-0.1.2.tar.gz", hash = "sha256:9df1517c185bf180a1b04494c79cc6877e95b927298b33c98f8e90d6ca581868"},
-]
-
-[package.dependencies]
-devpkg = ">=0.2.0"
-python-dateutil = ">=2.9.0.post0"
-tzlocal = ">=5.3.1"
 
 [[package]]
 name = "tomlkit"
@@ -1844,8 +1794,7 @@ files = []
 develop = true
 
 [package.dependencies]
-shelper = ">=0.1.4"
-textparse = ">=0.1.2"
+polykit = ">=0.1.0"
 
 [package.source]
 type = "directory"
@@ -1878,4 +1827,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "dbd60053a1f15641b9d525f7e17ac367382fececbb54fae9279ed5d9740c009b"
+content-hash = "d815d5c92c1d7f61f6dd8ef49d47d2ba2460ee7ac5190d341cf37d479e3bdc01"

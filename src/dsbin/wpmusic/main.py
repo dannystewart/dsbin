@@ -24,12 +24,12 @@ from typing import TYPE_CHECKING
 
 from halo import Halo
 from logician import Logician
-from parseutil import color
-from shelper import handle_interrupt
+from polykit import polykit_setup
+from polykit.parsers import color
+from polykit.shell import handle_interrupt
 from walking_man import walking_man
 
 from dsbin.media import MediaManager
-from dsbin.util import dsbin_setup
 from dsbin.wpmusic.configs import WPConfig
 from dsbin.wpmusic.file_manager import FileManager
 from dsbin.wpmusic.metadata_setter import MetadataSetter
@@ -39,7 +39,7 @@ from dsbin.wpmusic.upload_tracker import UploadTracker
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack
 
-dsbin_setup()
+polykit_setup()
 
 
 class WPMusic:

@@ -10,12 +10,11 @@ import shutil
 import time
 from typing import TYPE_CHECKING
 
-from arguer import Arguer
 from logician import Logician
-from parseutil import Text, color, print_color
-from shelper import handle_interrupt
-
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
+from polykit.cli import ArgParser
+from polykit.parsers import Text, color, print_color
+from polykit.shell import handle_interrupt
 
 from .privilege_helper import PrivilegeHelper
 from .update_manager import UpdateManager
@@ -24,7 +23,7 @@ from .updaters.macos import MacOSSoftwareUpdate
 if TYPE_CHECKING:
     from argparse import Namespace
 
-dsbin_setup()
+polykit_setup()
 
 
 class Updater:
@@ -229,7 +228,7 @@ class Updater:
 
 def parse_arguments() -> Namespace:
     """Parse command-line arguments."""
-    parser = Arguer(description="Update system packages and applications.", arg_width=26)
+    parser = ArgParser(description="Update system packages and applications.", arg_width=26)
     parser.add_argument("--list", "-l", action="store_true", help="list all available updaters")
     parser.add_argument("--sudo", "-s", action="store_true", help="force sudo even if not needed")
     parser.add_argument("--debug", "-d", action="store_true", help="enable debug logging")

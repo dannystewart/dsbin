@@ -10,9 +10,9 @@ import subprocess
 from collections import defaultdict
 from pathlib import Path
 
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
 
-dsbin_setup()
+polykit_setup()
 
 
 def run_tool(cmd: list, cwd: str | None = None) -> tuple[str, str]:

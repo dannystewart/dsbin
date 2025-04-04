@@ -8,19 +8,18 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from arguer import Arguer
-
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
+from polykit.cli import ArgParser
 
 if TYPE_CHECKING:
     import argparse
 
-dsbin_setup()
+polykit_setup()
 
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = Arguer(description=__doc__)
+    parser = ArgParser(description=__doc__)
     parser.add_argument(
         "-c", "--compress", action="store_true", help="compress output file to reduce size"
     )

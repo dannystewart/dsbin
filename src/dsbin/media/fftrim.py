@@ -8,9 +8,9 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
 
-dsbin_setup()
+polykit_setup()
 
 
 def convert_to_hhmmss(time_str: str) -> str:

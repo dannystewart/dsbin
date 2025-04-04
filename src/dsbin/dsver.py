@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from typing import Any
 
-from devpkg import PackageSource, VersionChecker, VersionInfo
 from packaging import version
-from parseutil import color
+from polykit.parsers import color
+from polykit.versions import PackageSource, VersionChecker, VersionInfo
 
 
 def format_version_info(versions: VersionInfo) -> tuple[str, str]:

@@ -18,23 +18,21 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from arguer import Arguer
 from logician import Logician
-from shelper import halo_progress
-
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
+from polykit.cli import ArgParser, halo_progress
 
 if TYPE_CHECKING:
     import argparse
 
-dsbin_setup()
+polykit_setup()
 
 logger = Logician.get_logger(simple=True)
 
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = Arguer(
+    parser = ArgParser(
         description="Creates an encrypted copy of an existing DMG file.",
         arg_width=32,
     )

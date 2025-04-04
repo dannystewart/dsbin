@@ -7,22 +7,22 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from arguer import Arguer
 from enviromancer import Enviromancer
 from logician import Logician
-from parseutil import Text
-from shelper import confirm_action, handle_interrupt
+from polykit import polykit_setup
+from polykit.cli import ArgParser, confirm_action
+from polykit.parsers import Text
+from polykit.shell import handle_interrupt
 
 from dsbin.pybumper.beta.git_helper import GitHelperBeta
 from dsbin.pybumper.beta.monorepo_helper import MonorepoHelperBeta
 from dsbin.pybumper.bump_type import BumpType
 from dsbin.pybumper.version_helper import VersionHelper
-from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     import argparse
 
-dsbin_setup()
+polykit_setup()
 
 
 class PyBumperBeta:
@@ -210,7 +210,7 @@ class PyBumperBeta:
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = Arguer(description=__doc__, lines=1, arg_width=34)
+    parser = ArgParser(description=__doc__, lines=1, arg_width=34)
     parser.add_argument(
         "type",
         nargs="*",

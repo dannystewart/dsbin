@@ -15,12 +15,12 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import inquirer
-from parseutil import TZ, print_color
+from polykit import polykit_setup
+from polykit.parsers import TZ, print_color
 
 from dsbin.files import FileManager
-from dsbin.util import dsbin_setup
 
-dsbin_setup()
+polykit_setup()
 
 DEFAULT_HOURS = 2
 

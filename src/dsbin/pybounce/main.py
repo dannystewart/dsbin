@@ -15,19 +15,19 @@ from typing import TYPE_CHECKING
 from enviromancer import Enviromancer
 from logician import Logician
 from pathkeeper import PathKeeper
-from shelper import async_with_handle_interrupt
+from polykit import polykit_setup
+from polykit.shell import async_with_handle_interrupt
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
 from dsbin.pybounce.file_manager import FileManager
 from dsbin.pybounce.sqlite_manager import SQLiteManager
-from dsbin.util import dsbin_setup
 
 if TYPE_CHECKING:
     from logging import Logger
 
-dsbin_setup()
+polykit_setup()
 
 
 class TelegramUploader:

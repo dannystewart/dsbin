@@ -9,10 +9,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from logician import Logician
-from parseutil import Text
+from polykit import polykit_setup
+from polykit.parsers import Text
 from walking_man import walking_man
 
-from dsbin.util import dsbin_setup
 from dsbin.workcalc.data import (
     SessionAnalyzer,
     StreakAnalyzer,
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
     from dsbin.workcalc import DataSourcePlugin
     from dsbin.workcalc.data import WorkItem
 
-dsbin_setup()
+polykit_setup()
 
 
 def parse_date(date_str: str) -> datetime.date:

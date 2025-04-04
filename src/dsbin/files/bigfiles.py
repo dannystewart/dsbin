@@ -12,11 +12,10 @@ import operator
 from collections import defaultdict
 from pathlib import Path
 
-from parseutil import print_color as colored
+from polykit import polykit_setup
+from polykit.parsers import print_color as colored
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 
 def bytes_to_readable(size_in_bytes: float) -> str:

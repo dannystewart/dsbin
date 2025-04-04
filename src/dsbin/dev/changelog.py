@@ -8,8 +8,8 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from arguer import Arguer
 from logician import Logician
+from polykit.cli import ArgParser
 
 if TYPE_CHECKING:
     import argparse
@@ -319,7 +319,7 @@ def edit_changelog() -> None:
 
 def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = Arguer(description=__doc__, add_version=False)
+    parser = ArgParser(description=__doc__, add_version=False)
     parser.add_argument(
         "--version", "-v", help="version to add (defaults to version from pyproject.toml)"
     )

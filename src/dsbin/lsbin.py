@@ -15,11 +15,10 @@ import re
 from importlib.metadata import entry_points
 from pathlib import Path
 
-from parseutil import color, print_color
+from polykit import polykit_setup
+from polykit.parsers import color, print_color
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 # Define column widths
 COLUMN_BUFFER = 2

@@ -10,10 +10,11 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from dsbin.files import FileManager
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
 
-dsbin_setup()
+from dsbin.files import FileManager
+
+polykit_setup()
 
 
 def main() -> None:

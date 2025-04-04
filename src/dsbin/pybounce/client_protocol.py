@@ -5,8 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Protocol
 
 from logician import Logician
-
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -14,7 +13,7 @@ if TYPE_CHECKING:
 
     from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 
-dsbin_setup()
+polykit_setup()
 
 logger = Logician.get_logger(level="info")
 

@@ -37,7 +37,7 @@ from datetime import datetime
 from pathlib import Path
 
 from logician import Logician
-from parseutil import TZ
+from polykit.parsers import TZ
 
 from dsbin.files import FileManager
 

@@ -14,14 +14,14 @@ import subprocess
 import sys
 from pathlib import Path
 
-from parseutil import print_color
-from shelper import halo_progress
+from polykit import polykit_setup
+from polykit.cli import halo_progress
+from polykit.parsers import print_color
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager
-from dsbin.util import dsbin_setup
 
-dsbin_setup()
+polykit_setup()
 
 
 def get_default_filename(url: str) -> str:

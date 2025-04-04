@@ -8,13 +8,13 @@ import argparse
 import sys
 from pathlib import Path
 
-from parseutil import print_color as colored
+from polykit import polykit_setup
+from polykit.parsers import print_color as colored
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager
-from dsbin.util import dsbin_setup
 
-dsbin_setup()
+polykit_setup()
 
 allowed_extensions = [".aiff", ".aif", ".wav", ".m4a", ".flac"]
 

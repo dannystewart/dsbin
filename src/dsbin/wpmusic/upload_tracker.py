@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
 from logician import Logician
-from parseutil import TZ
+from polykit.parsers import TZ
 from rich import box
 from rich.console import Console
 from rich.table import Table

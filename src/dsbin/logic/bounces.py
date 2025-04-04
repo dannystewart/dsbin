@@ -7,8 +7,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from arguer import Arguer
-from parseutil import color
+from polykit.cli import ArgParser
+from polykit.parsers import color
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 
@@ -61,7 +61,7 @@ def latest(args: argparse.Namespace) -> None:
 
 def get_parser() -> argparse.ArgumentParser:
     """Parse command-line arguments."""
-    parser = Arguer(description="Work with Logic bounce files")
+    parser = ArgParser(description="Work with Logic bounce files")
     parser.add_argument(
         "-d",
         "--dir",

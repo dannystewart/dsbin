@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from parseutil import Text
+from polykit.parsers import Text
 
 if TYPE_CHECKING:
     from datetime import datetime

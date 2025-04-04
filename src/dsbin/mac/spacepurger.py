@@ -19,14 +19,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from logician import Logician
-from shelper import halo_progress, handle_interrupt
-
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
+from polykit.cli import halo_progress
+from polykit.shell import handle_interrupt
 
 if TYPE_CHECKING:
     from types import FrameType
 
-dsbin_setup()
+polykit_setup()
 
 logger = Logician.get_logger()
 

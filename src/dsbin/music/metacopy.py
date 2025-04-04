@@ -10,10 +10,9 @@ import sys
 from pathlib import Path
 
 from logician import Logician
+from polykit import polykit_setup
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 logger = Logician.get_logger("metacopy")
 

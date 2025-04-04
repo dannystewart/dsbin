@@ -8,19 +8,17 @@ import subprocess
 import sys
 from pathlib import Path
 
-from parseutil import print_color
+from polykit.parsers import print_color
 
 # List of all your package directories
 PACKAGES = [
-    "arguer",
     "dsbin",
     "enviromancer",
     "evremixes",
     "iplooker",
     "logician",
     "pathkeeper",
-    "shelper",
-    "parseutil",
+    "polykit",
     "walking-man",
 ]
 

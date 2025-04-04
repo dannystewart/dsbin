@@ -21,10 +21,10 @@ from pathlib import Path
 import colorama
 import readchar
 from colorama import Fore, Style
+from polykit import polykit_setup
+from polykit.core import platform_check
 
-from dsbin.util import dsbin_setup, platform_check
-
-dsbin_setup()
+polykit_setup()
 
 # Check if the script is running on macOS
 platform_check()

@@ -10,13 +10,13 @@ import subprocess
 from pathlib import Path
 
 from logician import Logician
-from parseutil import color
-from shelper import confirm_action
+from polykit import polykit_setup
+from polykit.cli import confirm_action
+from polykit.parsers import color
 
 from dsbin.files import FileManager
-from dsbin.util import dsbin_setup
 
-dsbin_setup()
+polykit_setup()
 
 logger = Logician.get_logger()
 

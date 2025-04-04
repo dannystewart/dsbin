@@ -9,16 +9,15 @@ import pkgutil
 import sys
 from typing import TYPE_CHECKING
 
-from arguer import Arguer
 from logician import Logician
-from parseutil import color
-
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
+from polykit.cli import ArgParser
+from polykit.parsers import color
 
 if TYPE_CHECKING:
     import argparse
 
-dsbin_setup()
+polykit_setup()
 logger = Logician.get_logger(simple=True)
 
 DEFAULT_PACKAGES: list[str] = [
@@ -28,7 +27,7 @@ DEFAULT_PACKAGES: list[str] = [
     "logician",
     "masterclass",
     "pathkeeper",
-    "shelper",
+    "polykit.shell",
     "parseutil",
     "walking_man",
 ]
@@ -74,7 +73,7 @@ def check_imports(package_name: str) -> bool:
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = Arguer(description="Check package dependencies")
+    parser = ArgParser(description="Check package dependencies")
     parser.add_argument(
         "--packages",
         nargs="+",

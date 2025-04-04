@@ -10,10 +10,9 @@ from pathlib import Path
 
 import tomlkit
 from logician import Logician
+from polykit import polykit_setup
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 logger = Logician.get_logger()
 

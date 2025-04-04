@@ -12,12 +12,12 @@ import argparse
 import os
 from pathlib import Path
 
-from shelper import confirm_action, handle_interrupt
+from polykit import polykit_setup
+from polykit.cli import confirm_action
+from polykit.shell import handle_interrupt
 from walking_man import walking_man
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 
 @handle_interrupt()

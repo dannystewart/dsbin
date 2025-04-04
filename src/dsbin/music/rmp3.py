@@ -12,10 +12,11 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from dsbin.files import FileManager
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
 
-dsbin_setup()
+from dsbin.files import FileManager
+
+polykit_setup()
 
 
 def delete_mp3(directory: Path, dry_run: bool = False) -> None:

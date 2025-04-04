@@ -16,14 +16,14 @@ from pathlib import Path
 from typing import ClassVar
 
 from natsort import natsorted
-from parseutil import print_color
-from shelper import confirm_action, conversion_list_context
+from polykit import polykit_setup
+from polykit.cli import confirm_action, conversion_list_context
+from polykit.parsers import print_color
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager
-from dsbin.util import dsbin_setup
 
-dsbin_setup()
+polykit_setup()
 
 
 class ALACrity:

@@ -10,12 +10,11 @@ from pathlib import Path
 
 import inquirer
 import pyperclip
-from parseutil import print_color
-from shelper import handle_interrupt
+from polykit import polykit_setup
+from polykit.parsers import print_color
+from polykit.shell import handle_interrupt
 
-from dsbin.util import dsbin_setup
-
-dsbin_setup()
+polykit_setup()
 
 
 def get_full_path(path: Path, filename: Path) -> Path:

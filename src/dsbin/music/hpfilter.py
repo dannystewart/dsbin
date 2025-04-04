@@ -31,9 +31,8 @@ import scipy.io.wavfile
 from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
-from parseutil import color, print_color
-
-from dsbin.util import dsbin_setup
+from polykit import polykit_setup
+from polykit.parsers import color, print_color
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -43,7 +42,7 @@ type NPArray = np.ndarray[Any, Any]
 warnings.filterwarnings("ignore", category=SyntaxWarning)
 warnings.filterwarnings("ignore", category=scipy.io.wavfile.WavFileWarning)
 
-dsbin_setup()
+polykit_setup()
 
 
 # Default cutoff frequency if not specified

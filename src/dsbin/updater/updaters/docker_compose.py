@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import ClassVar
 
-from shelper import handle_interrupt
+from polykit.shell import handle_interrupt
 
 from dsbin.updater.update_manager import UpdateManager, UpdateStage, UpdateStageFailedError
 

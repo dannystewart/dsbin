@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.6.4] - 2025-04-03
+
+### Fixed
+- Updates color formatting to use `style` instead of `attrs` for `parseutil` update.
+- Simplify package name extraction to fix the documentation generation process.
+
+
 ## [0.6.3] - 2025-04-03
 
 **Hotfix for 0.6.2 using an invalid entrypoint.**
@@ -49,6 +56,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 <!-- Versions -->
 [unreleased]: https://github.com/dannystewart/dsbin/compare/v0.6.3...HEAD
+[0.6.4]: https://github.com/dannystewart/dsbin/compare/v0.6.3...v0.6.4
 [0.6.3]: https://github.com/dannystewart/dsbin/compare/v0.6.1...v0.6.3
 [0.6.1]: https://github.com/dannystewart/dsbin/compare/v0.6.0...v0.6.1
 [0.6.0]: https://github.com/dannystewart/dsbin/releases/tag/v0.6.0

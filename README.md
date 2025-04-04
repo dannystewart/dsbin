@@ -10,10 +10,12 @@ This is my personal collection of Python scripts, built up over many years of so
 ## Script List
 
 ### Meta Scripts
+
 - **dsver**: Show installed versions of my packages.
 - **lsbin**: Lists executable files and their descriptions based on docstrings. What you're looking at now.
 
 ### File Management
+
 - **backupsort**: Sorts saved backup files by adding a timestamp suffix to the filename.
 - **bigfiles**: Finds the top N file types in a directory by cumulative size.
 - **dupefinder**: Find duplicate files in a directory.
@@ -23,15 +25,18 @@ This is my personal collection of Python scripts, built up over many years of so
 - **workcalc**: Calculate how much time went into a project.
 
 ### Text Processing Scripts
+
 - **pycompare**: Compare two lists and output common/unique elements.
 - **w11renamer**: Generates non-stupid filenames for Windows 11 ISO files from stupid ones.
 
 ### Media Scripts
+
 - **ffgif**: Converts a video file to a GIF using ffmpeg.
 - **fftrim**: Use ffmpeg to trim a video file without re-encoding.
 - **ytdl**: Custom yt-dlp command to ensure highest quality MP4.
 
 ### Music Scripts
+
 - **aif2wav**, **wav2aif**: Convert AIFF to WAV or WAV to AIFF, with optional Logic metadata.
 - **alacrity**: Converts files in a directory to ALAC, with additional formats and options.
 - **hpfilter**: Apply a highpass filter to cut bass frequencies for HomePod playback.
@@ -43,6 +48,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - **wpmusic**: Uploads and replaces song remixes on WordPress.
 
 ### Mac Scripts
+
 - **dmg-encrypt**: Encrypts DMG files with AES-256 encryption.
 - **dmgify**: Creates DMG files from folders, with specific handling for Logic projects.
 - **mvdmg**: Recursively moves nested DMG files to a desired location.
@@ -53,6 +59,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - **timestamps**: Quick and easy timestamp getting/setting for macOS.
 
 ### Logic Pro Scripts
+
 - **bipclean**: Identify and delete recently created AIFF files (default 2 hours).
 - **bouncefiler**: Sort files into folders based on filename suffix.
 - **bounceprune**: Prunes and consolidates bounces from Logic projects.
@@ -60,6 +67,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - **oldprojects**: Moves old Logic projects out of folders then deletes empty folders.
 
 ### System Tools
+
 - **changehostname**: Changes the system hostname in all the relevant places.
 - **dockermounter**: Checks to see if mount points are mounted, and act accordingly.
 - **dsservice**: Main function for managing systemd services.
@@ -70,6 +78,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - **watchtower**: Script to help with running Watchtower for Docker.
 
 ### Development Scripts
+
 - **changelog**: Update CHANGELOG.md with a new version and automatically manage links.
 - **checkdeps**: Check all interdependencies between dsbin and dsbin.
 - **checkimports**: Check for circular imports in a Python project.

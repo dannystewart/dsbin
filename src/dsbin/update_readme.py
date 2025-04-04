@@ -159,7 +159,7 @@ def generate_readme_content(
         if not scripts:
             continue
 
-        content.append(f"### {category}")
+        content.append(f"### {category}\n")
 
         # Group scripts by description
         desc_to_scripts: dict[str, list[str]] = {}

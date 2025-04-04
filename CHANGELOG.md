@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 ### Added
 
 - Adds `changelog` script to automate changelog updates and version management.
+- Adds Git repository check and pre-commit hook handling to `ConfigManager`.
 
 ### Changed
 

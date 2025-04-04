@@ -81,7 +81,7 @@
 - **poetry-migrate**, **uvmigrate**: Process pyproject.toml file(s) based on command line arguments.
 - **pybumper**: Version management tool for Python projects.
 - **pyenversioner**: Updates .python-version files recursively.
-- **repo-run**: *(No description available)*
+- **repo-run**: Package management utility for working with multiple Poetry projects.
 - **scriptdep**: Analyze dependencies and imports across scripts to help separate concerns.
 - **tagreplace**: Replace an existing Git tag with a new tag name and description.
 """  # noqa: D415, W505

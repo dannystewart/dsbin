@@ -1605,18 +1605,6 @@ files = [
 urllib3 = ">=2"
 
 [[package]]
-name = "types-send2trash"
-version = "1.8.2.7"
-description = "Typing stubs for Send2Trash"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "types-Send2Trash-1.8.2.7.tar.gz", hash = "sha256:f471c0dcb6c0f6682eebdbf4498a2f4fe16b4c9c25e64969450334734ac1649c"},
-    {file = "types_Send2Trash-1.8.2.7-py3-none-any.whl", hash = "sha256:e4796fa3888ad0272ed73e5e2f983f75f5a171ca0b553a7362d902c553478334"},
-]
-
-[[package]]
 name = "typing-extensions"
 version = "4.13.1"
 description = "Backported and Experimental Type Hints for Python 3.8+"
@@ -1724,5 +1712,5 @@ files = [
 
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.12,<3.14"
-content-hash = "c80ddb826a84d0cceaba437a3b2fc2b68b302fef146bd910bc300798234f2d48"
+python-versions = ">=3.12,<4.0"
+content-hash = "3b3da514ac38f248fe045948c6f77464ffebb10444b25af1d8e4fca810dc8a55"

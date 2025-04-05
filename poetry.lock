@@ -535,21 +535,6 @@ files = [
 colorama = ">=0.3.9"
 
 [[package]]
-name = "logician"
-version = "0.3.4"
-description = "The logical choice for Python logging"
-optional = false
-python-versions = ">=3.12"
-groups = ["main", "dev"]
-files = [
-    {file = "logician-0.3.4-py3-none-any.whl", hash = "sha256:4400e857d73bcc3d99428017692a61f04fa2fe3bc9ba0e508ccc5c4ab995f44e"},
-    {file = "logician-0.3.4.tar.gz", hash = "sha256:aaccc1e7e69ba9030a19694424385beb98f2208637d794e365bfc8905901b853"},
-]
-
-[package.dependencies]
-polykit = ">=0.1.1"
-
-[[package]]
 name = "markdown-it-py"
 version = "3.0.0"
 description = "Python port of markdown-it. Markdown parsing, done right!"
@@ -1030,7 +1015,7 @@ version = "4.3.7"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
 optional = false
 python-versions = ">=3.9"
-groups = ["dev"]
+groups = ["main", "dev"]
 files = [
     {file = "platformdirs-4.3.7-py3-none-any.whl", hash = "sha256:a03875334331946f13c549dbd8f4bac7a13a50a895a0eb1e8c6a8ace80d40a94"},
     {file = "platformdirs-4.3.7.tar.gz", hash = "sha256:eb437d586b6a0986388f0d6f74aa0cde27b48d0e3d66843640bfb6bdcdb6e351"},
@@ -1043,7 +1028,7 @@ type = ["mypy (>=1.14.1)"]
 
 [[package]]
 name = "polykit"
-version = "0.1.1"
+version = "0.5.2"
 description = "Python toolkit"
 optional = false
 python-versions = ">=3.12"
@@ -1053,9 +1038,10 @@ develop = true
 
 [package.dependencies]
 halo = ">=0.0.31"
-logician = ">=0.3.4"
 packaging = ">=24.2"
-python-dateutil = ">=2.9.0.post0,<3.0.0"
+platformdirs = ">=4.3.7"
+python-dateutil = ">=2.9.0.post0"
+python-dotenv = ">=1.1.0"
 requests = ">=2.32.3"
 tzlocal = ">=5.3.1"
 
@@ -1196,6 +1182,21 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
+
+[[package]]
+name = "python-dotenv"
+version = "1.1.0"
+description = "Read key-value pairs from a .env file and set them as environment variables"
+optional = false
+python-versions = ">=3.9"
+groups = ["main", "dev"]
+files = [
+    {file = "python_dotenv-1.1.0-py3-none-any.whl", hash = "sha256:d7c01d9e2293916c18baf562d95698754b0dbbb5e74d457c45d4f6561fb9d55d"},
+    {file = "python_dotenv-1.1.0.tar.gz", hash = "sha256:41f90bc6f5f177fb41f53e87666db362025010eb28f60a01c9143bfa33a2b2d5"},
+]
+
+[package.extras]
+cli = ["click (>=5.0)"]
 
 [[package]]
 name = "pyyaml"

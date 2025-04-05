@@ -8,8 +8,8 @@ import argparse
 from pathlib import Path
 
 import requests
-from enviromancer import Enviromancer
 from polykit.core import polykit_setup
+from polykit.env import Enviromancer
 from polykit.formatters import print_color as colored
 from requests import Session
 from requests.auth import HTTPBasicAuth

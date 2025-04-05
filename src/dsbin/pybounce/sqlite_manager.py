@@ -5,9 +5,9 @@ from __future__ import annotations
 import sqlite3
 from typing import TYPE_CHECKING
 
+from polykit.cli import walking_man
 from polykit.core import async_retry_on_exception, polykit_setup
 from polykit.log import Logician
-from walking_man import walking_man
 
 if TYPE_CHECKING:
     from dsbin.pybounce.client_protocol import TelegramClientProtocol

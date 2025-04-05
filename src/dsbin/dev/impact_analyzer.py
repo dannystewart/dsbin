@@ -8,11 +8,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from enviromancer import Enviromancer
-from polykit.cli import ArgParser
+from polykit.cli import ArgParser, WalkingMan, walking_man
+from polykit.env import Enviromancer
 from polykit.formatters import print_color, show_diff
 from polykit.log import Logician
-from walking_man import WalkingMan, walking_man
 
 if TYPE_CHECKING:
     import argparse

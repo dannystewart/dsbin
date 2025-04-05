@@ -10,12 +10,11 @@ import sys
 from pathlib import Path
 
 import inquirer
-from enviromancer import Enviromancer
-from polykit.cli import confirm_action
+from polykit.cli import confirm_action, walking_man
 from polykit.core import polykit_setup
+from polykit.env import Enviromancer
 from polykit.formatters import color
 from polykit.log import Logician
-from walking_man import walking_man
 
 from dsbin.files import FileManager
 from dsbin.logic import Bounce, BounceParser

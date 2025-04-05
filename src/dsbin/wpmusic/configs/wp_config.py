@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 import paramiko
-from enviromancer import Enviromancer
-from pathkeeper import PathKeeper
+from polykit.env import Enviromancer
+from polykit.paths import PathKeeper
 
 
 @dataclass

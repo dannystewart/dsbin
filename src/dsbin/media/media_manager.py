@@ -6,9 +6,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import halo_progress
+from polykit.cli import conditional_walking_man, halo_progress
 from polykit.log import Logician
-from walking_man import conditional_walking_man
 
 if TYPE_CHECKING:
     from logging import Logger

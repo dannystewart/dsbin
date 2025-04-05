@@ -14,10 +14,10 @@ import re
 import time
 from pathlib import Path
 
-from enviromancer import Enviromancer
 from natsort import natsorted
 from polykit.cli import confirm_action
 from polykit.core import polykit_setup
+from polykit.env import Enviromancer
 from polykit.formatters import color
 
 polykit_setup()

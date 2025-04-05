@@ -9,18 +9,14 @@ license = "GPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.12,<3.14"
 dependencies = [
-    "enviromancer (>=0.1.7)",
     "halo (>=0.0.31)",
     "inquirer (>=3.4.0,<4.0.0)",
-    "logician (>=0.3.4)",
     "mutagen (>=1.47.0,<2.0.0)",
     "mysql-connector-python (>=9.2.0,<10.0.0)",
     "natsort (>=8.4.0,<9.0.0)",
     "numpy (>=2.2.4,<3.0.0)",
     "packaging (>=24.2,<25.0)",
     "paramiko (>=3.5.1,<4.0.0)",
-    "parseutil (>=0.2.0)",
-    "pathkeeper (>=0.1.0)",
     "pexpect (>=4.9.0,<5.0.0)",
     "pillow (>=11.1.0,<12.0.0)",
     "polykit (>=0.1.1)",
@@ -38,7 +34,6 @@ dependencies = [
     "types-pillow (>=10.2.0.20240822,<11.0.0.0)",
     "types-requests (>=2.32.0.20250328,<3.0.0.0)",
     "types-send2trash (>=1.8.2.7,<2.0.0.0)",
-    "walking-man (>=0.2.8)",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -67,11 +62,7 @@ mypy = ">=1.15.0"
 pdoc = ">=15.0.1"
 pre-commit = ">=4.2.0"
 ruff = ">=0.11.4"
-enviromancer = { path = "../enviromancer", develop = true }
-logician = { path = "../logician", develop = true }
-pathkeeper = { path = "../pathkeeper", develop = true }
 polykit = { path = "../polykit", develop = true }
-walking-man = { path = "../walking-man", develop = true }
 
 [build-system]
 requires = ["poetry-core>=2.0"]

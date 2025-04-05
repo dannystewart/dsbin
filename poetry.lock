@@ -372,22 +372,6 @@ test = ["certifi (>=2024)", "cryptography-vectors (==44.0.2)", "pretend (>=0.7)"
 test-randomorder = ["pytest-randomly"]
 
 [[package]]
-name = "devpkg"
-version = "0.2.2"
-description = "Dev tools for Python packages"
-optional = false
-python-versions = ">=3.12"
-groups = ["main"]
-files = [
-    {file = "devpkg-0.2.2-py3-none-any.whl", hash = "sha256:c34c53c1a96b74895404c3f995aeb9d7cfca643a6af0586efc29f2c9d62b9637"},
-    {file = "devpkg-0.2.2.tar.gz", hash = "sha256:7e3fc05f8a7f37fef3a6b1a96cdaec8998607ec58061a03d5328bcad2d97f322"},
-]
-
-[package.dependencies]
-packaging = ">=24.2"
-requests = ">=2.32.3"
-
-[[package]]
 name = "distlib"
 version = "0.3.9"
 description = "Distribution utilities"
@@ -414,25 +398,6 @@ files = [
 [package.dependencies]
 runs = "*"
 xmod = "*"
-
-[[package]]
-name = "enviromancer"
-version = "0.1.7"
-description = "Gain mastery over your environment variables"
-optional = false
-python-versions = ">=3.12"
-groups = ["main", "dev"]
-files = []
-develop = true
-
-[package.dependencies]
-logician = ">=0.3.4"
-polykit = ">=0.1.1"
-python-dotenv = ">=1.1.0"
-
-[package.source]
-type = "directory"
-url = "../enviromancer"
 
 [[package]]
 name = "filelock"
@@ -576,15 +541,13 @@ description = "The logical choice for Python logging"
 optional = false
 python-versions = ">=3.12"
 groups = ["main", "dev"]
-files = []
-develop = true
+files = [
+    {file = "logician-0.3.4-py3-none-any.whl", hash = "sha256:4400e857d73bcc3d99428017692a61f04fa2fe3bc9ba0e508ccc5c4ab995f44e"},
+    {file = "logician-0.3.4.tar.gz", hash = "sha256:aaccc1e7e69ba9030a19694424385beb98f2208637d794e365bfc8905901b853"},
+]
 
 [package.dependencies]
 polykit = ">=0.1.1"
-
-[package.source]
-type = "directory"
-url = "../logician"
 
 [[package]]
 name = "markdown-it-py"
@@ -941,42 +904,6 @@ gssapi = ["gssapi (>=1.4.1) ; platform_system != \"Windows\"", "pyasn1 (>=0.1.7)
 invoke = ["invoke (>=2.0)"]
 
 [[package]]
-name = "parseutil"
-version = "0.2.0"
-description = "The missing text and time parsing toolkit for Python"
-optional = false
-python-versions = ">=3.12"
-groups = ["main"]
-files = [
-    {file = "parseutil-0.2.0-py3-none-any.whl", hash = "sha256:a82b5c69f70d94842be5f9746934acbd6f54c5b8d4e6735bf7864c4051735ffd"},
-    {file = "parseutil-0.2.0.tar.gz", hash = "sha256:476922cc1c5d49f04e98d5f72b0918c6da44ee285535233366647f1628906722"},
-]
-
-[package.dependencies]
-devpkg = ">=0.2.1"
-logician = ">=0.3.3"
-python-dateutil = ">=2.9.0.post0"
-tzlocal = ">=5.3.1"
-
-[[package]]
-name = "pathkeeper"
-version = "0.1.0"
-description = "Easy path access for Python projects"
-optional = false
-python-versions = ">=3.12,<3.14"
-groups = ["main", "dev"]
-files = []
-develop = true
-
-[package.dependencies]
-enviromancer = ">=0.1.7"
-platformdirs = ">=4.3.7,<5.0.0"
-
-[package.source]
-type = "directory"
-url = "../pathkeeper"
-
-[[package]]
 name = "pdoc"
 version = "15.0.1"
 description = "API Documentation for Python Projects"
@@ -1103,7 +1030,7 @@ version = "4.3.7"
 description = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "dev"]
+groups = ["dev"]
 files = [
     {file = "platformdirs-4.3.7-py3-none-any.whl", hash = "sha256:a03875334331946f13c549dbd8f4bac7a13a50a895a0eb1e8c6a8ace80d40a94"},
     {file = "platformdirs-4.3.7.tar.gz", hash = "sha256:eb437d586b6a0986388f0d6f74aa0cde27b48d0e3d66843640bfb6bdcdb6e351"},
@@ -1269,21 +1196,6 @@ files = [
 
 [package.dependencies]
 six = ">=1.5"
-
-[[package]]
-name = "python-dotenv"
-version = "1.1.0"
-description = "Read key-value pairs from a .env file and set them as environment variables"
-optional = false
-python-versions = ">=3.9"
-groups = ["main", "dev"]
-files = [
-    {file = "python_dotenv-1.1.0-py3-none-any.whl", hash = "sha256:d7c01d9e2293916c18baf562d95698754b0dbbb5e74d457c45d4f6561fb9d55d"},
-    {file = "python_dotenv-1.1.0.tar.gz", hash = "sha256:41f90bc6f5f177fb41f53e87666db362025010eb28f60a01c9143bfa33a2b2d5"},
-]
-
-[package.extras]
-cli = ["click (>=5.0)"]
 
 [[package]]
 name = "pyyaml"
@@ -1784,23 +1696,6 @@ docs = ["furo (>=2023.7.26)", "proselint (>=0.13)", "sphinx (>=7.1.2,!=7.3)", "s
 test = ["covdefaults (>=2.3)", "coverage (>=7.2.7)", "coverage-enable-subprocess (>=1)", "flaky (>=3.7)", "packaging (>=23.1)", "pytest (>=7.4)", "pytest-env (>=0.8.2)", "pytest-freezer (>=0.4.8) ; platform_python_implementation == \"PyPy\" or platform_python_implementation == \"GraalVM\" or platform_python_implementation == \"CPython\" and sys_platform == \"win32\" and python_version >= \"3.13\"", "pytest-mock (>=3.11.1)", "pytest-randomly (>=3.12)", "pytest-timeout (>=2.1)", "setuptools (>=68)", "time-machine (>=2.10) ; platform_python_implementation == \"CPython\""]
 
 [[package]]
-name = "walking-man"
-version = "0.2.8"
-description = "A friendly companion while you wait"
-optional = false
-python-versions = ">=3.12"
-groups = ["main", "dev"]
-files = []
-develop = true
-
-[package.dependencies]
-polykit = ">=0.1.1"
-
-[package.source]
-type = "directory"
-url = "../walking-man"
-
-[[package]]
 name = "wcwidth"
 version = "0.2.13"
 description = "Measures the displayed width of unicode strings in a terminal"
@@ -1827,4 +1722,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.14"
-content-hash = "21192742a12f65e3bb09fa2658458e85bb6e3f40236762079d4bb30d9095e938"
+content-hash = "dd4d6798034523451c48170ddf704b7423e3e1fb1bf369d8ef8e508f26d5813f"

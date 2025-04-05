@@ -51,10 +51,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from enviromancer import Enviromancer
-from pathkeeper import PathKeeper
 from polykit.cli import confirm_action
+from polykit.env import Enviromancer
 from polykit.log import Logician
+from polykit.paths import PathKeeper
 from polykit.shell import is_root_user
 
 from dsbin.util.notify import TelegramSender

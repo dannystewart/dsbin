@@ -12,10 +12,10 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from enviromancer import Enviromancer
-from pathkeeper import PathKeeper
 from polykit.core import polykit_setup
+from polykit.env import Enviromancer
 from polykit.log import Logician
+from polykit.paths import PathKeeper
 from polykit.shell import async_with_handle_interrupt
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio

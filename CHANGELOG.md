@@ -6,13 +6,36 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
-## [0.6.8] - 2025-04-04
+## [0.7.0] (2025-04-04)
+
+### Added
+
+- Adds a confirmation prompt in `GitHelper` to warn users about uncommitted changes before performing a version bump.
+
+### Changed
+
+- Refactors the codebase to integrate Polykit and remove deprecated utilities:
+  - Replaces `dsbin_setup()` with `polykit_setup()` across modules.
+  - Updates argument parsing from `Arguer` to `ArgParser`.
+  - Switches imports from `shelper` and `parseutil` to Polykit modules.
+  - Adjusts import paths for color and print functions to align with Polykit structure.
+  - Ensures consistent logging and exception handling through Polykit integration.
+
+### Fixed
+
+- Updates `poetry.lock` and `pyproject.toml` to resolve package version issues for Enviromancer, Logician, and Polykit.
+
+### Documentation
+
+- Improves package name detection and validation in the documentation generation workflow.
+
+## [0.6.8] (2025-04-04)
 
 ### Fixed
 
 - Fixes a duplicate entry for `parseutil` in the `PACKAGES` list of `repo_run.py`.
 
-## [0.6.7] - 2025-04-04
+## [0.6.7] (2025-04-04)
 
 ### Added
 
@@ -22,7 +45,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 - Updates `pyproject.toml` to include classifiers for improved package metadata.
 
-## [0.6.6] - 2025-04-03
+## [0.6.6] (2025-04-03)
 
 ### Fixed
 
@@ -31,7 +54,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Corrects the `repo-run` description in the README.
 - Updates license to LGPL as it was intended to be.
 
-## [0.6.5] - 2025-04-03
+## [0.6.5] (2025-04-03)
 
 ### Added
 
@@ -44,14 +67,14 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 - Updates documentation to include a description for `codeconfigs` in README and initialization files.
 - Updates README to improve style by adding a newline after the category header in content generation.
 
-## [0.6.4] - 2025-04-03
+## [0.6.4] (2025-04-03)
 
 ### Fixed
 
 - Updates color formatting to use `style` instead of `attrs` for `parseutil` update.
 - Simplify package name extraction to fix the documentation generation process.
 
-## [0.6.3] - 2025-04-03
+## [0.6.3] (2025-04-03)
 
 **Hotfix for 0.6.2 using an invalid entrypoint.**
 
@@ -77,7 +100,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 - Improves GitHub Actions workflow to automatically determine the package name for `pdoc`.
 
-## [0.6.1] - 2025-04-03
+## [0.6.1] (2025-04-03)
 
 ### Changed
 
@@ -88,7 +111,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 - Refactors `package_analyzer` by updating type hints for dependency analysis functions to improve code maintainability.
 
-## [0.6.0] - 2025-04-02
+## [0.6.0] (2025-04-02)
 
 ### Added
 
@@ -99,7 +122,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.6.8...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/dannystewart/dsbin/compare/v0.6.8...v0.7.0
 [0.6.8]: https://github.com/dannystewart/dsbin/compare/v0.6.7...v0.6.8
 [0.6.7]: https://github.com/dannystewart/dsbin/compare/v0.6.6...v0.6.7
 [0.6.6]: https://github.com/dannystewart/dsbin/compare/v0.6.5...v0.6.6

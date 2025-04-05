@@ -10,8 +10,8 @@ import shutil
 import time
 from typing import TYPE_CHECKING
 
-from polykit import polykit_setup
 from polykit.cli import ArgParser
+from polykit.core import polykit_setup
 from polykit.formatters import Text, color, print_color
 from polykit.log import Logician
 from polykit.shell import handle_interrupt

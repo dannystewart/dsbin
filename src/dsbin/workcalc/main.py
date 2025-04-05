@@ -8,7 +8,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 from polykit.formatters import Text
 from polykit.log import Logician
 from walking_man import walking_man

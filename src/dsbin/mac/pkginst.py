@@ -9,8 +9,8 @@ import os
 import subprocess
 from pathlib import Path
 
-from polykit import polykit_setup
 from polykit.cli import confirm_action
+from polykit.core import polykit_setup
 from polykit.formatters import color
 from polykit.log import Logician
 

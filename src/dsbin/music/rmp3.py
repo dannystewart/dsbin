@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 
 from dsbin.files import FileManager
 

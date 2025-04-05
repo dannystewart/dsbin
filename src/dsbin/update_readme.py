@@ -9,7 +9,7 @@ import subprocess
 from pathlib import Path
 
 import tomlkit
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 from polykit.log import Logician
 
 polykit_setup()

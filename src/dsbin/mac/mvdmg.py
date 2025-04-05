@@ -9,7 +9,7 @@ import os
 import shutil
 from pathlib import Path
 
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 
 polykit_setup()
 

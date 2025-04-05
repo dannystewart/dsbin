@@ -16,8 +16,8 @@ from pathlib import Path
 
 from enviromancer import Enviromancer
 from natsort import natsorted
-from polykit import polykit_setup
 from polykit.cli import confirm_action
+from polykit.core import polykit_setup
 from polykit.formatters import color
 
 polykit_setup()

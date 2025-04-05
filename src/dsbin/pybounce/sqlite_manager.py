@@ -5,8 +5,7 @@ from __future__ import annotations
 import sqlite3
 from typing import TYPE_CHECKING
 
-from polykit import polykit_setup
-from polykit.core import async_retry_on_exception
+from polykit.core import async_retry_on_exception, polykit_setup
 from polykit.log import Logician
 from walking_man import walking_man
 

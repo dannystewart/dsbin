@@ -23,7 +23,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from halo import Halo
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 from polykit.formatters import color
 from polykit.log import Logician
 from polykit.shell import handle_interrupt

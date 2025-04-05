@@ -37,8 +37,8 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit import polykit_setup
 from polykit.cli import ArgParser
+from polykit.core import polykit_setup
 from polykit.formatters import color
 
 from dsbin.files import FileManager

@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from enviromancer import Enviromancer
 from pathkeeper import PathKeeper
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 from polykit.log import Logician
 from polykit.shell import async_with_handle_interrupt
 from telethon import TelegramClient

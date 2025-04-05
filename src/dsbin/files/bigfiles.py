@@ -12,7 +12,7 @@ import operator
 from collections import defaultdict
 from pathlib import Path
 
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 from polykit.formatters import print_color as colored
 
 polykit_setup()

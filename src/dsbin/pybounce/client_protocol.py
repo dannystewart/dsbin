@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol
 
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 from polykit.log import Logician
 
 if TYPE_CHECKING:

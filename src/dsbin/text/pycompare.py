@@ -12,7 +12,7 @@ import argparse
 from pathlib import Path
 
 import inquirer
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 from polykit.formatters import color, print_color
 from polykit.shell import handle_interrupt
 

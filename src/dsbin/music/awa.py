@@ -13,7 +13,7 @@ import sys
 from enum import StrEnum
 from pathlib import Path
 
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 from polykit.formatters import print_color
 
 from dsbin.files import FileManager

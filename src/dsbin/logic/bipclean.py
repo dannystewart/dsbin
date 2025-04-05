@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import inquirer
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 from polykit.formatters import TZ, print_color
 
 from dsbin.files import FileManager

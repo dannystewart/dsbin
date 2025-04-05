@@ -29,8 +29,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from enviromancer import Enviromancer
-from polykit import polykit_setup
 from polykit.cli import ArgParser, confirm_action
+from polykit.core import polykit_setup
 from polykit.log import Logician
 from polykit.shell import handle_interrupt
 

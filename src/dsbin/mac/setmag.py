@@ -6,8 +6,7 @@ from __future__ import annotations
 
 import subprocess
 
-from polykit import polykit_setup
-from polykit.core import platform_check
+from polykit.core import platform_check, polykit_setup
 from polykit.log import Logician
 
 polykit_setup()

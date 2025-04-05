@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import tomlkit
-from polykit import polykit_setup
+from polykit.core import polykit_setup
 
 if TYPE_CHECKING:
     from collections.abc import Sequence

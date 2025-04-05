@@ -8,8 +8,8 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from polykit import polykit_setup
 from polykit.cli import ArgParser
+from polykit.core import polykit_setup
 
 if TYPE_CHECKING:
     import argparse

@@ -21,7 +21,7 @@ from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm
 
-from dsbin.pybounce.file_manager import FileManager
+from dsbin.pybounce.bounce_files import BounceFileManager
 from dsbin.pybounce.sqlite_manager import SQLiteManager
 
 if TYPE_CHECKING:
@@ -34,9 +34,9 @@ polykit_setup()
 class TelegramUploader:
     """Manages the Telegram client and uploads files to a channel."""
 
-    def __init__(self, env: PolyEnv, files: FileManager, logger: Logger) -> None:
+    def __init__(self, env: PolyEnv, files: BounceFileManager, logger: Logger) -> None:
         self.env: PolyEnv = env
-        self.files: FileManager = files
+        self.files: BounceFileManager = files
         self.logger: Logger = logger
 
         if not isinstance(env.channel_url, str):
@@ -166,7 +166,7 @@ def parse_arguments() -> argparse.Namespace:
 async def pybounce(env: PolyEnv, logger: Logger) -> None:
     """Upload files to a Telegram channel."""
     args = parse_arguments()
-    files = FileManager(logger)
+    files = BounceFileManager(logger)
     telegram = TelegramUploader(env, files, logger)
     sqlite = SQLiteManager(telegram.client)  # type: ignore
 

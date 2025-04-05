@@ -31,10 +31,10 @@ from polykit.shell import handle_interrupt
 
 from dsbin.media import MediaManager
 from dsbin.wpmusic.configs import WPConfig
-from dsbin.wpmusic.file_manager import FileManager
 from dsbin.wpmusic.metadata_setter import MetadataSetter
 from dsbin.wpmusic.track_identifier import TrackIdentifier
 from dsbin.wpmusic.upload_tracker import UploadTracker
+from dsbin.wpmusic.wp_file_manager import WPFileManager
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack
@@ -82,7 +82,7 @@ class WPMusic:
         self.track_identifier = TrackIdentifier(self.config)
         self.metadata_setter = MetadataSetter(self.config)
         self.upload_tracker = UploadTracker(self.config)
-        self.file_manager = FileManager(self.config, self.upload_tracker)
+        self.file_manager = WPFileManager(self.config, self.upload_tracker)
 
         # Store args for processing
         self.args = args

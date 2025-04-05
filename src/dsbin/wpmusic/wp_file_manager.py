@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import inquirer
 import paramiko  # type: ignore
 import pyperclip
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import color as colored
 from polykit.log import PolyLog
 from polykit.shell import handle_interrupt
@@ -19,7 +19,7 @@ if TYPE_CHECKING:
     from dsbin.wpmusic.upload_tracker import UploadTracker
 
 
-class FileManager:
+class WPFileManager:
     """Manage file operations."""
 
     def __init__(self, config: WPConfig, upload_tracker: UploadTracker):
@@ -101,7 +101,7 @@ class FileManager:
             self.logger.info("Local files kept and renamed to '%s'.", song_name)
 
         else:  # Otherwise, delete the files
-            PolyFiles.delete(files_to_process)
+            PolyFile.delete(files_to_process)
 
     def upload_file_to_web_server(self, file_path: Path, audio_track: AudioTrack) -> None:
         """Upload a file to my web server."""

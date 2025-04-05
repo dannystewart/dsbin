@@ -5,10 +5,14 @@
     }
   ],
   "settings": {
+    "conventionalCommits.scopes": [
+      "pre-commit-config",
+      "workspace"
+    ],
     "files.exclude": {
-      ".history": true,
-      ".idea": true,
-      "**/__pycache__": true,
+      "**/*.egg-info": true,
+      "**/*.pyi": false,
+      "**/*[0-9a-fA-F]{32}*": true,
       "**/.cache": true,
       "**/.DS_Store": true,
       "**/.git": true,
@@ -20,25 +24,20 @@
       "**/.svn": false,
       "**/.venv": true,
       "**/.vscode": true,
-      "**/*.egg-info": true,
-      "**/*.pyi": false,
-      "**/*[0-9a-fA-F]{32}*": true,
+      "**/__pycache__": true,
       "**/CVS": false,
       "**/dist": true,
       "**/node_modules": true,
       "**/Thumbs.db": true,
-      "venv": true,
+      ".history": true,
+      ".idea": true,
+      "venv": true
     },
     "github.copilot.chat.codeGeneration.instructions": [
       {
         "file": "code-style.md"
       }
     ],
-    "mypy-type-checker.args": [
-      "--config-file=mypy.ini",
-    ],
-    "conventionalCommits.scopes": [
-      "pre-commit-config"
-    ],
+    "mypy-type-checker.args": ["--config-file=mypy.ini"]
   }
 }

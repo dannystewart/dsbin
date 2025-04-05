@@ -36,7 +36,10 @@ def get_repo_url(repo_override: str | None = None) -> str:
         url = result.stdout.strip()
 
         # Extract repo name from URL
-        if "github.com" in url:
+        from urllib.parse import urlparse
+
+        parsed_url = urlparse(url)
+        if parsed_url.hostname == "github.com":
             if url.startswith("git@github.com:"):
                 # SSH format: git@github.com:username/repo.git
                 repo_name = url.split(":")[-1].split("/")[-1].rstrip(".git")

@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+- Adds a new module for a text-based adventure game (`src/dsbin/fun/wm_adventure.py`) featuring Walking Man!
+
+### Changed
+
+- Enhances commit categorization logic to use the Conventional Commit format.
+- Updates `polykit` import paths to use the `core` module across multiple files.
+- Replaces `enviromancer` and `walking-man` imports with `polykit.env` and `polykit.cli` imports across multiple files.
+- Updates imports from `logician` and `parser` to `formatter` across multiple files, including color and print formatting utilities.
+
+### Fixed
+
+- Fixes version entry format in the changelog and improves warning messages.
+
 ## [0.7.0] (2025-04-04)
 
 ### Added

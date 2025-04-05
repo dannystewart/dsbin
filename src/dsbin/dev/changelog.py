@@ -79,8 +79,7 @@ def get_previous_version() -> str:
         if match := re.search(r"## \[(\d+\.\d+\.\d+)\]", content):
             return match.group(1)
         return "0.0.0"  # Fallback if no versions found
-    except Exception as e:
-        logger.error("Failed to get previous version from changelog: %s", str(e))
+    except Exception:
         return "0.0.0"
 
 

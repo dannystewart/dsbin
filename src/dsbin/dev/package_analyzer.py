@@ -13,13 +13,9 @@ from polykit.formatters import color, print_color
 # Default packages to analyze
 DEFAULT_PACKAGES: list[str] = [
     "dsbin",
-    "enviromancer",
     "evremixes",
     "iplooker",
-    "logician",
-    "pathkeeper",
     "polykit",
-    "walking_man",
 ]
 
 

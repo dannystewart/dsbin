@@ -22,13 +22,6 @@ repos:
       - id: mypy
         args: [--config-file, mypy.ini]
         stages: [post-commit]
-  - repo: https://github.com/commitizen-tools/commitizen
-    hooks:
-      - id: commitizen
-      - id: commitizen-branch
-        stages:
-          - pre-push
-    rev: v4.5.0
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0
     hooks:

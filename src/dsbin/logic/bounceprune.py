@@ -30,7 +30,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import confirm_action, walking_man
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import color, print_color
 from polykit.platform import polykit_setup
 
@@ -194,7 +194,7 @@ def execute_actions(actions: BounceActions) -> None:
         return
 
     if confirm_action("Proceed with these actions?", default_to_yes=False):
-        files = PolyFiles()
+        files = PolyFile()
         successful_deletions, failed_deletions = files.delete(actions.trash)
 
         renamed_files_count = 0

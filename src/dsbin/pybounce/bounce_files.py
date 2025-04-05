@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import inquirer
 from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
-from polykit.files import PolyFile as BasePolyFile
+from polykit.files import PolyFile
 from polykit.formatters import TZ
 
 if TYPE_CHECKING:
@@ -51,7 +51,7 @@ class BounceFileManager:
         """Get the formatted creation timestamp for the file."""
 
         def get_timestamp() -> str:
-            ctime, _ = BasePolyFile.get_timestamps(Path(file_path))
+            ctime, _ = PolyFile.get_timestamps(Path(file_path))
             creation_date = datetime.strptime(ctime, "%m/%d/%Y %H:%M:%S").replace(tzinfo=TZ)
             return creation_date.strftime("%a %b %d at %-I:%M:%S %p").replace(" 0", " ")
 

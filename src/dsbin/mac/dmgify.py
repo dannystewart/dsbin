@@ -35,7 +35,7 @@ from typing import TYPE_CHECKING, ClassVar
 
 from polykit.cli import ArgParser, halo_progress
 from polykit.core import with_retries
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.log import PolyLog
 from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
@@ -57,7 +57,7 @@ def temp_workspace() -> Iterator[Path]:
             yield temp_path
         finally:
             if temp_path.exists():
-                PolyFiles.delete(temp_path)
+                PolyFile.delete(temp_path)
 
 
 @dataclass
@@ -93,7 +93,7 @@ class DMGCreator:
     preserve_folder: bool = False
 
     exclusions: list[str] = field(init=False)
-    files: PolyFiles = field(init=False)
+    files: PolyFile = field(init=False)
     logger: Logger = field(init=False)
 
     def __post_init__(self):
@@ -121,7 +121,7 @@ class DMGCreator:
         if dmg_path.exists():
             if self.force_overwrite:
                 self.logger.warning("%s already exists, but forcing overwrite.", dmg_path.name)
-                PolyFiles.delete(dmg_path)
+                PolyFile.delete(dmg_path)
             else:
                 self.logger.warning("%s already exists, skipping.", dmg_path.name)
                 return
@@ -156,7 +156,7 @@ class DMGCreator:
 
             temp_dmg = Path(f"{folder_name}.dmg")
             if dmg_path != temp_dmg:
-                PolyFiles.move(temp_dmg, dmg_path, overwrite=True)
+                PolyFile.move(temp_dmg, dmg_path, overwrite=True)
 
         self.logger.info("Successfully created DMG: %s", dmg_path.name)
 
@@ -183,7 +183,7 @@ class DMGCreator:
     def _create_sparseimage(self, folder_name: str, source: Path) -> None:
         sparsebundle_path = Path(f"{folder_name}.sparsebundle")
         if sparsebundle_path.exists():
-            PolyFiles.delete(sparsebundle_path)
+            PolyFile.delete(sparsebundle_path)
 
         subprocess.run(
             [
@@ -206,14 +206,14 @@ class DMGCreator:
     def _convert_sparseimage_to_dmg(self, folder_name: str) -> None:
         output_dmg = Path(f"{folder_name}.dmg")
         if Path(output_dmg).exists():
-            PolyFiles.delete(output_dmg)
+            PolyFile.delete(output_dmg)
 
         sparsebundle = Path(f"{folder_name}.sparsebundle")
         subprocess.run(
             ["hdiutil", "convert", sparsebundle, "-format", "ULMO", "-o", output_dmg],
             check=True,
         )
-        PolyFiles.delete(sparsebundle)
+        PolyFile.delete(sparsebundle)
 
     def process_folders(self, folders: list[str]) -> None:
         """Process multiple folders for DMG creation."""

@@ -17,7 +17,7 @@ from typing import ClassVar
 
 from natsort import natsorted
 from polykit.cli import confirm_action, conversion_list_context
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import print_color
 from polykit.log import PolyLog
 from polykit.platform import polykit_setup
@@ -78,7 +78,7 @@ class ALACrity:
 
         if converted_files and confirm_action("Do you want to remove the original files?"):
             # Use custom output handling
-            successful, failed = PolyFiles.delete(original_files, logger=None)
+            successful, failed = PolyFile.delete(original_files, logger=None)
             self.logger.info("%d files trashed successfully.", len(successful))
             if failed:
                 self.logger.warning("Failed to delete %d files.", len(failed))
@@ -106,7 +106,7 @@ class ALACrity:
         if path_obj.is_file() and path_obj.suffix.lower() in self.ALLOWED_EXTS:
             files_to_process = [path_obj]
         elif path_obj.is_dir():
-            files_to_process = PolyFiles.list(path_obj, **list_args)
+            files_to_process = PolyFile.list(path_obj, **list_args)
         else:
             print(f"The path '{path}' is neither a directory nor a file.")
             return []
@@ -139,8 +139,8 @@ class ALACrity:
                 case ConversionResult.CONVERTED:
                     converted_files.append(output_path)
                     original_files.append(input_path)
-                    ctime, mtime = PolyFiles.get_timestamps(input_path)
-                    PolyFiles.set_timestamps(output_path, ctime=ctime, mtime=mtime)
+                    ctime, mtime = PolyFile.get_timestamps(input_path)
+                    PolyFile.set_timestamps(output_path, ctime=ctime, mtime=mtime)
                 case ConversionResult.EXISTS:
                     skipped_files.append(input_path)
                 case ConversionResult.FAILED:

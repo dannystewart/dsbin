@@ -15,7 +15,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import inquirer
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import TZ, print_color
 from polykit.platform import polykit_setup
 
@@ -23,7 +23,7 @@ polykit_setup()
 
 DEFAULT_HOURS = 2
 
-files = PolyFiles()
+files = PolyFile()
 
 
 def parse_args() -> argparse.Namespace:

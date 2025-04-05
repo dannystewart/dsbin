@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 from polykit.env import PolyEnv
 from polykit.log import PolyLog
-from polykit.paths import PolyPaths
+from polykit.paths import PolyPath
 from polykit.platform import polykit_setup
 from polykit.shell import async_with_handle_interrupt
 from telethon import TelegramClient
@@ -50,7 +50,7 @@ class TelegramUploader:
         self.phone: str = env.phone
 
         # Set up session file and client
-        self.paths = PolyPaths("pybounce")
+        self.paths = PolyPath("pybounce")
         self.session_file = self.paths.from_config(f"{env.phone}.session")
         self.client = TelegramClient(str(self.session_file), env.api_id, env.api_hash)
 

@@ -36,7 +36,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import TZ
 from polykit.log import PolyLog
 
@@ -138,7 +138,7 @@ class BounceParser:
             raise ValueError(msg)
 
         title, year, month, day, version, minor_version, suffix = match.groups()
-        ctime, mtime = PolyFiles.get_timestamps(path)
+        ctime, mtime = PolyFile.get_timestamps(path)
 
         return Bounce(
             title=title,

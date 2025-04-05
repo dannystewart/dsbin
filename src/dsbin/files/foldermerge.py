@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 
 from polykit.cli import confirm_action
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import print_color as colored
 from polykit.platform import polykit_setup
 
@@ -23,7 +23,7 @@ def merge_folders(first_folder: str, second_folder: str, dry_run: bool = False) 
         second_folder: The path to the second folder.
         dry_run: Whether to perform a dry run. Defaults to False.
     """
-    files = PolyFiles()
+    files = PolyFile()
     first_folder_path = Path(first_folder)
     second_folder_path = Path(second_folder)
 

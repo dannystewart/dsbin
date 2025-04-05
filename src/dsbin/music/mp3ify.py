@@ -8,7 +8,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import print_color as colored
 from polykit.platform import polykit_setup
 
@@ -33,7 +33,7 @@ def parse_arguments() -> argparse.Namespace:
 
 def main() -> None:
     """Convert a file to MP3."""
-    files = PolyFiles()
+    files = PolyFile()
     args = parse_arguments()
     path = args.path
 

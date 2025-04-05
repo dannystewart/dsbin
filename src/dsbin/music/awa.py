@@ -13,7 +13,7 @@ import sys
 from enum import StrEnum
 from pathlib import Path
 
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import print_color
 from polykit.platform import polykit_setup
 
@@ -52,7 +52,7 @@ def convert_audio(
         print(f"The path specified does not exist: {file_path}")
         return
 
-    files = PolyFiles()
+    files = PolyFile()
     media = MediaManager()
 
     if file_path.is_file():

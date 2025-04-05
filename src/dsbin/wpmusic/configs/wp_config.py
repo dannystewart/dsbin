@@ -5,7 +5,7 @@ from typing import ClassVar
 
 import paramiko
 from polykit.env import PolyEnv
-from polykit.paths import PolyPaths
+from polykit.paths import PolyPath
 
 
 @dataclass
@@ -47,7 +47,7 @@ class WPConfig:
 
     def __post_init__(self):
         # Initialize core services
-        self.paths = PolyPaths("wpmusic")
+        self.paths = PolyPath("wpmusic")
         self.initialize_env_vars()
 
         # Load environment variables into class attributes

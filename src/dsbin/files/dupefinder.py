@@ -10,7 +10,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.platform import polykit_setup
 
 polykit_setup()
@@ -24,7 +24,7 @@ def main() -> None:
 
     # Convert all input files to Path objects if they aren't already
     paths = [Path(f) for f in input_files]
-    PolyFiles.find_dupes_by_hash(paths)
+    PolyFile.find_dupes_by_hash(paths)
 
 
 if __name__ == "__main__":

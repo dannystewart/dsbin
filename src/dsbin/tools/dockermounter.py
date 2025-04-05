@@ -54,7 +54,7 @@ from typing import TYPE_CHECKING
 from polykit.cli import confirm_action
 from polykit.env import PolyEnv
 from polykit.log import PolyLog
-from polykit.paths import PolyPaths
+from polykit.paths import PolyPath
 from polykit.shell import is_root_user
 
 from dsbin.util.notify import TelegramSender
@@ -62,7 +62,7 @@ from dsbin.util.notify import TelegramSender
 if TYPE_CHECKING:
     from logging import Logger
 
-paths = PolyPaths("dockermounter")
+paths = PolyPath("dockermounter")
 LOG_FILE_PATH = paths.from_log("dockermounter.log")
 logger = PolyLog.get_logger(log_file=LOG_FILE_PATH)
 

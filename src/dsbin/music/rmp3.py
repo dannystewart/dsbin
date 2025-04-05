@@ -12,7 +12,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.platform import polykit_setup
 
 polykit_setup()
@@ -25,7 +25,7 @@ def delete_mp3(directory: Path, dry_run: bool = False) -> None:
         directory: The directory to search for MP3 files.
         dry_run: If True, will list the files that would be deleted without actually deleting them.
     """
-    files = PolyFiles()
+    files = PolyFile()
     mp3_files = files.list(directory, extensions="mp3", recurse=True)
 
     files_to_delete = []

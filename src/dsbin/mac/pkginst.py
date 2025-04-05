@@ -10,7 +10,7 @@ import subprocess
 from pathlib import Path
 
 from polykit.cli import confirm_action
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import color
 from polykit.log import PolyLog
 from polykit.platform import polykit_setup
@@ -39,7 +39,7 @@ def install_pkg(
     Returns:
         True if all installations were successful, False otherwise.
     """
-    files = PolyFiles()
+    files = PolyFile()
     if isinstance(pkg_paths, Path):
         pkg_paths = [pkg_paths]
 

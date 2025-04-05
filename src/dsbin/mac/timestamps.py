@@ -38,7 +38,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import ArgParser
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import color
 from polykit.platform import polykit_setup
 
@@ -73,14 +73,14 @@ def set_times(
         msg = "You cannot copy creation time and modification time to each other."
         raise ValueError(msg)
     if ctime_to_mtime or mtime_to_ctime:
-        current_ctime, current_mtime = PolyFiles.get_timestamps(file)
+        current_ctime, current_mtime = PolyFile.get_timestamps(file)
     if mtime_to_ctime:
         ctime = current_mtime
     if ctime_to_mtime:
         mtime = current_ctime
 
     get_times(file, "Old timestamps", "yellow")
-    PolyFiles.set_timestamps(file, ctime=ctime, mtime=mtime)
+    PolyFile.set_timestamps(file, ctime=ctime, mtime=mtime)
     get_times(file, "New timestamps", "green")
 
 
@@ -107,7 +107,7 @@ def get_times(
         ValueError: If only one of ctime or mtime is specified.
     """
     if not ctime and not mtime:
-        ctime, mtime = PolyFiles.get_timestamps(file)
+        ctime, mtime = PolyFile.get_timestamps(file)
     if not ctime or not mtime:
         msg = "You must specify both a creation and modification time or neither."
         raise ValueError(msg)
@@ -124,8 +124,8 @@ def copy_times(from_file: Path, to_file: Path) -> None:
         from_file: The file to copy timestamps from.
         to_file: The file to copy timestamps to.
     """
-    ctime, mtime = PolyFiles.get_timestamps(from_file)
-    PolyFiles.set_timestamps(to_file, ctime=ctime, mtime=mtime)
+    ctime, mtime = PolyFile.get_timestamps(from_file)
+    PolyFile.set_timestamps(to_file, ctime=ctime, mtime=mtime)
     get_times(from_file, f"Timestamps copied for {from_file}:", "green")
 
 

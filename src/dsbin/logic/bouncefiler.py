@@ -12,7 +12,7 @@ from pathlib import Path
 import inquirer
 from polykit.cli import confirm_action, walking_man
 from polykit.env import PolyEnv
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import color
 from polykit.log import PolyLog
 from polykit.platform import polykit_setup
@@ -23,7 +23,7 @@ polykit_setup()
 
 env = PolyEnv()
 env.add_debug_var()
-files = PolyFiles()
+files = PolyFile()
 logger = PolyLog.get_logger(level=env.log_level, simple=True)
 
 

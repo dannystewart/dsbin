@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 from polykit.cli import halo_progress
-from polykit.files import PolyFiles
+from polykit.files import PolyFile
 from polykit.formatters import print_color
 from polykit.platform import polykit_setup
 
@@ -72,7 +72,7 @@ def main() -> None:
             audio_codec="aac",
         )
 
-    files = PolyFiles()
+    files = PolyFile()
     original_file = Path(original_filename)
     target_file = Path(target_filename)
     clean_file = Path(clean_filename)

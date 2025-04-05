@@ -79,6 +79,7 @@ This is my personal collection of Python scripts, built up over many years of so
 
 ### Development Scripts
 
+- **changelog**, **rereadme**: *(No description available)*
 - **checkdeps**: Check all interdependencies between dsbin and dsbin.
 - **checkimports**: Check for circular imports in a Python project.
 - **codeconfigs**: Download configs for coding tools and compare against local versions.
@@ -90,8 +91,6 @@ This is my personal collection of Python scripts, built up over many years of so
 - **reporun**: Package management utility for working with multiple Poetry projects.
 - **scriptdep**: Analyze dependencies and imports across scripts to help separate concerns.
 - **tagreplace**: Replace an existing Git tag with a new tag name and description.
-- **update_changelog**: Update CHANGELOG.md with a new version and automatically manage links.
-- **update_readme**: Update README.md with the latest script list from lsbin.
 
 ## License
 

@@ -37,5 +37,8 @@
     "mypy-type-checker.args": [
       "--config-file=mypy.ini",
     ],
+    "conventionalCommits.scopes": [
+      "pre-commit-config"
+    ],
   }
 }

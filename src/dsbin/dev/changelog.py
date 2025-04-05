@@ -264,7 +264,7 @@ def fetch_commit_messages(git_range: str) -> list[str]:
 
 
 def categorize_commits(commit_messages: list[str]) -> dict[str, list[str]]:
-    """Categorize commit messages into changelog sections."""
+    """Categorize commit messages into changelog sections based on conventional commits."""
     changes = {
         "Added": [],
         "Changed": [],
@@ -275,20 +275,21 @@ def categorize_commits(commit_messages: list[str]) -> dict[str, list[str]]:
         "Updated": [],
     }
 
+    type_to_section = {
+        "feat": "Added",
+        "fix": "Fixed",
+        "perf": "Changed",
+        "refactor": "Changed",
+        "docs": "Updated",
+    }
+
     for message in commit_messages:
-        lower_message = message.lower()
-        if any(word in lower_message for word in ["add", "new", "feature", "implement"]):
-            changes["Added"].append(message)
-        elif any(word in lower_message for word in ["fix", "bug", "issue", "error", "crash"]):
-            changes["Fixed"].append(message)
-        elif any(word in lower_message for word in ["remov", "delet"]):
-            changes["Removed"].append(message)
-        elif any(word in lower_message for word in ["secur", "vulnerab"]):
-            changes["Security"].append(message)
-        elif any(word in lower_message for word in ["deprecat"]):
-            changes["Deprecated"].append(message)
-        elif any(word in lower_message for word in ["updat", "bump", "upgrade"]):
-            changes["Updated"].append(message)
+        match = re.match(r"^(\w+)(?:\(([^)]+)\))?: (.+)$", message)
+        if match:
+            type_, scope, desc = match.groups()
+            section = type_to_section.get(type_, "Changed")
+            prefix = f"**{scope}**: " if scope else ""
+            changes[section].append(f"{prefix}{desc}")
         else:
             changes["Changed"].append(message)
 

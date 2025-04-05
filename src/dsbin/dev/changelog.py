@@ -87,7 +87,7 @@ def get_previous_version() -> str:
 def create_version_entry(version: str, sections: dict[str, list[str]]) -> str:
     """Create a new version entry for the changelog."""
     today = time.strftime("%Y-%m-%d")
-    entry = f"## [{version}] - {today}\n\n"
+    entry = f"## [{version}] ({today})\n\n"
 
     for section, items in sections.items():
         if items:
@@ -359,7 +359,7 @@ def main() -> int:
         if args.auto:
             sections = get_git_changes(prev_version)
             if not sections:
-                logger.warning("No changes found in git history, adding empty sections")
+                logger.warning("No changes found in git history, adding empty sections.")
                 sections = {"Added": [], "Changed": [], "Fixed": []}
         else:
             # Empty sections for manual editing

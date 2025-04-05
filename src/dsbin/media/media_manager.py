@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import conditional_walking_man, halo_progress
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -22,9 +22,7 @@ class MediaManager:
         detailed_log: bool = False,
         logger: Logger | None = None,
     ):
-        self.logger: Logger = logger or Logician.get_logger(
-            level=log_level, simple=not detailed_log
-        )
+        self.logger: Logger = logger or PolyLog.get_logger(level=log_level, simple=not detailed_log)
 
     def run_ffmpeg(
         self,

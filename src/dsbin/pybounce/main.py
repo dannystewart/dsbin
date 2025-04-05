@@ -12,10 +12,10 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.core import polykit_setup
-from polykit.env import Enviromancer
-from polykit.log import Logician
-from polykit.paths import PathKeeper
+from polykit.env import PolyEnv
+from polykit.log import PolyLog
+from polykit.paths import PolyPaths
+from polykit.platform import polykit_setup
 from polykit.shell import async_with_handle_interrupt
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
@@ -27,14 +27,15 @@ from dsbin.pybounce.sqlite_manager import SQLiteManager
 if TYPE_CHECKING:
     from logging import Logger
 
+
 polykit_setup()
 
 
 class TelegramUploader:
     """Manages the Telegram client and uploads files to a channel."""
 
-    def __init__(self, env: Enviromancer, files: FileManager, logger: Logger) -> None:
-        self.env: Enviromancer = env
+    def __init__(self, env: PolyEnv, files: FileManager, logger: Logger) -> None:
+        self.env: PolyEnv = env
         self.files: FileManager = files
         self.logger: Logger = logger
 
@@ -49,7 +50,7 @@ class TelegramUploader:
         self.phone: str = env.phone
 
         # Set up session file and client
-        self.paths = PathKeeper("pybounce")
+        self.paths = PolyPaths("pybounce")
         self.session_file = self.paths.from_config(f"{env.phone}.session")
         self.client = TelegramClient(str(self.session_file), env.api_id, env.api_hash)
 
@@ -162,7 +163,7 @@ def parse_arguments() -> argparse.Namespace:
     return parser.parse_args()
 
 
-async def pybounce(env: Enviromancer, logger: Logger) -> None:
+async def pybounce(env: PolyEnv, logger: Logger) -> None:
     """Upload files to a Telegram channel."""
     args = parse_arguments()
     files = FileManager(logger)
@@ -199,14 +200,14 @@ async def pybounce(env: Enviromancer, logger: Logger) -> None:
 
 def main() -> None:
     """Run the main function with asyncio."""
-    env = Enviromancer()
+    env = PolyEnv()
     env.add_debug_var()
     env.add_var("PYBOUNCE_TELEGRAM_API_ID", attr_name="api_id", var_type=str)
     env.add_var("PYBOUNCE_TELEGRAM_API_HASH", attr_name="api_hash", var_type=str, secret=True)
     env.add_var("PYBOUNCE_TELEGRAM_PHONE", attr_name="phone", var_type=str)
     env.add_var("PYBOUNCE_TELEGRAM_CHANNEL_URL", attr_name="channel_url", var_type=str)
 
-    logger = Logician.get_logger(level=env.log_level)
+    logger = PolyLog.get_logger(level=env.log_level)
 
     async_with_handle_interrupt(pybounce, env, logger, message="Upload canceled.", logger=logger)
 

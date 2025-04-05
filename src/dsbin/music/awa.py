@@ -13,10 +13,10 @@ import sys
 from enum import StrEnum
 from pathlib import Path
 
-from polykit.core import polykit_setup
+from polykit.files import PolyFiles
 from polykit.formatters import print_color
+from polykit.platform import polykit_setup
 
-from dsbin.files import FileManager
 from dsbin.media import MediaManager
 
 polykit_setup()
@@ -52,13 +52,13 @@ def convert_audio(
         print(f"The path specified does not exist: {file_path}")
         return
 
-    files = FileManager()
+    files = PolyFiles()
     media = MediaManager()
 
     if file_path.is_file():
         source_files = [file_path]
     else:
-        source_files = files.list(file_path, exts=source_extensions, recursive=recursive)
+        source_files = files.list(file_path, source_extensions, recurse=recursive)
 
     metadata_options = None
     if version and target_format == AudioFormat.AIFF:

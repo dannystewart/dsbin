@@ -29,9 +29,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import ArgParser, confirm_action
-from polykit.core import polykit_setup
-from polykit.env import Enviromancer
-from polykit.log import Logician
+from polykit.env import PolyEnv
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 from dsbin.pybumper.bump_type import BumpType
@@ -48,12 +48,12 @@ class PyBumper:
     """Version management tool for Python projects."""
 
     def __init__(self, args: argparse.Namespace) -> None:
-        # Create Enviromancer to manage debug flag
-        env = Enviromancer()
+        # Create PolyEnv to manage debug flag
+        env = PolyEnv()
         env.add_debug_var()
 
         # Create logger with debug flag; use simple logger if debug is off
-        self.logger = Logician.get_logger(
+        self.logger = PolyLog.get_logger(
             level="debug" if env.debug else "info", simple=not env.debug
         )
 

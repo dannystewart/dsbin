@@ -15,16 +15,15 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 import inquirer
-from polykit.core import polykit_setup
+from polykit.files import PolyFiles
 from polykit.formatters import TZ, print_color
-
-from dsbin.files import FileManager
+from polykit.platform import polykit_setup
 
 polykit_setup()
 
 DEFAULT_HOURS = 2
 
-files = FileManager()
+files = PolyFiles()
 
 
 def parse_args() -> argparse.Namespace:
@@ -65,7 +64,7 @@ def main() -> None:
     duration = datetime.now(tz=TZ) - timedelta(hours=hours)
 
     # Get all AIFF files and filter by recency
-    aiff_files = files.list(dir=current_dir, exts=["aif"])
+    aiff_files = files.list(current_dir, ["aif"])
     recent_files = [
         f for f in aiff_files if datetime.fromtimestamp(f.stat().st_mtime, tz=TZ) > duration
     ]

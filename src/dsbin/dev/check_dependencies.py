@@ -10,15 +10,15 @@ import sys
 from typing import TYPE_CHECKING
 
 from polykit.cli import ArgParser
-from polykit.core import polykit_setup
 from polykit.formatters import color
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 
 if TYPE_CHECKING:
     import argparse
 
 polykit_setup()
-logger = Logician.get_logger(simple=True)
+logger = PolyLog.get_logger(simple=True)
 
 DEFAULT_PACKAGES: list[str] = [
     "arguer",

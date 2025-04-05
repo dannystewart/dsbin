@@ -8,10 +8,10 @@ import argparse
 import sys
 from pathlib import Path
 
-from polykit.core import polykit_setup
+from polykit.files import PolyFiles
 from polykit.formatters import print_color as colored
+from polykit.platform import polykit_setup
 
-from dsbin.files import FileManager
 from dsbin.media import MediaManager
 
 polykit_setup()
@@ -33,13 +33,13 @@ def parse_arguments() -> argparse.Namespace:
 
 def main() -> None:
     """Convert a file to MP3."""
-    files = FileManager()
+    files = PolyFiles()
     args = parse_arguments()
     path = args.path
 
     path = Path(path)
     if path.is_dir():
-        files_to_convert = files.list(path, exts=allowed_extensions)
+        files_to_convert = files.list(path, extensions=allowed_extensions)
     elif path.is_file() and path.suffix.lower() in allowed_extensions:
         files_to_convert = [path]
     else:

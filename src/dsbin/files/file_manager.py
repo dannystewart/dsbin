@@ -9,18 +9,18 @@ from typing import TYPE_CHECKING, Any
 
 from natsort import natsorted
 from polykit.cli import confirm_action
-from polykit.log import Logician
+from polykit.log import PolyLog
 from send2trash import send2trash
 
 if TYPE_CHECKING:
     from collections.abc import Callable
     from logging import Logger
 
-# Type alias due to FileManager having a `list` method
+# Type alias due to PolyFiles having a `list` method
 PathList = list[Path]
 
 
-class FileManager:
+class PolyFiles:
     """A utility class with a comprehensive set of methods for common file operations.
 
     It supports listing files with filtering and sorting options, safe file deletion with trash bin
@@ -34,7 +34,7 @@ class FileManager:
         detailed_log: bool = False,
         logger: Logger | None = None,
     ):
-        self.logger = logger or Logician.get_logger(level=log_level, simple=not detailed_log)
+        self.logger = logger or PolyLog.get_logger(level=log_level, simple=not detailed_log)
 
     def list(
         self,

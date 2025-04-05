@@ -11,20 +11,20 @@ from pathlib import Path
 
 import inquirer
 from polykit.cli import confirm_action, walking_man
-from polykit.core import polykit_setup
-from polykit.env import Enviromancer
+from polykit.env import PolyEnv
+from polykit.files import PolyFiles
 from polykit.formatters import color
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 
-from dsbin.files import FileManager
 from dsbin.logic import Bounce, BounceParser
 
 polykit_setup()
 
-env = Enviromancer()
+env = PolyEnv()
 env.add_debug_var()
-files = FileManager()
-logger = Logician.get_logger(level=env.log_level, simple=True)
+files = PolyFiles()
+logger = PolyLog.get_logger(level=env.log_level, simple=True)
 
 
 def get_unique_suffixes(bounces: list[Bounce]) -> list[str]:
@@ -80,7 +80,7 @@ def sort_bounces(bounces: list[Bounce], selected_suffixes: list[str]) -> None:
                     duplicates.append(source)
                     continue
 
-                if files.move(source, destination, overwrite=False, show_output=False):
+                if files.move(source, destination, overwrite=False, logger=logger):
                     logger.info(
                         "%s -> %s",
                         color(source.name, "white"),
@@ -100,16 +100,16 @@ def handle_duplicates(duplicates: list[Path]) -> None:
         print(color(f"✖ {file.name}", "yellow"))
 
     if confirm_action("\nDelete duplicate source files?", default_to_yes=False):
-        successful, failed = files.delete(duplicates, show_output=False)
+        successful, failed = files.delete(duplicates, logger=logger)
         if successful:
             print(
                 color(
-                    f"\n{successful} duplicate{'s' if successful != 1 else ''} deleted.",
+                    f"\n{successful} duplicate{'s' if len(successful) != 1 else ''} deleted.",
                     "green",
                 )
             )
         if failed:
-            print(color(f"{failed} deletion{'s' if failed != 1 else ''} failed.", "red"))
+            print(color(f"{failed} deletion{'s' if len(failed) != 1 else ''} failed.", "red"))
 
 
 def scan_bounces() -> tuple[list[Bounce], list[str]]:

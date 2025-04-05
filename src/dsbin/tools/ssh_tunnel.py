@@ -11,12 +11,12 @@ from typing import TYPE_CHECKING
 
 from polykit.cli import ArgParser
 from polykit.formatters import print_color
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     import argparse
 
-logger = Logician.get_logger()
+logger = PolyLog.get_logger()
 
 
 def parse_arguments() -> tuple[argparse.ArgumentParser, argparse.Namespace]:

@@ -52,9 +52,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import confirm_action
-from polykit.env import Enviromancer
-from polykit.log import Logician
-from polykit.paths import PathKeeper
+from polykit.env import PolyEnv
+from polykit.log import PolyLog
+from polykit.paths import PolyPaths
 from polykit.shell import is_root_user
 
 from dsbin.util.notify import TelegramSender
@@ -62,16 +62,16 @@ from dsbin.util.notify import TelegramSender
 if TYPE_CHECKING:
     from logging import Logger
 
-paths = PathKeeper("dockermounter")
+paths = PolyPaths("dockermounter")
 LOG_FILE_PATH = paths.from_log("dockermounter.log")
-logger = Logician.get_logger(log_file=LOG_FILE_PATH)
+logger = PolyLog.get_logger(log_file=LOG_FILE_PATH)
 
 POSSIBLE_SHARES = ["USER", "Downloads", "Music", "Media", "Storage"]
 
 
-def setup_env() -> Enviromancer:
+def setup_env() -> PolyEnv:
     """Setup environment configuration."""
-    env = Enviromancer()
+    env = PolyEnv()
     env.add_var(
         "TELEGRAM_BOT_TOKEN",
         description="Telegram Bot API token for notifications",
@@ -110,7 +110,7 @@ class ShareManager:
     docker_compose: Path | None
     auto: bool
 
-    env: Enviromancer = field(init=False)
+    env: PolyEnv = field(init=False)
     telegram: TelegramSender | None = field(init=False)
     logger: Logger = field(init=False)
 
@@ -132,7 +132,7 @@ class ShareManager:
 
         # Setup environment and notifications
         self.env = setup_env()
-        self.logger = Logician.get_logger()
+        self.logger = PolyLog.get_logger()
 
         self.telegram = None
         if self.env.telegram_bot_token and self.env.telegram_chat_id:

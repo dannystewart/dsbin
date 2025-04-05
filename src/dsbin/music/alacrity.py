@@ -17,10 +17,11 @@ from typing import ClassVar
 
 from natsort import natsorted
 from polykit.cli import confirm_action, conversion_list_context
-from polykit.core import polykit_setup
+from polykit.files import PolyFiles
 from polykit.formatters import print_color
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 
-from dsbin.files import FileManager
 from dsbin.media import MediaManager
 
 polykit_setup()
@@ -42,8 +43,8 @@ class ALACrity:
     }
 
     def __init__(self, args: argparse.Namespace) -> None:
-        self.files = FileManager()
         self.media = MediaManager()
+        self.logger = PolyLog.get_logger("alacrity")
 
         # Set default values for conversion options
         self.bit_depth = 16
@@ -76,12 +77,11 @@ class ALACrity:
             return
 
         if converted_files and confirm_action("Do you want to remove the original files?"):
-            self.files.delete(original_files, show_individual=False)
-
-        if skipped_files and confirm_action(
-            "Do you want to remove the skipped original files (WAV files with existing M4A)?"
-        ):
-            self.files.delete(skipped_files, show_individual=False)
+            # Use custom output handling
+            successful, failed = PolyFiles.delete(original_files, logger=None)
+            self.logger.info("%d files trashed successfully.", len(successful))
+            if failed:
+                self.logger.warning("Failed to delete %d files.", len(failed))
 
     def _gather_files(self, path: str) -> list[Path]:
         """Gather the files or directories to process based on the given path. For directories, it
@@ -106,7 +106,7 @@ class ALACrity:
         if path_obj.is_file() and path_obj.suffix.lower() in self.ALLOWED_EXTS:
             files_to_process = [path_obj]
         elif path_obj.is_dir():
-            files_to_process = self.files.list(path_obj, **list_args)
+            files_to_process = PolyFiles.list(path_obj, **list_args)
         else:
             print(f"The path '{path}' is neither a directory nor a file.")
             return []
@@ -139,8 +139,8 @@ class ALACrity:
                 case ConversionResult.CONVERTED:
                     converted_files.append(output_path)
                     original_files.append(input_path)
-                    ctime, mtime = self.files.get_timestamps(input_path)
-                    self.files.set_timestamps(output_path, ctime=ctime, mtime=mtime)
+                    ctime, mtime = PolyFiles.get_timestamps(input_path)
+                    PolyFiles.set_timestamps(output_path, ctime=ctime, mtime=mtime)
                 case ConversionResult.EXISTS:
                     skipped_files.append(input_path)
                 case ConversionResult.FAILED:

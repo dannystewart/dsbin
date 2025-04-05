@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 from dsbin.util.db import DatabaseError, QueryResult
 
@@ -25,7 +25,7 @@ class SQLiteHelper:
     logger: Logger = field(init=False)
 
     def __post_init__(self):
-        self.logger: Logger = Logician.get_logger()
+        self.logger: Logger = PolyLog.get_logger()
 
     @property
     def connection(self) -> sqlite3.Connection:

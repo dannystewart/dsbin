@@ -9,9 +9,8 @@ from typing import TYPE_CHECKING
 import inquirer
 from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
+from polykit.files import PolyFiles as BasePolyFiles
 from polykit.formatters import TZ
-
-from dsbin.files import FileManager as BaseFileManager
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -52,7 +51,7 @@ class FileManager:
         """Get the formatted creation timestamp for the file."""
 
         def get_timestamp() -> str:
-            ctime, _ = BaseFileManager.get_timestamps(Path(file_path))
+            ctime, _ = BasePolyFiles.get_timestamps(Path(file_path))
             creation_date = datetime.strptime(ctime, "%m/%d/%Y %H:%M:%S").replace(tzinfo=TZ)
             return creation_date.strftime("%a %b %d at %-I:%M:%S %p").replace(" 0", " ")
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import requests
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 from .telegram_api import TelegramAPIHelper
 
@@ -22,7 +22,7 @@ class TelegramSender:
     """
 
     def __init__(self, token: str, chat_id: str):
-        self.logger = Logician.get_logger()
+        self.logger = PolyLog.get_logger()
         self.api = TelegramAPIHelper(token, chat_id)
         self.chat_id = chat_id
 

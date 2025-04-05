@@ -15,10 +15,10 @@ import sys
 from pathlib import Path
 
 from polykit.cli import halo_progress
-from polykit.core import polykit_setup
+from polykit.files import PolyFiles
 from polykit.formatters import print_color
+from polykit.platform import polykit_setup
 
-from dsbin.files import FileManager
 from dsbin.media import MediaManager
 
 polykit_setup()
@@ -72,14 +72,14 @@ def main() -> None:
             audio_codec="aac",
         )
 
-    files = FileManager()
+    files = PolyFiles()
     original_file = Path(original_filename)
     target_file = Path(target_filename)
     clean_file = Path(clean_filename)
 
     if original_filename != target_filename:
         files.delete(original_file)
-        if files.move(target_file, clean_file, overwrite=True, show_output=False):
+        if files.move(target_file, clean_file, overwrite=True):
             print_color(f"Saved {clean_filename}!", "green")
 
 

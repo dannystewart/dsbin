@@ -6,13 +6,13 @@ from __future__ import annotations
 
 import subprocess
 
-from polykit.core import platform_check, polykit_setup
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import platform_check, polykit_setup
 
 polykit_setup()
 platform_check("Darwin")
 
-logger = Logician.get_logger("setmag")
+logger = PolyLog.get_logger("setmag")
 
 
 def main() -> None:

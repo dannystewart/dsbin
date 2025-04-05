@@ -6,15 +6,16 @@ import sqlite3
 from typing import TYPE_CHECKING
 
 from polykit.cli import walking_man
-from polykit.core import async_retry_on_exception, polykit_setup
-from polykit.log import Logician
+from polykit.core import async_retry_on_exception
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 
 if TYPE_CHECKING:
     from dsbin.pybounce.client_protocol import TelegramClientProtocol
 
 polykit_setup()
 
-logger = Logician.get_logger(level="info")
+logger = PolyLog.get_logger(level="info")
 
 
 class SQLiteManager:

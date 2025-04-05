@@ -24,9 +24,9 @@ from typing import TYPE_CHECKING
 
 from halo import Halo
 from polykit.cli import walking_man
-from polykit.core import polykit_setup
 from polykit.formatters import color
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 from dsbin.media import MediaManager
@@ -67,7 +67,7 @@ class WPMusic:
             keep_files=should_keep,
             no_cache=args.no_cache,
         )
-        self.logger = Logician.get_logger(
+        self.logger = PolyLog.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

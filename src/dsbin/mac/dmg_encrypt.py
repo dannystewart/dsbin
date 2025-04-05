@@ -19,15 +19,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import ArgParser, halo_progress
-from polykit.core import polykit_setup
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 
 if TYPE_CHECKING:
     import argparse
 
 polykit_setup()
 
-logger = Logician.get_logger(simple=True)
+logger = PolyLog.get_logger(simple=True)
 
 
 def parse_arguments() -> argparse.Namespace:

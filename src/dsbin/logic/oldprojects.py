@@ -21,7 +21,7 @@ from pathlib import Path
 import colorama
 import readchar
 from colorama import Fore, Style
-from polykit.core import platform_check, polykit_setup
+from polykit.platform import platform_check, polykit_setup
 
 polykit_setup()
 

@@ -9,12 +9,12 @@ import subprocess
 import sys
 from pathlib import Path
 
-from polykit.core import polykit_setup
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 
 polykit_setup()
 
-logger = Logician.get_logger("metacopy")
+logger = PolyLog.get_logger("metacopy")
 
 
 def copy_metadata(file: Path, metadata_source: Path | None, rename_flag: bool) -> None:

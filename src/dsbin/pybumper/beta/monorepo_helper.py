@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 class MonorepoHelperBeta:
     """Helper for monorepo detection and package management."""
 
-    logger: Logger = Logician.get_logger()
+    logger: Logger = PolyLog.get_logger()
 
     @staticmethod
     def is_monorepo(directory: Path) -> bool:

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import inquirer
 from polykit.formatters import print_color as colored
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 from dsbin.wpmusic.audio_track import AudioTrack
 from dsbin.wpmusic.metadata_fetcher import MetadataFetcher
@@ -22,7 +22,7 @@ class TrackIdentifier:
 
     def __init__(self, config: WPConfig):
         self.config = config
-        self.logger = Logician.get_logger(
+        self.logger = PolyLog.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

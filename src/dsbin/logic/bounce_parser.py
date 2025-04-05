@@ -36,10 +36,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
+from polykit.files import PolyFiles
 from polykit.formatters import TZ
-from polykit.log import Logician
-
-from dsbin.files import FileManager
+from polykit.log import PolyLog
 
 
 @dataclass
@@ -92,7 +91,7 @@ class BounceParser:
 
     BOUNCE_PATTERN = r"(.+) (\d{2})\.(\d{1,2})\.(\d{1,2})(?:_(\d+)([a-z]?))?(?: (.+))?"
 
-    logger = Logician.get_logger()
+    logger = PolyLog.get_logger()
 
     @classmethod
     def get_bounce(cls, file_path: Path) -> Bounce:
@@ -139,7 +138,7 @@ class BounceParser:
             raise ValueError(msg)
 
         title, year, month, day, version, minor_version, suffix = match.groups()
-        ctime, mtime = FileManager.get_timestamps(path)
+        ctime, mtime = PolyFiles.get_timestamps(path)
 
         return Bounce(
             title=title,

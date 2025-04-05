@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol
 
-from polykit.core import polykit_setup
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 polykit_setup()
 
-logger = Logician.get_logger(level="info")
+logger = PolyLog.get_logger(level="info")
 
 
 class TelegramClientProtocol(Protocol):

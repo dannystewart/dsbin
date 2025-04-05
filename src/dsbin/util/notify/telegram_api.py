@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import requests
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     from logging import Logger
@@ -24,7 +24,7 @@ class TelegramAPIHelper:
     """
 
     def __init__(self, token: str, chat_id: str):
-        self.logger: Logger = Logician.get_logger()
+        self.logger: Logger = PolyLog.get_logger()
         self.token: str = token
         self.chat_id: str = chat_id
         self.url: str = f"https://api.telegram.org/bot{self.token}"

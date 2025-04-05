@@ -15,13 +15,13 @@ import sys
 from pathlib import Path
 
 from polykit.cli import confirm_action
-from polykit.core import polykit_setup
 from polykit.formatters import color
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 
 polykit_setup()
 
-logger = Logician.get_logger(simple=True, color=False)
+logger = PolyLog.get_logger(simple=True, color=False)
 
 
 def parse_arguments() -> argparse.Namespace:

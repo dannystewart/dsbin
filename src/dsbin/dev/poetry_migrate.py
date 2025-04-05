@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import tomlkit
-from polykit.core import polykit_setup
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 from tomlkit.items import Array
 
 if TYPE_CHECKING:
@@ -40,7 +40,7 @@ POETRY_SPECIFIC_FIELDS = {
     "extras",
 }
 
-logger = Logician.get_logger(simple=True)
+logger = PolyLog.get_logger(simple=True)
 
 
 def find_pyproject_files(start_path: Path) -> list[Path]:

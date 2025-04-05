@@ -5,9 +5,9 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from polykit.log import Logician
+from polykit.files import PolyFiles
+from polykit.log import PolyLog
 
-from dsbin.files import FileManager
 from dsbin.workcalc.data import WorkItem
 from dsbin.workcalc.plugin import DataSourcePlugin
 
@@ -27,7 +27,7 @@ class BounceDataSource(DataSourcePlugin):
 
     def __post_init__(self):
         self.directory = Path(self.bounce_dir)
-        self.logger = Logician.get_logger()
+        self.logger = PolyLog.get_logger()
 
     @property
     def source_name(self) -> str:
@@ -54,7 +54,7 @@ class BounceDataSource(DataSourcePlugin):
         """
         for file_path in self._find_audio_files():
             try:
-                ctime, mtime = FileManager.get_timestamps(file_path)
+                ctime, mtime = PolyFiles.get_timestamps(file_path)
                 # Parse the creation timestamp
                 timestamp = self._parse_timestamp(ctime)
 
@@ -73,10 +73,10 @@ class BounceDataSource(DataSourcePlugin):
 
     def _find_audio_files(self) -> Iterator[Path]:
         """Find all audio files in the directory."""
-        files = FileManager().list(
+        files = PolyFiles.list(
             self.directory,
-            exts=self.BOUNCE_EXTENSIONS,
-            recursive=True,
+            extensions=self.BOUNCE_EXTENSIONS,
+            recurse=True,
             sort_key=lambda x: x.stat().st_mtime,
         )
         return (Path(f) for f in files)

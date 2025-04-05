@@ -7,12 +7,11 @@ from typing import TYPE_CHECKING
 import inquirer
 import paramiko  # type: ignore
 import pyperclip
+from polykit.files import PolyFiles
 from polykit.formatters import color as colored
-from polykit.log import Logician
+from polykit.log import PolyLog
 from polykit.shell import handle_interrupt
 from scp import SCPClient
-
-from dsbin.files import FileManager as BaseFileManager
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack
@@ -26,7 +25,7 @@ class FileManager:
     def __init__(self, config: WPConfig, upload_tracker: UploadTracker):
         self.config = config
         self.upload_tracker = upload_tracker
-        self.logger = Logician.get_logger(
+        self.logger = PolyLog.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,
@@ -85,7 +84,6 @@ class FileManager:
             audio_track: The AudioTrack object containing the track metadata.
             output_filename: The base filename for the converted files.
         """
-        files = BaseFileManager()
         files_to_process = [  # List of files to process based on requested formats
             self.file_save_path / f"{output_filename}{self.config.formats[fmt]}"
             for fmt in self.config.formats_to_convert
@@ -103,7 +101,7 @@ class FileManager:
             self.logger.info("Local files kept and renamed to '%s'.", song_name)
 
         else:  # Otherwise, delete the files
-            files.delete(files_to_process, show_output=False)
+            PolyFiles.delete(files_to_process)
 
     def upload_file_to_web_server(self, file_path: Path, audio_track: AudioTrack) -> None:
         """Upload a file to my web server."""

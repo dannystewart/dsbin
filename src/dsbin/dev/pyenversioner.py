@@ -13,7 +13,7 @@ import os
 from pathlib import Path
 
 from polykit.cli import confirm_action, walking_man
-from polykit.core import polykit_setup
+from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 polykit_setup()

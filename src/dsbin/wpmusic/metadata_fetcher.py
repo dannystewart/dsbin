@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import requests
 from PIL import Image
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.configs import WPConfig
@@ -17,7 +17,7 @@ class MetadataFetcher:
 
     def __init__(self, config: WPConfig):
         self.config = config
-        self.logger = Logician.get_logger(
+        self.logger = PolyLog.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

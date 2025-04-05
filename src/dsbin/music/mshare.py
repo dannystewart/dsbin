@@ -18,9 +18,9 @@ from typing import TYPE_CHECKING, ClassVar
 
 import inquirer
 from polykit.cli import ArgParser, halo_progress, walking_man
-from polykit.core import polykit_setup
 from polykit.formatters import color as colored
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 from dsbin.media import MediaManager
@@ -56,7 +56,7 @@ class MusicShare:
     OUTPUT_PATH: ClassVar[Path] = Path.home() / "Downloads"
 
     def __init__(self, input_file: Path, bit_depth: int, upload: bool = False):
-        self.logger = Logician.get_logger(simple=True)
+        self.logger = PolyLog.get_logger(simple=True)
         self.input_file = input_file
         self.bit_depth = bit_depth
         self.upload = upload

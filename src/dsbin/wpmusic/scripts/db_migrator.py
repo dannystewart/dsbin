@@ -9,14 +9,14 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 import mysql.connector
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 from dsbin.wpmusic.configs import WPConfig
 
 if TYPE_CHECKING:
     from collections.abc import Generator
 
-logger = Logician.get_logger()
+logger = PolyLog.get_logger()
 
 
 def run(command: str) -> tuple[bool, str]:

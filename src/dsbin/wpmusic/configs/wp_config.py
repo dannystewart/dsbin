@@ -4,8 +4,8 @@ from dataclasses import dataclass, field
 from typing import ClassVar
 
 import paramiko
-from polykit.env import Enviromancer
-from polykit.paths import PathKeeper
+from polykit.env import PolyEnv
+from polykit.paths import PolyPaths
 
 
 @dataclass
@@ -47,7 +47,7 @@ class WPConfig:
 
     def __post_init__(self):
         # Initialize core services
-        self.paths = PathKeeper("wpmusic")
+        self.paths = PolyPaths("wpmusic")
         self.initialize_env_vars()
 
         # Load environment variables into class attributes
@@ -69,7 +69,7 @@ class WPConfig:
 
     def initialize_env_vars(self) -> None:
         """Get environment variables."""
-        self.env = Enviromancer()
+        self.env = PolyEnv()
         self.env.add_debug_var()
         self.env.add_var(
             "SSH_PASSPHRASE",

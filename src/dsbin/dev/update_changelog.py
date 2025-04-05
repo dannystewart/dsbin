@@ -9,13 +9,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import ArgParser
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     import argparse
     from collections.abc import Sequence
 
-logger = Logician.get_logger()
+logger = PolyLog.get_logger()
 
 CHANGELOG_PATH = Path("CHANGELOG.md")
 

@@ -15,8 +15,8 @@ import re
 from importlib.metadata import entry_points
 from pathlib import Path
 
-from polykit.core import polykit_setup
 from polykit.formatters import color, print_color
+from polykit.platform import polykit_setup
 
 polykit_setup()
 

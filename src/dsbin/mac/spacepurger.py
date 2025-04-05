@@ -19,8 +19,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import halo_progress
-from polykit.core import polykit_setup
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 if TYPE_CHECKING:
@@ -28,7 +28,7 @@ if TYPE_CHECKING:
 
 polykit_setup()
 
-logger = Logician.get_logger()
+logger = PolyLog.get_logger()
 
 # macOS becomes unstable with less than 20GB of free space
 MIN_FREE_SPACE_GB = 20

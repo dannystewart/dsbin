@@ -9,7 +9,7 @@ from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4, MP4Cover
 
 # ruff: noqa: PLC2701
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -23,7 +23,7 @@ class MetadataSetter:
 
     def __init__(self, config: WPConfig):
         self.config = config
-        self.logger = Logician.get_logger(
+        self.logger = PolyLog.get_logger(
             self.__class__.__name__,
             level=self.config.log_level,
             simple=self.config.log_simple,

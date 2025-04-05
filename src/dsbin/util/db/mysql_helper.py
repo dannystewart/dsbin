@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 from dsbin.util.db import DatabaseError, QueryResult
 
@@ -43,7 +43,7 @@ class MySQLHelper:
     logger: Logger = field(init=False)
 
     def __post_init__(self):
-        self.logger = Logician.get_logger()
+        self.logger = PolyLog.get_logger()
         if not mysql_available:
             msg = (
                 "MySQL functionality requires the mysql-connector-python package. "

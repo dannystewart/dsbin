@@ -9,9 +9,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import ArgParser, WalkingMan, walking_man
-from polykit.env import Enviromancer
-from polykit.formatters import print_color, show_diff
-from polykit.log import Logician
+from polykit.env import PolyEnv
+from polykit.files import PolyDiff
+from polykit.formatters import print_color
+from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     import argparse
@@ -616,7 +617,7 @@ class ImpactAnalyzer:
 
             # Show diff only if the file existed before
             print_color(f"\nChanges in {file_path}:", "cyan")
-            diff_result = show_diff(old=old_content, new=new_content)
+            diff_result = PolyDiff.content(old=old_content, new=new_content)
 
             # Print summary
             if diff_result.has_changes:
@@ -844,8 +845,8 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     """Analyze repository changes and impact."""
-    env = Enviromancer(add_debug=True)
-    logger = Logician.get_logger(simple=True, level=env.log_level)
+    env = PolyEnv(add_debug=True)
+    logger = PolyLog.get_logger(simple=True, level=env.log_level)
     args = parse_args()
 
     with walking_man(speed=0.12):

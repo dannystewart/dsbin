@@ -8,16 +8,16 @@ import argparse
 from pathlib import Path
 
 import requests
-from polykit.core import polykit_setup
-from polykit.env import Enviromancer
+from polykit.env import PolyEnv
 from polykit.formatters import print_color as colored
+from polykit.platform import polykit_setup
 from requests import Session
 from requests.auth import HTTPBasicAuth
 
 polykit_setup()
 
 # Load environment variables
-env = Enviromancer()
+env = PolyEnv()
 env.add_var("FASTMAIL_USERNAME", attr_name="username")
 env.add_var("FASTMAIL_PASSWORD", attr_name="password")
 

@@ -20,10 +20,9 @@ from typing import TYPE_CHECKING, ClassVar
 
 import requests
 from polykit.cli import ArgParser, confirm_action
-from polykit.formatters import color, show_diff
-from polykit.log import Logician
-
-from dsbin.files import FileManager
+from polykit.files import PolyDiff
+from polykit.formatters import color
+from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     import argparse
@@ -64,10 +63,10 @@ class ConfigManager:
     ]
 
     def __init__(self, no_confirm: bool = False):
-        self.logger = Logician.get_logger()
-        self.files = FileManager()
+        self.logger = PolyLog.get_logger()
         self.no_confirm = no_confirm
         self.changes_made = set()
+        self.skipped_dirs = set()  # Track rejected parent directories
 
         # Determine if all configs should be created by checking if any exist locally
         self.should_create_all = not any(config.local_path.exists() for config in self.CONFIGS)
@@ -79,6 +78,8 @@ class ConfigManager:
 
     def update_configs(self) -> None:
         """Pull down latest configs from repository, updating local copies."""
+        skipped_configs = []
+
         for config in self.CONFIGS:
             remote_content = self.fetch_remote_content(config)
             if not remote_content:
@@ -92,11 +93,33 @@ class ConfigManager:
                 # Run post-update command if specified and file was updated
                 if config.post_update_command:
                     self.run_post_update_command(config)
+            elif config.name not in self.changes_made:
+                skipped_configs.append(config.name)
 
-        # Report unchanged configs
-        if unchanged := [c.name for c in self.CONFIGS if c.name not in self.changes_made]:
+        # Report unchanged configs (those that exist and are up to date)
+        unchanged = [
+            c.name
+            for c in self.CONFIGS
+            if c.name not in self.changes_made and c.name not in skipped_configs
+        ]
+        if unchanged:
             unchanged.sort()
-            self.logger.info("No changes made for:\n- %s", "\n- ".join(unchanged))
+            self.logger.info(
+                "No changes needed for %d file%s:\n- %s",
+                len(unchanged),
+                "s" if len(unchanged) != 1 else "",
+                "\n- ".join(unchanged),
+            )
+
+        # Report skipped configs separately
+        if skipped_configs:
+            skipped_configs.sort()
+            self.logger.info(
+                "Skipped %d file%s:\n- %s",
+                len(skipped_configs),
+                "s" if len(skipped_configs) != 1 else "",
+                "\n- ".join(skipped_configs),
+            )
 
     def fetch_remote_content(self, config: ConfigFile) -> str | None:
         """Fetch content from remote URL."""
@@ -114,23 +137,35 @@ class ConfigManager:
         Returns:
             True if the config was updated or created, False otherwise.
         """
-        if "/" in config.name or "\\" in config.name:  # Ensure parent directories exist
-            parent_dir = config.local_path.parent
-            if not parent_dir.exists():
-                if (
-                    self.no_confirm
-                    or self.should_create_all
-                    or confirm_action(
-                        f"Directory {parent_dir} does not exist. Create?", default_to_yes=True
-                    )
-                ):
-                    parent_dir.mkdir(parents=True, exist_ok=True)
-                    self.logger.info("Created directory %s", parent_dir)
-                else:
-                    self.logger.info(
-                        "Skipping %s as parent directory creation was declined.", config.name
-                    )
-                    return False
+        # Check if this config falls under a rejected parent directory
+        parent_dir = config.local_path.parent
+        if any(str(parent_dir).startswith(str(rejected)) for rejected in self.skipped_dirs):
+            self.logger.debug(
+                "Skipping %s as parent directory %s was previously declined.",
+                config.name,
+                parent_dir,
+            )
+            return False
+
+        if ("/" in config.name or "\\" in config.name) and not parent_dir.exists():
+            if (
+                self.no_confirm
+                or self.should_create_all
+                or confirm_action(
+                    f"Directory {parent_dir} does not exist. Create?", default_to_yes=True
+                )
+            ):
+                parent_dir.mkdir(parents=True, exist_ok=True)
+                self.logger.info("Created directory %s", parent_dir)
+            else:
+                self.logger.info(
+                    "Skipping %s and all configs in %s as directory creation was declined.",
+                    config.name,
+                    parent_dir,
+                )
+                # Add this parent to rejected list to skip all future configs under it
+                self.skipped_dirs.add(parent_dir)
+                return False
 
         if config.local_path.exists():
             local_content = config.local_path.read_text()
@@ -138,7 +173,7 @@ class ConfigManager:
                 return False
 
             if not self.no_confirm:
-                show_diff(local_content, remote_content, config.local_path.name)
+                PolyDiff.content(local_content, remote_content, config.local_path.name)
                 if not confirm_action(f"Update {config.name} config?", default_to_yes=True):
                     return False
         elif not (
@@ -220,7 +255,7 @@ def main() -> None:
 
     # Check if we're in a Git repository
     if not is_git_repository() and not args.force:
-        logger = Logician.get_logger()
+        logger = PolyLog.get_logger()
         logger.error("This is intended to run inside of a Git repository. Use --force to override.")
         return
 

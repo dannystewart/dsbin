@@ -30,10 +30,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import confirm_action, walking_man
-from polykit.core import polykit_setup
+from polykit.files import PolyFiles
 from polykit.formatters import color, print_color
+from polykit.platform import polykit_setup
 
-from dsbin.files import FileManager
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 
 if TYPE_CHECKING:
@@ -194,8 +194,8 @@ def execute_actions(actions: BounceActions) -> None:
         return
 
     if confirm_action("Proceed with these actions?", default_to_yes=False):
-        files = FileManager()
-        successful_deletions, failed_deletions = files.delete(actions.trash, show_output=False)
+        files = PolyFiles()
+        successful_deletions, failed_deletions = files.delete(actions.trash)
 
         renamed_files_count = 0
         for old_path, new_path in actions.rename:
@@ -203,13 +203,13 @@ def execute_actions(actions: BounceActions) -> None:
             renamed_files_count += 1
 
         completion_message_parts = []
-        if successful_deletions > 0:
+        if len(successful_deletions) > 0:
             completion_message_parts.append(
-                f"{successful_deletions} file{'s' if successful_deletions > 1 else ''} deleted"
+                f"{successful_deletions} file{'s' if len(successful_deletions) > 1 else ''} deleted"
             )
-        if failed_deletions > 0:
+        if len(failed_deletions) > 0:
             completion_message_parts.append(
-                f"{failed_deletions} deletion{'s' if failed_deletions > 1 else ''} failed"
+                f"{failed_deletions} deletion{'s' if len(failed_deletions) > 1 else ''} failed"
             )
         if renamed_files_count > 0:
             completion_message_parts.append(

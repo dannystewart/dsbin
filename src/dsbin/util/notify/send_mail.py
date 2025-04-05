@@ -5,7 +5,7 @@ from __future__ import annotations
 import smtplib
 from email.mime.text import MIMEText
 
-from polykit.log import Logician
+from polykit.log import PolyLog
 
 
 class MailSender:
@@ -31,7 +31,7 @@ class MailSender:
         smtp_password: str,
         timeout: int = 10,
     ):
-        self.logger = Logician.get_logger(f"{self.__class__.__name__}")
+        self.logger = PolyLog.get_logger(f"{self.__class__.__name__}")
         self.name = name
         self.email = email
         self.smtp_server = smtp_server

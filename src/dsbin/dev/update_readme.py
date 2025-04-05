@@ -9,12 +9,12 @@ import subprocess
 from pathlib import Path
 
 import tomlkit
-from polykit.core import polykit_setup
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 
 polykit_setup()
 
-logger = Logician.get_logger()
+logger = PolyLog.get_logger()
 
 # Constants for README generation
 README_PATH: Path = Path("README.md")

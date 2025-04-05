@@ -8,7 +8,7 @@ from typing import Any
 
 from packaging import version
 from polykit.formatters import color
-from polykit.versions import PackageSource, VersionChecker, VersionInfo
+from polykit.packages import PackageSource, VersionChecker, VersionInfo
 
 
 def format_version_info(versions: VersionInfo) -> tuple[str, str]:

@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import ArgParser, confirm_action
-from polykit.core import polykit_setup
-from polykit.env import Enviromancer
+from polykit.env import PolyEnv
 from polykit.formatters import Text
-from polykit.log import Logician
+from polykit.log import PolyLog
+from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 from dsbin.pybumper.beta.git_helper import GitHelperBeta
@@ -35,12 +35,12 @@ class PyBumperBeta:
     """
 
     def __init__(self, args: argparse.Namespace, package_name: str) -> None:
-        # Use Enviromancer for debug flag
-        env = Enviromancer()
+        # Use PolyEnv for debug flag
+        env = PolyEnv()
         env.add_debug_var()
 
         # Create logger with debug flag; use simple logger if debug is off
-        self.logger = Logician.get_logger(env.log_level, simple=not env.debug)
+        self.logger = PolyLog.get_logger(env.log_level, simple=not env.debug)
 
         # Parse command-line arguments into instance variables
         self.no_increment = args.no_increment

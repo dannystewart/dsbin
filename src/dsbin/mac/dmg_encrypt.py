@@ -18,9 +18,9 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from logician import Logician
 from polykit import polykit_setup
 from polykit.cli import ArgParser, halo_progress
+from polykit.log import Logician
 
 if TYPE_CHECKING:
     import argparse

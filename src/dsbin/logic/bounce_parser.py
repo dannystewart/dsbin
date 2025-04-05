@@ -36,8 +36,8 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from logician import Logician
-from polykit.parsers import TZ
+from polykit.formatters import TZ
+from polykit.log import Logician
 
 from dsbin.files import FileManager
 

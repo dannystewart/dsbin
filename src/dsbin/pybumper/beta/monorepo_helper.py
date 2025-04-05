@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from logician import Logician
+from polykit.log import Logician
 
 if TYPE_CHECKING:
     from logging import Logger

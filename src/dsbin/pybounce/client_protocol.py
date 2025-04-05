@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol
 
-from logician import Logician
 from polykit import polykit_setup
+from polykit.log import Logician
 
 if TYPE_CHECKING:
     from collections.abc import Callable

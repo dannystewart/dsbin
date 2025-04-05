@@ -2,13 +2,14 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-# ruff: noqa: PLC2701
-from logician import Logician
 from mutagen.flac import FLAC, Picture
 from mutagen.id3 import ID3
 from mutagen.id3._frames import APIC, TALB, TCON, TDRC, TIT2, TPE1, TRCK  # type: ignore
 from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4, MP4Cover
+
+# ruff: noqa: PLC2701
+from polykit.log import Logician
 
 if TYPE_CHECKING:
     from pathlib import Path

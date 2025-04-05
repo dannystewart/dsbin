@@ -9,10 +9,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from enviromancer import Enviromancer
-from logician import Logician
 from polykit.cli import ArgParser
-from polykit.parsers import print_color
-from polykit.parsers.diff import show_diff
+from polykit.formatters import print_color, show_diff
+from polykit.log import Logician
 from walking_man import WalkingMan, walking_man
 
 if TYPE_CHECKING:

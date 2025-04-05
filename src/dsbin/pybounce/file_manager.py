@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import inquirer
 from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
-from polykit.parsers import TZ
+from polykit.formatters import TZ
 
 from dsbin.files import FileManager as BaseFileManager
 

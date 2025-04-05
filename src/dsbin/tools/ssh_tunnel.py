@@ -9,9 +9,9 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from logician import Logician
 from polykit.cli import ArgParser
-from polykit.parsers import print_color
+from polykit.formatters import print_color
+from polykit.log import Logician
 
 if TYPE_CHECKING:
     import argparse

@@ -7,9 +7,9 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from logician import Logician
 from natsort import natsorted
 from polykit.cli import confirm_action
+from polykit.log import Logician
 from send2trash import send2trash
 
 if TYPE_CHECKING:

@@ -13,7 +13,7 @@ from pathlib import Path
 
 import inquirer
 from polykit import polykit_setup
-from polykit.parsers import color, print_color
+from polykit.formatters import color, print_color
 from polykit.shell import handle_interrupt
 
 polykit_setup()

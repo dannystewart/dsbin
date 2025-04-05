@@ -6,9 +6,9 @@ from __future__ import annotations
 
 import subprocess
 
-from logician import Logician
 from polykit import polykit_setup
 from polykit.core import platform_check
+from polykit.log import Logician
 
 polykit_setup()
 platform_check("Darwin")

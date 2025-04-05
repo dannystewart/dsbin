@@ -9,7 +9,7 @@ import sys
 from pathlib import Path
 
 from polykit import polykit_setup
-from polykit.parsers import print_color as colored
+from polykit.formatters import print_color as colored
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager

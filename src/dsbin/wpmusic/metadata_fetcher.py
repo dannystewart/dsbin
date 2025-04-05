@@ -5,8 +5,8 @@ from io import BytesIO
 from typing import TYPE_CHECKING, Any
 
 import requests
-from logician import Logician
 from PIL import Image
+from polykit.log import Logician
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.configs import WPConfig

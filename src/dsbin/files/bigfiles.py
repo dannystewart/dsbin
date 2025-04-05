@@ -13,7 +13,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from polykit import polykit_setup
-from polykit.parsers import print_color as colored
+from polykit.formatters import print_color as colored
 
 polykit_setup()
 

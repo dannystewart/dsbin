@@ -18,7 +18,7 @@ from enviromancer import Enviromancer
 from natsort import natsorted
 from polykit import polykit_setup
 from polykit.cli import confirm_action
-from polykit.parsers import color
+from polykit.formatters import color
 
 polykit_setup()
 

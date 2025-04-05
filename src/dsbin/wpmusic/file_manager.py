@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING
 import inquirer
 import paramiko  # type: ignore
 import pyperclip
-from logician import Logician
-from polykit.parsers import color as colored
+from polykit.formatters import color as colored
+from polykit.log import Logician
 from polykit.shell import handle_interrupt
 from scp import SCPClient
 

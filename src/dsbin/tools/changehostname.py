@@ -12,7 +12,7 @@ import sys
 from pathlib import Path
 
 from polykit.cli import confirm_action
-from polykit.parsers import print_color
+from polykit.formatters import print_color
 from polykit.shell import is_root_user
 
 

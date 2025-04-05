@@ -33,10 +33,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from logician import Logician
 from polykit import polykit_setup
 from polykit.cli import ArgParser, halo_progress
 from polykit.core import with_retries
+from polykit.log import Logician
 from polykit.shell import handle_interrupt
 
 from dsbin.files import FileManager

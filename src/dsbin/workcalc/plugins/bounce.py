@@ -5,7 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from logician import Logician
+from polykit.log import Logician
 
 from dsbin.files import FileManager
 from dsbin.workcalc.data import WorkItem

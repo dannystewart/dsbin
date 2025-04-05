@@ -19,10 +19,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import requests
-from logician import Logician
 from polykit.cli import ArgParser, confirm_action
-from polykit.parsers import color
-from polykit.parsers.diff import show_diff
+from polykit.formatters import color, show_diff
+from polykit.log import Logician
 
 from dsbin.files import FileManager
 

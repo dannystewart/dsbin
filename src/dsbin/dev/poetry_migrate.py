@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import tomlkit
-from logician import Logician
 from polykit import polykit_setup
+from polykit.log import Logician
 from tomlkit.items import Array
 
 if TYPE_CHECKING:

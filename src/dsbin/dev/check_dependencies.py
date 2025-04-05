@@ -9,10 +9,10 @@ import pkgutil
 import sys
 from typing import TYPE_CHECKING
 
-from logician import Logician
 from polykit import polykit_setup
 from polykit.cli import ArgParser
-from polykit.parsers import color
+from polykit.formatters import color
+from polykit.log import Logician
 
 if TYPE_CHECKING:
     import argparse

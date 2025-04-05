@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 from polykit.cli import confirm_action
-from polykit.parsers import print_color
+from polykit.formatters import print_color
 from polykit.shell import handle_interrupt
 
 

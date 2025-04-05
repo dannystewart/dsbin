@@ -9,7 +9,7 @@ import ast
 import os
 from pathlib import Path
 
-from polykit.parsers import color, print_color
+from polykit.formatters import color, print_color
 
 
 def find_imports(file_path: str) -> list[tuple[str, int]]:

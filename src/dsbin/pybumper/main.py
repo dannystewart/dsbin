@@ -29,9 +29,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from enviromancer import Enviromancer
-from logician import Logician
 from polykit import polykit_setup
 from polykit.cli import ArgParser, confirm_action
+from polykit.log import Logician
 from polykit.shell import handle_interrupt
 
 from dsbin.pybumper.bump_type import BumpType

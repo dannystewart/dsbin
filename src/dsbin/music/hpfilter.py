@@ -32,7 +32,7 @@ from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
 from polykit import polykit_setup
-from polykit.parsers import color, print_color
+from polykit.formatters import color, print_color
 
 if TYPE_CHECKING:
     from collections.abc import Callable

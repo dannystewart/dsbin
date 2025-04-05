@@ -16,7 +16,7 @@ from pathlib import Path
 
 import inquirer
 from polykit import polykit_setup
-from polykit.parsers import TZ, print_color
+from polykit.formatters import TZ, print_color
 
 from dsbin.files import FileManager
 

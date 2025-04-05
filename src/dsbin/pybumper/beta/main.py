@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from enviromancer import Enviromancer
-from logician import Logician
 from polykit import polykit_setup
 from polykit.cli import ArgParser, confirm_action
-from polykit.parsers import Text
+from polykit.formatters import Text
+from polykit.log import Logician
 from polykit.shell import handle_interrupt
 
 from dsbin.pybumper.beta.git_helper import GitHelperBeta

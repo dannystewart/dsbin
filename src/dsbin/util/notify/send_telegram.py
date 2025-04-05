@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import requests
-from logician import Logician
+from polykit.log import Logician
 
 from .telegram_api import TelegramAPIHelper
 

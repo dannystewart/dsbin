@@ -14,10 +14,10 @@ import re
 import sys
 from pathlib import Path
 
-from logician import Logician
 from polykit import polykit_setup
 from polykit.cli import confirm_action
-from polykit.parsers import color
+from polykit.formatters import color
+from polykit.log import Logician
 
 polykit_setup()
 

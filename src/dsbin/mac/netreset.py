@@ -12,7 +12,7 @@ from typing import Any
 
 from polykit import polykit_setup
 from polykit.cli import confirm_action
-from polykit.parsers import print_color as colored
+from polykit.formatters import print_color as colored
 from polykit.shell import acquire_sudo
 
 polykit_setup()

@@ -5,7 +5,7 @@ from __future__ import annotations
 import smtplib
 from email.mime.text import MIMEText
 
-from logician import Logician
+from polykit.log import Logician
 
 
 class MailSender:

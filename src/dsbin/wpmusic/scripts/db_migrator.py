@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 import mysql.connector
-from logician import Logician
+from polykit.log import Logician
 
 from dsbin.wpmusic.configs import WPConfig
 

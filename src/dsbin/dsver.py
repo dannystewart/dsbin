@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from packaging import version
-from polykit.parsers import color
+from polykit.formatters import color
 from polykit.versions import PackageSource, VersionChecker, VersionInfo
 
 

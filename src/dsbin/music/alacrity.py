@@ -18,7 +18,7 @@ from typing import ClassVar
 from natsort import natsorted
 from polykit import polykit_setup
 from polykit.cli import confirm_action, conversion_list_context
-from polykit.parsers import print_color
+from polykit.formatters import print_color
 
 from dsbin.files import FileManager
 from dsbin.media import MediaManager

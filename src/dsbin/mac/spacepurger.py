@@ -18,9 +18,9 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from logician import Logician
 from polykit import polykit_setup
 from polykit.cli import halo_progress
+from polykit.log import Logician
 from polykit.shell import handle_interrupt
 
 if TYPE_CHECKING:

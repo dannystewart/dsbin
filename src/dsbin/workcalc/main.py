@@ -8,9 +8,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from logician import Logician
 from polykit import polykit_setup
-from polykit.parsers import Text
+from polykit.formatters import Text
+from polykit.log import Logician
 from walking_man import walking_man
 
 from dsbin.workcalc.data import (

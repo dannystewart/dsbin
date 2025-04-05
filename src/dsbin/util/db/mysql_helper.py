@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any, ClassVar, TypeVar
 
-from logician import Logician
+from polykit.log import Logician
 
 from dsbin.util.db import DatabaseError, QueryResult
 

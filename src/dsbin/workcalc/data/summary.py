@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from polykit.parsers import Text
+from polykit.formatters import Text
 
 from dsbin.workcalc.data import FormattedTime
 

@@ -52,9 +52,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from enviromancer import Enviromancer
-from logician import Logician
 from pathkeeper import PathKeeper
 from polykit.cli import confirm_action
+from polykit.log import Logician
 from polykit.shell import is_root_user
 
 from dsbin.util.notify import TelegramSender

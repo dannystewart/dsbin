@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import ArgParser
-from polykit.parsers import color
+from polykit.formatters import color
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 

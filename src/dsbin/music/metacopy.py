@@ -9,8 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
-from logician import Logician
 from polykit import polykit_setup
+from polykit.log import Logician
 
 polykit_setup()
 

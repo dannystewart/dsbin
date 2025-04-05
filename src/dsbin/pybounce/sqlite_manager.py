@@ -5,9 +5,9 @@ from __future__ import annotations
 import sqlite3
 from typing import TYPE_CHECKING
 
-from logician import Logician
 from polykit import polykit_setup
 from polykit.core import async_retry_on_exception
+from polykit.log import Logician
 from walking_man import walking_man
 
 if TYPE_CHECKING:

@@ -23,9 +23,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from halo import Halo
-from logician import Logician
 from polykit import polykit_setup
-from polykit.parsers import color
+from polykit.formatters import color
+from polykit.log import Logician
 from polykit.shell import handle_interrupt
 from walking_man import walking_man
 

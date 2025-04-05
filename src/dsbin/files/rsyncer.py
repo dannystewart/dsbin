@@ -11,7 +11,7 @@ from pathlib import Path
 import inquirer
 import pyperclip
 from polykit import polykit_setup
-from polykit.parsers import print_color
+from polykit.formatters import print_color
 from polykit.shell import handle_interrupt
 
 polykit_setup()

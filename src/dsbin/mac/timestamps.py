@@ -39,14 +39,14 @@ from typing import TYPE_CHECKING
 
 from polykit import polykit_setup
 from polykit.cli import ArgParser
-from polykit.parsers import color
+from polykit.formatters import color
 
 from dsbin.files import FileManager
 
 if TYPE_CHECKING:
     import argparse
 
-    from polykit.parsers.types import TextColor
+    from polykit.formatters.types import TextColor
 
 polykit_setup()
 

@@ -8,6 +8,30 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Added
 
+- Adds conventional commits scopes for `pre-commit-config`.
+
+### Changed
+
+- Updates all classes and modules for compatibility with Polykit 0.7.0.
+- Changes file manager class names to avoid confusion from general-purpose file manager classes or classes for other features.
+- Standardizes logging with `PolyLog` and file management with `PolyFile`, improving maintainability and aligning with the updated library structure.
+- Loosens Python version constraints to `<4.0` and removes upper bounds for multiple dependencies to improve flexibility.
+
+### Removed
+
+- Removes unused file utility classes, now consolidated into `Polykit`.
+- Removes `commitizen` hooks from `pre-commit-config`.
+- Drops the `send2trash` and `types-send2trash` packages from dependencies.
+
+### Fixed
+
+- Fixes GitHub URL parsing in the `get_repo_url` function.
+- Removes the `LOG001` ignore rule from the Ruff configuration.
+
+## [0.7.1] (2025-04-04)
+
+### Added
+
 - Adds a new module for a text-based adventure game (`src/dsbin/fun/wm_adventure.py`) featuring Walking Man!
 
 ### Changed
@@ -137,7 +161,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.0...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.1...HEAD
+[0.7.1]: https://github.com/dannystewart/dsbin/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/dannystewart/dsbin/compare/v0.6.8...v0.7.0
 [0.6.8]: https://github.com/dannystewart/dsbin/compare/v0.6.7...v0.6.8
 [0.6.7]: https://github.com/dannystewart/dsbin/compare/v0.6.6...v0.6.7

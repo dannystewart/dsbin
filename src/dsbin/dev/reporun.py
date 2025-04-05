@@ -13,13 +13,9 @@ from polykit.formatters import print_color
 # List of all your package directories
 PACKAGES = [
     "dsbin",
-    "enviromancer",
     "evremixes",
     "iplooker",
-    "logician",
-    "pathkeeper",
     "polykit",
-    "walking-man",
 ]
 
 

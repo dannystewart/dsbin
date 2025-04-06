@@ -507,17 +507,17 @@ def execute_gh_command(cmd: list[str]) -> bool:
         return False
 
 
-def create_github_release(
+def update_github_release(
     version: str, content: str, repo_url: str, dry_run: bool = False, open_url: bool = True
 ) -> bool:
-    """Create or update a GitHub release with content from the changelog.
+    """Update a GitHub release with content from the changelog.
 
     Args:
         version: The version for the release (e.g., '1.2.3')
         content: The content for the release notes.
         repo_url: The GitHub repository URL.
         dry_run: If True, print what would be done without executing.
-        open_url: If True, open the release URL in the browser after creating/updating.
+        open_url: If True, open the release URL in a browser after updating.
 
     Returns:
         True if successful, False otherwise.
@@ -533,29 +533,28 @@ def create_github_release(
     # Check if release exists
     release_exists = check_release_exists(tag)
 
+    if not release_exists:
+        logger.error(
+            "GitHub release %s does not exist. Please create the release on GitHub first.", tag
+        )
+        return False
+
     if dry_run:
-        action = "update" if release_exists else "create"
-        logger.info("Would %s GitHub release %s with the following content:", action, tag)
+        logger.info("Would update GitHub release %s with the following content:", tag)
         print("\n" + formatted_content)
         return True
 
-    # Create or update the release
-    if release_exists:
-        logger.info("Updating existing GitHub release %s.", tag)
-        cmd = ["gh", "release", "edit", tag, "--notes", formatted_content]
-    else:
-        logger.info("Creating new GitHub release %s.", tag)
-        cmd = ["gh", "release", "create", tag, "--notes", formatted_content]
+    # Update the release
+    logger.info("Updating GitHub release %s.", tag)
+    cmd = ["gh", "release", "edit", tag, "--notes", formatted_content]
 
     success = execute_gh_command(cmd)
 
     if success:
-        logger.info(
-            "Successfully %s GitHub release %s.", "updated" if release_exists else "created", tag
-        )
+        logger.info("Successfully updated GitHub release %s.", tag)
 
         # Open the release URL in the browser if requested
-        if open_url and not dry_run:
+        if open_url:
             open_release_url(repo_url, version)
 
     return success
@@ -619,7 +618,7 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         "--github-release",
         "-g",
         action="store_true",
-        help="create a GitHub release with the changelog content",
+        help="update an existing GitHub release with the changelog content",
     )
     parser.add_argument(
         "--dry-run",
@@ -629,7 +628,7 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--open",
         action="store_true",
-        help="open the GitHub release URL after creating/updating",
+        help="open the GitHub release URL after updating",
     )
     return parser.parse_args(args)
 
@@ -676,7 +675,7 @@ def main() -> int:
 
             # Extract the content for this version from the updated changelog
             if version_content := extract_version_content(version):
-                create_github_release(
+                update_github_release(
                     version, version_content, repo_url, dry_run=args.dry_run, open_url=args.open
                 )
 

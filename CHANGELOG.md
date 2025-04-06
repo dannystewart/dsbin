@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Changed
 
-- Updates commit message format to align with Conventional Commit guidelines, including scoped prefixes for better clarity in monorepos and version bumps. Also refines CLI help text to reflect the new format.
+- Updates commit message format in `pybumper` to align with Conventional Commits, including scoped prefixes for better clarity in monorepos and version bumps. Also refines CLI help text to reflect the new format.
 
 ## [0.7.8] (2025-04-06)
 

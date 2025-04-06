@@ -277,6 +277,9 @@ def generate_readme_content(
     # Create a lookup dictionary for script descriptions
     descriptions = {info.name: info.description for info in script_info if info.has_description}
 
+    # Base URL for GitHub repository
+    base_url = "https://github.com/dannystewart/dsbin/blob/main/src/"
+
     # Add each category and its scripts
     for category, scripts in categories.items():
         if not scripts:
@@ -285,20 +288,30 @@ def generate_readme_content(
         content.append(f"### {category}\n")
 
         # Group scripts by description
-        desc_to_scripts: dict[str, list[str]] = {}
-        for script_name, _ in sorted(scripts):
+        desc_to_scripts: dict[str, list[tuple[str, str]]] = {}
+        for script_name, module_path in sorted(scripts):
             desc = descriptions.get(script_name, "*(No description available)*")
-            desc_to_scripts.setdefault(desc, []).append(script_name)
+            desc_to_scripts.setdefault(desc, []).append((script_name, module_path))
 
         # Add each group of scripts with their shared description
-        for desc, script_names in desc_to_scripts.items():
-            if len(script_names) > 1:
+        for desc, script_entries in desc_to_scripts.items():
+            if len(script_entries) > 1:
                 # Combine multiple scripts with same description
-                script_str = ", ".join(f"**{name}**" for name in sorted(script_names))
+                script_links = []
+                for name, module_path in sorted(script_entries):
+                    # Convert module path to file path
+                    file_path = module_path.split(":")[0].replace(".", "/") + ".py"
+                    github_url = f"{base_url}{file_path}"
+                    script_links.append(f"[**{name}**]({github_url})")
+
+                script_str = ", ".join(script_links)
                 content.append(f"- {script_str}: {desc}")
             else:
                 # Single script
-                content.append(f"- **{script_names[0]}**: {desc}")
+                name, module_path = script_entries[0]
+                file_path = module_path.split(":")[0].replace(".", "/") + ".py"
+                github_url = f"{base_url}{file_path}"
+                content.append(f"- [**{name}**]({github_url}): {desc}")
 
         content.append("")
 

@@ -507,6 +507,216 @@ def execute_gh_command(cmd: list[str]) -> bool:
         return False
 
 
+def get_changelog_versions() -> list[tuple[str, str]]:
+    """Extract all versions and their content from the changelog.
+
+    Returns:
+        List of (version, content) tuples.
+    """
+    if not CHANGELOG_PATH.exists():
+        logger.error("Changelog file not found.")
+        return []
+
+    try:
+        changelog_content = CHANGELOG_PATH.read_text()
+
+        # Extract all versions from the changelog
+        version_pattern = r"## \[(\d+\.\d+\.\d+)\].*?\n\n(.*?)(?=\n## |\Z)"
+        version_matches = re.finditer(version_pattern, changelog_content, re.DOTALL)
+
+        versions = []
+        for match in version_matches:
+            version = match.group(1)
+            content = match.group(2).strip()
+            versions.append((version, content))
+
+        logger.info("Found %d versions in changelog.", len(versions))
+        return versions
+    except Exception as e:
+        logger.error("Failed to extract versions from changelog: %s", str(e))
+        return []
+
+
+def get_release_notes(tag: str) -> str | None:
+    """Get the release notes for a GitHub release.
+
+    Args:
+        tag: The release tag.
+
+    Returns:
+        The release notes, or None if the release doesn't exist or an error occurred.
+    """
+    try:
+        result = subprocess.run(
+            ["gh", "release", "view", tag, "--json", "body"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        import json
+
+        release_data = json.loads(result.stdout)
+        return release_data.get("body", "")
+    except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
+        logger.error("Failed to get release notes for %s: %s", tag, str(e))
+        return None
+
+
+def update_single_release(
+    version: str, content: str, repo_url: str, dry_run: bool = False, open_url: bool = False
+) -> bool:
+    """Check and update a single GitHub release.
+
+    Args:
+        version: The version number.
+        content: The changelog content for this version.
+        repo_url: The repository URL.
+        dry_run: If True, only report issues without making changes.
+        open_url: If True, open the release URL in the browser after updating.
+
+    Returns:
+        True if the release was updated or is up to date, False on error.
+    """
+    tag = f"v{version}"
+
+    # Check if release exists
+    if not check_release_exists(tag):
+        logger.info("GitHub release %s does not exist, skipping.", tag)
+        return False
+
+    # Get current release notes
+    current_notes = get_release_notes(tag)
+    if current_notes is None:
+        return False
+
+    # Find the previous version for the changelog link
+    prev_version = find_previous_version(version)
+
+    # Format the changelog content with the link
+    formatted_content = add_or_update_changelog_link(content, version, prev_version, repo_url)
+
+    # Compare and update if different
+    if current_notes.strip() != formatted_content.strip():
+        logger.info("GitHub release %s needs updating.", tag)
+
+        if dry_run:
+            return True
+
+        cmd = ["gh", "release", "edit", tag, "--notes", formatted_content]
+        if execute_gh_command(cmd):
+            logger.info("Successfully updated GitHub release %s.", tag)
+
+            if open_url:
+                open_release_url(repo_url, version)
+            return True
+        logger.error("Failed to update GitHub release %s.", tag)
+        return False
+    logger.info("GitHub release %s is up to date.", tag)
+    return True
+
+
+def check_and_update_release(
+    version: str, content: str, repo_url: str, dry_run: bool, open_url: bool
+) -> tuple[bool, bool]:
+    """Check if a release needs updating and update it if needed.
+
+    Args:
+        version: The version number.
+        content: The changelog content.
+        repo_url: The repository URL.
+        dry_run: If True, don't actually update.
+        open_url: If True, open the URL after updating.
+
+    Returns:
+        Tuple of (needs_update, was_updated).
+    """
+    tag = f"v{version}"
+
+    # Check if release exists
+    if not check_release_exists(tag):
+        logger.info("GitHub release %s does not exist, skipping.", tag)
+        return False, False
+
+    # Get current release notes
+    current_notes = get_release_notes(tag)
+    if current_notes is None:
+        return False, False
+
+    # Find the previous version for the changelog link
+    prev_version = find_previous_version(version)
+
+    # Format the changelog content with the link
+    formatted_content = add_or_update_changelog_link(content, version, prev_version, repo_url)
+
+    # Compare and see if update is needed
+    needs_update = current_notes.strip() != formatted_content.strip()
+    was_updated = False
+
+    if needs_update:
+        logger.info("GitHub release %s needs updating.", tag)
+
+        if not dry_run:
+            cmd = ["gh", "release", "edit", tag, "--notes", formatted_content]
+            if execute_gh_command(cmd):
+                was_updated = True
+                logger.info("Successfully updated GitHub release %s.", tag)
+
+                if open_url:
+                    open_release_url(repo_url, version)
+            else:
+                logger.error("Failed to update GitHub release %s.", tag)
+    else:
+        logger.info("GitHub release %s is up to date.", tag)
+
+    return needs_update, was_updated
+
+
+def sync_github_releases(repo_url: str, dry_run: bool = False, open_url: bool = False) -> int:
+    """Verify and sync all GitHub releases with changelog content.
+
+    Args:
+        repo_url: The repository URL.
+        dry_run: If True, only report issues without making changes.
+        open_url: If True, open updated release URLs in the browser.
+
+    Returns:
+        Number of releases that were updated.
+    """
+    # Get all versions from the changelog
+    versions = get_changelog_versions()
+    if not versions:
+        return 0
+
+    # Track updates
+    updates_needed = 0
+    updates_made = 0
+
+    # Process each version
+    for version, content in versions:
+        needs_update, was_updated = check_and_update_release(
+            version, content, repo_url, dry_run, open_url
+        )
+
+        if needs_update:
+            updates_needed += 1
+
+        if was_updated:
+            updates_made += 1
+
+    # Report results
+    if dry_run and updates_needed > 0:
+        logger.info(
+            "%d GitHub releases need updating. Run without --dry-run to apply changes.",
+            updates_needed,
+        )
+    elif updates_needed == 0:
+        logger.info("All GitHub releases are up to date with the changelog.")
+    else:
+        logger.info("Updated %d GitHub releases to match the changelog.", updates_made)
+
+    return updates_made
+
+
 def update_github_release(
     version: str, content: str, repo_url: str, dry_run: bool = False, open_url: bool = True
 ) -> bool:
@@ -621,6 +831,12 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         help="update an existing GitHub release with the changelog content",
     )
     parser.add_argument(
+        "--sync-releases",
+        "-s",
+        action="store_true",
+        help="check all GitHub releases against changelog entries and update if needed",
+    )
+    parser.add_argument(
         "--dry-run",
         action="store_true",
         help="print what would be done without making any changes",
@@ -640,6 +856,18 @@ def main() -> int:
     try:
         # Get repo URL
         repo_url = get_repo_url(args.repo)
+
+        # Check if we're in sync mode
+        if args.sync_releases:
+            if not check_gh_cli():
+                logger.error(
+                    "GitHub CLI (gh) not found or not authenticated. "
+                    "Please install and authenticate with 'gh auth login'."
+                )
+                return 1
+
+            sync_github_releases(repo_url, dry_run=args.dry_run, open_url=args.open)
+            return 0
 
         # Get the version to add
         version = args.version or get_latest_version()
@@ -664,7 +892,7 @@ def main() -> int:
         if not args.no_edit and requires_edit:
             edit_changelog()
 
-        # Create or update GitHub release if requested
+        # Update GitHub release if requested
         if args.github_release:
             if not check_gh_cli():
                 logger.error(

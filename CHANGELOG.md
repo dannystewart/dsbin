@@ -10,11 +10,14 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 - Adds GitHub links for script entries in README generation to improve accessibility.
 - Adds functionality to manage GitHub release changelogs, including opening release URLs, improved formatting, and better error handling.
+- Adds GitHub release synchronization for changelogs to streamline release management.
 
 ### Changed
 
 - Improves changelog parsing with better error handling and logging, enhancing the release creation workflow.
 - Refines dry-run feedback for clearer and more user-friendly output.
+- Updates commit scopes to include "update_changelog" and improve categorization for changelog updates.
+- Lowers log levels for update operations from `info` to `debug` to reduce log verbosity and enhance clarity during script execution.
 
 ## [0.7.5] (2025-04-06)
 

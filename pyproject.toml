@@ -127,7 +127,7 @@ envsync = "dsbin.tools.envsync:main"
 ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
 
 # Development-related scripts
-changelog = "dsbin.dev.update_changelog:main"
+changelogs = "dsbin.dev.update_changelog:main"
 checkdeps = "dsbin.dev.check_dependencies:main"
 checkimports = "dsbin.dev.check_imports:main"
 codeconfigs = "dsbin.dev.code_configs.code_configs:main"

@@ -806,7 +806,7 @@ def open_release_url(repo_url: str, version: str) -> None:
 
 def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = PolyArgs(description=__doc__, add_version=False)
+    parser = PolyArgs(description=__doc__)
     parser.add_argument(
         "--version", "-v", help="version to add (defaults to version from pyproject.toml)"
     )

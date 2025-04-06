@@ -145,12 +145,9 @@ def insert_version_into_changelog(content: str, new_entry: str) -> str:
     return f"{content[:pos]}{new_entry}{content[pos:]}"
 
 
-def update_version_links(content: str, version: str, prev_version: str, repo_url: str) -> str:
+def update_version_links(content: str, version: str, repo_url: str) -> str:
     """Update the version links section in the changelog."""
-    # Update unreleased link
-    content = re.sub(
-        r"\[unreleased\]: .*", f"[unreleased]: {repo_url}/compare/v{version}...HEAD", content
-    )
+    from packaging import version as pkg_version
 
     # Extract all existing version links
     links = {}
@@ -158,22 +155,45 @@ def update_version_links(content: str, version: str, prev_version: str, repo_url
         ver, url = match.groups()
         links[ver] = url
 
-    # Only add the new version link if it doesn't exist
+    # Add the new version if it doesn't exist
     if version not in links:
-        if prev_version == "0.0.0":
-            links[version] = f"{repo_url}/releases/tag/v{version}"
-        else:
-            links[version] = f"{repo_url}/compare/v{prev_version}...v{version}"
+        # Default link will be updated later
+        links[version] = ""
 
-    # Sort versions and recreate the links section
-    from packaging import version as pkg_version
+    # Get all versions and sort them
+    versions = [v for v in links if v != "unreleased"]
+    versions_sorted = sorted(versions, key=pkg_version.parse, reverse=True)
 
-    sorted_versions = sorted(links.keys(), key=pkg_version.parse, reverse=True)
+    # Regenerate comparison links for all versions to ensure consistency
+    for i, ver in enumerate(versions_sorted):
+        # Skip the last version as it has no previous version to compare with
+        if i == len(versions_sorted) - 1:
+            # For the oldest version, use the release tag URL
+            links[ver] = f"{repo_url}/releases/tag/v{ver}"
+            continue
+
+        next_ver = versions_sorted[i + 1]
+
+        # Only regenerate URLs that follow the standard comparison pattern
+        # This preserves any custom URLs that don't match the pattern
+        current_url = links[ver]
+        standard_pattern = f"{repo_url}/compare/v"
+
+        # If URL doesn't exist or matches standard pattern, regenerate it
+        if not current_url or current_url.startswith(standard_pattern):
+            links[ver] = f"{repo_url}/compare/v{next_ver}...v{ver}"
+
+    # Update unreleased link to point to the highest version
+    if versions_sorted:
+        highest_version = versions_sorted[0]
+        links["unreleased"] = f"{repo_url}/compare/v{highest_version}...HEAD"
+    else:
+        links["unreleased"] = f"{repo_url}/compare/main...HEAD"
 
     # Build the new versions section
     new_links_section = "<!-- Versions -->\n"
-    new_links_section += f"[unreleased]: {repo_url}/compare/v{version}...HEAD\n"
-    for ver in sorted_versions:
+    new_links_section += f"[unreleased]: {links['unreleased']}\n"
+    for ver in versions_sorted:
         new_links_section += f"[{ver}]: {links[ver]}\n"
 
     # Replace the entire versions section
@@ -217,8 +237,7 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
             section_exists = False
 
         # Update version links
-        prev_version = get_previous_version()
-        content = update_version_links(content, version, prev_version, repo_url)
+        content = update_version_links(content, version, repo_url)
 
         CHANGELOG_PATH.write_text(content)
 

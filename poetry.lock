@@ -1028,7 +1028,7 @@ type = ["mypy (>=1.14.1)"]
 
 [[package]]
 name = "polykit"
-version = "0.7.2"
+version = "0.7.3"
 description = "Python toolkit"
 optional = false
 python-versions = ">=3.12"
@@ -1713,4 +1713,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<4.0"
-content-hash = "24fc349e3ad2bd86b4bdb46ec4a6437223d756a5f8eb727cd1d2c88677b542b3"
+content-hash = "393a1349fbbd4048ed0571bb4cd1b7aa9d9a7dc00dc1aa5b1843fd5d90adee18"

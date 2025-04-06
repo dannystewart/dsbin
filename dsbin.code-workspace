@@ -7,7 +7,8 @@
   "settings": {
     "conventionalCommits.scopes": [
       "pre-commit-config",
-      "workspace"
+      "update_changelog",
+      "workspace",
     ],
     "files.exclude": {
       "**/*.egg-info": true,

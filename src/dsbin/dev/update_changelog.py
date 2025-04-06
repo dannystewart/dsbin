@@ -136,6 +136,18 @@ def insert_version_into_changelog(content: str, new_entry: str, version: str) ->
     # Find the Unreleased section
     unreleased_match = re.search(r"## \[Unreleased\].*?\n(?:\n|$)", content, re.IGNORECASE)
 
+    # When adding a new version, check if there's content in the Unreleased section
+    # If there is, insert the new version entry right after the Unreleased header
+    if unreleased_match:
+        unreleased_content_match = re.search(
+            r"## \[Unreleased\].*?\n\n(.*?)(?=\n## |\Z)", content, re.DOTALL
+        )
+        if unreleased_content_match and unreleased_content_match.group(1).strip():
+            # There's content in the Unreleased section, insert after the header
+            pos = unreleased_match.end()
+            return f"{content[:pos]}{new_entry}{content[pos:]}"
+
+    # If no Unreleased section with content, proceed with normal version ordering
     # Extract all existing version headers
     version_matches = list(re.finditer(r"## \[(\d+\.\d+\.\d+)\]", content))
     existing_versions = [(m.group(1), m.start()) for m in version_matches]

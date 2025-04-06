@@ -78,11 +78,17 @@ def get_previous_version() -> str:
     """Get the previous version from the changelog."""
     try:
         content = CHANGELOG_PATH.read_text()
-        # Look for the most recent version header
-        if match := re.search(r"## \[(\d+\.\d+\.\d+)\]", content):
-            return match.group(1)
-        return "0.0.0"  # Fallback if no versions found
-    except Exception:
+        # Look for all version headers
+        versions = re.findall(r"## \[(\d+\.\d+\.\d+)\]", content)
+
+        if not versions:
+            logger.debug("No versions found in changelog.")
+            return "0.0.0"  # Fallback if no versions found
+
+        logger.debug("Found versions in changelog: %s", versions)
+        return versions[0]  # Return the most recent version
+    except Exception as e:
+        logger.debug("Error reading changelog: %s", str(e))
         return "0.0.0"
 
 
@@ -390,17 +396,52 @@ def create_github_release(version: str, content: str, repo_url: str, dry_run: bo
     """
     tag = f"v{version}"
 
-    # Format content for GitHub release
-    # Replace ### headers with bold text for better GitHub release formatting
-    formatted_content = re.sub(r"### (.+)", r"**\1**", content)
+    # Use the content as-is, preserving the Markdown headers
+    formatted_content = content
 
-    # Add the "Full Changelog" link
-    prev_version = get_previous_version()
-    if prev_version not in {"0.0.0", version}:
-        formatted_content += f"\n\nFull Changelog: {repo_url}/compare/v{prev_version}...v{version}"
-
-    # Check if release exists
+    # Find the actual previous version
     try:
+        changelog_content = CHANGELOG_PATH.read_text()
+        versions = re.findall(r"## \[(\d+\.\d+\.\d+)\]", changelog_content)
+
+        prev_version = "0.0.0"
+        if len(versions) > 1:
+            # Find the version that comes after the current one in the list
+            for i, ver in enumerate(versions):
+                if ver == version and i + 1 < len(versions):
+                    prev_version = versions[i + 1]
+                    break
+
+        logger.debug("Found previous version: %s (current: %s).", prev_version, version)
+    except Exception as e:
+        logger.error("Error finding previous version: %s", str(e))
+        prev_version = "0.0.0"
+
+    # Check if the formatted content already has a Full Changelog link
+    if r"Full Changelog:" not in formatted_content:
+        # Add the "Full Changelog" link
+        if prev_version != "0.0.0":
+            # Ensure there's a blank line before the Full Changelog link
+            if not formatted_content.endswith("\n\n"):
+                if formatted_content.endswith("\n"):
+                    formatted_content += "\n"
+                else:
+                    formatted_content += "\n\n"
+
+            changelog_link = f"**Full Changelog:** {repo_url}/compare/v{prev_version}...v{version}"
+            logger.debug("Adding changelog link: %s", changelog_link)
+            formatted_content += changelog_link
+        else:
+            logger.debug("Skipping changelog link: no previous version found")
+    else:  # If there's already a Full Changelog link, update it
+        formatted_content = re.sub(
+            r"(?:\*\*)?Full Changelog:(?:\*\*)? .*",
+            f"**Full Changelog:** {repo_url}/compare/v{prev_version}...v{version}",
+            formatted_content,
+        )
+        logger.debug("Updated existing changelog link.")
+
+    try:  # Check if release exists
         result = subprocess.run(["gh", "release", "view", tag], check=False, capture_output=True)
         release_exists = result.returncode == 0
     except subprocess.SubprocessError:
@@ -427,7 +468,6 @@ def create_github_release(version: str, content: str, repo_url: str, dry_run: bo
             "Successfully %s GitHub release %s.", "updated" if release_exists else "created", tag
         )
         return True
-
     except subprocess.CalledProcessError as e:
         logger.error(
             "Failed to %s GitHub release: %s", "update" if release_exists else "create", e.stderr

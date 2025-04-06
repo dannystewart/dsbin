@@ -6,6 +6,25 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.5] (2025-04-06)
+
+### Changed
+
+- Consolidates README update logic into `lsbin` to streamline script management and remove redundancy.
+- Improves version insertion logic in the changelog, ensuring proper semantic version ordering and better handling of edge cases.
+- Enhances version link generation logic in the changelog, simplifying URL updates, improving maintainability, and adding smarter handling for the "unreleased" link.
+- Updates the `polykit` dependency to version 0.7.2.
+
+### Removed
+
+- Removes the redundant `update_readme` script, as its functionality is now part of the `lsbin` script.
+- Eliminates the legacy `scriptdep` tool in favor of modern replacements like `impactanalyzer` and `packageanalyzer`.
+- Removes the runtime check for the `blessed` library, as it's now a guaranteed dependency.
+
+### Fixed
+
+- Fixes formatting in the changelog to ensure exactly one blank line at the end of the file.
+
 ## [0.7.4] (2025-04-06)
 
 ### Changed
@@ -181,7 +200,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.4...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.5...HEAD
+[0.7.5]: https://github.com/dannystewart/dsbin/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/dannystewart/dsbin/compare/v0.7.3...v0.7.4
 [0.7.3]: https://github.com/dannystewart/dsbin/compare/v0.7.2...v0.7.3
 [0.7.2]: https://github.com/dannystewart/dsbin/compare/v0.7.1...v0.7.2

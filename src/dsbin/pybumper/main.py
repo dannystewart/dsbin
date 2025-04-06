@@ -229,7 +229,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("-f", "--force", action="store_true", help="skip confirmation prompt")
     parser.add_argument(
-        "-m", "--message", help="custom commit message (default: 'Bump version to x.y.z')"
+        "-m", "--message", help="custom commit message (default: 'chore(version): bump to x.y.z')"
     )
 
     # Mutually exclusive group for push options

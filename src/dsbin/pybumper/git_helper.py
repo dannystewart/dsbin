@@ -145,7 +145,7 @@ class GitHelper:
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
 
         # Use custom message if provided, otherwise use default
-        message = self.commit_message or f"Bump version to {new_version}"
+        message = self.commit_message or f"chore(version): bump to {new_version}"
         subprocess.run(["git", "commit", "-m", message], check=True)
 
         return has_other_changes

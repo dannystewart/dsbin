@@ -174,10 +174,9 @@ class GitHelperBeta:
         # Use custom message if provided, otherwise use default
         if self.commit_message:
             message = self.commit_message
-        elif monorepo_root:
-            message = f"Bump {package_name} to {new_version}"
         else:
-            message = f"Bump version to {new_version}"
+            scope = package_name if monorepo_root else "version"
+            message = f"chore({scope}) bump to {new_version}"
 
         subprocess.run(["git", "commit", "-m", message], check=True)
 

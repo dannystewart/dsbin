@@ -382,6 +382,106 @@ def edit_changelog() -> None:
         logger.error("Failed to open editor: %s", str(e))
 
 
+def find_previous_version(version: str) -> str:
+    """Find the previous version in the changelog.
+
+    Args:
+        version: The current version.
+
+    Returns:
+        The previous version, or "0.0.0" if none found.
+    """
+    try:
+        changelog_content = CHANGELOG_PATH.read_text()
+        versions = re.findall(r"## \[(\d+\.\d+\.\d+)\]", changelog_content)
+
+        if len(versions) > 1:
+            # Find the version that comes after the current one in the list
+            for i, ver in enumerate(versions):
+                if ver == version and i + 1 < len(versions):
+                    prev_version = versions[i + 1]
+                    logger.debug("Found previous version: %s (current: %s).", prev_version, version)
+                    return prev_version
+
+        logger.debug("No previous version found for %s.", version)
+        return "0.0.0"
+    except Exception as e:
+        logger.error("Error finding previous version: %s", str(e))
+        return "0.0.0"
+
+
+def add_or_update_changelog_link(
+    content: str, version: str, prev_version: str, repo_url: str
+) -> str:
+    """Add or update the Full Changelog link in the content.
+
+    Args:
+        content: The release notes content.
+        version: The current version.
+        prev_version: The previous version.
+        repo_url: The repository URL.
+
+    Returns:
+        The content with the changelog link added or updated.
+    """
+    # Check if we have a valid previous version
+    if prev_version == "0.0.0":
+        logger.debug("Skipping changelog link: no previous version found.")
+        return content
+
+    # Prepare the changelog link
+    changelog_link = f"**Full Changelog:** {repo_url}/compare/v{prev_version}...v{version}"
+
+    # Check if the content already has a Full Changelog link
+    if "Full Changelog:" not in content:
+        # Add the link with proper spacing
+        if not content.endswith("\n\n"):
+            if content.endswith("\n"):
+                content += "\n"
+            else:
+                content += "\n\n"
+
+        logger.debug("Adding changelog link: %s", changelog_link)
+        return content + changelog_link
+    # Update the existing link
+    updated_content = re.sub(
+        r"(?:\*\*)?Full Changelog:(?:\*\*)? .*",
+        changelog_link,
+        content,
+    )
+    logger.debug("Updated existing changelog link.")
+    return updated_content
+
+
+def check_release_exists(tag: str) -> bool:
+    """Check if a GitHub release with the given tag exists.
+
+    Args:
+        tag: The tag to check.
+
+    Returns:
+        True if the release exists, False otherwise.
+    """
+    try:
+        result = subprocess.run(
+            ["gh", "release", "view", tag], check=False, capture_output=True, text=True
+        )
+        return result.returncode == 0
+    except subprocess.SubprocessError:
+        logger.error("Failed to check if release exists.")
+        return False
+
+
+def execute_gh_command(cmd: list[str]) -> bool:
+    """Execute a GitHub CLI command."""
+    try:
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        logger.error("GitHub CLI command failed: %s", e.stderr)
+        return False
+
+
 def create_github_release(version: str, content: str, repo_url: str, dry_run: bool = False) -> bool:
     """Create or update a GitHub release with content from the changelog.
 
@@ -396,57 +496,14 @@ def create_github_release(version: str, content: str, repo_url: str, dry_run: bo
     """
     tag = f"v{version}"
 
-    # Use the content as-is, preserving the Markdown headers
-    formatted_content = content
+    # Find the previous version
+    prev_version = find_previous_version(version)
 
-    # Find the actual previous version
-    try:
-        changelog_content = CHANGELOG_PATH.read_text()
-        versions = re.findall(r"## \[(\d+\.\d+\.\d+)\]", changelog_content)
+    # Add or update the changelog link
+    formatted_content = add_or_update_changelog_link(content, version, prev_version, repo_url)
 
-        prev_version = "0.0.0"
-        if len(versions) > 1:
-            # Find the version that comes after the current one in the list
-            for i, ver in enumerate(versions):
-                if ver == version and i + 1 < len(versions):
-                    prev_version = versions[i + 1]
-                    break
-
-        logger.debug("Found previous version: %s (current: %s).", prev_version, version)
-    except Exception as e:
-        logger.error("Error finding previous version: %s", str(e))
-        prev_version = "0.0.0"
-
-    # Check if the formatted content already has a Full Changelog link
-    if r"Full Changelog:" not in formatted_content:
-        # Add the "Full Changelog" link
-        if prev_version != "0.0.0":
-            # Ensure there's a blank line before the Full Changelog link
-            if not formatted_content.endswith("\n\n"):
-                if formatted_content.endswith("\n"):
-                    formatted_content += "\n"
-                else:
-                    formatted_content += "\n\n"
-
-            changelog_link = f"**Full Changelog:** {repo_url}/compare/v{prev_version}...v{version}"
-            logger.debug("Adding changelog link: %s", changelog_link)
-            formatted_content += changelog_link
-        else:
-            logger.debug("Skipping changelog link: no previous version found")
-    else:  # If there's already a Full Changelog link, update it
-        formatted_content = re.sub(
-            r"(?:\*\*)?Full Changelog:(?:\*\*)? .*",
-            f"**Full Changelog:** {repo_url}/compare/v{prev_version}...v{version}",
-            formatted_content,
-        )
-        logger.debug("Updated existing changelog link.")
-
-    try:  # Check if release exists
-        result = subprocess.run(["gh", "release", "view", tag], check=False, capture_output=True)
-        release_exists = result.returncode == 0
-    except subprocess.SubprocessError:
-        logger.error("Failed to check if release exists.")
-        return False
+    # Check if release exists
+    release_exists = check_release_exists(tag)
 
     if dry_run:
         action = "update" if release_exists else "create"
@@ -455,24 +512,22 @@ def create_github_release(version: str, content: str, repo_url: str, dry_run: bo
         print("\n" + formatted_content)
         return True
 
-    try:
-        if release_exists:
-            logger.info("Updating existing GitHub release %s.", tag)
-            cmd = ["gh", "release", "edit", tag, "--notes", formatted_content]
-        else:
-            logger.info("Creating new GitHub release %s.", tag)
-            cmd = ["gh", "release", "create", tag, "--notes", formatted_content]
+    # Create or update the release
+    if release_exists:
+        logger.info("Updating existing GitHub release %s.", tag)
+        cmd = ["gh", "release", "edit", tag, "--notes", formatted_content]
+    else:
+        logger.info("Creating new GitHub release %s.", tag)
+        cmd = ["gh", "release", "create", tag, "--notes", formatted_content]
 
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+    success = execute_gh_command(cmd)
+
+    if success:
         logger.info(
             "Successfully %s GitHub release %s.", "updated" if release_exists else "created", tag
         )
-        return True
-    except subprocess.CalledProcessError as e:
-        logger.error(
-            "Failed to %s GitHub release: %s", "update" if release_exists else "create", e.stderr
-        )
-        return False
+
+    return success
 
 
 def check_gh_cli() -> bool:

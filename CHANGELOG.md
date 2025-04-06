@@ -6,20 +6,35 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.7] (2025-04-06)
+
+### Added
+
+- `dsver`: Flags deprecated packages and shows a warning and recommendation for removal.
+
+### Changed
+
+- `dsver`: Centralizes package definitions into a shared constant to reduce redundancy and improve maintainability.
+- Updates Polykit dependency to v0.7.3 for compatibility with the latest features and fixes.
+
+### Removed
+
+- `update_changelog`: Removes the redundant `add_version` argument from `PolyArgs` instantiation, aligning with changes in Polykit 0.7.3.
+
 ## [0.7.6] (2025-04-06)
 
 ### Added
 
-- Adds GitHub links for script entries in README generation to improve accessibility.
-- Adds functionality to manage GitHub release changelogs, including opening release URLs, improved formatting, and better error handling.
-- Adds GitHub release synchronization for changelogs to streamline release management.
+- `lsbin`: Adds GitHub links for script entries in README generation to improve accessibility.
+- `update_changelog`: Adds functionality to manage GitHub release changelogs, including opening release URLs, improved formatting, and better error handling.
+- `update_changelog`: Adds GitHub release synchronization for changelogs to streamline release management.
 
 ### Changed
 
-- Improves changelog parsing with better error handling and logging, enhancing the release creation workflow.
-- Refines dry-run feedback for clearer and more user-friendly output.
-- Updates commit scopes to include "update_changelog" and improve categorization for changelog updates.
-- Lowers log levels for update operations from `info` to `debug` to reduce log verbosity and enhance clarity during script execution.
+- `update_changelog`: Improves changelog parsing with better error handling and logging, enhancing the release creation workflow.
+- `update_changelog`: Refines dry-run feedback for clearer and more user-friendly output.
+- `lsbin`: Lowers log levels for update operations from `info` to `debug` to reduce log verbosity and enhance clarity during script execution.
+- `workspace`: Updates commit scopes to include "update_changelog" and improve categorization for changelog updates.
 
 ## [0.7.5] (2025-04-06)
 
@@ -215,7 +230,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.6...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.7...HEAD
+[0.7.7]: https://github.com/dannystewart/dsbin/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/dannystewart/dsbin/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/dannystewart/dsbin/compare/v0.7.4...v0.7.5
 [0.7.4]: https://github.com/dannystewart/dsbin/compare/v0.7.3...v0.7.4

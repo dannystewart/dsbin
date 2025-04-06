@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.9] (2025-04-06)
+
 ### Changed
 
 - Updates commit message format to align with Conventional Commit guidelines, including scoped prefixes for better clarity in monorepos and version bumps. Also refines CLI help text to reflect the new format.
@@ -245,7 +247,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.8...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.9...HEAD
+[0.7.9]: https://github.com/dannystewart/dsbin/compare/v0.7.8...v0.7.9
 [0.7.8]: https://github.com/dannystewart/dsbin/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/dannystewart/dsbin/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/dannystewart/dsbin/compare/v0.7.5...v0.7.6

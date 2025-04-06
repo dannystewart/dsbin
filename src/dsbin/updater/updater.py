@@ -10,7 +10,7 @@ import shutil
 import time
 from typing import TYPE_CHECKING
 
-from polykit.cli import ArgParser
+from polykit.cli import PolyArgs
 from polykit.formatters import Text, color, print_color
 from polykit.log import PolyLog
 from polykit.platform import polykit_setup
@@ -228,7 +228,7 @@ class Updater:
 
 def parse_arguments() -> Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description="Update system packages and applications.", arg_width=26)
+    parser = PolyArgs(description="Update system packages and applications.", arg_width=26)
     parser.add_argument("--list", "-l", action="store_true", help="list all available updaters")
     parser.add_argument("--sudo", "-s", action="store_true", help="force sudo even if not needed")
     parser.add_argument("--debug", "-d", action="store_true", help="enable debug logging")

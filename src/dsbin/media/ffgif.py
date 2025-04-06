@@ -8,7 +8,7 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from polykit.cli import ArgParser
+from polykit.cli import PolyArgs
 from polykit.platform import polykit_setup
 
 if TYPE_CHECKING:
@@ -19,7 +19,7 @@ polykit_setup()
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description=__doc__)
+    parser = PolyArgs(description=__doc__)
     parser.add_argument(
         "-c", "--compress", action="store_true", help="compress output file to reduce size"
     )

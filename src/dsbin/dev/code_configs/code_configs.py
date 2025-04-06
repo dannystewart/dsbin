@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import requests
-from polykit.cli import ArgParser, confirm_action
+from polykit.cli import PolyArgs, confirm_action
 from polykit.files import PolyDiff
 from polykit.formatters import color
 from polykit.log import PolyLog
@@ -241,7 +241,7 @@ def is_git_repository() -> bool:
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = ArgParser(description="Update config files from central repository")
+    parser = PolyArgs(description="Update config files from central repository")
     parser.add_argument("-y", action="store_true", help="update files without confirmation")
     parser.add_argument(
         "-f", "--force", action="store_true", help="force update even if not in a Git repository"

@@ -28,7 +28,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import ArgParser, confirm_action
+from polykit.cli import PolyArgs, confirm_action
 from polykit.env import PolyEnv
 from polykit.log import PolyLog
 from polykit.platform import polykit_setup
@@ -220,7 +220,7 @@ class PyBumper:
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description=__doc__, lines=1, arg_width=34)
+    parser = PolyArgs(description=__doc__, lines=1, arg_width=34)
     parser.add_argument(
         "type",
         nargs="*",

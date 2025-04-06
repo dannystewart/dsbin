@@ -9,7 +9,7 @@ import pkgutil
 import sys
 from typing import TYPE_CHECKING
 
-from polykit.cli import ArgParser
+from polykit.cli import PolyArgs
 from polykit.formatters import color
 from polykit.log import PolyLog
 from polykit.platform import polykit_setup
@@ -53,7 +53,7 @@ def check_imports(package_name: str) -> bool:
     failed_modules = []
 
     # Walk through all submodules
-    for _, name, _ispkg in pkgutil.walk_packages(package.__path__, package.__name__ + "."):
+    for _, name, _ in pkgutil.walk_packages(package.__path__, package.__name__ + "."):
         try:
             importlib.import_module(name)
             all_modules.append(name)
@@ -73,7 +73,7 @@ def check_imports(package_name: str) -> bool:
 
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = ArgParser(description="Check package dependencies")
+    parser = PolyArgs(description="Check package dependencies")
     parser.add_argument(
         "--packages",
         nargs="+",

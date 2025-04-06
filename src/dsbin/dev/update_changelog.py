@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import ArgParser
+from polykit.cli import PolyArgs
 from polykit.log import PolyLog
 
 if TYPE_CHECKING:
@@ -322,7 +322,7 @@ def edit_changelog() -> None:
 
 def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = ArgParser(description=__doc__, add_version=False)
+    parser = PolyArgs(description=__doc__, add_version=False)
     parser.add_argument(
         "--version", "-v", help="version to add (defaults to version from pyproject.toml)"
     )

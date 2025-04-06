@@ -37,7 +37,7 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import ArgParser
+from polykit.cli import PolyArgs
 from polykit.files import PolyFile
 from polykit.formatters import color
 from polykit.platform import polykit_setup
@@ -150,7 +150,7 @@ def copy_times_between_directories(src_dir: Path, dest_dir: Path) -> None:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments for the timestamp utility."""
-    parser = ArgParser(description=__doc__, lines=2)
+    parser = PolyArgs(description=__doc__, lines=2)
 
     # Positional argument for the file
     parser.add_argument("file", help="File to get or set timestamps for", nargs="?")

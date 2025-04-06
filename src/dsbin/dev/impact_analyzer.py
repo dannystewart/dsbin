@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import ArgParser, WalkingMan, walking_man
+from polykit.cli import PolyArgs, WalkingMan, walking_man
 from polykit.env import PolyEnv
 from polykit.files import PolyDiff
 from polykit.formatters import print_color
@@ -786,7 +786,7 @@ def determine_diff_repo(
 
 def parse_args() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description=__doc__, arg_width=34)
+    parser = PolyArgs(description=__doc__, arg_width=34)
     parser.add_argument(
         "-b", "--base", metavar="REPO", help="path to the base repository for impact analysis"
     )

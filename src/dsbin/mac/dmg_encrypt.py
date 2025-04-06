@@ -18,7 +18,7 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import ArgParser, halo_progress
+from polykit.cli import PolyArgs, halo_progress
 from polykit.log import PolyLog
 from polykit.platform import polykit_setup
 
@@ -32,7 +32,7 @@ logger = PolyLog.get_logger(simple=True)
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(
+    parser = PolyArgs(
         description="Creates an encrypted copy of an existing DMG file.",
         arg_width=32,
     )

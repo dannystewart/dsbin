@@ -33,7 +33,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from polykit.cli import ArgParser, halo_progress
+from polykit.cli import PolyArgs, halo_progress
 from polykit.core import with_retries
 from polykit.files import PolyFile
 from polykit.log import PolyLog
@@ -257,7 +257,7 @@ class DMGCreator:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(
+    parser = PolyArgs(
         description="Creates DMG files from folders, with specific handling for Logic project folders.",
         arg_width=36,
     )

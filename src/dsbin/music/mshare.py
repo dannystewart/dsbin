@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import inquirer
-from polykit.cli import ArgParser, halo_progress, walking_man
+from polykit.cli import PolyArgs, halo_progress, walking_man
 from polykit.formatters import color as colored
 from polykit.log import PolyLog
 from polykit.platform import polykit_setup
@@ -259,7 +259,7 @@ class MusicShare:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = ArgParser(description=__doc__)
+    parser = PolyArgs(description=__doc__)
     parser.add_argument("input_file", help="the file to convert")
     parser.add_argument("--upload", action="store_true", help="use URL-safe filename for uploading")
     return parser.parse_args()

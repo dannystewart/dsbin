@@ -19,7 +19,6 @@ This is my personal collection of Python scripts, built up over many years of so
 - [**backupsort**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/files/backupsort.py): Sorts saved backup files by adding a timestamp suffix to the filename.
 - [**bigfiles**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/files/bigfiles.py): Finds the top N file types in a directory by cumulative size.
 - [**dupefinder**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/files/dupefinder.py): Find duplicate files in a directory.
-- [**fml**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/files/fml.py): Uploads a file to Fastmail's file storage using WebDAV.
 - [**foldermerge**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/files/foldermerge.py): Tries to merge two folders, accounting for duplicates and name conflicts.
 - [**rsyncer**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/files/rsyncer.py): Build an rsync command interactively.
 - [**workcalc**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/workcalc/main.py): Calculate how much time went into a project.
@@ -51,7 +50,6 @@ This is my personal collection of Python scripts, built up over many years of so
 
 - [**dmg-encrypt**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/dmg_encrypt.py): Encrypts DMG files with AES-256 encryption.
 - [**dmgify**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/dmgify.py): Creates DMG files from folders, with specific handling for Logic projects.
-- [**mvdmg**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/mvdmg.py): Recursively moves nested DMG files to a desired location.
 - [**netreset**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/netreset.py): macOS network reset script.
 - [**pkginst**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/pkginst.py): Wrapper for the macOS Installer command-line utility.
 - [**setmag**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/setmag.py): Set MagSafe light according to power status.
@@ -75,7 +73,6 @@ This is my personal collection of Python scripts, built up over many years of so
 - [**dsupdater-install**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/updater/install.py): Entry point for installer.
 - [**envsync**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/envsync.py): Synchronize two .env files by merging their content.
 - [**ssh-tunnel**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/ssh_tunnel.py): Create or kill an SSH tunnel on the specified port.
-- [**watchtower**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/watchtower.py): Script to help with running Watchtower for Docker.
 
 ### Development Scripts
 
@@ -87,7 +84,6 @@ This is my personal collection of Python scripts, built up over many years of so
 - [**packageanalyzer**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/package_analyzer.py): Analyze package dependencies and generate an import graph.
 - [**poetry-migrate**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/poetry_migrate.py), [**uvmigrate**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/uvmigrate.py): Process pyproject.toml file(s) based on command line arguments.
 - [**pybumper**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/pybumper/main.py): Version management tool for Python projects.
-- [**pyenversioner**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/pyenversioner.py): Updates .python-version files recursively.
 - [**reporun**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/reporun.py): Package management utility for working with multiple Poetry projects.
 - [**tagreplace**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/tag_replace.py): Replace an existing Git tag with a new tag name and description.
 

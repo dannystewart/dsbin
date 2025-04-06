@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.8] (2025-04-06)
+
+### Added
+
+- `update_changelog`: Automates moving entries from the "Unreleased" section to a new version, further streamlining changelog updates and reducing manual effort.
+
+### Changed
+
+- `update_changelog`: Improves version insertion logic to handle content in the "Unreleased" section more effectively, ensuring proper ordering when adding new entries.
+- Updates `polykit` dependency to version 0.7.4, ensuring compatibility with the latest features and improvements.
+
 ## [0.7.7] (2025-04-06)
 
 ### Added
@@ -230,7 +241,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.7...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.8...HEAD
+[0.7.8]: https://github.com/dannystewart/dsbin/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/dannystewart/dsbin/compare/v0.7.6...v0.7.7
 [0.7.6]: https://github.com/dannystewart/dsbin/compare/v0.7.5...v0.7.6
 [0.7.5]: https://github.com/dannystewart/dsbin/compare/v0.7.4...v0.7.5

@@ -272,6 +272,9 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
         # Update version links
         content = update_version_links(content, version, repo_url)
 
+        # Ensure exactly one blank line at the end of the file
+        content = content.rstrip("\n") + "\n"
+
         CHANGELOG_PATH.write_text(content)
 
         if not section_exists:

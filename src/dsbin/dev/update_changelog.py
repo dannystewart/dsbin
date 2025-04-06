@@ -122,27 +122,60 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 """
 
 
-def insert_version_into_changelog(content: str, new_entry: str) -> str:
-    """Insert a new version entry into an existing changelog."""
+def insert_version_into_changelog(content: str, new_entry: str, version: str) -> str:
+    """Insert a new version entry into an existing changelog, maintaining version order."""
+    from packaging import version as pkg_version
+
     # Find the Unreleased section
     unreleased_match = re.search(r"## \[Unreleased\].*?\n(?:\n|$)", content, re.IGNORECASE)
-    if unreleased_match:
-        # Insert after the Unreleased section
-        pos = unreleased_match.end()
-        return f"{content[:pos]}{new_entry}{content[pos:]}"
 
-    # No Unreleased section, find the first version
-    match = re.search(r"## \[\d+\.\d+\.\d+\]", content)
-    if not match:
-        # No versions yet, insert after the intro
+    # Extract all existing version headers
+    version_matches = list(re.finditer(r"## \[(\d+\.\d+\.\d+)\]", content))
+    existing_versions = [(m.group(1), m.start()) for m in version_matches]
+
+    # If no versions exist yet
+    if not existing_versions:
+        if unreleased_match:
+            # Insert after the Unreleased section
+            pos = unreleased_match.end()
+            return f"{content[:pos]}{new_entry}{content[pos:]}"
+
+        # No Unreleased section either, insert at the beginning or after intro
         parts = content.split("\n\n", 2)
         if len(parts) >= 2:
             return f"{parts[0]}\n\n{parts[1]}\n\n{new_entry}{parts[2] if len(parts) > 2 else ''}"
         return f"{content}\n\n{new_entry}"
 
-    # Insert before the first version
-    pos = match.start()
-    return f"{content[:pos]}{new_entry}{content[pos:]}"
+    # Sort existing versions
+    version_obj = pkg_version.parse(version)
+
+    # Find the position to insert the new version
+    insert_pos = None
+
+    for existing_ver, pos in existing_versions:
+        existing_ver_obj = pkg_version.parse(existing_ver)
+        if version_obj > existing_ver_obj:
+            insert_pos = pos
+            break
+
+    if insert_pos is not None:
+        # Insert before the first version that's smaller than the new version
+        return f"{content[:insert_pos]}{new_entry}{content[insert_pos:]}"
+
+    # If the new version is smaller than all existing versions, add it at the end
+    # Find the end of the last version section
+    last_version_pos = existing_versions[-1][1]
+
+    # Find the next section after the last version (if any)
+    next_section_match = re.search(r"^#", content[last_version_pos:], re.MULTILINE)
+    if next_section_match:
+        insert_pos = last_version_pos + next_section_match.start()
+    else:
+        # No next section, insert at the end or before the links section
+        links_section = re.search(r"<!-- Links -->", content)
+        insert_pos = links_section.start() if links_section else len(content)
+
+    return f"{content[:insert_pos]}{new_entry}{content[insert_pos:]}"
 
 
 def update_version_links(content: str, version: str, repo_url: str) -> str:
@@ -233,7 +266,7 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
             )
             section_exists = True
         else:
-            content = insert_version_into_changelog(content, new_entry)
+            content = insert_version_into_changelog(content, new_entry, version)
             section_exists = False
 
         # Update version links

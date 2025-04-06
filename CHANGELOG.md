@@ -8,12 +8,13 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Added
 
-- Adds functionality to the `changelog` update script to also manage GitHub release changelogs.
-- Allows opening GitHub release URLs in the browser when a release is updated.
-- Prevents creation of new releases, to maintain separation of concerns with existing version bumping scripts.
-- Handles changelog formatting and updating of the "Full Changelog" link.
-- Improves error handling and logging across GitHub release and changelog workflows for better traceability and clarity.
-- Refines dry-run output to provide more detailed and user-friendly feedback.
+- Adds GitHub links for script entries in README generation to improve accessibility.
+- Adds functionality to manage GitHub release changelogs, including opening release URLs, improved formatting, and better error handling.
+
+### Changed
+
+- Improves changelog parsing with better error handling and logging, enhancing the release creation workflow.
+- Refines dry-run feedback for clearer and more user-friendly output.
 
 ## [0.7.5] (2025-04-06)
 

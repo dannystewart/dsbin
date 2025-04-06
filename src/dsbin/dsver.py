@@ -7,6 +7,7 @@ from __future__ import annotations
 from typing import Any
 
 from packaging import version
+from polykit.cli import walking_man
 from polykit.formatters import color
 from polykit.packages import PackageSource, VersionChecker, VersionInfo
 
@@ -91,26 +92,31 @@ def main() -> None:
         print(f"{symbol} {name} {version_str}")
         any_updates = any_updates or info.update_available
 
-    # Check for deprecated packages that are still installed
-    deprecated_found = []
-    for pkg in DEPRECATED_PACKAGES:
-        pkg_name = pkg.pop("name")
-        source = pkg.pop("source")
+    print()  # Blank line for spacing
 
-        # Check if the package is installed
-        info = checker.check_package(pkg_name, source=source, **pkg)
+    with walking_man(loading_text="Checking for deprecated packages...", speed=0.08):
+        # Check for deprecated packages that are still installed
+        deprecated_found = []
+        for pkg in DEPRECATED_PACKAGES:
+            pkg_name = pkg.pop("name")
+            source = pkg.pop("source")
 
-        # Only process if the package is actually installed
-        symbol, version_str = format_deprecated_info(info)
-        if symbol and version_str:
-            deprecated_found.append((pkg_name, symbol, version_str))
+            # Check if the package is installed
+            info = checker.check_package(pkg_name, source=source, **pkg)
+
+            # Only process if the package is actually installed
+            symbol, version_str = format_deprecated_info(info)
+            if symbol and version_str:
+                deprecated_found.append((pkg_name, symbol, version_str))
 
     # Display deprecated packages if any were found
     if deprecated_found:
-        print("\n" + color("Deprecated Packages:", style=["bold"]))
+        print(color("Deprecated Packages:", style=["bold"]))
         for pkg_name, symbol, version_str in deprecated_found:
             name = color(f"{pkg_name}:", "cyan", style=["bold"])
             print(f"{symbol} {name} {version_str}")
+    else:
+        print(color("✓ No deprecated packages found!", "green"))
 
 
 if __name__ == "__main__":

@@ -251,19 +251,60 @@ def update_version_links(content: str, version: str, repo_url: str) -> str:
     return content
 
 
+def move_unreleased_to_version(content: str, version: str) -> tuple[str, dict[str, list[str]]]:
+    """Move changes from Unreleased section to a new version.
+
+    Args:
+        content: The current changelog content.
+        version: The new version to create.
+
+    Returns:
+        Tuple of (updated content, sections dictionary with the moved changes).
+    """
+    # Check if there's content in the Unreleased section
+    unreleased_pattern = r"## \[Unreleased\].*?\n\n(.*?)(?=\n## |\Z)"
+    unreleased_match = re.search(unreleased_pattern, content, re.DOTALL)
+
+    if not unreleased_match or not unreleased_match.group(1).strip():
+        # No content in Unreleased section
+        logger.debug("No content found in Unreleased section.")
+        return content, {"Added": [], "Changed": [], "Fixed": []}
+
+    # Extract the Unreleased content
+    unreleased_content = unreleased_match.group(1).strip()
+    logger.info("Moving changes from Unreleased section to version %s.", version)
+
+    # Parse the sections from the Unreleased content
+    sections = {}
+    current_section = None
+
+    for line in unreleased_content.split("\n"):
+        section_match = re.match(r"### (\w+)", line)
+        if section_match:
+            current_section = section_match.group(1)
+            sections[current_section] = []
+        elif current_section and line.strip().startswith("- "):
+            sections[current_section].append(line.strip()[2:])  # Remove "- " prefix
+
+    # Remove the content from the Unreleased section
+    updated_content = re.sub(unreleased_pattern, "## [Unreleased]\n\n", content, flags=re.DOTALL)
+
+    return updated_content, sections
+
+
 def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str) -> bool:
     """Update the changelog with a new version entry and update all links."""
     try:
-        new_entry = create_version_entry(version, sections)
-
+        # Check if the changelog exists
         if not CHANGELOG_PATH.exists():
             # Create a new changelog if it doesn't exist
+            new_entry = create_version_entry(version, sections)
             content = create_new_changelog(version, new_entry, repo_url)
             CHANGELOG_PATH.write_text(content)
             logger.info("Created new changelog with version %s.", version)
             return True
 
-        # Update existing changelog
+        # Read existing changelog
         content = CHANGELOG_PATH.read_text()
 
         # Check if version already exists
@@ -271,6 +312,20 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
             logger.info("Version %s already exists in changelog, skipping entry creation.", version)
             section_exists = True
         else:
+            # Check for content in the Unreleased section and move it to the new version
+            content, unreleased_sections = move_unreleased_to_version(content, version)
+
+            # Merge unreleased sections with provided sections
+            for section, items in unreleased_sections.items():
+                if section in sections:
+                    sections[section].extend(items)
+                else:
+                    sections[section] = items
+
+            # Create the new version entry
+            new_entry = create_version_entry(version, sections)
+
+            # Insert the new version
             logger.info("Adding version %s to changelog.", version)
             content = insert_version_into_changelog(content, new_entry, version)
             section_exists = False

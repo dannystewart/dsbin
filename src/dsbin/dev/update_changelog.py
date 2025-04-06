@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 import subprocess
 import time
+import webbrowser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -367,7 +368,7 @@ def get_git_changes(prev_version: str) -> dict[str, list[str]]:
         commit_messages = fetch_commit_messages(git_range)
         return categorize_commits(commit_messages)
     except Exception as e:
-        logger.error("Failed to get git changes: %s", str(e))
+        logger.error("Failed to get Git changes: %s", str(e))
         return {}
 
 
@@ -408,6 +409,30 @@ def find_previous_version(version: str) -> str:
     except Exception as e:
         logger.error("Error finding previous version: %s", str(e))
         return "0.0.0"
+
+
+def extract_version_content(version: str) -> str | None:
+    """Extract the content for a specific version from the changelog.
+
+    Args:
+        version: The version to extract content for.
+
+    Returns:
+        The extracted content, or None if not found.
+    """
+    try:
+        content = CHANGELOG_PATH.read_text()
+        version_pattern = rf"## \[{re.escape(version)}\].*?\n\n(.*?)(?=\n## |\Z)"
+        match = re.search(version_pattern, content, re.DOTALL)
+
+        if not match:
+            logger.error("Failed to extract content for version %s from changelog.", version)
+            return None
+
+        return match.group(1).strip()
+    except Exception as e:
+        logger.error("Failed to extract version content: %s", str(e))
+        return None
 
 
 def add_or_update_changelog_link(
@@ -482,7 +507,9 @@ def execute_gh_command(cmd: list[str]) -> bool:
         return False
 
 
-def create_github_release(version: str, content: str, repo_url: str, dry_run: bool = False) -> bool:
+def create_github_release(
+    version: str, content: str, repo_url: str, dry_run: bool = False, open_url: bool = True
+) -> bool:
     """Create or update a GitHub release with content from the changelog.
 
     Args:
@@ -490,6 +517,7 @@ def create_github_release(version: str, content: str, repo_url: str, dry_run: bo
         content: The content for the release notes.
         repo_url: The GitHub repository URL.
         dry_run: If True, print what would be done without executing.
+        open_url: If True, open the release URL in the browser after creating/updating.
 
     Returns:
         True if successful, False otherwise.
@@ -507,8 +535,7 @@ def create_github_release(version: str, content: str, repo_url: str, dry_run: bo
 
     if dry_run:
         action = "update" if release_exists else "create"
-        logger.info("Would %s GitHub release %s.", action, tag)
-        logger.info("Content:")
+        logger.info("Would %s GitHub release %s with the following content:", action, tag)
         print("\n" + formatted_content)
         return True
 
@@ -526,6 +553,10 @@ def create_github_release(version: str, content: str, repo_url: str, dry_run: bo
         logger.info(
             "Successfully %s GitHub release %s.", "updated" if release_exists else "created", tag
         )
+
+        # Open the release URL in the browser if requested
+        if open_url and not dry_run:
+            open_release_url(repo_url, version)
 
     return success
 
@@ -549,6 +580,21 @@ def check_gh_cli() -> bool:
         return False
 
 
+def open_release_url(repo_url: str, version: str) -> None:
+    """Open the GitHub release URL in the default browser.
+
+    Args:
+        repo_url: The repository URL.
+        version: The version number.
+    """
+    release_url = f"{repo_url}/releases/tag/v{version}"
+    try:
+        logger.info("Opening release URL: %s", release_url)
+        webbrowser.open(release_url)
+    except Exception as e:
+        logger.error("Failed to open release URL: %s", str(e))
+
+
 def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = PolyArgs(description=__doc__, add_version=False)
@@ -569,21 +615,22 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--repo", "-r", help="repository name to use for links (defaults to auto-detection)"
     )
-
-    # GitHub release options
     parser.add_argument(
         "--github-release",
         "-g",
         action="store_true",
-        help="create or update a GitHub release with the changelog content",
+        help="create a GitHub release with the changelog content",
     )
     parser.add_argument(
         "--dry-run",
-        "-n",
         action="store_true",
-        help="print what would be done without making changes (for GitHub releases)",
+        help="print what would be done without making any changes",
     )
-
+    parser.add_argument(
+        "--open",
+        action="store_true",
+        help="open the GitHub release URL after creating/updating",
+    )
     return parser.parse_args(args)
 
 
@@ -628,16 +675,10 @@ def main() -> int:
                 return 1
 
             # Extract the content for this version from the updated changelog
-            content = CHANGELOG_PATH.read_text()
-            version_pattern = rf"## \[{re.escape(version)}\].*?\n\n(.*?)(?=\n## |\Z)"
-            match = re.search(version_pattern, content, re.DOTALL)
-
-            if not match:
-                logger.error("Failed to extract content for version %s from changelog.", version)
-                return 1
-
-            version_content = match.group(1).strip()
-            create_github_release(version, version_content, repo_url, args.dry_run)
+            if version_content := extract_version_content(version):
+                create_github_release(
+                    version, version_content, repo_url, dry_run=args.dry_run, open_url=args.open
+                )
 
         return 0
     except Exception as e:

@@ -76,6 +76,7 @@
 - **checkdeps**: Check all interdependencies between dsbin and dsbin.
 - **checkimports**: Check for circular imports in a Python project.
 - **codeconfigs**: Download configs for coding tools and compare against local versions.
+- **ghrelease**: Create or update GitHub releases using content from CHANGELOG.md.
 - **impactanalyzer**: Analyze the impact of changes in repositories and their dependencies.
 - **packageanalyzer**: Analyze package dependencies and generate an import graph.
 - **poetry-migrate**, **uvmigrate**: Process pyproject.toml file(s) based on command line arguments.

@@ -105,8 +105,9 @@ def main() -> None:
             info = checker.check_package(pkg_name, source=source, **pkg)
 
             # Only process if the package is actually installed
-            symbol, version_str = format_deprecated_info(info)
-            if symbol and version_str:
+            result = format_deprecated_info(info)
+            if result[0] and result[1]:
+                symbol, version_str = result
                 deprecated_found.append((pkg_name, symbol, version_str))
 
     # Display deprecated packages if any were found

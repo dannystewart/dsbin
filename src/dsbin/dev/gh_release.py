@@ -83,12 +83,27 @@ def check_gh_cli() -> bool:
         return False
 
 
-def create_or_update_release(version: str, date: str, content: str, dry_run: bool = False) -> bool:
+def check_release_exists(tag: str) -> bool:
+    """Check if a GitHub release with the given tag already exists.
+
+    Args:
+        tag: The tag to check for (e.g., 'v1.2.3').
+
+    Returns:
+        True if the release exists, False otherwise.
+    """
+    try:
+        result = subprocess.run(["gh", "release", "view", tag], check=False, capture_output=True)
+        return result.returncode == 0
+    except subprocess.SubprocessError:
+        return False
+
+
+def create_or_update_release(version: str, content: str, dry_run: bool = False) -> bool:
     """Create or update a GitHub release with the provided content.
 
     Args:
         version: The version for the release (e.g., '1.2.3').
-        date: The release date.
         content: The content for the release notes.
         dry_run: If True, print what would be done without executing.
 
@@ -96,37 +111,34 @@ def create_or_update_release(version: str, date: str, content: str, dry_run: boo
         True if successful, False otherwise.
     """
     tag = f"v{version}"
-    title = f"Version {version} ({date})"
 
     # Format content for GitHub release
     # Replace ### headers with bold text for better GitHub release formatting
     formatted_content = re.sub(r"### (.+)", r"**\1**", content)
 
+    # Check if release exists first
+    release_exists = check_release_exists(tag)
+
     if dry_run:
-        logger.info("Would create/update release %s with title: %s", tag, title)
-        logger.info("Content:")
+        action = "update" if release_exists else "create"
+        logger.info("Would %s release %s with the following content:", action, tag)
         print("\n---\n" + formatted_content + "\n---\n")
         return True
 
     try:
-        # Check if release exists
-        result = subprocess.run(["gh", "release", "view", tag], check=False, capture_output=True)
-
-        release_exists = result.returncode == 0
-
         if release_exists:
             logger.info("Updating existing release %s.", tag)
-            cmd = ["gh", "release", "edit", tag, "--title", title, "--notes", formatted_content]
+            cmd = ["gh", "release", "edit", tag, "--notes", formatted_content]
         else:
             logger.info("Creating new release %s.", tag)
-            cmd = ["gh", "release", "create", tag, "--title", title, "--notes", formatted_content]
+            cmd = ["gh", "release", "create", tag, "--notes", formatted_content]
 
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        subprocess.run(cmd, check=True, capture_output=True, text=True)
         logger.info("Successfully %s release %s.", "updated" if release_exists else "created", tag)
         return True
 
     except subprocess.CalledProcessError as e:
-        logger.error("Failed to create/update release: %s", e.stderr)
+        logger.error("Failed to %s release: %s", "update" if release_exists else "create", e.stderr)
         return False
 
 
@@ -166,7 +178,7 @@ def main() -> int:
     logger.info("Found version %s (%s) in CHANGELOG.md.", version, date)
 
     # Create or update the GitHub release
-    if create_or_update_release(version, date, content, args.dry_run):
+    if create_or_update_release(version, content, args.dry_run):
         return 0
     return 1
 

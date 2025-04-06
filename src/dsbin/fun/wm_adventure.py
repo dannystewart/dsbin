@@ -2,14 +2,8 @@ from __future__ import annotations
 
 import time
 
+from blessed import Terminal
 from polykit.shell import handle_interrupt
-
-try:
-    from blessed import Terminal
-
-    blessed_available = True
-except ImportError:
-    blessed_available = False
 
 
 @handle_interrupt()
@@ -92,11 +86,4 @@ def walking_man_adventure() -> None:
 
 
 if __name__ == "__main__":
-    if not blessed_available:
-        import sys
-
-        print("The 'blessed' library is required to run this game.")
-        print("Please install it using 'pip install blessed'.")
-        sys.exit(1)
-
     walking_man_adventure()

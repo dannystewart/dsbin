@@ -20,17 +20,7 @@ if TYPE_CHECKING:
 polykit_setup()
 logger = PolyLog.get_logger(simple=True)
 
-DEFAULT_PACKAGES: list[str] = [
-    "arguer",
-    "dsbin",
-    "enviromancer",
-    "logician",
-    "masterclass",
-    "pathkeeper",
-    "polykit.shell",
-    "parseutil",
-    "walking_man",
-]
+DEFAULT_PACKAGES: list[str] = ["dsbin", "polykit"]
 
 
 def check_imports(package_name: str) -> bool:

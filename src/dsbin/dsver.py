@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Show installed versions of my packages."""
+"""Show installed versions of my packages and flag deprecated packages."""
 
 from __future__ import annotations
 
@@ -13,6 +13,27 @@ from polykit.packages import PackageSource, VersionChecker, VersionInfo
 PACKAGES: list[dict[str, Any]] = [
     {"name": "dsbin", "source": PackageSource.PYPI},
     {"name": "polykit", "source": PackageSource.PYPI},
+]
+
+# Packages that should no longer be installed
+DEPRECATED_PACKAGES: list[dict[str, Any]] = [
+    {"name": "arguer", "source": PackageSource.PYPI},
+    {"name": "devpkg", "source": PackageSource.PYPI},
+    {"name": "ds-iplookup", "source": PackageSource.PYPI},
+    {"name": "dsbase", "source": PackageSource.PYPI},
+    {"name": "dsconfig", "source": PackageSource.PYPI},
+    {"name": "dsmetapackage", "source": PackageSource.PYPI},
+    {"name": "dsupdater", "source": PackageSource.PYPI},
+    {"name": "dsutil", "source": PackageSource.PYPI},
+    {"name": "enviromancer", "source": PackageSource.PYPI},
+    {"name": "logician", "source": PackageSource.PYPI},
+    {"name": "masterclass", "source": PackageSource.PYPI},
+    {"name": "parseutil", "source": PackageSource.PYPI},
+    {"name": "pathkeeper", "source": PackageSource.PYPI},
+    {"name": "shelper", "source": PackageSource.PYPI},
+    {"name": "textparse", "source": PackageSource.PYPI},
+    {"name": "timecapsule", "source": PackageSource.PYPI},
+    {"name": "walking-man", "source": PackageSource.PYPI},
 ]
 
 
@@ -37,11 +58,25 @@ def format_version_info(versions: VersionInfo) -> tuple[str, str]:
     return symbol, current_version
 
 
+def format_deprecated_info(versions: VersionInfo) -> tuple[str | None, str | None]:
+    """Format deprecated package status and version display."""
+    if not versions.current:
+        # Not installed - this is good for deprecated packages
+        return None, None
+
+    # Package is installed but should be removed
+    symbol = color("⚠", "red", style=["bold"])
+    ver = color(f"{versions.current}", "red")
+    ver = f"{ver} (deprecated - should be removed)"
+    return symbol, ver
+
+
 def main() -> None:
-    """Show versions of DS packages."""
+    """Show versions of my packages and flag deprecated packages."""
     checker = VersionChecker()
     any_updates = False
 
+    print(color("Active Packages:", style=["bold"]))
     for pkg in PACKAGES:
         pkg_name = pkg.pop("name")
         source = pkg.pop("source")
@@ -55,6 +90,27 @@ def main() -> None:
 
         print(f"{symbol} {name} {version_str}")
         any_updates = any_updates or info.update_available
+
+    # Check for deprecated packages that are still installed
+    deprecated_found = []
+    for pkg in DEPRECATED_PACKAGES:
+        pkg_name = pkg.pop("name")
+        source = pkg.pop("source")
+
+        # Check if the package is installed
+        info = checker.check_package(pkg_name, source=source, **pkg)
+
+        # Only process if the package is actually installed
+        symbol, version_str = format_deprecated_info(info)
+        if symbol and version_str:
+            deprecated_found.append((pkg_name, symbol, version_str))
+
+    # Display deprecated packages if any were found
+    if deprecated_found:
+        print("\n" + color("Deprecated Packages:", style=["bold"]))
+        for pkg_name, symbol, version_str in deprecated_found:
+            name = color(f"{pkg_name}:", "cyan", style=["bold"])
+            print(f"{symbol} {name} {version_str}")
 
 
 if __name__ == "__main__":

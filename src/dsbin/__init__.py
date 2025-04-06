@@ -4,7 +4,7 @@
 
 ### Meta Scripts
 
-- [**dsver**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dsver.py): Show installed versions of my packages.
+- [**dsver**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dsver.py): Show installed versions of my packages and flag deprecated packages.
 - [**lsbin**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/lsbin.py): Lists executable files and their descriptions based on docstrings. What you're looking at now.
 
 ### File Management

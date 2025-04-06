@@ -244,7 +244,7 @@ def update_version_links(content: str, version: str, repo_url: str) -> str:
     return content
 
 
-def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str) -> None:
+def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str) -> bool:
     """Update the changelog with a new version entry and update all links."""
     try:
         new_entry = create_version_entry(version, sections)
@@ -254,18 +254,17 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
             content = create_new_changelog(version, new_entry, repo_url)
             CHANGELOG_PATH.write_text(content)
             logger.info("Created new changelog with version %s.", version)
-            return
+            return True
 
         # Update existing changelog
         content = CHANGELOG_PATH.read_text()
 
         # Check if version already exists
         if re.search(rf"## \[{re.escape(version)}\]", content):
-            logger.warning(
-                "Version %s already exists in changelog, skipping entry creation.", version
-            )
+            logger.info("Version %s already exists in changelog, skipping entry creation.", version)
             section_exists = True
         else:
+            logger.info("Adding version %s to changelog.", version)
             content = insert_version_into_changelog(content, new_entry, version)
             section_exists = False
 
@@ -279,6 +278,8 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
 
         if not section_exists:
             logger.info("Updated changelog with version %s.", version)
+
+        return not section_exists  # Indicate whether the editor should be opened
 
     except Exception as e:
         logger.error("Failed to update changelog: %s", str(e))
@@ -375,6 +376,84 @@ def edit_changelog() -> None:
         logger.error("Failed to open editor: %s", str(e))
 
 
+def create_github_release(version: str, content: str, repo_url: str, dry_run: bool = False) -> bool:
+    """Create or update a GitHub release with content from the changelog.
+
+    Args:
+        version: The version for the release (e.g., '1.2.3')
+        content: The content for the release notes.
+        repo_url: The GitHub repository URL.
+        dry_run: If True, print what would be done without executing.
+
+    Returns:
+        True if successful, False otherwise.
+    """
+    tag = f"v{version}"
+
+    # Format content for GitHub release
+    # Replace ### headers with bold text for better GitHub release formatting
+    formatted_content = re.sub(r"### (.+)", r"**\1**", content)
+
+    # Add the "Full Changelog" link
+    prev_version = get_previous_version()
+    if prev_version not in {"0.0.0", version}:
+        formatted_content += f"\n\nFull Changelog: {repo_url}/compare/v{prev_version}...v{version}"
+
+    # Check if release exists
+    try:
+        result = subprocess.run(["gh", "release", "view", tag], check=False, capture_output=True)
+        release_exists = result.returncode == 0
+    except subprocess.SubprocessError:
+        logger.error("Failed to check if release exists.")
+        return False
+
+    if dry_run:
+        action = "update" if release_exists else "create"
+        logger.info("Would %s GitHub release %s.", action, tag)
+        logger.info("Content:")
+        print("\n" + formatted_content)
+        return True
+
+    try:
+        if release_exists:
+            logger.info("Updating existing GitHub release %s.", tag)
+            cmd = ["gh", "release", "edit", tag, "--notes", formatted_content]
+        else:
+            logger.info("Creating new GitHub release %s.", tag)
+            cmd = ["gh", "release", "create", tag, "--notes", formatted_content]
+
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True)
+        logger.info(
+            "Successfully %s GitHub release %s.", "updated" if release_exists else "created", tag
+        )
+        return True
+
+    except subprocess.CalledProcessError as e:
+        logger.error(
+            "Failed to %s GitHub release: %s", "update" if release_exists else "create", e.stderr
+        )
+        return False
+
+
+def check_gh_cli() -> bool:
+    """Check if GitHub CLI is installed and authenticated."""
+    try:
+        # Check if gh is installed
+        subprocess.run(["gh", "--version"], check=True, capture_output=True)
+
+        # Check if authenticated
+        result = subprocess.run(
+            ["gh", "auth", "status"],
+            check=False,  # Don't fail if not authenticated
+            capture_output=True,
+            text=True,
+        )
+
+        return result.returncode == 0
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return False
+
+
 def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = PolyArgs(description=__doc__, add_version=False)
@@ -395,6 +474,21 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--repo", "-r", help="repository name to use for links (defaults to auto-detection)"
     )
+
+    # GitHub release options
+    parser.add_argument(
+        "--github-release",
+        "-g",
+        action="store_true",
+        help="create or update a GitHub release with the changelog content",
+    )
+    parser.add_argument(
+        "--dry-run",
+        "-n",
+        action="store_true",
+        help="print what would be done without making changes (for GitHub releases)",
+    )
+
     return parser.parse_args(args)
 
 
@@ -408,7 +502,6 @@ def main() -> int:
 
         # Get the version to add
         version = args.version or get_latest_version()
-        logger.info("Adding version %s to changelog.", version)
 
         # Get previous version
         prev_version = get_previous_version()
@@ -424,11 +517,32 @@ def main() -> int:
             sections = {"Added": [], "Changed": [], "Fixed": []}
 
         # Update the changelog
-        update_changelog(version, sections, repo_url)
+        requires_edit = update_changelog(version, sections, repo_url)
 
         # Open in editor if requested
-        if not args.no_edit:
+        if not args.no_edit and requires_edit:
             edit_changelog()
+
+        # Create or update GitHub release if requested
+        if args.github_release:
+            if not check_gh_cli():
+                logger.error(
+                    "GitHub CLI (gh) not found or not authenticated. "
+                    "Please install and authenticate with 'gh auth login'."
+                )
+                return 1
+
+            # Extract the content for this version from the updated changelog
+            content = CHANGELOG_PATH.read_text()
+            version_pattern = rf"## \[{re.escape(version)}\].*?\n\n(.*?)(?=\n## |\Z)"
+            match = re.search(version_pattern, content, re.DOTALL)
+
+            if not match:
+                logger.error("Failed to extract content for version %s from changelog.", version)
+                return 1
+
+            version_content = match.group(1).strip()
+            create_github_release(version, version_content, repo_url, args.dry_run)
 
         return 0
     except Exception as e:

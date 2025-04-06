@@ -100,4 +100,5 @@ def move_and_delete_logic_folders() -> None:
         print(f"{Fore.RED}\nAn error occurred: {e!s}{Style.RESET_ALL}")
 
 
-move_and_delete_logic_folders()
+if __name__ == "__main__":
+    move_and_delete_logic_folders()

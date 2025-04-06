@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.4] (2025-04-06)
+
+### Changed
+
+- Removes obsolete packages from the default dependency list in `checkdeps`.
+
+### Fixed
+
+- Adds a main guard to `oldprojects` script, preventing unintended execution when imported as a library.
+
+## [0.7.3] (2025-04-05)
+
+### Changed
+
+- Updates the `polykit` dependency to version 0.7.1 to ensure compatibility and include the latest improvements.
+- Replaces `ArgParser` with `PolyArgs` in the CLI to align with updated naming conventions in the `polykit.cli` module.
+- Improves code readability by renaming loop variable `_ispkg` to `_` in `pkgutil.walk_packages`.
+
+## [0.7.2] (2025-04-05)
+
 ### Added
 
 - Adds conventional commits scopes for `pre-commit-config`.
@@ -161,7 +181,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.1...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.4...HEAD
+[0.7.4]: https://github.com/dannystewart/dsbin/compare/v0.7.3...v0.7.4
+[0.7.3]: https://github.com/dannystewart/dsbin/compare/v0.7.2...v0.7.3
+[0.7.2]: https://github.com/dannystewart/dsbin/compare/v0.7.1...v0.7.2
 [0.7.1]: https://github.com/dannystewart/dsbin/compare/v0.7.0...v0.7.1
 [0.7.0]: https://github.com/dannystewart/dsbin/compare/v0.6.8...v0.7.0
 [0.6.8]: https://github.com/dannystewart/dsbin/compare/v0.6.7...v0.6.8

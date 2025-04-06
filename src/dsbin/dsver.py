@@ -10,6 +10,11 @@ from packaging import version
 from polykit.formatters import color
 from polykit.packages import PackageSource, VersionChecker, VersionInfo
 
+PACKAGES: list[dict[str, Any]] = [
+    {"name": "dsbin", "source": PackageSource.PYPI},
+    {"name": "polykit", "source": PackageSource.PYPI},
+]
+
 
 def format_version_info(versions: VersionInfo) -> tuple[str, str]:
     """Format package status and version display."""
@@ -35,17 +40,9 @@ def format_version_info(versions: VersionInfo) -> tuple[str, str]:
 def main() -> None:
     """Show versions of DS packages."""
     checker = VersionChecker()
-
-    # Define packages and their sources
-    pypi_source: PackageSource = PackageSource.PYPI
-    packages: list[dict[str, Any]] = [
-        {"name": "dsbin", "source": pypi_source},
-        {"name": "dsbin", "source": pypi_source},
-    ]
-
     any_updates = False
 
-    for pkg in packages:
+    for pkg in PACKAGES:
         pkg_name = pkg.pop("name")
         source = pkg.pop("source")
 

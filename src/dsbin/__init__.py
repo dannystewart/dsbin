@@ -82,6 +82,5 @@
 - **pybumper**: Version management tool for Python projects.
 - **pyenversioner**: Updates .python-version files recursively.
 - **reporun**: Package management utility for working with multiple Poetry projects.
-- **rereadme**: Update README.md with the latest script list from lsbin.
 - **tagreplace**: Replace an existing Git tag with a new tag name and description.
 """  # noqa: D415, W505

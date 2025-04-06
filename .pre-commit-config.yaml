@@ -3,7 +3,7 @@ repos:
     hooks:
       - id: update-readme
         name: update README with script list
-        entry: python -m dsbin.dev.update_readme
+        entry: python -m dsbin.lsbin -u
         language: system
         pass_filenames: false
         always_run: true

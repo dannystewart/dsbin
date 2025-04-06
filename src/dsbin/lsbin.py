@@ -361,7 +361,7 @@ def update_readme(readme_path: Path, new_content: str) -> bool:
 
     # Only write if content changed
     if new_full_content != content:
-        logger.info("Updating `README.md` with latest script list.")
+        logger.debug("Updating `README.md` script list.")
         readme_path.write_text(new_full_content, encoding="utf-8")
         return True
 
@@ -402,7 +402,7 @@ def update_init_file(content: str) -> bool:
 
     # Only write if content changed
     if new_content != current_content:
-        logger.info("Updating `__init__.py` with latest script list.")
+        logger.debug("Updating `__init__.py` script list.")
         init_path.write_text(new_content, encoding="utf-8")
         return True
 
@@ -443,7 +443,7 @@ def update_readme_and_init() -> bool:
             if files_to_add:
                 try:
                     subprocess.run(["git", "add", *files_to_add], check=True)
-                    logger.info("Updated files have been added to Git staging.")
+                    logger.debug("Updated files have been added to Git staging.")
                 except subprocess.CalledProcessError:
                     logger.warning("Failed to add files to Git staging.")
 
@@ -455,13 +455,13 @@ def update_readme_and_init() -> bool:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = PolyArgs(description="List executables and their descriptions.")
-    parser.add_argument("search_term", nargs="?", default="", help="Search term to filter results.")
+    parser = PolyArgs(description=__doc__)
+    parser.add_argument("search_term", nargs="?", default="", help="search term to filter results")
     parser.add_argument(
         "--update-readme",
         "-u",
         action="store_true",
-        help="update README.md and __init__.py with the script list.",
+        help="update README.md and __init__.py script lists",
     )
     return parser.parse_args()
 

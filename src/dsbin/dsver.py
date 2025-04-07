@@ -12,8 +12,8 @@ from polykit.formatters import color
 from polykit.packages import PackageSource, VersionChecker, VersionInfo
 
 PACKAGES: list[dict[str, Any]] = [
-    {"name": "dsbin", "source": PackageSource.PYPI},
     {"name": "polykit", "source": PackageSource.PYPI},
+    {"name": "dsbin", "source": PackageSource.PYPI},
 ]
 
 # Packages that should no longer be installed

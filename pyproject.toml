@@ -13,7 +13,7 @@ dependencies = [
     "halo (>=0.0.31)",
     "inquirer (>=3.4.0)",
     "mutagen (>=1.47.0)",
-    "mysql-connector-python (>=9.2.0,<10.0.0)",
+    "mysql-connector-python (>=9.2.0)",
     "natsort (>=8.4.0)",
     "numpy (>=2.2.4)",
     "packaging (>=24.2)",
@@ -59,9 +59,9 @@ classifiers = [
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.15.0"
 pdoc = ">=15.0.1"
+polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.2.0"
 ruff = ">=0.11.4"
-polykit = { path = "../polykit", develop = true }
 
 [build-system]
 requires = ["poetry-core>=2.0"]

@@ -6,12 +6,18 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.11] (2025-04-07)
+
 ### Changed
 
 - `dsver`
   - Reorders package list to place `polykit` before `dsbin`—a purely cosmetic change, but `dsbin` depends on `polykit`, so it should come after, damn it!
 - `pybumper`
   - Improves logging by moving dev version setting to DEBUG level. More readable, less redundant.
+- **Dependencies** (boring but important)
+  - Updates `polykit` imports from `polykit.platform` to `polykit.core` for compatibility with changes in 0.8.0.
+  - Removes upper bound constraint from `mysql-connector-python`. Freedom for databases!
+  - Pins `rich` dependency to stay below v14.0, not because *my* code is incompatible, but because too many *other* people's code is incompatible, and managing dependency conflicts is annoying.
 
 ## [0.7.10] (2025-04-07)
 
@@ -290,7 +296,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.10...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.11...HEAD
+[0.7.11]: https://github.com/dannystewart/dsbin/compare/v0.7.10...v0.7.11
 [0.7.10]: https://github.com/dannystewart/dsbin/compare/v0.7.9...v0.7.10
 [0.7.9]: https://github.com/dannystewart/dsbin/compare/v0.7.8...v0.7.9
 [0.7.8]: https://github.com/dannystewart/dsbin/compare/v0.7.7...v0.7.8

@@ -114,7 +114,7 @@ class PyBumper:
 
             # Prompt for confirmation unless --force is used
             if not self.force and not confirm_action("Proceed with version bump?"):
-                self.logger.info("Version bump cancelled.")
+                self.logger.info("Version bump canceled.")
                 return
 
             # Calculate the next dev version (for local use after the release)
@@ -177,9 +177,7 @@ class PyBumper:
 
             # After successful push, update local version to next dev version
             if next_dev_version:
-                self.logger.info(
-                    "Setting local version to development version: %s", next_dev_version
-                )
+                self.logger.debug("Setting local version to dev version %s.", next_dev_version)
                 self._update_version_in_pyproject(self.pyproject_path, next_dev_version)
 
             # Log success
@@ -187,8 +185,8 @@ class PyBumper:
             push_status = "" if self.push_to_remote else " (not pushed)"
             release_version_msg = f"v{new_version}"
             if next_dev_version:
-                release_version_msg += f" (local now at {next_dev_version})"
-            self.logger.info("\nSuccessfully %s %s%s!", action, release_version_msg, push_status)
+                release_version_msg += f" Local now at {next_dev_version}."
+            self.logger.info("\nSuccessfully %s %s!%s", action, release_version_msg, push_status)
 
         except Exception as e:
             self.logger.error("\nVersion update failed: %s", str(e))

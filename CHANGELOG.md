@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.10] (2025-04-07)
+
 ### Added
 
 - `pybumper`
@@ -281,7 +283,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.9...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.10...HEAD
+[0.7.10]: https://github.com/dannystewart/dsbin/compare/v0.7.9...v0.7.10
 [0.7.9]: https://github.com/dannystewart/dsbin/compare/v0.7.8...v0.7.9
 [0.7.8]: https://github.com/dannystewart/dsbin/compare/v0.7.7...v0.7.8
 [0.7.7]: https://github.com/dannystewart/dsbin/compare/v0.7.6...v0.7.7

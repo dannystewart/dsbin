@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Changed
+
+- `dsver`
+  - Reorders package list to place `polykit` before `dsbin`—a purely cosmetic change, but `dsbin` depends on `polykit`, so it should come after, damn it!
+- `pybumper`
+  - Improves logging by moving dev version setting to DEBUG level. More readable, less redundant.
+
 ## [0.7.10] (2025-04-07)
 
 ### Added

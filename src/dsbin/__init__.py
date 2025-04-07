@@ -69,7 +69,7 @@
 
 ### Development Scripts
 
-- [**changelogs**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/update_changelog.py): *(No description available)*
+- [**changelogs**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/update_changelog.py): Update CHANGELOG.md with a new version and automatically manage links.
 - [**checkdeps**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/check_dependencies.py): Check all interdependencies between dsbin and dsbin.
 - [**checkimports**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/check_imports.py): Check for circular imports in a Python project.
 - [**codeconfigs**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/code_configs/code_configs.py): Download configs for coding tools and compare against local versions.

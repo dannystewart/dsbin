@@ -129,7 +129,7 @@ def perform_operations(planned_changes: list[tuple[str, str]], args: argparse.Na
             final_path = new_name
             action_str = "Renamed"
             if not args.rename_only:
-                final_path = env.backupsort_path / new_name
+                final_path = Path(env.backupsort_path) / new_name
                 action_str = "Renamed and moved"
             Path(old_name).rename(final_path)
             print(color(f"{action_str} {old_name}", "blue") + " ➔ " + color(final_path, "green"))

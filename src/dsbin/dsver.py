@@ -94,7 +94,7 @@ def main() -> None:
 
     print()  # Blank line for spacing
 
-    with walking_man(loading_text="Checking for deprecated packages...", speed=0.08):
+    with walking_man(loading_text="Checking for deprecated packages...", speed=0.13):
         # Check for deprecated packages that are still installed
         deprecated_found = []
         for pkg in DEPRECATED_PACKAGES:

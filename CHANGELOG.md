@@ -9,14 +9,17 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 ### Added
 
 - `pybumper`
-  - Adds support for implicit `.dev0` handling in version bumping when the `.dev` suffix lacks a number.
+  - Adds support for implicit `.dev0` handling when `.dev` suffix lacks a number.
   - Introduces automatic local development version setting after release pushes.
-  - Improves logging to display both release and local development version states.
+  - Improves logging to display both release and local dev version states.
 
 ### Changed
 
 - `dsver`
-  - Slows the speed of Walking Man in the deprecated package checks in `dsver` to make it less distracting.
+  - Slows Walking Man speed for deprecated package checks, making the wait less distracting while still not being boring.
+  - Simplifies tuple unpacking for type safety, because—as Python's Zen says—explicit is better than implicit.
+- `CHANGELOG.md`
+  - Standardizes formatting for consistency, because messy changelogs make developers cry. This developer, anyway.
 
 ### Fixed
 

@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+- `pybumper`
+  - Adds support for implicit `.dev0` handling in version bumping when the `.dev` suffix lacks a number.
+  - Introduces automatic local development version setting after release pushes.
+  - Improves logging to display both release and local development version states.
+
+### Changed
+
+- `dsver`
+  - Slows the speed of Walking Man in the deprecated package checks in `dsver` to make it less distracting.
+
+### Fixed
+
+- `backupsort`:
+  - Fixes type issue by ensuring `env.backupsort_path` is properly converted to a `Path` object.
+
+### Removed
+
+- Removes obsolete scripts (`fml`, `mvdmg`, `pyenversioner`, and `watchtower`).
+
 ## [0.7.9] (2025-04-06)
 
 ### Changed

@@ -31,8 +31,8 @@ import scipy.io.wavfile
 from halo import Halo
 from mutagen.flac import FLAC, Picture
 from mutagen.mp4 import MP4, MP4Cover
+from polykit.core import polykit_setup
 from polykit.formatters import color, print_color
-from polykit.platform import polykit_setup
 
 if TYPE_CHECKING:
     from collections.abc import Callable

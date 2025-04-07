@@ -10,8 +10,8 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+from polykit.core import polykit_setup
 from polykit.files import PolyFile
-from polykit.platform import polykit_setup
 
 polykit_setup()
 

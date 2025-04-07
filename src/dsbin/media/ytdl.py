@@ -15,9 +15,9 @@ import sys
 from pathlib import Path
 
 from polykit.cli import halo_progress
+from polykit.core import polykit_setup
 from polykit.files import PolyFile
 from polykit.formatters import print_color
-from polykit.platform import polykit_setup
 
 from dsbin.media import MediaManager
 

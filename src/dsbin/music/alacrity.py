@@ -17,10 +17,10 @@ from typing import ClassVar
 
 from natsort import natsorted
 from polykit.cli import confirm_action, conversion_list_context
+from polykit.core import polykit_setup
 from polykit.files import PolyFile
 from polykit.formatters import print_color
 from polykit.log import PolyLog
-from polykit.platform import polykit_setup
 
 from dsbin.media import MediaManager
 

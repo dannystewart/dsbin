@@ -16,9 +16,9 @@ from pathlib import Path
 
 from natsort import natsorted
 from polykit.cli import confirm_action
+from polykit.core import polykit_setup
 from polykit.env import PolyEnv
 from polykit.formatters import color
-from polykit.platform import polykit_setup
 
 polykit_setup()
 

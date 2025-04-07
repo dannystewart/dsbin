@@ -9,9 +9,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import walking_man
+from polykit.core import polykit_setup
 from polykit.formatters import Text
 from polykit.log import PolyLog
-from polykit.platform import polykit_setup
 
 from dsbin.workcalc.data import (
     SessionAnalyzer,

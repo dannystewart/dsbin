@@ -34,10 +34,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from polykit.cli import PolyArgs, halo_progress
-from polykit.core import with_retries
+from polykit.core import polykit_setup, with_retries
 from polykit.files import PolyFile
 from polykit.log import PolyLog
-from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 if TYPE_CHECKING:

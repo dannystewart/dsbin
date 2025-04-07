@@ -8,10 +8,10 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import PolyArgs, confirm_action
+from polykit.core import polykit_setup
 from polykit.env import PolyEnv
 from polykit.formatters import Text
 from polykit.log import PolyLog
-from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 from dsbin.pybumper.beta.git_helper import GitHelperBeta

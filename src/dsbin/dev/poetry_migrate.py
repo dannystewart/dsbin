@@ -6,8 +6,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import tomlkit
+from polykit.core import polykit_setup
 from polykit.log import PolyLog
-from polykit.platform import polykit_setup
 from tomlkit.items import Array
 
 if TYPE_CHECKING:

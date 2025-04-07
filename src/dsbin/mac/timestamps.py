@@ -38,9 +38,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import PolyArgs
+from polykit.core import polykit_setup
 from polykit.files import PolyFile
 from polykit.formatters import color
-from polykit.platform import polykit_setup
 
 if TYPE_CHECKING:
     import argparse

@@ -11,9 +11,9 @@ import time
 from typing import TYPE_CHECKING
 
 from polykit.cli import PolyArgs
+from polykit.core import polykit_setup
 from polykit.formatters import Text, color, print_color
 from polykit.log import PolyLog
-from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 from .privilege_helper import PrivilegeHelper

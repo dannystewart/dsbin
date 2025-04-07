@@ -12,8 +12,8 @@ import operator
 from collections import defaultdict
 from pathlib import Path
 
+from polykit.core import polykit_setup
 from polykit.formatters import print_color as colored
-from polykit.platform import polykit_setup
 
 polykit_setup()
 

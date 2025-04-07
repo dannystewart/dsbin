@@ -30,9 +30,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from polykit.cli import confirm_action, walking_man
+from polykit.core import polykit_setup
 from polykit.files import PolyFile
 from polykit.formatters import color, print_color
-from polykit.platform import polykit_setup
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser
 

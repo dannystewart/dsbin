@@ -10,8 +10,8 @@ from pathlib import Path
 
 import inquirer
 import pyperclip
+from polykit.core import polykit_setup
 from polykit.formatters import print_color
-from polykit.platform import polykit_setup
 from polykit.shell import handle_interrupt
 
 polykit_setup()

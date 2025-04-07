@@ -6,8 +6,8 @@ from __future__ import annotations
 
 import subprocess
 
+from polykit.core import platform_check, polykit_setup
 from polykit.log import PolyLog
-from polykit.platform import platform_check, polykit_setup
 
 polykit_setup()
 platform_check("Darwin")

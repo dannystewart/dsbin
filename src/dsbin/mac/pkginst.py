@@ -10,10 +10,10 @@ import subprocess
 from pathlib import Path
 
 from polykit.cli import confirm_action
+from polykit.core import polykit_setup
 from polykit.files import PolyFile
 from polykit.formatters import color
 from polykit.log import PolyLog
-from polykit.platform import polykit_setup
 
 polykit_setup()
 

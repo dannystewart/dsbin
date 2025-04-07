@@ -20,7 +20,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Fixed
 
-- `backupsort`:
+- `backupsort`
   - Fixes type issue by ensuring `env.backupsort_path` is properly converted to a `Path` object.
 
 ### Removed
@@ -31,29 +31,34 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Changed
 
-- Updates commit message format in `pybumper` to align with Conventional Commits, including scoped prefixes for better clarity in monorepos and version bumps. Also refines CLI help text to reflect the new format.
+- `pybumper`
+  - Updates commit message format to align with Conventional Commits, including scoped prefixes for better clarity in monorepos and version bumps. Also refines CLI help text to reflect the new format.
 
 ## [0.7.8] (2025-04-06)
 
 ### Added
 
-- `update_changelog`: Automates moving entries from the "Unreleased" section to a new version, further streamlining changelog updates and reducing manual effort.
+- `update_changelog`
+  - Automates moving entries from the "Unreleased" section to a new version, further streamlining changelog updates and reducing manual effort.
 
 ### Changed
 
-- `update_changelog`: Improves version insertion logic to handle content in the "Unreleased" section more effectively, ensuring proper ordering when adding new entries.
 - Updates `polykit` dependency to version 0.7.4, ensuring compatibility with the latest features and improvements.
+- `update_changelog`
+  - Improves version insertion logic to handle content in the "Unreleased" section more effectively, ensuring proper ordering when adding new entries.
 
 ## [0.7.7] (2025-04-06)
 
 ### Added
 
-- `dsver`: Flags deprecated packages and shows a warning and recommendation for removal.
+- `dsver`
+  - Flags deprecated packages and shows a warning and recommendation for removal.
 
 ### Changed
 
-- `dsver`: Centralizes package definitions into a shared constant to reduce redundancy and improve maintainability.
-- Updates Polykit dependency to v0.7.3 for compatibility with the latest features and fixes.
+- Updates `polykit` dependency to v0.7.3 for compatibility with the latest features and fixes.
+- `dsver`
+  - Centralizes package definitions into a shared constant to reduce redundancy and improve maintainability.
 
 ### Removed
 
@@ -63,16 +68,21 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Added
 
-- `lsbin`: Adds GitHub links for script entries in README generation to improve accessibility.
-- `update_changelog`: Adds functionality to manage GitHub release changelogs, including opening release URLs, improved formatting, and better error handling.
-- `update_changelog`: Adds GitHub release synchronization for changelogs to streamline release management.
+- `lsbin`
+  - Adds GitHub links for script entries in README generation to improve accessibility.
+- `update_changelog`
+  - Adds functionality to manage GitHub release changelogs, including opening release URLs, improved formatting, and better error handling.
+  - Adds GitHub release synchronization for changelogs to streamline release management.
 
 ### Changed
 
-- `update_changelog`: Improves changelog parsing with better error handling and logging, enhancing the release creation workflow.
-- `update_changelog`: Refines dry-run feedback for clearer and more user-friendly output.
-- `lsbin`: Lowers log levels for update operations from `info` to `debug` to reduce log verbosity and enhance clarity during script execution.
-- `workspace`: Updates commit scopes to include "update_changelog" and improve categorization for changelog updates.
+- `update_changelog`
+  - Improves changelog parsing with better error handling and logging, enhancing the release creation workflow.
+  - Refines dry-run feedback for clearer and more user-friendly output.
+- `lsbin`
+  - Lowers log levels for update operations from `info` to `debug` to reduce log verbosity and enhance clarity during script execution.
+- `workspace`
+  - Updates commit scopes to include "update_changelog" and improve categorization for changelog updates.
 
 ## [0.7.5] (2025-04-06)
 

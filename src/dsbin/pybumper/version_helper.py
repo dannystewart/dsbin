@@ -85,8 +85,13 @@ class VersionHelper:
             major, minor, patch = map(int, version_part.split("."))
             return major, minor, patch, BumpType.POST, pre_num
 
-        # Handle dev suffix (.devN)
+        # Handle dev suffix (.dev or .devN)
         if ".dev" in version:
+            if version.endswith(".dev"):
+                # Handle .dev without a number (implicit 0)
+                version_part = version[:-4]  # Remove .dev
+                major, minor, patch = map(int, version_part.split("."))
+                return major, minor, patch, BumpType.DEV, 0
             version_part, dev_num = version.rsplit(".dev", 1)
             try:
                 pre_num = int(dev_num)
@@ -272,7 +277,7 @@ class VersionHelper:
             )
         else:
             # Start new dev series
-            new_version_str = f"{version.major}.{version.minor}.{version.patch}.dev0"
+            new_version_str = f"{version.major}.{version.minor}.{version.patch}.dev"
 
         return self.parse_version(new_version_str)
 

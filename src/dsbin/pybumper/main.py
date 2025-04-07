@@ -5,19 +5,19 @@ Supports major.minor.patch versioning with dev/alpha/beta/rc prerelease (and pos
 
 Usage:
     # Regular version bumping
-    dsbump                # 1.2.3    -> 1.2.4
-    dsbump minor          # 1.2.3    -> 1.3.0
-    dsbump major          # 1.2.3    -> 2.0.0
+    pybumper                # 1.2.3    -> 1.2.4
+    pybumper minor          # 1.2.3    -> 1.3.0
+    pybumper major          # 1.2.3    -> 2.0.0
 
     # Pre-release versions
-    dsbump dev            # 1.2.3    -> 1.2.4.dev0
-    dsbump alpha          # 1.2.3    -> 1.2.4a1
-    dsbump beta           # 1.2.4a1  -> 1.2.4b1
-    dsbump rc             # 1.2.4b1  -> 1.2.4rc1
-    dsbump patch          # 1.2.4rc1 -> 1.2.4
+    pybumper dev            # 1.2.3    -> 1.2.4.dev0
+    pybumper alpha          # 1.2.3    -> 1.2.4a1
+    pybumper beta           # 1.2.4a1  -> 1.2.4b1
+    pybumper rc             # 1.2.4b1  -> 1.2.4rc1
+    pybumper patch          # 1.2.4rc1 -> 1.2.4
 
     # Post-release version
-    dsbump post           # 1.2.4    -> 1.2.4.post1
+    pybumper post           # 1.2.4    -> 1.2.4.post1
 
 All operations include git tagging and pushing changes to remote repository.
 """
@@ -117,7 +117,19 @@ class PyBumper:
                 self.logger.info("Version bump cancelled.")
                 return
 
-            self.update_version(bump_type, new_version_str)
+            # Calculate the next dev version (for local use after the release)
+            next_dev_version = None
+            if self.push_to_remote and not new_version_obj.pre_type:
+                # Only for final releases that are being pushed
+                next_dev_version_obj = self.version_helper.bump_version(
+                    BumpType.PATCH, new_version_obj
+                )
+                next_dev_version_obj = self.version_helper.bump_version(
+                    BumpType.DEV, next_dev_version_obj
+                )
+                next_dev_version = str(next_dev_version_obj)
+
+            self.update_version(bump_type, new_version_str, next_dev_version)
         except Exception as e:
             self.logger.error(str(e))
             sys.exit(1)
@@ -141,13 +153,17 @@ class PyBumper:
 
     @handle_interrupt()
     def update_version(
-        self, bump_type: BumpType | str | list[BumpType] | None, new_version: str
+        self,
+        bump_type: BumpType | str | list[BumpType] | None,
+        new_version: str,
+        next_dev_version: str | None = None,
     ) -> None:
         """Update version, create git tag, and push changes.
 
         Args:
             bump_type: The version's BumpType or list of BumpTypes, or a specific version string.
             new_version: The calculated new version string.
+            next_dev_version: Optional next development version to set locally after pushing.
         """
         try:
             self.git.check_git_state()
@@ -159,10 +175,20 @@ class PyBumper:
             # Handle git operations
             self.git.handle_git_operations(new_version, bump_type)
 
+            # After successful push, update local version to next dev version
+            if next_dev_version:
+                self.logger.info(
+                    "Setting local version to development version: %s", next_dev_version
+                )
+                self._update_version_in_pyproject(self.pyproject_path, next_dev_version)
+
             # Log success
             action = "tagged" if bump_type is None else "updated to"
             push_status = "" if self.push_to_remote else " (not pushed)"
-            self.logger.info("\nSuccessfully %s v%s%s!", action, new_version, push_status)
+            release_version_msg = f"v{new_version}"
+            if next_dev_version:
+                release_version_msg += f" (local now at {next_dev_version})"
+            self.logger.info("\nSuccessfully %s %s%s!", action, release_version_msg, push_status)
 
         except Exception as e:
             self.logger.error("\nVersion update failed: %s", str(e))

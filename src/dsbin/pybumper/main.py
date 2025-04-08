@@ -184,7 +184,7 @@ class PyBumper:
             action = "tagged" if bump_type is None else "updated to"
             push_status = "" if self.push_to_remote else " (not pushed)"
             release_msg = f"v{new_version}"
-            dev_msg = f" Local now at {next_dev_version}." if next_dev_version else ""
+            dev_msg = f"\nLocal now at {next_dev_version}." if next_dev_version else ""
             self.logger.info("\nSuccessfully %s %s!%s", action, release_msg, push_status + dev_msg)
 
         except Exception as e:

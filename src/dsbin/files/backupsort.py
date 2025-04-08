@@ -9,16 +9,19 @@ downloaded with the same filename, but it can be used for any type of file.
 
 from __future__ import annotations
 
-import argparse
 import re
 import time
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from natsort import natsorted
-from polykit.cli import confirm_action
+from polykit.cli import PolyArgs, confirm_action
 from polykit.core import polykit_setup
 from polykit.env import PolyEnv
 from polykit.formatters import color
+
+if TYPE_CHECKING:
+    import argparse
 
 polykit_setup()
 
@@ -42,10 +45,10 @@ def split_filename(filename: str) -> tuple[str, str]:
     """Split a filename into base name and full extension, preserving multi-level extensions.
 
     Args:
-        filename: The filename to split
+        filename: The filename to split.
 
     Returns:
-        Tuple of (base_name, extension)
+        A tuple of (base_name, extension).
     """
     # Handle special cases like '.hidden' files
     if filename.startswith(".") and "." not in filename[1:]:
@@ -126,13 +129,19 @@ def perform_operations(planned_changes: list[tuple[str, str]], args: argparse.Na
     """Execute the planned changes if confirmed by the user."""
     if planned_changes and confirm_action("Proceed with renaming?"):
         for old_name, new_name in planned_changes:
-            final_path = new_name
-            action_str = "Renamed"
+            old_path = Path(old_name)
+
             if not args.rename_only:
                 final_path = Path(env.backupsort_path) / new_name
                 action_str = "Renamed and moved"
-            Path(old_name).rename(final_path)
-            print(color(f"{action_str} {old_name}", "blue") + " ➔ " + color(final_path, "green"))
+            else:
+                final_path = Path(new_name)
+                action_str = "Renamed"
+
+            old_path.rename(final_path)
+            print(
+                color(f"{action_str} {old_name}", "blue") + " ➔ " + color(str(final_path), "green")
+            )
     elif planned_changes:
         print("Renaming canceled.")
     else:
@@ -141,19 +150,17 @@ def perform_operations(planned_changes: list[tuple[str, str]], args: argparse.Na
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Sorts and moves backup files to a designated directory.",
-    )
+    parser = PolyArgs(description=__doc__, lines=1)
     parser.add_argument(
         "--rename-only",
         action="store_true",
-        help="Only rename files, do not move them to the backup directory.",
+        help="only rename files, do not move to backup directory",
     )
     parser.add_argument(
         "files",
         nargs="*",
         default=[],
-        help="Specific files or wildcards to process. If not provided, all files in the current directory will be processed.",
+        help="files or wildcards to process (default: current directory)",
     )
     return parser.parse_args()
 
@@ -161,13 +168,10 @@ def parse_arguments() -> argparse.Namespace:
 def main() -> None:
     """Rename and move files based on the command-line arguments."""
     args = parse_arguments()
-    files_to_process = get_files_to_process(args)
+    files = get_files_to_process(args)
+    changes = [result for filename in files if (result := process_file(filename))]
 
-    planned_changes = [
-        result for filename in files_to_process if (result := process_file(filename))
-    ]
-
-    perform_operations(planned_changes, args)
+    perform_operations(changes, args)
 
 
 if __name__ == "__main__":

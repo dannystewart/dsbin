@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [0.7.11] (2025-04-07)
 
+### Fixed
+
+- `pybumper`
+  - Fixes punctuation placement in version update success message.
+
 ### Changed
 
 - `dsver`

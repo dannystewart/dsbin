@@ -183,10 +183,9 @@ class PyBumper:
             # Log success
             action = "tagged" if bump_type is None else "updated to"
             push_status = "" if self.push_to_remote else " (not pushed)"
-            release_version_msg = f"v{new_version}"
-            if next_dev_version:
-                release_version_msg += f" Local now at {next_dev_version}."
-            self.logger.info("\nSuccessfully %s %s!%s", action, release_version_msg, push_status)
+            release_msg = f"v{new_version}"
+            dev_msg = f" Local now at {next_dev_version}." if next_dev_version else ""
+            self.logger.info("\nSuccessfully %s %s!%s", action, release_msg, push_status + dev_msg)
 
         except Exception as e:
             self.logger.error("\nVersion update failed: %s", str(e))

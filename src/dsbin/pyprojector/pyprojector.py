@@ -7,7 +7,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from polykit.cli import handle_interrupt
+from polykit.cli import PolyArgs, handle_interrupt
 from polykit.log import PolyLog
 from prompt_toolkit import prompt
 from prompt_toolkit.completion import FuzzyWordCompleter
@@ -225,9 +225,9 @@ def save_pyproject(config: PyProjectConfig, file_path: Path) -> None:
 @handle_interrupt()
 def main():
     """Main function to run the interactive pyproject.toml generator."""
-    import argparse
+    logger.warning("This tool is unfinished and still under development. Use at your own risk.")
 
-    parser = argparse.ArgumentParser(description="Enhanced pyproject.toml generator")
+    parser = PolyArgs(description="Enhanced pyproject.toml generator")
     parser.add_argument(
         "--file",
         "-f",

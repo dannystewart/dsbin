@@ -47,7 +47,7 @@ def update_hostname_file(new_hostname: str) -> None:
 
 def update_hosts_file(old_hostname: str, new_hostname: str) -> None:
     """Update the /etc/hosts file."""
-    with Path("/etc/hosts", "r+").open(encoding="utf-8") as hosts_file:
+    with Path("/etc/hosts").open(mode="r+", encoding="utf-8") as hosts_file:
         content = hosts_file.read()
         content = content.replace(old_hostname, new_hostname)
         hosts_file.seek(0)

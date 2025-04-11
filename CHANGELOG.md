@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.13] (2025-04-11)
+
+### Fixed
+
+- Fixes `changehostname` by correcting the `Path.open()` parameters for `/etc/hosts`.
+
+### Changed
+
+- Updates dependency versions:
+  - Bumps `polykit` from 0.10.0.dev to 0.10.1.dev and increases minimum requirement from >=0.9.1 to >=0.10.0
+
 ## [0.7.12] (2025-04-11)
 
 ### Added
@@ -329,7 +340,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.12...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.13...HEAD
+[0.7.13]: https://github.com/dannystewart/dsbin/compare/v0.7.12...v0.7.13
 [0.7.12]: https://github.com/dannystewart/dsbin/compare/v0.7.11...v0.7.12
 [0.7.11]: https://github.com/dannystewart/dsbin/compare/v0.7.10...v0.7.11
 [0.7.10]: https://github.com/dannystewart/dsbin/compare/v0.7.9...v0.7.10

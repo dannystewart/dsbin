@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.12] (2025-04-11)
+
+### Added
+
+- Adds `pyprojector`, a fun new CLI tool for interactively creating and managing pyproject.toml files with fuzzy search for PyPI classifiers and smart defaults.
+- Enhances `dsver` with command-line options to show all packages (`--all`) or just the deprecated ones (`--deprecated`).
+
+### Changed
+
+- Improves code organization in `backupsort` by using PolyArgs for better documentation handling.
+- Moves shell utilities from `polykit.shell` to `polykit.cli` for a more logical module structure and to eliminate ongoing confusion.
+- Updates parameter name in `PolyFile.list()` from `recurse` to `recursive` for consistency with changes in Polykit 0.10.
+
+### Fixed
+
+- Fixes dev version display with a newline break, so you don't have to squint to tell where one version ends and another begins
+
+### Chore
+
+- Bumps version to 0.7.12.dev (we're not quite there yet, but we're getting closer!)
+
 ## [0.7.11] (2025-04-07)
 
 ### Fixed
@@ -301,7 +322,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.11...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.12...HEAD
+[0.7.12]: https://github.com/dannystewart/dsbin/compare/v0.7.11...v0.7.12
 [0.7.11]: https://github.com/dannystewart/dsbin/compare/v0.7.10...v0.7.11
 [0.7.10]: https://github.com/dannystewart/dsbin/compare/v0.7.9...v0.7.10
 [0.7.9]: https://github.com/dannystewart/dsbin/compare/v0.7.8...v0.7.9

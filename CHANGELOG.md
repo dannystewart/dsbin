@@ -10,18 +10,24 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Added
 
-- Adds `pyprojector`, a fun new CLI tool for interactively creating and managing pyproject.toml files with fuzzy search for PyPI classifiers and smart defaults.
+- Adds `pyprojector`, a new CLI tool for interactively creating and managing `pyproject.toml` files with fuzzy search for PyPI classifiers and smart defaults.
 - Enhances `dsver` with command-line options to show all packages (`--all`) or just the deprecated ones (`--deprecated`).
 
 ### Changed
 
+- Improves editor selection for `changelogs` editing, trying VS Code first before falling back to system defaults or `nano`.
 - Improves code organization in `backupsort` by using PolyArgs for better documentation handling.
 - Moves shell utilities from `polykit.shell` to `polykit.cli` for a more logical module structure and to eliminate ongoing confusion.
 - Updates parameter name in `PolyFile.list()` from `recurse` to `recursive` for consistency with changes in Polykit 0.10.
+- Updates dependencies:
+  - Upgrades `polykit` from 0.9.2.dev to 0.10.0.dev.
+  - Updates `ruff` from 0.11.4 to 0.11.5.
+  - Removes upper bound constraint on `rich` dependency.
+  - Adds `prompt-toolkit` and `tomli-w`.
 
 ### Fixed
 
-- Fixes dev version display with a newline break, so you don't have to squint to tell where one version ends and another begins
+- Fixes development version display by adding a newline for better readability when showing both release and development versions.
 
 ### Chore
 

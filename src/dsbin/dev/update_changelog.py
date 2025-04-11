@@ -385,14 +385,20 @@ def get_git_changes(prev_version: str) -> dict[str, list[str]]:
 
 
 def edit_changelog() -> None:
-    """Open the changelog in the default editor."""
+    """Open the changelog in the default editor. Tries VS Code first, then nano."""
     try:
         import os
+        import shutil
 
-        editor = os.environ.get("EDITOR", "vim")
-        subprocess.run([editor, CHANGELOG_PATH], check=True)
+        if shutil.which("code"):  # Check if VS Code is available
+            logger.debug("Opening changelog with VS Code.")
+            subprocess.run(["code", CHANGELOG_PATH], check=True)
+        else:  # Fall back to $EDITOR or nano
+            editor = os.environ.get("EDITOR", "nano")
+            logger.debug("VS Code not found, opening changelog with %s.", editor)
+            subprocess.run([editor, CHANGELOG_PATH], check=True)
     except Exception as e:
-        logger.error("Failed to open editor: %s", str(e))
+        logger.warning("Couldn't open editor: %s", str(e))
 
 
 def find_previous_version(version: str) -> str:

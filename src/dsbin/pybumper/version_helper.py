@@ -67,59 +67,102 @@ class VersionHelper:
         """Parse version string into components.
 
         Args:
-            version: Version string (e.g., '1.2.3', '1.2.3a1', '1.2.3.post1').
+            version: The version string (e.g., '1.2.3', '1.2.3a1', '1.2.3.post1').
 
         Returns:
-            Tuple of (major, minor, patch, pre-release type, pre-release number).
-            Pre-release type is BumpType.DEV/ALPHA/BETA/RC/POST or None.
-            Pre-release number can be None if no pre-release.
+            A tuple of (major, minor, patch, pre-release type, pre-release number).
         """
-        # Handle post suffix (.postN)
+        # Try each version format parser in sequence
         if ".post" in version:
-            version_part, post_num = version.rsplit(".post", 1)
-            try:
-                pre_num = int(post_num)
-            except ValueError:
-                self.logger.error("Invalid post-release number: %s", post_num)
-                sys.exit(1)
-            major, minor, patch = map(int, version_part.split("."))
-            return major, minor, patch, BumpType.POST, pre_num
-
-        # Handle dev suffix (.dev or .devN)
+            return self._parse_post_version(version)
         if ".dev" in version:
-            if version.endswith(".dev"):
-                # Handle .dev without a number (implicit 0)
-                version_part = version[:-4]  # Remove .dev
-                major, minor, patch = map(int, version_part.split("."))
-                return major, minor, patch, BumpType.DEV, 0
-            version_part, dev_num = version.rsplit(".dev", 1)
-            try:
-                pre_num = int(dev_num)
-            except ValueError:
-                self.logger.error("Invalid dev number: %s", dev_num)
-                sys.exit(1)
-            major, minor, patch = map(int, version_part.split("."))
-            return major, minor, patch, BumpType.DEV, pre_num
+            return self._parse_dev_version(version)
 
-        # Handle pre-release suffixes (aN, bN, rcN)
+        # Try pre-release suffixes (alpha, beta, rc)
+        pre_release_result = self._try_parse_prerelease(version)
+        if pre_release_result:
+            return pre_release_result
+
+        # Handle plain version (major.minor.patch)
+        return self._parse_plain_version(version)
+
+    def _parse_post_version(self, version: str) -> tuple[int, int, int, BumpType, int]:
+        """Parse a post-release version string."""
+        version_part, post_num = version.rsplit(".post", 1)
+        try:
+            pre_num = int(post_num)
+        except ValueError:
+            self.logger.error("Invalid post-release number: %s", post_num)
+            sys.exit(1)
+
+        major, minor, patch = self._parse_version_parts(version_part)
+        return major, minor, patch, BumpType.POST, pre_num
+
+    def _parse_dev_version(self, version: str) -> tuple[int, int, int, BumpType, int]:
+        """Parse a development version string."""
+        # Split on .dev to get the base version part and dev number
+        parts = version.split(".dev")
+        version_part = parts[0]
+
+        # Handle .dev without a number (implicit 0)
+        if len(parts) == 1 or not parts[1]:
+            dev_num = 0
+        else:
+            try:
+                dev_num = int(parts[1])
+            except ValueError:
+                self.logger.error("Invalid dev number: %s", parts[1])
+                sys.exit(1)
+
+        major, minor, patch = self._parse_version_parts(version_part)
+        return major, minor, patch, BumpType.DEV, dev_num
+
+    def _try_parse_prerelease(self, version: str) -> tuple[int, int, int, BumpType, int] | None:
+        """Try to parse a pre-release version string (alpha, beta, rc).
+
+        Returns:
+            A tuple of version components if it's a pre-release, or None.
+        """
         suffix_map = {"a": BumpType.ALPHA, "b": BumpType.BETA, "rc": BumpType.RC}
+
         for suffix, bump_type in suffix_map.items():
             if suffix in version:
-                version_part, pre_num_str = version.rsplit(suffix, 1)
                 try:
+                    version_part, pre_num_str = version.rsplit(suffix, 1)
                     pre_num = int(pre_num_str)
-                    major, minor, patch = map(int, version_part.split("."))
+                    major, minor, patch = self._parse_version_parts(version_part)
                     return major, minor, patch, bump_type, pre_num
                 except ValueError:
                     self.logger.error("Invalid pre-release number: %s", pre_num_str)
                     sys.exit(1)
 
-        try:  # Parse version numbers
-            major, minor, patch = map(int, version.split("."))
+        # Not a pre-release version
+        return None
+
+    def _parse_plain_version(self, version: str) -> tuple[int, int, int, None, None]:
+        """Parse a plain version string without any suffixes."""
+        try:
+            major, minor, patch = self._parse_version_parts(version)
             return major, minor, patch, None, None
         except ValueError:
             self.logger.error(
                 "Invalid version format: %s. Numbers go left to right, champ.", version
+            )
+            sys.exit(1)
+
+    def _parse_version_parts(self, version_part: str) -> tuple[int, int, int]:
+        """Parse major.minor.patch components from a version string."""
+        components = version_part.split(".")
+        if len(components) != 3:
+            self.logger.error("Invalid version format: %s. Expected x.y.z format.", version_part)
+            sys.exit(1)
+
+        try:
+            major, minor, patch = map(int, components)
+            return major, minor, patch
+        except ValueError:
+            self.logger.error(
+                "Invalid version numbers in: %s. Version components must be integers.", version_part
             )
             sys.exit(1)
 

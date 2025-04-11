@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Fixed
 
+- Restructures version parsing logic in `pybumper` to fix handling of double-digit version numbers.
 - Fixes development version display by adding a newline for better readability when showing both release and development versions.
 
 ### Chore

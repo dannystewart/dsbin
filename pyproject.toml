@@ -1,6 +1,6 @@
 [project]
 name = "dsbin"
-version = "0.7.12"
+version = "0.7.13.dev"
 description = "Personal script library solving problems you didn't know you cared about"
 authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
 urls = { repository = "https://github.com/dannystewart/dsbin" }
@@ -20,11 +20,11 @@ dependencies = [
     "paramiko (>=3.5.1)",
     "pexpect (>=4.9.0)",
     "pillow (>=11.1.0)",
-    "polykit (>=0.9.1)",
+    "polykit (>=0.10.0)",
     "prompt-toolkit (>=3.0.50)",
     "pyperclip (>=1.9.0)",
     "requests (>=2.32.3)",
-    "rich (>=13.9.4)",
+    "rich (>=14.0.0)",
     "rsa (>=4.9)",
     "scipy (>=1.15.2)",
     "scp (>=0.15.0)",

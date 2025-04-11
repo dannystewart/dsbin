@@ -26,7 +26,7 @@ def delete_mp3(directory: Path, dry_run: bool = False) -> None:
         dry_run: If True, will list the files that would be deleted without actually deleting them.
     """
     files = PolyFile()
-    mp3_files = files.list(directory, extensions="mp3", recurse=True)
+    mp3_files = files.list(directory, extensions="mp3", recursive=True)
 
     files_to_delete = []
     for mp3_file in mp3_files:

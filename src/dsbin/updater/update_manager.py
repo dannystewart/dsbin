@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, ClassVar
 
-from polykit.shell import handle_interrupt
+from polykit.cli import handle_interrupt
 
 from .shell_handler import ShellHandler
 

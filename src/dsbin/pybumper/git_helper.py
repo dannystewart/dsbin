@@ -6,8 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import confirm_action
-from polykit.shell import handle_interrupt
+from polykit.cli import confirm_action, handle_interrupt
 
 if TYPE_CHECKING:
     from logging import Logger

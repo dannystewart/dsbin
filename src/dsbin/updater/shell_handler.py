@@ -8,8 +8,8 @@ import sys
 from typing import TYPE_CHECKING, Any
 
 import pexpect
+from polykit.cli import handle_interrupt
 from polykit.log.types import LogLevel
-from polykit.shell import handle_interrupt
 
 from .output_processor import OutputProcessor
 

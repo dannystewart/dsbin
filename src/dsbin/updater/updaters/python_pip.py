@@ -4,7 +4,7 @@ import platform
 from dataclasses import dataclass
 from typing import ClassVar
 
-from polykit.shell import handle_interrupt
+from polykit.cli import handle_interrupt
 
 from dsbin.updater.update_manager import UpdateManager, UpdateStage
 

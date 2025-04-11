@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 
 from blessed import Terminal
-from polykit.shell import handle_interrupt
+from polykit.cli import handle_interrupt
 
 
 @handle_interrupt()

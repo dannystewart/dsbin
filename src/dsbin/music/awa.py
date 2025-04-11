@@ -58,7 +58,7 @@ def convert_audio(
     if file_path.is_file():
         source_files = [file_path]
     else:
-        source_files = files.list(file_path, source_extensions, recurse=recursive)
+        source_files = files.list(file_path, source_extensions, recursive=recursive)
 
     metadata_options = None
     if version and target_format == AudioFormat.AIFF:

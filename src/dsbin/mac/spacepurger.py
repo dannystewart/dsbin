@@ -18,10 +18,9 @@ import subprocess
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import halo_progress
+from polykit.cli import halo_progress, handle_interrupt
 from polykit.core import polykit_setup
 from polykit.log import PolyLog
-from polykit.shell import handle_interrupt
 
 if TYPE_CHECKING:
     from types import FrameType

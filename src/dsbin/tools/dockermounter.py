@@ -51,11 +51,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import confirm_action
+from polykit.cli import confirm_action, is_root_user
 from polykit.env import PolyEnv
 from polykit.log import PolyLog
 from polykit.paths import PolyPath
-from polykit.shell import is_root_user
 
 from dsbin.util.notify import TelegramSender
 

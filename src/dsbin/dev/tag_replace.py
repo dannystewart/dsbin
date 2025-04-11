@@ -8,9 +8,8 @@ import re
 import subprocess
 import sys
 
-from polykit.cli import confirm_action
+from polykit.cli import confirm_action, handle_interrupt
 from polykit.formatters import print_color
-from polykit.shell import handle_interrupt
 
 
 def run_git_command(command: str | list[str]) -> str:

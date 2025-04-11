@@ -12,11 +12,11 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from polykit.cli import async_with_handle_interrupt
 from polykit.core import polykit_setup
 from polykit.env import PolyEnv
 from polykit.log import PolyLog
 from polykit.paths import PolyPath
-from polykit.shell import async_with_handle_interrupt
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
 from tqdm.asyncio import tqdm as async_tqdm

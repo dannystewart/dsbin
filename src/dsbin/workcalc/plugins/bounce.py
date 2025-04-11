@@ -76,7 +76,7 @@ class BounceDataSource(DataSourcePlugin):
         files = PolyFile.list(
             self.directory,
             extensions=self.BOUNCE_EXTENSIONS,
-            recurse=True,
+            recursive=True,
             sort_key=lambda x: x.stat().st_mtime,
         )
         return (Path(f) for f in files)

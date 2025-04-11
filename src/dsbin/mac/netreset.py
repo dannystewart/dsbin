@@ -10,10 +10,9 @@ import sys
 import time
 from typing import Any
 
-from polykit.cli import confirm_action
+from polykit.cli import acquire_sudo, confirm_action
 from polykit.core import polykit_setup
 from polykit.formatters import print_color as colored
-from polykit.shell import acquire_sudo
 
 polykit_setup()
 

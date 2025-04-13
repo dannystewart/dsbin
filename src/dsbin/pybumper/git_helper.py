@@ -144,10 +144,30 @@ class GitHelper:
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
 
         # Use custom message if provided, otherwise use default
-        message = self.commit_message or f"chore(version): bump to {new_version}"
+        message = self.commit_message or f"chore(release): bump to {new_version}"
         subprocess.run(["git", "commit", "-m", message], check=True)
 
         return has_other_changes
+
+    def commit_dev_version(self, dev_version: str) -> None:
+        """Commit development version change to git.
+
+        Args:
+            dev_version: The development version string.
+        """
+        # Stage pyproject.toml
+        subprocess.run(["git", "add", "pyproject.toml"], check=True)
+
+        # Create commit with dev version message
+        message = f"chore(version): prepare for next development cycle ({dev_version})"
+        subprocess.run(["git", "commit", "-m", message], check=True)
+
+        # Push the commit if configured to do so
+        if self.push_to_remote:
+            subprocess.run(["git", "push"], check=True)
+            self.logger.debug("Pushed development version commit to remote.")
+        else:
+            self.logger.debug("Development version committed locally.")
 
     def create_and_push_tag(self, tag_name: str) -> None:
         """Create and push a git tag."""

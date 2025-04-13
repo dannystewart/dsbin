@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.15] (2025-04-13)
+
+### Added
+
+- Adds dark theme for pdoc documentation with Monokai syntax highlighting, dark background, and custom styling for better readability.
+
+### Changed
+
+- Updates Ruff configuration version from 22 to 23.
+- Standardizes indentation in pre-commit config using spaces instead of that chaotic mix of tabs and spaces that keeps developers up at night.
+
+### Fixed
+
+- Adds specific rule exceptions for Sphinx configuration files.
+
 ## [0.7.14] (2025-04-13)
 
 ### `pybumper`
@@ -352,7 +367,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.14...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.15...HEAD
+[0.7.15]: https://github.com/dannystewart/dsbin/compare/v0.7.14...v0.7.15
 [0.7.14]: https://github.com/dannystewart/dsbin/compare/v0.7.13...v0.7.14
 [0.7.13]: https://github.com/dannystewart/dsbin/compare/v0.7.12...v0.7.13
 [0.7.12]: https://github.com/dannystewart/dsbin/compare/v0.7.11...v0.7.12

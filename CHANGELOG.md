@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.14] (2025-04-13)
+
+### `pybumper`
+
+#### Added
+
+- Adds dedicated commit for development version changes after releases, creating a cleaner separation between release commits and development preparation.
+
+#### Changed
+
+- Changes release commit message format from "chore(version)" to "chore(release)" for actual version bump, while keeping "chore(version)" for dev bump.
+
 ## [0.7.13] (2025-04-11)
 
 ### Fixed
@@ -340,7 +352,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.13...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.14...HEAD
+[0.7.14]: https://github.com/dannystewart/dsbin/compare/v0.7.13...v0.7.14
 [0.7.13]: https://github.com/dannystewart/dsbin/compare/v0.7.12...v0.7.13
 [0.7.12]: https://github.com/dannystewart/dsbin/compare/v0.7.11...v0.7.12
 [0.7.11]: https://github.com/dannystewart/dsbin/compare/v0.7.10...v0.7.11

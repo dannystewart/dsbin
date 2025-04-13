@@ -52,9 +52,11 @@ class ConfigManager:
     CONFIGS: ClassVar[list[ConfigFile]] = [
         ConfigFile("ruff.toml"),
         ConfigFile("mypy.ini"),
+        ConfigFile(".github/copilot-instructions.md"),
         ConfigFile(".github/workflows/docs.yml"),
         ConfigFile(".github/workflows/python-publish.yml"),
-        ConfigFile(".github/copilot-instructions.md"),
+        ConfigFile(".pdoc/dark/syntax-highlighting.css"),
+        ConfigFile(".pdoc/dark/theme.css"),
         ConfigFile("code-style.md"),
         ConfigFile(
             ".pre-commit-config.yaml",

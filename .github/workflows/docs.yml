@@ -31,7 +31,7 @@ jobs:
           # Check for src/package structure (your standard layout)
           if [ -d "src/$PKG_NAME" ]; then
             echo "Generating docs for src/$PKG_NAME"
-            pdoc -o docs -d google "src/$PKG_NAME"
+            pdoc -t .pdoc/dark -o docs -d google "src/$PKG_NAME"
           else
             echo "Error: Expected package not found at src/$PKG_NAME"
             exit 1

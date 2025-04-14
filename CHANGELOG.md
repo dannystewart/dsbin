@@ -8,6 +8,19 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 *No documentation yet, but you can use the link above to see what's changing.*
 
+## [0.7.17] (2025-04-14)
+
+### Changed
+
+- Restructures documentation with more logical organization, prioritizing development scripts and system tools.
+- Reorganizes project scripts in `pyproject.toml` to match the new documentation layout.
+- Simplifies TOML encoding operations in `pyprojector` to ensure consistent types.
+- Updates dependencies for Pillow (11.1.0 → 11.2.1) and Polykit (0.10.1.dev → 0.10.2.dev).
+
+### Removed
+
+- Removes several obsolete scripts: `poetry_migrate.py`, `uvmigrate.py`, `pkginst.py`, `spacepurger.py`, and `ytdl.py`. These were unmaintained and potentially risky to use, so it was time to say goodbye.
+
 ## [0.7.16] (2025-04-13)
 
 ### Changed
@@ -375,7 +388,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.16...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.17...HEAD
+[0.7.17]: https://github.com/dannystewart/dsbin/compare/v0.7.16...v0.7.17
 [0.7.16]: https://github.com/dannystewart/dsbin/compare/v0.7.15...v0.7.16
 [0.7.15]: https://github.com/dannystewart/dsbin/compare/v0.7.14...v0.7.15
 [0.7.14]: https://github.com/dannystewart/dsbin/compare/v0.7.13...v0.7.14

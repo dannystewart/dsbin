@@ -23,8 +23,6 @@ polykit_setup()
 
 DEFAULT_HOURS = 2
 
-files = PolyFile()
-
 
 def parse_args() -> argparse.Namespace:
     """Parse arguments passed in from the command line."""
@@ -64,7 +62,7 @@ def main() -> None:
     duration = datetime.now(tz=TZ) - timedelta(hours=hours)
 
     # Get all AIFF files and filter by recency
-    aiff_files = files.list(current_dir, ["aif"])
+    aiff_files = PolyFile.list(current_dir, ["aif"])
     recent_files = [
         f for f in aiff_files if datetime.fromtimestamp(f.stat().st_mtime, tz=TZ) > duration
     ]
@@ -91,7 +89,7 @@ def main() -> None:
         skipped = len(aiff_files) - len(selected_files)
         print_color(f"\n{skipped} file{'s' if skipped != 1 else ''} will be kept.", "cyan")
 
-    files.delete(selected_files)
+    PolyFile.delete(selected_files)
     print_color("\nSelected files have been deleted.", "green")
 
 

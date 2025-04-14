@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+### Added
+
+- Adds `v` prefix to `pybumper` commit message (e.g. `v0.8.1`). This provides more consistent versioning format in Git history.
+
 ### Changed
 
 - Reorganizes `WPMusic` configuration initialization for improved code structure and readability.

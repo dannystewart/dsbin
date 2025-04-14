@@ -140,7 +140,7 @@ class GitHelper:
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
 
         # Use custom message if provided, otherwise use default
-        message = self.commit_message or f"chore(release): bump to {new_version}"
+        message = self.commit_message or f"chore(release): bump to v{new_version}"
         subprocess.run(["git", "commit", "-m", message], check=True)
 
         return has_other_changes
@@ -155,7 +155,7 @@ class GitHelper:
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
 
         # Create commit with dev version message
-        message = f"chore(version): prepare for next development cycle ({dev_version})"
+        message = f"chore(version): prepare for next development cycle (v{dev_version})"
         subprocess.run(["git", "commit", "-m", message], check=True)
 
         # Push the commit if configured to do so

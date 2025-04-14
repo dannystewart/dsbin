@@ -31,7 +31,7 @@ span.linenos { color: #565f89; background-color: transparent; padding-left: 5px;
 .pdoc-code .gt { color: #a9b1d6 } /* Generic.Traceback */
 .pdoc-code .kc { color: #ff9e64 } /* Keyword.Constant */
 .pdoc-code .kd { color: #bb9af7 } /* Keyword.Declaration */
-.pdoc-code .kn { color: #f7768e } /* Keyword.Namespace */
+.pdoc-code .kn { color: #7dcfff } /* Keyword.Namespace */
 .pdoc-code .kp { color: #bb9af7 } /* Keyword.Pseudo */
 .pdoc-code .kr { color: #bb9af7 } /* Keyword.Reserved */
 .pdoc-code .kt { color: #bb9af7 } /* Keyword.Type */

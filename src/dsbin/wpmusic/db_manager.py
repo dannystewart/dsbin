@@ -166,15 +166,12 @@ class DatabaseManager:
         else:
             self.logger.debug("Retrieving upload history from local cache.")
 
-        history = []
         db = self.get_read_connection()
-
         query = """
             SELECT t.name as track_name, u.filename, u.instrumental, u.uploaded
             FROM tracks t
             JOIN uploads u ON t.id = u.track_id
         """
-
         if track_name:
             query += (
                 " WHERE LOWER(t.name) = LOWER(?)"

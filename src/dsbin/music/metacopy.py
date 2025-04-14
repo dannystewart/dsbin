@@ -59,8 +59,6 @@ def copy_metadata(file: Path, metadata_source: Path | None, rename_flag: bool) -
         logger.error("Error copying metadata for '%s': %s", file.name, result.stderr)
         return
 
-    target_file = file
-
     if rename_flag:
         track = get_metadata_value(actual_metadata_source, "track")
         title = get_metadata_value(actual_metadata_source, "TITLE")

@@ -744,8 +744,6 @@ def determine_diff_repo(
         A tuple of (repo_name, repo_config) where repo_name is the name of the repository
         and repo_config is the corresponding RepoConfig object, or None if not found.
     """
-    diff_repo_config = None
-
     if args.diff_repo:
         # If a specific repo was mentioned with --diff-repo, use that
         diff_repo_name = Path(args.diff_repo).name if "/" in args.diff_repo else args.diff_repo

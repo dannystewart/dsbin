@@ -97,7 +97,6 @@ class ALACrity:
             "exts": [ext.lstrip(".") for ext in self.exts_to_convert],
             "recursive": False,
         }
-        files_to_process = []
 
         if self.auto_mode:
             list_args["include_hidden"] = False

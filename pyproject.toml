@@ -89,7 +89,6 @@ w11renamer = "dsbin.text.w11renamer:main"
 # Media scripts
 ffgif = "dsbin.media.ffgif:main"
 fftrim = "dsbin.media.fftrim:main"
-ytdl = "dsbin.media.ytdl:main"
 
 # Music scripts
 aif2wav = "dsbin.music.awa:aif2wav"
@@ -107,9 +106,7 @@ wpmusic = "dsbin.wpmusic.main:main"
 dmg-encrypt = "dsbin.mac.dmg_encrypt:main"
 dmgify = "dsbin.mac.dmgify:main"
 netreset = "dsbin.mac.netreset:main"
-pkginst = "dsbin.mac.pkginst:main"
 setmag = "dsbin.mac.setmag:main"
-spacepurger = "dsbin.mac.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
 
 # Logic-specific scripts
@@ -135,9 +132,7 @@ checkimports = "dsbin.dev.check_imports:main"
 codeconfigs = "dsbin.dev.code_configs.code_configs:main"
 impactanalyzer = "dsbin.dev.impact_analyzer:main"
 packageanalyzer = "dsbin.dev.package_analyzer:main"
-poetry-migrate = "dsbin.dev.poetry_migrate:main"
 pybumper = "dsbin.pybumper.main:main"
 pyprojector = "dsbin.pyprojector.pyprojector:main"
 reporun = "dsbin.dev.reporun:main"
 tagreplace = "dsbin.dev.tag_replace:main"
-uvmigrate = "dsbin.dev.uvmigrate:main"

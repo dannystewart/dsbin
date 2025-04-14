@@ -22,7 +22,6 @@ This is my personal collection of Python scripts, built up over many years of so
 - [**codeconfigs**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/code_configs/code_configs.py): Download configs for coding tools and compare against local versions.
 - [**impactanalyzer**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/impact_analyzer.py): Analyze the impact of changes in repositories and their dependencies.
 - [**packageanalyzer**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/package_analyzer.py): Analyze package dependencies and generate an import graph.
-- [**poetry-migrate**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/poetry_migrate.py), [**uvmigrate**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/uvmigrate.py): Process pyproject.toml file(s) based on command line arguments.
 - [**pybumper**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/pybumper/main.py): Version management tool for Python projects.
 - [**reporun**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/reporun.py): Package management utility for working with multiple Poetry projects.
 - [**tagreplace**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/dev/tag_replace.py): Replace an existing Git tag with a new tag name and description.
@@ -56,9 +55,7 @@ This is my personal collection of Python scripts, built up over many years of so
 - [**dmg-encrypt**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/dmg_encrypt.py): Encrypts DMG files with AES-256 encryption.
 - [**dmgify**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/dmgify.py): Creates DMG files from folders, with specific handling for Logic projects.
 - [**netreset**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/netreset.py): macOS network reset script.
-- [**pkginst**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/pkginst.py): Wrapper for the macOS Installer command-line utility.
 - [**setmag**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/setmag.py): Set MagSafe light according to power status.
-- [**spacepurger**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/spacepurger.py): Generate large files to fill the disk and free up purgeable space.
 - [**timestamps**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/mac/timestamps.py): Quick and easy timestamp getting/setting for macOS.
 
 ### Music Scripts
@@ -85,7 +82,6 @@ This is my personal collection of Python scripts, built up over many years of so
 
 - [**ffgif**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/media/ffgif.py): Converts a video file to a GIF using ffmpeg.
 - [**fftrim**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/media/fftrim.py): Use ffmpeg to trim a video file without re-encoding.
-- [**ytdl**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/media/ytdl.py): Custom yt-dlp command to ensure highest quality MP4.
 
 ## License
 

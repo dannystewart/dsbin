@@ -213,9 +213,7 @@ def save_pyproject(config: PyProjectConfig, file_path: Path) -> None:
     try:
         import tomli_w
 
-        toml_bytes = tomli_w.dumps(toml_dict)
-        toml_bytes = toml_bytes.encode("utf-8")
-
+        toml_bytes = tomli_w.dumps(toml_dict).encode("utf-8")
         file_path.write_bytes(toml_bytes)
         logger.info("Successfully saved configuration to %s", file_path)
     except Exception as e:

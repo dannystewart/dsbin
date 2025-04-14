@@ -52,14 +52,14 @@ INTRO_TEXT: str = (
 # Categories for organizing scripts
 CATEGORIES: dict[str, list[tuple[str, str]]] = {
     "Meta Scripts": [],
-    "File Management": [],
-    "Text Processing Scripts": [],
-    "Media Scripts": [],
-    "Music Scripts": [],
-    "Mac Scripts": [],
-    "Logic Pro Scripts": [],
-    "System Tools": [],
     "Development Scripts": [],
+    "File Management": [],
+    "Text Processing": [],
+    "System Tools": [],
+    "macOS-Specific Scripts": [],
+    "Music Scripts": [],
+    "Logic Pro Scripts": [],
+    "Other Media Scripts": [],
 }
 
 # Map script modules to categories
@@ -68,12 +68,12 @@ MODULE_TO_CATEGORY: dict[str, str] = {
     "dsbin.dsver": "Meta Scripts",
     "dsbin.files": "File Management",
     "dsbin.workcalc": "File Management",
-    "dsbin.text": "Text Processing Scripts",
-    "dsbin.media": "Media Scripts",
+    "dsbin.text": "Text Processing",
+    "dsbin.media": "Other Media Scripts",
     "dsbin.music": "Music Scripts",
     "dsbin.pybounce": "Music Scripts",
     "dsbin.wpmusic": "Music Scripts",
-    "dsbin.mac": "Mac Scripts",
+    "dsbin.mac": "macOS-Specific Scripts",
     "dsbin.logic": "Logic Pro Scripts",
     "dsbin.tools": "System Tools",
     "dsbin.updater": "System Tools",

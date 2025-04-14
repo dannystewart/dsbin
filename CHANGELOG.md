@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+*No documentation yet, but you can use the link above to see what's changing.*
+
 ## [0.7.16] (2025-04-13)
 
 ### Changed

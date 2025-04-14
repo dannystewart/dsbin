@@ -8,7 +8,9 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 *No documentation yet, but you can use the link above to see what's changing.*
 
-## [0.7.17] (2025-04-14)
+## [0.8.0] (2025-04-14)
+
+*v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this seemed like a good opportunity.*
 
 ### Changed
 
@@ -388,8 +390,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.17...HEAD
-[0.7.17]: https://github.com/dannystewart/dsbin/compare/v0.7.16...v0.7.17
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.0...HEAD
+[0.8.0]: https://github.com/dannystewart/dsbin/compare/v0.7.16...v0.8.0
 [0.7.16]: https://github.com/dannystewart/dsbin/compare/v0.7.15...v0.7.16
 [0.7.15]: https://github.com/dannystewart/dsbin/compare/v0.7.14...v0.7.15
 [0.7.14]: https://github.com/dannystewart/dsbin/compare/v0.7.13...v0.7.14

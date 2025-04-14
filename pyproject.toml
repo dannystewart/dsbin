@@ -19,8 +19,8 @@ dependencies = [
     "packaging (>=24.2)",
     "paramiko (>=3.5.1)",
     "pexpect (>=4.9.0)",
-    "pillow (>=11.1.0)",
-    "polykit (>=0.10.0)",
+    "pillow (>=11.2.1)",
+    "polykit (>=0.10.1)",
     "prompt-toolkit (>=3.0.50)",
     "pyperclip (>=1.9.0)",
     "requests (>=2.32.3)",
@@ -70,11 +70,23 @@ requires = ["poetry-core>=2.0"]
 build-backend = "poetry.core.masonry.api"
 
 [project.scripts]
-# Scripts to list all my scripts and check versions
+# Meta Scripts
 lsbin = "dsbin.lsbin:main"
 dsver = "dsbin.dsver:main"
 
-# File management scripts
+# Development Scripts
+changelogs = "dsbin.dev.update_changelog:main"
+checkdeps = "dsbin.dev.check_dependencies:main"
+checkimports = "dsbin.dev.check_imports:main"
+codeconfigs = "dsbin.dev.code_configs.code_configs:main"
+impactanalyzer = "dsbin.dev.impact_analyzer:main"
+packageanalyzer = "dsbin.dev.package_analyzer:main"
+pybumper = "dsbin.pybumper.main:main"
+pyprojector = "dsbin.pyprojector.pyprojector:main"
+reporun = "dsbin.dev.reporun:main"
+tagreplace = "dsbin.dev.tag_replace:main"
+
+# File Management
 backupsort = "dsbin.files.backupsort:main"
 bigfiles = "dsbin.files.bigfiles:main"
 dupefinder = "dsbin.files.dupefinder:main"
@@ -82,15 +94,27 @@ foldermerge = "dsbin.files.foldermerge:main"
 rsyncer = "dsbin.files.rsyncer:main"
 workcalc = "dsbin.workcalc.main:main"
 
-# Text processing scripts
+# Text Processing
 pycompare = "dsbin.text.pycompare:main"
 w11renamer = "dsbin.text.w11renamer:main"
 
-# Media scripts
-ffgif = "dsbin.media.ffgif:main"
-fftrim = "dsbin.media.fftrim:main"
+# System Tools
+changehostname = "dsbin.tools.changehostname:main"
+dsservice = "dsbin.tools.dsservice:main"
+dsupdater = "dsbin.updater.updater:main"
+dsupdater-install = "dsbin.updater.install:main"
+dockermounter = "dsbin.tools.dockermounter:main"
+envsync = "dsbin.tools.envsync:main"
+ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
 
-# Music scripts
+# macOS-Specific Scripts
+dmg-encrypt = "dsbin.mac.dmg_encrypt:main"
+dmgify = "dsbin.mac.dmgify:main"
+netreset = "dsbin.mac.netreset:main"
+setmag = "dsbin.mac.setmag:main"
+timestamps = "dsbin.mac.timestamps:main"
+
+# Music Scripts
 aif2wav = "dsbin.music.awa:aif2wav"
 alacrity = "dsbin.music.alacrity:main"
 hpfilter = "dsbin.music.hpfilter:main"
@@ -102,37 +126,13 @@ rmp3 = "dsbin.music.rmp3:main"
 wav2aif = "dsbin.music.awa:wav2aif"
 wpmusic = "dsbin.wpmusic.main:main"
 
-# Mac-specific scripts
-dmg-encrypt = "dsbin.mac.dmg_encrypt:main"
-dmgify = "dsbin.mac.dmgify:main"
-netreset = "dsbin.mac.netreset:main"
-setmag = "dsbin.mac.setmag:main"
-timestamps = "dsbin.mac.timestamps:main"
-
-# Logic-specific scripts
+# Logic Pro Scripts
 bipclean = "dsbin.logic.bipclean:main"
 bouncefiler = "dsbin.logic.bouncefiler:main"
 bounceprune = "dsbin.logic.bounceprune:main"
 bounces = "dsbin.logic.bounces:main"
 oldprojects = "dsbin.logic.oldprojects:main"
 
-# System tools
-changehostname = "dsbin.tools.changehostname:main"
-dsservice = "dsbin.tools.dsservice:main"
-dsupdater = "dsbin.updater.updater:main"
-dsupdater-install = "dsbin.updater.install:main"
-dockermounter = "dsbin.tools.dockermounter:main"
-envsync = "dsbin.tools.envsync:main"
-ssh-tunnel = "dsbin.tools.ssh_tunnel:main"
-
-# Development-related scripts
-changelogs = "dsbin.dev.update_changelog:main"
-checkdeps = "dsbin.dev.check_dependencies:main"
-checkimports = "dsbin.dev.check_imports:main"
-codeconfigs = "dsbin.dev.code_configs.code_configs:main"
-impactanalyzer = "dsbin.dev.impact_analyzer:main"
-packageanalyzer = "dsbin.dev.package_analyzer:main"
-pybumper = "dsbin.pybumper.main:main"
-pyprojector = "dsbin.pyprojector.pyprojector:main"
-reporun = "dsbin.dev.reporun:main"
-tagreplace = "dsbin.dev.tag_replace:main"
+# Other Media Scripts
+ffgif = "dsbin.media.ffgif:main"
+fftrim = "dsbin.media.fftrim:main"

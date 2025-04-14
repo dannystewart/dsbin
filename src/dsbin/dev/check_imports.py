@@ -118,10 +118,10 @@ def find_cycles(
         if path:  # Ensure path is not empty before popping
             path.pop()
 
-    for node in graph:
+    for graph_node in graph:
         path = []
         path_info = []
-        dfs(node)
+        dfs(graph_node)
 
     return cycles
 

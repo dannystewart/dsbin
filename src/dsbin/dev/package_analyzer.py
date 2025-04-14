@@ -134,8 +134,8 @@ def analyze_package_dependencies(
         visited.add(node)
         path.append(node)
 
-        for dep in dependency_graph.get(node, []):
-            find_cycles_dfs(dep, path, visited)
+        for dependency in dependency_graph.get(node, []):
+            find_cycles_dfs(dependency, path, visited)
 
         path.pop()
 

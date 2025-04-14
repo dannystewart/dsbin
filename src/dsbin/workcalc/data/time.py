@@ -86,8 +86,9 @@ class TimeAnalyzer:
             return TimeDistribution(by_weekday={}, most_active_hours=[])
 
         by_weekday = {}
-        for day in DayOfWeek:
-            items = stats.items_by_weekday[day.value]
+        for day_value in range(7):
+            day = DayOfWeek(day_value)
+            items = stats.items_by_weekday[day_value]
             percentage = (items / total_items) * 100 if total_items > 0 else 0
             by_weekday[day] = (items, percentage)
 

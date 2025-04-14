@@ -69,7 +69,7 @@ def main() -> None:
         merge_folders(first_folder, second_folder, dry_run=True)
 
         if confirm_action("Do you want to proceed with the merge?"):
-            merge_folders(first_folder, second_folder, dry_run=False)
+            merge_folders(first_folder, second_folder)
             print(colored("Operation complete!", "green"))
         else:
             print(colored("Operation aborted.", "red"))

@@ -46,6 +46,7 @@ class ConfigFile:
         self.local_path = Path.cwd() / self.name
 
 
+# noinspection PyArgumentList
 class ConfigManager:
     """Manages downloading and updating config files from a remote repository."""
 

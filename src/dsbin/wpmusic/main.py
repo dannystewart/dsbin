@@ -48,17 +48,8 @@ class WPMusic:
         if args.doc:
             self.show_help_and_exit()
 
-        with walking_man(color="cyan"):
-            self.initialize(args)
-
-    def initialize(self, args: argparse.Namespace) -> None:
-        """Initialize the script."""
-
         # Keep files based on argument or if skipping upload
         should_keep = args.keep_files or args.skip_upload
-
-        # Initialize spinner
-        self.spinner = Halo(text="Initializing", spinner="dots", color="cyan")
 
         # Initialize configuration and logger
         self.config = WPConfig(
@@ -71,32 +62,34 @@ class WPMusic:
             level=self.config.log_level,
             simple=self.config.log_simple,
         )
+        self.args = args  # Store args for later processing
+        self.spinner = Halo(text="Initializing", spinner="dots", color="cyan")
 
         # Only check for files if we're not doing history or DB operations
         if not args.files and args.history is None and not args.check_db and not args.force_refresh:
             self.logger.error("No input files specified and no --history argument. Nothing to do.")
             sys.exit(1)
 
-        # Initialize components
-        self.track_identifier = TrackIdentifier(self.config)
-        self.metadata_setter = MetadataSetter(self.config)
-        self.upload_tracker = UploadTracker(self.config)
-        self.file_manager = WPFileManager(self.config, self.upload_tracker)
+        with walking_man(color="cyan"):
+            # Initialize components
+            self.track_identifier = TrackIdentifier(self.config)
+            self.metadata_setter = MetadataSetter(self.config)
+            self.upload_tracker = UploadTracker(self.config)
+            self.file_manager = WPFileManager(self.config, self.upload_tracker)
 
-        # Store args for processing
-        self.args = args
+            # Check database connection if requested
+            if self.args.check_db:
+                self.upload_tracker.db.check_database()
 
-        # Check database connection if requested
-        if self.args.check_db:
-            self.upload_tracker.db.check_database()
+            # Force refresh of local cache if requested
+            if self.upload_tracker.db.force_db_refresh(
+                force_refresh=self.args.force_refresh,
+                refresh_only=not (self.args.history is not None or self.args.files),
+            ):
+                return
 
-        # Force refresh of local cache if requested
-        refresh_only = not (self.args.history is not None or self.args.files)
-        if self.upload_tracker.db.force_db_refresh(self.args.force_refresh, refresh_only):
-            return
-
-        # Process files
-        self.process()
+            # Process files
+            self.process()
 
     @handle_interrupt()
     def process(self) -> None:

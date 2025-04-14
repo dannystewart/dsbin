@@ -46,29 +46,14 @@ class WPConfig:
     formats_to_upload: ClassVar[list[str]] = ["flac", "alac"]
 
     def __post_init__(self):
-        # Initialize core services
-        self.paths = PolyPath("wpmusic")
-        self.initialize_env_vars()
+        # Database configuration
+        self.db_host = "127.0.0.1"
+        self.db_port = 3306
+        self.db_name = "music_uploads"
+        self.db_user = "music_uploads"
+        self.db_password = self.env.db_password
 
-        # Load environment variables into class attributes
-        self.debug = self.env.debug
-        self.metadata_url = self.env.metadata_url
-        self.upload_path_prefix = self.env.upload_path_prefix
-        self.upload_url_prefix = self.env.upload_url_prefix
-
-        # Configure log level based on debug setting
-        self.log_level = "debug" if self.env.debug else "info"
-
-        # Set up paths
-        self.file_save_path = self.paths.downloads_dir
-        self.local_sqlite_db = self.paths.from_cache("wpmusic_uploads.db")
-
-        # Initialize subsystems
-        self.initialize_ssh()
-        self.initialize_database()
-
-    def initialize_env_vars(self) -> None:
-        """Get environment variables."""
+        # Initialize environment variables
         self.env = PolyEnv()
         self.env.add_debug_var()
         self.env.add_var(
@@ -98,21 +83,26 @@ class WPConfig:
             secret=True,
         )
 
-    def initialize_ssh(self) -> None:
-        """Initialize SSH settings."""
-        self.ssh_host = "dannystewart.com"
+        # Initialize paths
+        self.paths = PolyPath("wpmusic")
+        self.file_save_path = self.paths.downloads_dir
+        self.local_sqlite_db = self.paths.from_cache("wpmusic_uploads.db")
+
+        # Initialize SSH
         self.ssh_user = "danny"
+        self.ssh_host = "dannystewart.com"
         self.ssh_passphrase = self.env.ssh_passphrase
         self.private_key_path = self.paths.get_ssh_key("id_ed25519")
         self._private_key: paramiko.Ed25519Key | None = None
 
-    def initialize_database(self) -> None:
-        """Initialize database settings."""
-        self.db_host = "127.0.0.1"
-        self.db_port = 3306
-        self.db_name = "music_uploads"
-        self.db_user = "music_uploads"
-        self.db_password = self.env.db_password
+        # Load environment variables into class attributes
+        self.debug = self.env.debug
+        self.metadata_url = self.env.metadata_url
+        self.upload_path_prefix = self.env.upload_path_prefix
+        self.upload_url_prefix = self.env.upload_url_prefix
+
+        # Configure log level based on debug setting
+        self.log_level = "debug" if self.env.debug else "info"
 
     @property
     def private_key(self) -> paramiko.Ed25519Key:

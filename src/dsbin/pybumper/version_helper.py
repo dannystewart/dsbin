@@ -166,7 +166,7 @@ class VersionHelper:
             )
             sys.exit(1)
 
-    def bump_version(self, bump_type: BumpType | str, version: Version) -> Version:
+    def bump_version(self, bump_type: BumpType | str, version: Version) -> Version | None:
         """Calculate new version based on bump type and current version.
 
         Args:

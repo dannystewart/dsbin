@@ -78,9 +78,6 @@ class GitHelper:
         """Tag and push the current version without incrementing.
 
         Creates a new commit with the current version number, then tags and pushes it.
-
-        Args:
-            commit_message: Custom commit message (if None, default is used).
         """
         pyproject = Path("pyproject.toml")
         if not pyproject.exists():
@@ -127,7 +124,6 @@ class GitHelper:
 
         Args:
             new_version: The new version string.
-            commit_message: Optional custom commit message.
 
         Returns:
             True if there were other uncommitted changes, False otherwise.

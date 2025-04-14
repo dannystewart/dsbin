@@ -46,13 +46,6 @@ class WPConfig:
     formats_to_upload: ClassVar[list[str]] = ["flac", "alac"]
 
     def __post_init__(self):
-        # Database configuration
-        self.db_host = "127.0.0.1"
-        self.db_port = 3306
-        self.db_name = "music_uploads"
-        self.db_user = "music_uploads"
-        self.db_password = self.env.db_password
-
         # Initialize environment variables
         self.env = PolyEnv()
         self.env.add_debug_var()
@@ -87,6 +80,13 @@ class WPConfig:
         self.paths = PolyPath("wpmusic")
         self.file_save_path = self.paths.downloads_dir
         self.local_sqlite_db = self.paths.from_cache("wpmusic_uploads.db")
+
+        # Database configuration
+        self.db_host = "127.0.0.1"
+        self.db_port = 3306
+        self.db_name = "music_uploads"
+        self.db_user = "music_uploads"
+        self.db_password = self.env.db_password
 
         # Initialize SSH
         self.ssh_user = "danny"

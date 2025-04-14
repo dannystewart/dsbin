@@ -1,20 +1,43 @@
 :root {
-    --pdoc-background: #212529;
+    --pdoc-background: #16161E;
 }
 
 .pdoc {
-    --text: #f7f7f7;
-    --muted: #9d9d9d;
-    --link: #58a6ff;
-    --link-hover: #3989ff;
-    --code: #333;
-    --active: #555;
+    --text: #c0caf5;
+    --muted: #a9b1d6;
+    --link: #7aa2f7;
+    --link-hover: #c0caf5;
+    --code: #1A1B26;
+    --active: #292E42;
 
-    --accent: #343434;
-    --accent2: #555;
+    --accent: #24283B;
+    --accent2: #292E42;
 
     --nav-hover: rgba(0, 0, 0, 0.1);
-    --name: #77C1FF;
-    --def: #0cdd0c;
-    --annotation: #00c037;
+    --name: #c0caf5;
+    --def: #BB9AF7;
+    --annotation: #BB9AF7;
+}
+.pdoc h1 {
+    font-size: 2.2em;
+    font-weight: 600 !important;
+}
+.pdoc h2 {
+    font-size: 1.7em;
+    font-weight: 500 !important;
+}
+.pdoc h3 {
+    font-size: 1.4em;
+    font-weight: 400 !important;
+}
+.pdoc ul.memberlist {
+    font-size: 0.95em;
+}
+.pdoc input {
+    background-color: #1A1B26;
+    border: 1px solid #414868;
+    color: #a9b1d6;
+    border-radius: 6px;
+    padding: 4px 10px;
+    transition: all 0.2s ease;
 }

@@ -6,7 +6,21 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
-*No documentation yet, but you can use the link above to see what's changing.*
+### Changed
+
+- Reorganizes `WPMusic` configuration initialization for improved code structure and readability.
+- Converts `PolyFile` usage in `bipclean` to use class methods directly instead of global instances.
+- Changes abstract method implementation in `DataSourcePlugin` for `workcalc` to raise a `NotImplementedError` with descriptive messages instead of `...`.
+- Optimizes buffer handling in Walking Man Adventure for better performance by reorganizing initialization and using `extend` instead of multiple `append` statements.
+- Uses more descriptive variable names in `check_imports` and `package_analyzer`.
+- Updates `poetry.lock` file to reflect dependency changes.
+
+### Fixed
+
+- Fixes `TimeAnalyzer` to iterate over day values (0-6) instead of enum members, preventing key errors when accessing weekday statistics.
+- Fixes PyCharm inspection warnings and removes redundant parameters in merge function calls.
+- Updates return type of `bump_version` method to correctly reflect its actual behavior.
+- Removes unused variable declarations across multiple files.
 
 ## [0.8.0] (2025-04-14)
 

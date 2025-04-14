@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.7.16] (2025-04-13)
+
+## Changed
+
+- Upgrades documentation to a beautiful new [Tokyo Night](https://github.com/dannystewart/pdoc-tokyo-night) theme, created by yours truly, replacing the basic dark theme with improved typography, visual hierarchy, and enhanced syntax highlighting for a more polished, professional appearance.
+
 ## [0.7.15] (2025-04-13)
 
 ### Added
@@ -367,7 +373,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.15...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.7.16...HEAD
+[0.7.16]: https://github.com/dannystewart/dsbin/compare/v0.7.15...v0.7.16
 [0.7.15]: https://github.com/dannystewart/dsbin/compare/v0.7.14...v0.7.15
 [0.7.14]: https://github.com/dannystewart/dsbin/compare/v0.7.13...v0.7.14
 [0.7.13]: https://github.com/dannystewart/dsbin/compare/v0.7.12...v0.7.13

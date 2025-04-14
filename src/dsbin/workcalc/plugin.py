@@ -15,15 +15,18 @@ class DataSourcePlugin(ABC):
     @abstractmethod
     def validate_source(self) -> bool:
         """Verify the data source is valid and accessible."""
-        ...
+        msg = "Subclasses must implement validate_source"
+        raise NotImplementedError(msg)
 
     @abstractmethod
     def get_work_items(self) -> Iterator[WorkItem]:
         """Retrieve work items from the data source."""
-        ...
+        msg = "Subclasses must implement get_work_items"
+        raise NotImplementedError(msg)
 
     @property
     @abstractmethod
     def source_name(self) -> str:
         """Name of this data source type."""
-        ...
+        msg = "Subclasses must implement source_name"
+        raise NotImplementedError(msg)

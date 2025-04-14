@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.1] (2025-04-14)
+
 ### Added
 
 - Adds `v` prefix to `pybumper` commit message (e.g. `v0.8.1`). This provides more consistent versioning format in Git history.
@@ -408,7 +410,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.0...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.1...HEAD
+[0.8.1]: https://github.com/dannystewart/dsbin/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/dannystewart/dsbin/compare/v0.7.16...v0.8.0
 [0.7.16]: https://github.com/dannystewart/dsbin/compare/v0.7.15...v0.7.16
 [0.7.15]: https://github.com/dannystewart/dsbin/compare/v0.7.14...v0.7.15

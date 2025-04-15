@@ -182,6 +182,12 @@ class PyBumper:
                 # Add a second commit for the dev version
                 self.git.commit_dev_version(next_dev_version)
 
+            # Push all commits and tags once at the end if enabled
+            if self.push_to_remote:
+                self.git.push_all()
+            else:
+                self.logger.debug("Version changes committed and tagged.")
+
             # Log success
             action = "tagged" if bump_type is None else "updated to"
             push_status = "" if self.push_to_remote else " (not pushed)"

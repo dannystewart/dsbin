@@ -158,12 +158,7 @@ class GitHelper:
         message = f"chore(version): prepare for next development cycle (v{dev_version})"
         subprocess.run(["git", "commit", "-m", message], check=True)
 
-        # Push the commit if configured to do so
-        if self.push_to_remote:
-            subprocess.run(["git", "push"], check=True)
-            self.logger.debug("Pushed development version commit to remote.")
-        else:
-            self.logger.debug("Development version committed locally.")
+        self.logger.debug("Development version committed locally.")
 
     def create_and_push_tag(self, tag_name: str) -> None:
         """Create and push a git tag."""
@@ -235,10 +230,11 @@ class GitHelper:
         # Create tag
         subprocess.run(["git", "tag", tag_name], check=True)
 
-        if self.push_to_remote:  # Push changes and tags
-            subprocess.run(["git", "push"], check=True)
-            subprocess.run(["git", "push", "--tags"], check=True)
-        else:
-            self.logger.info(
-                "Changes committed and tagged locally. Use 'git push && git push --tags' to push to remote."
-            )
+        if not self.push_to_remote:
+            self.logger.debug("Changes committed and tagged.")
+
+    def push_all(self) -> None:
+        """Push commits and tags to remote repository."""
+        subprocess.run(["git", "push"], check=True)
+        subprocess.run(["git", "push", "--tags"], check=True)
+        self.logger.info("Pushed all commits and tags to the remote repository.")

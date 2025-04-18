@@ -7,15 +7,15 @@ folders cleaner (and save disk space) by deleting old bounces that I don't need 
 and making sure the naming is consistent.
 
 My naming scheme is primarily based on date with an incrementing version number:
-Project Name 23.11.20_0.wav
-Project Name 23.11.20_1.wav
-Project Name 23.11.20_2.wav
+- Project Name 23.11.20_0.wav
+- Project Name 23.11.20_1.wav
+- Project Name 23.11.20_2.wav
 
 Incremental draft versions with very quick and minor tweaks/fixes follow this format:
-Project Name 23.11.20_1.wav
-Project Name 23.11.20_1a.wav
-Project Name 23.11.20_1b.wav
-Project Name 23.11.20_1c.wav
+- Project Name 23.11.20_1.wav
+- Project Name 23.11.20_1a.wav
+- Project Name 23.11.20_1b.wav
+- Project Name 23.11.20_1c.wav
 
 This script will delete 1, 1a, and 1b, then rename 1c to 1, or with the `-d` / `--daily` flag, the
 script will consolidate down to one bounce per day named by date with no suffix. The `-s` or

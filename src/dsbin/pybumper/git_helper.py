@@ -155,7 +155,7 @@ class GitHelper:
         subprocess.run(["git", "add", "pyproject.toml"], check=True)
 
         # Create commit with dev version message
-        message = f"chore(version): prepare for next development cycle (v{dev_version})"
+        message = f"chore(version): start next dev cycle (v{dev_version})"
         subprocess.run(["git", "commit", "-m", message], check=True)
 
         self.logger.debug("Development version committed locally.")

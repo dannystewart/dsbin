@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.2] (2025-04-18)
+
+### Changed
+
+#### `pybumper`
+
+- Shortens the development cycle commit message from "prepare for next development cycle" to "start next dev cycle".
+- Centralizes Git push operations, resulting in a single push at the end of the version bump process rather than multiple incremental pushes.
+
+#### Miscellaneous
+
+- Improves documentation readability by adding bullet points to file naming examples.
+- Updates dependencies for `rsa`, `mysql-connector-python`, `pdoc`, `prompt-toolkit`, and `ruff` to latest versions.
+
 ## [0.8.1] (2025-04-14)
 
 ### Added
@@ -410,7 +424,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.1...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.2...HEAD
+[0.8.2]: https://github.com/dannystewart/dsbin/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/dannystewart/dsbin/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/dannystewart/dsbin/compare/v0.7.16...v0.8.0
 [0.7.16]: https://github.com/dannystewart/dsbin/compare/v0.7.15...v0.7.16

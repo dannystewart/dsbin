@@ -94,12 +94,12 @@ class ALACrity:
             A list of file paths to be processed.
         """
         list_args = {
-            "exts": [ext.lstrip(".") for ext in self.exts_to_convert],
+            "extensions": [ext.lstrip(".") for ext in self.exts_to_convert],
             "recursive": False,
         }
 
         if self.auto_mode:
-            list_args["include_hidden"] = False
+            list_args["include_dotfiles"] = False
 
         path_obj = Path(path)
         if path_obj.is_file() and path_obj.suffix.lower() in self.ALLOWED_EXTS:

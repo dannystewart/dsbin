@@ -9,18 +9,18 @@ license = "LGPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.12,<4.0"
 dependencies = [
-    "blessed (>=1.20.0)",
+    "blessed (>=1.21.0)",
     "halo (>=0.0.31)",
     "inquirer (>=3.4.0)",
     "mutagen (>=1.47.0)",
     "mysql-connector-python (>=9.3.0)",
     "natsort (>=8.4.0)",
-    "numpy (>=2.2.4)",
-    "packaging (>=24.2)",
+    "numpy (>=2.2.5)",
+    "packaging (>=25.0)",
     "paramiko (>=3.5.1)",
     "pexpect (>=4.9.0)",
     "pillow (>=11.2.1)",
-    "polykit (>=0.10.2)",
+    "polykit (>=0.11.1)",
     "prompt-toolkit (>=3.0.51)",
     "pyperclip (>=1.9.0)",
     "requests (>=2.32.3)",
@@ -28,7 +28,7 @@ dependencies = [
     "rsa (>=4.9.1)",
     "scipy (>=1.15.2)",
     "scp (>=0.15.0)",
-    "telethon (>=1.39.0)",
+    "telethon (>=1.40.0)",
     "tomli-w (>=1.2.0)",
     "tomlkit (>=0.13.2)",
     "tqdm (>=4.67.1)",
@@ -60,10 +60,10 @@ classifiers = [
 
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.15.0"
-pdoc = ">=15.0.2"
+pdoc = ">=15.0.3"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.2.0"
-ruff = ">=0.11.6"
+ruff = ">=0.11.7"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.3] (2025-05-01)
+
+### Changed
+
+- Updates numerous package dependencies to their latest versions, including blessed 1.21.0, numpy 2.2.5, packaging 25.0, and polykit to 0.11.1.
+
+### Fixed
+
+- Fixes parameter naming in `ALACrity` module, changing `exts` to `extensions` and `include_hidden` to `include_dotfiles`.
+
 ## [0.8.2] (2025-04-18)
 
 ### Changed
@@ -424,7 +434,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.2...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.3...HEAD
+[0.8.3]: https://github.com/dannystewart/dsbin/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/dannystewart/dsbin/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/dannystewart/dsbin/compare/v0.8.0...v0.8.1
 [0.8.0]: https://github.com/dannystewart/dsbin/compare/v0.7.16...v0.8.0

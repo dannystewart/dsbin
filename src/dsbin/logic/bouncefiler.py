@@ -80,7 +80,7 @@ def sort_bounces(bounces: list[Bounce], selected_suffixes: list[str]) -> None:
                     duplicates.append(source)
                     continue
 
-                if files.move(source, destination, overwrite=False, logger=logger):
+                if files.move(source, destination, overwrite=False):
                     logger.info(
                         "%s -> %s",
                         color(source.name, "white"),
@@ -100,7 +100,7 @@ def handle_duplicates(duplicates: list[Path]) -> None:
         print(color(f"✖ {file.name}", "yellow"))
 
     if confirm_action("\nDelete duplicate source files?", default_to_yes=False):
-        successful, failed = files.delete(duplicates, logger=logger)
+        successful, failed = files.delete(duplicates)
         if successful:
             print(
                 color(

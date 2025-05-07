@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.4] (2025-05-07)
+
+### Fixed
+
+- Removes the logger parameter from file operations in the `bouncefiler` to avoid the unintentional duplicative output during file operations.
+
 ## [0.8.3] (2025-05-01)
 
 ### Changed
@@ -434,7 +440,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.3...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.4...HEAD
+[0.8.4]: https://github.com/dannystewart/dsbin/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/dannystewart/dsbin/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/dannystewart/dsbin/compare/v0.8.1...v0.8.2
 [0.8.1]: https://github.com/dannystewart/dsbin/compare/v0.8.0...v0.8.1

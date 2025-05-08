@@ -90,11 +90,15 @@ def clean_filename(filename: str, timestamp_count: int) -> str:
 
 def get_files_to_process(args: argparse.Namespace) -> list[str]:
     """Get the list of files to process based on command line arguments."""
-    files_to_process = args.files or Path().iterdir()
+    files_to_process = args.files or ["./*"]
     expanded_files = []
     for file_pattern in files_to_process:
-        expanded_files.extend(str(path) for path in Path().glob(str(file_pattern)))
-    return natsorted(expanded_files)
+        if matches := list(Path().glob(str(file_pattern))):
+            expanded_files.extend(str(path) for path in matches)
+        else:
+            print(color(f"No files found matching '{file_pattern}'", "yellow"))
+
+    return natsorted(set(expanded_files))
 
 
 def process_file(filename: str) -> tuple[str, str] | None:

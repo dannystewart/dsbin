@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.5] (2025-05-08)
+
+### Added
+
+- Adds a `-y` flag for non-interactive operation in `backupsort`.
+
+### Changed
+
+- Updates Poetry to version 2.1.3 and various dependencies to their latest versions.
+
+### Fixed
+
+- Enhances file pattern matching with support for wildcards and multiple files and prevents duplicate files by using a set in `backupsort`.
+
 ## [0.8.4] (2025-05-07)
 
 ### Fixed
@@ -440,7 +454,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.4...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.5...HEAD
+[0.8.5]: https://github.com/dannystewart/dsbin/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/dannystewart/dsbin/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/dannystewart/dsbin/compare/v0.8.2...v0.8.3
 [0.8.2]: https://github.com/dannystewart/dsbin/compare/v0.8.1...v0.8.2

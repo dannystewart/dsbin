@@ -101,7 +101,7 @@ def get_files_to_process(args: argparse.Namespace) -> list[str]:
     return natsorted(set(expanded_files))
 
 
-def process_file(filename: str) -> tuple[str, str] | None:
+def process_file(filename: str, auto: bool = False) -> tuple[str, str] | None:
     """Process a single file and return planned changes if any."""
     if filename.startswith(".") or not Path(filename).is_file():
         return None
@@ -113,7 +113,8 @@ def process_file(filename: str) -> tuple[str, str] | None:
         clean_name = clean_filename(filename, timestamp_count)
         base_name, extension = split_filename(clean_name)
         new_name = f"{base_name}_{formatted_timestamp}{extension}"
-        print(color(filename, "blue") + " ➔ " + color(new_name, "green"))
+        if not auto:
+            print(color(filename, "blue") + " ➔ " + color(new_name, "green"))
         return filename, new_name
 
     if timestamp_count >= 1:
@@ -125,13 +126,14 @@ def process_file(filename: str) -> tuple[str, str] | None:
         clean_name = clean_filename(filename, timestamp_count)
         base_name, extension = split_filename(clean_name)
         new_name = f"{base_name}{extension}"
-        print(color(filename, "blue") + " ➔ " + color(new_name, "green"))
+        if not auto:
+            print(color(filename, "blue") + " ➔ " + color(new_name, "green"))
         return filename, new_name
 
 
 def perform_operations(planned_changes: list[tuple[str, str]], args: argparse.Namespace) -> None:
     """Execute the planned changes if confirmed by the user."""
-    if planned_changes and confirm_action("Proceed with renaming?"):
+    if planned_changes and (args.y or confirm_action("Proceed with renaming?")):
         for old_name, new_name in planned_changes:
             old_path = Path(old_name)
 
@@ -155,6 +157,7 @@ def perform_operations(planned_changes: list[tuple[str, str]], args: argparse.Na
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = PolyArgs(description=__doc__, lines=1)
+    parser.add_argument("-y", action="store_true", help="proceed without confirmation")
     parser.add_argument(
         "--rename-only",
         action="store_true",
@@ -173,7 +176,7 @@ def main() -> None:
     """Rename and move files based on the command-line arguments."""
     args = parse_arguments()
     files = get_files_to_process(args)
-    changes = [result for filename in files if (result := process_file(filename))]
+    changes = [result for filename in files if (result := process_file(filename, args.y))]
 
     perform_operations(changes, args)
 

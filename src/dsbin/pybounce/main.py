@@ -27,7 +27,6 @@ from dsbin.pybounce.sqlite_manager import SQLiteManager
 if TYPE_CHECKING:
     from logging import Logger
 
-
 polykit_setup()
 
 
@@ -151,18 +150,6 @@ class TelegramUploader:
             self.logger.warning("Skipping '%s'.", file)
 
 
-def parse_arguments() -> argparse.Namespace:
-    """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Upload audio files to a Telegram channel.")
-    parser.add_argument("files", nargs="*", help="files to upload")
-    parser.add_argument("comment", nargs="?", default="", help="comment to add to the upload")
-
-    # Return default args if being run by pdoc
-    if len(sys.argv) > 0 and sys.argv[0].endswith("pdoc"):
-        return argparse.Namespace(debug=False, files=[], comment="")
-    return parser.parse_args()
-
-
 async def pybounce(env: PolyEnv, logger: Logger) -> None:
     """Upload files to a Telegram channel."""
     args = parse_arguments()
@@ -196,6 +183,18 @@ async def pybounce(env: PolyEnv, logger: Logger) -> None:
     finally:
         await sqlite.disconnect_client()
         files.thread_pool.shutdown()
+
+
+def parse_arguments() -> argparse.Namespace:
+    """Parse command-line arguments."""
+    parser = argparse.ArgumentParser(description="Upload audio files to a Telegram channel.")
+    parser.add_argument("files", nargs="*", help="files to upload")
+    parser.add_argument("comment", nargs="?", default="", help="comment to add to the upload")
+
+    # Return default args if being run by pdoc
+    if len(sys.argv) > 0 and sys.argv[0].endswith("pdoc"):
+        return argparse.Namespace(debug=False, files=[], comment="")
+    return parser.parse_args()
 
 
 def main() -> None:

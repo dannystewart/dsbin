@@ -26,7 +26,7 @@ dependencies = [
     "requests (>=2.32.3)",
     "rich (>=14.0.0)",
     "rsa (>=4.9.1)",
-    "scipy (>=1.15.2)",
+    "scipy (>=1.15.3)",
     "scp (>=0.15.0)",
     "telethon (>=1.40.0)",
     "tomli-w (>=1.2.0)",
@@ -63,7 +63,7 @@ mypy = ">=1.15.0"
 pdoc = ">=15.0.3"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.2.0"
-ruff = ">=0.11.8"
+ruff = ">=0.11.9"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

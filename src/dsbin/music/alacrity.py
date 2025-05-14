@@ -10,22 +10,35 @@ as well as directories.
 
 from __future__ import annotations
 
+from contextlib import contextmanager
 from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 from natsort import natsorted
-from polykit.cli import PolyArgs, confirm_action, conversion_list_context
+from polykit.cli import PolyArgs, confirm_action
 from polykit.core import polykit_setup
 from polykit.files import PolyFile
+from polykit.formatters import color
 from polykit.log import PolyLog
 
 from dsbin.media import MediaManager
 
 if TYPE_CHECKING:
     import argparse
+    from collections.abc import Generator
 
 polykit_setup()
+
+
+@contextmanager
+def conversion_list_context(file_name: str) -> Generator[None, None, None]:
+    """Context manager to print a message at the start and end of a conversion."""
+    try:
+        print(f"Converting {file_name} ... ", end="")
+        yield
+    finally:
+        print(color("done!", "green"))
 
 
 class ConversionResult(StrEnum):

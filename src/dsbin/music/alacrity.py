@@ -11,6 +11,7 @@ as well as directories.
 from __future__ import annotations
 
 from contextlib import contextmanager
+from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
@@ -41,6 +42,40 @@ def conversion_list_context(file_name: str) -> Generator[None, None, None]:
         print(color("done!", "green"))
 
 
+class FormatCategory(StrEnum):
+    """Categories of audio formats."""
+
+    LOSSLESS = "lossless"
+    LOSSY = "lossy"
+    UNCOMPRESSED = "uncompressed"
+
+
+@dataclass
+class AudioFormat:
+    """Represents an audio file format with its properties."""
+
+    name: str  # Format name (e.g., "ALAC")
+    extension: str  # Extension without dot (e.g., "m4a")
+    codec: str  # ffmpeg codec name (e.g., "alac")
+    category: FormatCategory  # Type of format (lossless, lossy, uncompressed)
+    container: str | None = None  # Container format if different from extension
+
+    @property
+    def extension_with_dot(self) -> str:
+        """Get the extension with a leading dot."""
+        return f".{self.extension}"
+
+    def get_codec_for_bit_depth(self, bit_depth: int) -> str:
+        """Get the appropriate codec based on bit depth."""
+        if self.name == "WAV":
+            if bit_depth == 24:
+                return "pcm_s24le"
+            if bit_depth == 32:
+                return "pcm_s32le"
+            return "pcm_s16le"
+        return self.codec
+
+
 class ConversionResult(StrEnum):
     """Result of the conversion process."""
 
@@ -52,25 +87,47 @@ class ConversionResult(StrEnum):
 class ALACrity:
     """Converts files in a directory to ALAC, with additional formats and options."""
 
-    # Default and allowed file extensions
-    DEFAULT_EXTS: ClassVar[list[str]] = [".aiff", ".aif", ".wav"]
-    ALLOWED_EXTS: ClassVar[list[str]] = [".aiff", ".aif", ".wav", ".m4a", ".flac"]
+    # Define all supported audio formats
+    FORMATS: ClassVar[dict[str, AudioFormat]] = {
+        "alac": AudioFormat(
+            name="ALAC",
+            extension="m4a",
+            codec="alac",
+            category=FormatCategory.LOSSLESS,
+        ),
+        "flac": AudioFormat(
+            name="FLAC",
+            extension="flac",
+            codec="flac",
+            category=FormatCategory.LOSSLESS,
+        ),
+        "wav": AudioFormat(
+            name="WAV",
+            extension="wav",
+            codec="pcm_s16le",
+            category=FormatCategory.UNCOMPRESSED,
+        ),
+        "aiff": AudioFormat(
+            name="AIFF",
+            extension="aiff",
+            codec="pcm_s16be",
+            category=FormatCategory.UNCOMPRESSED,
+        ),
+        "aif": AudioFormat(
+            name="AIFF",
+            extension="aif",
+            codec="pcm_s16be",
+            category=FormatCategory.UNCOMPRESSED,
+        ),
+    }
 
-    # Default target format and extension
-    DEFAULT_SOURCE_EXTS: ClassVar[list[str]] = ["aiff", "aif", "wav"]
-    DEFAULT_TARGET_EXT: ClassVar[str] = "m4a"
+    # Default settings
+    DEFAULT_TARGET_FORMAT: ClassVar[AudioFormat] = FORMATS["alac"]
+    DEFAULT_SOURCE_EXTENSIONS: ClassVar[list[str]] = ["aiff", "aif", "wav"]
 
     # Undo settings
-    UNDO_SOURCE_EXTS: ClassVar[list[str]] = ["m4a"]
-    UNDO_TARGET_EXT: ClassVar[str] = "wav"
-
-    # Supported file codecs
-    FILE_CODECS: ClassVar[dict[str, str]] = {
-        "flac": "flac",
-        "aiff": "pcm_s16be",
-        "wav": "pcm_s16le",
-        "m4a": "alac",
-    }
+    UNDO_TARGET_FORMAT: ClassVar[AudioFormat] = FORMATS["wav"]
+    UNDO_SOURCE_EXTENSIONS: ClassVar[list[str]] = ["m4a"]
 
     def __init__(self, args: argparse.Namespace) -> None:
         self.media = MediaManager()
@@ -86,13 +143,61 @@ class ALACrity:
         self.bit_depth = 16
         self.audio_bitrate = "320k"
         self.sample_rate = "44100"
-        self.extension: str | None = None
+
+        # Target format will be set in _configure_vars_from_args
+        self.target_format: AudioFormat | None = None
+        self.source_extensions: list[str] = []
 
         # Run the script
         self._configure_vars_from_args()
-        self.run_conversion()
+        self.process_files()
 
-    def run_conversion(self) -> None:
+    def _configure_vars_from_args(self) -> None:
+        """Set instance variables based on the parsed command-line arguments."""
+        # Resolve paths
+        resolved_paths = []
+        for path in self.args.paths:
+            path_obj = Path(path)
+            if "*" in str(path_obj) or "?" in str(path_obj):
+                resolved_paths.extend(path_obj.parent.glob(path_obj.name))
+            else:
+                resolved_paths.append(path_obj)
+        self.paths = natsorted([str(p) for p in resolved_paths])
+
+        # Handle undo mode
+        if self.args.undo:
+            self.target_format = self.UNDO_TARGET_FORMAT
+            self.source_extensions = self.UNDO_SOURCE_EXTENSIONS
+            self.preserve_bit_depth = True
+            self.auto_mode = False
+            return
+
+        # Determine if we're in auto mode
+        self.auto_mode = not any(
+            getattr(self.args, fmt.extension, False) for fmt in self.FORMATS.values()
+        )
+
+        # Set target format based on arguments
+        for fmt in self.FORMATS.values():
+            if getattr(self.args, fmt.extension, False):
+                self.target_format = fmt
+                break
+
+        # Use default target if none specified
+        if self.target_format is None:
+            self.target_format = self.DEFAULT_TARGET_FORMAT
+
+        # Set source extensions
+        if self.auto_mode:
+            self.source_extensions = self.DEFAULT_SOURCE_EXTENSIONS
+        else:
+            self.source_extensions = [
+                fmt.extension
+                for fmt in self.FORMATS.values()
+                if fmt.extension != self.target_format.extension
+            ]
+
+    def process_files(self) -> None:
         """Gather specified files, convert them, and prompt for deletion of the originals."""
         converted_files = []
         original_files = []
@@ -103,7 +208,7 @@ class ALACrity:
             if not files_to_process:
                 continue
 
-            converted, original, skipped = self.gather_and_process_files(files_to_process)
+            converted, original, skipped = self.handle_conversion(files_to_process)
             converted_files.extend(converted)
             original_files.extend(original)
             skipped_files.extend(skipped)
@@ -128,37 +233,32 @@ class ALACrity:
         Returns:
             A list of file paths to be processed.
         """
-        list_args = {
-            "extensions": self.exts_to_convert,
-            "recursive": False,
-        }
-
-        if self.auto_mode:
-            list_args["include_dotfiles"] = False
-
         path_obj = Path(path)
-        if self.args.undo and path_obj.is_dir():  # For undo, only find M4A files
-            files_to_process = list(path_obj.glob("*.m4a"))
-        elif path_obj.is_file() and path_obj.suffix.lower()[1:] in self.exts_to_convert:
-            files_to_process = [path_obj]
-        elif path_obj.is_dir():
-            files_to_process = PolyFile.list(path_obj, **list_args)
-        else:
-            self.logger.error(
-                "The path '%s' is neither a directory nor a file with a valid extension.", path
-            )
+
+        # For a specific file
+        if path_obj.is_file():
+            if path_obj.suffix.lower()[1:] in self.source_extensions:
+                return [path_obj]
+            self.logger.error("The file '%s' does not have a valid extension for conversion.", path)
             return []
 
-        return natsorted(files_to_process)
+        # For a directory
+        if path_obj.is_dir():
+            # Use glob patterns for simplicity and consistency
+            files = []
+            for ext in self.source_extensions:
+                files.extend(path_obj.glob(f"*.{ext}"))
+            return natsorted(files)
 
-    def gather_and_process_files(
-        self, files_to_process: list[Path]
-    ) -> tuple[list[Path], list[Path], list[Path]]:
+        self.logger.error("The path '%s' is neither a directory nor a file.", path)
+        return []
+
+    def handle_conversion(self, file_list: list[Path]) -> tuple[list[Path], list[Path], list[Path]]:
         """Convert the gathered files, track the conversion result for each file, and preserve the
         original timestamps for successfully converted files.
 
         Args:
-            files_to_process: A list of file paths to be converted.
+            file_list: A list of file paths to be converted.
 
         Returns:
             A tuple containing three lists:
@@ -170,8 +270,8 @@ class ALACrity:
         original_files = []
         skipped_files = []
 
-        for input_path in files_to_process:
-            output_path, status = self.handle_file_conversion(input_path)
+        for input_path in file_list:
+            output_path, status = self.convert_file(input_path)
 
             match status:
                 case ConversionResult.CONVERTED:
@@ -186,7 +286,7 @@ class ALACrity:
 
         return converted_files, original_files, skipped_files
 
-    def handle_file_conversion(self, input_path: Path) -> tuple[Path, ConversionResult]:
+    def convert_file(self, input_path: Path) -> tuple[Path, ConversionResult]:
         """Convert a single file to the specified format using ffmpeg_audio, including checking for
         existing files and preserving bit depth if specified.
 
@@ -198,37 +298,29 @@ class ALACrity:
                 - output_path: The path of the converted file (or None if conversion failed).
                 - status: The status of the conversion (ConversionStatus enum value).
         """
-        output_path = input_path.with_suffix(f".{self.extension}")
+        if self.target_format is None:
+            self.logger.error("No target format specified.")
+            return input_path, ConversionResult.FAILED
+
+        output_path = input_path.with_suffix(f".{self.target_format.extension}")
+
         if output_path.exists():
             return output_path, ConversionResult.EXISTS
 
-        # Determine bit depth first
+        # Determine bit depth and codec
+        codec = self.target_format.codec
         if self.preserve_bit_depth:
             actual_bit_depth = self.media.find_bit_depth(input_path)
             if actual_bit_depth in {24, 32}:
                 self.bit_depth = actual_bit_depth
-
-                # Set the codec based on bit depth for WAV
-                if self.extension == "wav":
-                    if self.bit_depth == 24:
-                        self.codec = "pcm_s24le"
-                    elif self.bit_depth == 32:
-                        self.codec = "pcm_s32le"
-                    else:
-                        self.codec = "pcm_s16le"
-
-        if self.codec is None:  # Determine codec based on extension
-            if self.extension is not None:  # Make sure the extension is not None
-                self.codec = self.FILE_CODECS.get(self.extension, "alac")
-            else:  # Otherwise, default to ALAC
-                self.codec = "alac"
+                codec = self.target_format.get_codec_for_bit_depth(self.bit_depth)
 
         with conversion_list_context(input_path.name):
             try:
                 self.media.ffmpeg_audio(
                     input_files=input_path,
-                    output_format=self.extension or "m4a",
-                    codec=self.codec,
+                    output_format=self.target_format.extension,
+                    codec=codec,
                     bit_depth=self.bit_depth,
                     audio_bitrate=self.audio_bitrate,
                     sample_rate=self.sample_rate,
@@ -240,82 +332,36 @@ class ALACrity:
                 self.logger.error("Failed to convert %s: %s", input_path.name, str(e))
                 return input_path, ConversionResult.FAILED
 
-    def _configure_vars_from_args(self) -> None:
-        """Set instance variables based on the parsed command-line arguments."""
-        resolved_paths = []
-        for path in self.args.paths:
-            path_obj = Path(path)
-            if "*" in str(path_obj) or "?" in str(path_obj):
-                resolved_paths.extend(path_obj.parent.glob(path_obj.name))
-            else:
-                resolved_paths.append(path_obj)
-
-        self.paths = natsorted([str(p) for p in resolved_paths])
-
-        # Handle undo mode
-        if self.args.undo:
-            self.extension = self.UNDO_TARGET_EXT
-            self.exts_to_convert = self.UNDO_SOURCE_EXTS
-            self.codec = None  # Determine afterward based on bit depth
-            self.preserve_bit_depth = True  # Always preserve bit depth when undoing
-            self.auto_mode = False
-            return
-
-        # Normal mode processing
-        self.auto_mode = not (
-            self.args.flac
-            or self.args.wav
-            or self.args.aiff
-            or any(
-                getattr(self.args, ext.lstrip("."), False)
-                for ext in self.ALLOWED_EXTS
-                if ext.lstrip(".") != "aif"
-            )
-        )
-
-        # Set the target extension based on arguments
-        for ext in self.ALLOWED_EXTS:
-            ext_without_dot = ext.lstrip(".")
-            if getattr(self.args, ext_without_dot, False):
-                self.extension = ext_without_dot
-                break
-
-        # Handle extension defaults
-        if self.extension is None:
-            self.extension = self.DEFAULT_TARGET_EXT
-
-        self.exts_to_convert = self.DEFAULT_SOURCE_EXTS if self.auto_mode else self.ALLOWED_EXTS
-        self.exts_to_convert = [
-            ext for ext in self.exts_to_convert if ext.lstrip(".") != self.extension
-        ]
-        self.codec = self.FILE_CODECS.get(self.extension, "alac")
-
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = PolyArgs(description=__doc__, lines=2)
-    parser.add_argument("-f", "--flac", action="store_true", help="convert files to FLAC")
-    parser.add_argument("-w", "--wav", action="store_true", help="convert files to WAV")
-    parser.add_argument("-a", "--aiff", action="store_true", help="convert files to AIFF/AIF")
-    parser.add_argument(
-        "--preserve-depth", action="store_true", help="preserve bit depth if higher than 16-bit"
-    )
-    parser.add_argument(
+
+    # Format selection group
+    format_group = parser.add_argument_group("Formats")
+
+    # Add options for each format
+    for fmt_key, fmt in ALACrity.FORMATS.items():
+        if fmt_key == "aif":  # Skip aliases, keep only one
+            continue
+        format_group.add_argument(
+            f"--{fmt.extension}", action="store_true", help=f"Convert files to {fmt.name}"
+        )
+
+    # Special operation modes
+    operation_group = parser.add_argument_group("Operations")
+    operation_group.add_argument(
         "--undo",
         action="store_true",
-        help="convert M4A files back to WAV (undoing default behavior)",
+        help=f"Convert {ALACrity.UNDO_SOURCE_EXTENSIONS[0].upper()} files back to "
+        f"{ALACrity.UNDO_TARGET_FORMAT.name} (preserves bit depth)",
+    )
+    operation_group.add_argument(
+        "--preserve-depth", action="store_true", help="Preserve bit depth if higher than 16-bit"
     )
 
-    for ext in ALACrity.ALLOWED_EXTS:
-        ext_without_dot = ext.lstrip(".")
-        if ext_without_dot not in {"flac", "wav", "aiff"}:
-            parser.add_argument(
-                f"--{ext_without_dot}",
-                action="store_true",
-                help=f"Convert files to {ext_without_dot.upper()}",
-            )
-
-    paths_help = "file(s) or directory of files to convert or wildcard pattern (e.g. *.m4a) (defaulting to current directory)"
+    # Paths argument
+    paths_help = "file(s) or directory of files to convert (defaults to current directory)"
     parser.add_argument("paths", nargs="*", default=[Path.cwd()], help=paths_help)
 
     return parser.parse_args()

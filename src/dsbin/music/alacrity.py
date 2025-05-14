@@ -43,6 +43,14 @@ class ALACrity:
     DEFAULT_EXTS: ClassVar[list[str]] = [".aiff", ".aif", ".wav"]
     ALLOWED_EXTS: ClassVar[list[str]] = [".aiff", ".aif", ".wav", ".m4a", ".flac"]
 
+    # Default target format and extension
+    DEFAULT_SOURCE_EXTS: ClassVar[list[str]] = ["aiff", "aif", "wav"]
+    DEFAULT_TARGET_EXT: ClassVar[str] = "m4a"
+
+    # Undo settings
+    UNDO_SOURCE_EXTS: ClassVar[list[str]] = ["m4a"]
+    UNDO_TARGET_EXT: ClassVar[str] = "wav"
+
     # Supported file codecs
     FILE_CODECS: ClassVar[dict[str, str]] = {
         "flac": "flac",
@@ -92,7 +100,6 @@ class ALACrity:
             return
 
         if converted_files and confirm_action("Do you want to remove the original files?"):
-            # Use custom output handling
             successful, failed = PolyFile.delete(original_files, logger=None)
             self.logger.info("%d files trashed successfully.", len(successful))
             if failed:
@@ -109,7 +116,7 @@ class ALACrity:
             A list of file paths to be processed.
         """
         list_args = {
-            "extensions": [ext.lstrip(".") for ext in self.exts_to_convert],
+            "extensions": self.exts_to_convert,
             "recursive": False,
         }
 
@@ -117,7 +124,9 @@ class ALACrity:
             list_args["include_dotfiles"] = False
 
         path_obj = Path(path)
-        if path_obj.is_file() and path_obj.suffix.lower() in self.ALLOWED_EXTS:
+        if self.args.undo and path_obj.is_dir():  # For undo, only find M4A files
+            files_to_process = list(path_obj.glob("*.m4a"))
+        elif path_obj.is_file() and path_obj.suffix.lower()[1:] in self.exts_to_convert:
             files_to_process = [path_obj]
         elif path_obj.is_dir():
             files_to_process = PolyFile.list(path_obj, **list_args)
@@ -177,17 +186,31 @@ class ALACrity:
                 - status: The status of the conversion (ConversionStatus enum value).
         """
         output_path = input_path.with_suffix(f".{self.extension}")
-        output_filename = output_path.name
-
         if output_path.exists():
             return output_path, ConversionResult.EXISTS
 
+        # Determine bit depth first
         if self.preserve_bit_depth:
             actual_bit_depth = self.media.find_bit_depth(input_path)
             if actual_bit_depth in {24, 32}:
                 self.bit_depth = actual_bit_depth
 
-        with conversion_list_context(output_filename):
+                # Set the codec based on bit depth for WAV
+                if self.extension == "wav":
+                    if self.bit_depth == 24:
+                        self.codec = "pcm_s24le"
+                    elif self.bit_depth == 32:
+                        self.codec = "pcm_s32le"
+                    else:
+                        self.codec = "pcm_s16le"
+
+        if self.codec is None:  # Determine codec based on extension
+            if self.extension is not None:  # Make sure the extension is not None
+                self.codec = self.FILE_CODECS.get(self.extension, "alac")
+            else:  # Otherwise, default to ALAC
+                self.codec = "alac"
+
+        with conversion_list_context(input_path.name):
             try:
                 self.media.ffmpeg_audio(
                     input_files=input_path,
@@ -216,6 +239,16 @@ class ALACrity:
 
         self.paths = natsorted([str(p) for p in resolved_paths])
 
+        # Handle undo mode
+        if self.args.undo:
+            self.extension = self.UNDO_TARGET_EXT
+            self.exts_to_convert = self.UNDO_SOURCE_EXTS
+            self.codec = None  # Determine afterward based on bit depth
+            self.preserve_bit_depth = True  # Always preserve bit depth when undoing
+            self.auto_mode = False
+            return
+
+        # Normal mode processing
         self.auto_mode = not (
             self.args.flac
             or self.args.wav
@@ -236,9 +269,9 @@ class ALACrity:
 
         # Handle extension defaults
         if self.extension is None:
-            self.extension = "m4a"  # Default target format is ALAC
+            self.extension = self.DEFAULT_TARGET_EXT
 
-        self.exts_to_convert = self.DEFAULT_EXTS if self.auto_mode else self.ALLOWED_EXTS
+        self.exts_to_convert = self.DEFAULT_SOURCE_EXTS if self.auto_mode else self.ALLOWED_EXTS
         self.exts_to_convert = [
             ext for ext in self.exts_to_convert if ext.lstrip(".") != self.extension
         ]
@@ -254,6 +287,11 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--preserve-depth", action="store_true", help="preserve bit depth if higher than 16-bit"
     )
+    parser.add_argument(
+        "--undo",
+        action="store_true",
+        help="convert M4A files back to WAV (undoing default behavior)",
+    )
 
     for ext in ALACrity.ALLOWED_EXTS:
         ext_without_dot = ext.lstrip(".")
@@ -264,7 +302,7 @@ def parse_arguments() -> argparse.Namespace:
                 help=f"Convert files to {ext_without_dot.upper()}",
             )
 
-    paths_help = "File(s) or directory of files to convert or wildcard pattern (e.g., *.m4a) (defaulting to current directory)"
+    paths_help = "file(s) or directory of files to convert or wildcard pattern (e.g. *.m4a) (defaulting to current directory)"
     parser.add_argument("paths", nargs="*", default=[Path.cwd()], help=paths_help)
 
     return parser.parse_args()

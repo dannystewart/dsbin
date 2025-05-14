@@ -10,21 +10,30 @@ as well as directories.
 
 from __future__ import annotations
 
-import argparse
 from enum import StrEnum
 from pathlib import Path
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from natsort import natsorted
-from polykit.cli import confirm_action, conversion_list_context
+from polykit.cli import PolyArgs, confirm_action, conversion_list_context
 from polykit.core import polykit_setup
 from polykit.files import PolyFile
-from polykit.formatters import print_color
 from polykit.log import PolyLog
 
 from dsbin.media import MediaManager
 
+if TYPE_CHECKING:
+    import argparse
+
 polykit_setup()
+
+
+class ConversionResult(StrEnum):
+    """Result of the conversion process."""
+
+    CONVERTED = "converted"
+    EXISTS = "already_exists"
+    FAILED = "failed"
 
 
 class ALACrity:
@@ -44,7 +53,13 @@ class ALACrity:
 
     def __init__(self, args: argparse.Namespace) -> None:
         self.media = MediaManager()
-        self.logger = PolyLog.get_logger("alacrity")
+        self.logger = PolyLog.get_logger("alacrity", simple=True)
+
+        # Initialize instance variables
+        self.args: argparse.Namespace = args
+        self.auto_mode: bool = True
+        self.preserve_bit_depth: bool = self.args.preserve_depth
+        self.paths: list[str] = []
 
         # Set default values for conversion options
         self.bit_depth = 16
@@ -53,7 +68,7 @@ class ALACrity:
         self.extension: str | None = None
 
         # Run the script
-        self._configure_vars_from_args(args)
+        self._configure_vars_from_args()
         self.run_conversion()
 
     def run_conversion(self) -> None:
@@ -73,7 +88,7 @@ class ALACrity:
             skipped_files.extend(skipped)
 
         if not original_files and not skipped_files:
-            print_color("No files to convert.", "green")
+            self.logger.info("No files to convert.")
             return
 
         if converted_files and confirm_action("Do you want to remove the original files?"):
@@ -107,7 +122,9 @@ class ALACrity:
         elif path_obj.is_dir():
             files_to_process = PolyFile.list(path_obj, **list_args)
         else:
-            print(f"The path '{path}' is neither a directory nor a file.")
+            self.logger.error(
+                "The path '%s' is neither a directory nor a file with a valid extension.", path
+            )
             return []
 
         return natsorted(files_to_process)
@@ -123,9 +140,9 @@ class ALACrity:
 
         Returns:
             A tuple containing three lists:
-            - converted_files: Paths of successfully converted files.
-            - original_files: Paths of original files that were successfully converted.
-            - skipped_files: Paths of files skipped due to existing converted versions.
+                - converted_files: Paths of successfully converted files.
+                - original_files: Paths of original files that were successfully converted.
+                - skipped_files: Paths of files skipped due to existing converted versions.
         """
         converted_files = []
         original_files = []
@@ -156,8 +173,8 @@ class ALACrity:
 
         Returns:
             A tuple containing:
-            - output_path: The path of the converted file (or None if conversion failed).
-            - status: The status of the conversion (ConversionStatus enum value).
+                - output_path: The path of the converted file (or None if conversion failed).
+                - status: The status of the conversion (ConversionStatus enum value).
         """
         output_path = input_path.with_suffix(f".{self.extension}")
         output_filename = output_path.name
@@ -184,13 +201,13 @@ class ALACrity:
                 )
                 return output_path, ConversionResult.CONVERTED
             except Exception as e:
-                print_color(f"\nFailed to convert {input_path.name}: {e}", "red")
+                self.logger.error("Failed to convert %s: %s", input_path.name, str(e))
                 return input_path, ConversionResult.FAILED
 
-    def _configure_vars_from_args(self, args: argparse.Namespace) -> None:
+    def _configure_vars_from_args(self) -> None:
         """Set instance variables based on the parsed command-line arguments."""
         resolved_paths = []
-        for path in args.paths:
+        for path in self.args.paths:
             path_obj = Path(path)
             if "*" in str(path_obj) or "?" in str(path_obj):
                 resolved_paths.extend(path_obj.parent.glob(path_obj.name))
@@ -198,25 +215,28 @@ class ALACrity:
                 resolved_paths.append(path_obj)
 
         self.paths = natsorted([str(p) for p in resolved_paths])
-        self.preserve_bit_depth = args.max
+
         self.auto_mode = not (
-            args.flac
-            or args.wav
-            or args.aiff
+            self.args.flac
+            or self.args.wav
+            or self.args.aiff
             or any(
-                getattr(args, ext.lstrip("."), False)
+                getattr(self.args, ext.lstrip("."), False)
                 for ext in self.ALLOWED_EXTS
                 if ext.lstrip(".") != "aif"
             )
         )
 
+        # Set the target extension based on arguments
         for ext in self.ALLOWED_EXTS:
             ext_without_dot = ext.lstrip(".")
-            if getattr(args, ext_without_dot):
+            if getattr(self.args, ext_without_dot, False):
                 self.extension = ext_without_dot
                 break
+
+        # Handle extension defaults
         if self.extension is None:
-            self.extension = "m4a"
+            self.extension = "m4a"  # Default target format is ALAC
 
         self.exts_to_convert = self.DEFAULT_EXTS if self.auto_mode else self.ALLOWED_EXTS
         self.exts_to_convert = [
@@ -225,22 +245,14 @@ class ALACrity:
         self.codec = self.FILE_CODECS.get(self.extension, "alac")
 
 
-class ConversionResult(StrEnum):
-    """Result of the conversion process."""
-
-    CONVERTED = "converted"
-    EXISTS = "already_exists"
-    FAILED = "failed"
-
-
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Convert audio files to different formats")
-    parser.add_argument("-f", "--flac", action="store_true", help="Convert files to FLAC")
-    parser.add_argument("-w", "--wav", action="store_true", help="Convert files to WAV")
-    parser.add_argument("-a", "--aiff", action="store_true", help="Convert files to AIFF/AIF")
+    parser = PolyArgs(description=__doc__, lines=2)
+    parser.add_argument("-f", "--flac", action="store_true", help="convert files to FLAC")
+    parser.add_argument("-w", "--wav", action="store_true", help="convert files to WAV")
+    parser.add_argument("-a", "--aiff", action="store_true", help="convert files to AIFF/AIF")
     parser.add_argument(
-        "--max", action="store_true", help="Preserve maximum bit depth of the files"
+        "--preserve-depth", action="store_true", help="preserve bit depth if higher than 16-bit"
     )
 
     for ext in ALACrity.ALLOWED_EXTS:

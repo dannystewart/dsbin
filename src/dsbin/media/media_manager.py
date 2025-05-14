@@ -276,14 +276,7 @@ class MediaManager:
             if bit_depth:
                 command += ["-bits_per_raw_sample", str(bit_depth)]
         elif output_format in {"wav", "aif", "aiff"}:
-            if bit_depth in {16, 24, 32}:
-                sample_format_mappings = {
-                    16: "s16",
-                    24: "s24",
-                    32: "s32",
-                }
-                sample_format = sample_format_mappings.get(bit_depth, "s16")
-                command += ["-sample_fmt", sample_format]
+            pass  # No additional arguments needed, as the codec already implies sample format
         return command
 
     @staticmethod
@@ -298,8 +291,8 @@ class MediaManager:
             file_groups[base_name].append(file)
 
         prioritized_extensions = [".wav", ".aiff", ".aif", ".flac", ".m4a"]
-
         prioritized_files = []
+
         for files in file_groups.values():
             selected_file = None
             for ext in prioritized_extensions:

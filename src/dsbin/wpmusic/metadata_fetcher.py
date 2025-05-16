@@ -42,13 +42,39 @@ class MetadataFetcher:
     def _fetch_metadata(self) -> tuple[dict[str, Any], bytes | None]:
         """Retrieve metadata and cover art."""
         self.logger.debug("Fetching metadata from %s", self.config.metadata_url)
-        response = requests.get(self.config.metadata_url, timeout=10)
-        all_metadata = json.loads(response.text)
+        try:
+            response = requests.get(self.config.metadata_url, timeout=10)
+
+            # Check if response is successful
+            response.raise_for_status()
+
+            # Check if response contains data
+            if not response.text:
+                self.logger.error("Empty response received from metadata URL.")
+                return {}, None
+
+            # Try to parse JSON
+            all_metadata = json.loads(response.text)
+
+        except requests.RequestException as e:
+            self.logger.error("Failed to fetch metadata: %s", str(e))
+            return {}, None
+        except json.JSONDecodeError as e:
+            self.logger.error("Failed to parse metadata JSON: %s", str(e))
+            self.logger.debug(
+                "Response content: %s",
+                response.text[:100] + "..." if len(response.text) > 100 else response.text,
+            )
+            return {}, None
+
         cover_data = None
 
         if cover_art_url := all_metadata.get("metadata", {}).get("cover_art_url", ""):
             self.logger.debug("Downloading cover art from %s", cover_art_url)
-            cover_data = self._download_cover_art(cover_art_url)
+            try:
+                cover_data = self._download_cover_art(cover_art_url)
+            except Exception as e:
+                self.logger.error("Failed to download cover art: %s", str(e))
 
         return all_metadata, cover_data
 

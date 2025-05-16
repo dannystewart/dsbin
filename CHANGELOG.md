@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.6] (2025-05-16)
+
+### Changed
+
+- Updates several dependencies to their latest versions, including `platformdirs`, `polykit`, `ruff`, `scipy`, and `virtualenv`.
+
+#### `alacrity`
+
+- Adds a new `--undo` argument to reverse the default conversion process, converting M4A files back to WAV.
+- Renames `--max` flag to `--preserve-depth` for better clarity on what it's maintaining.
+- Adds `AudioFormat` dataclass for format handling to replace hardcoded format constants with a more structured approach.
+- Simplifies sample format handling for WAV/AIFF files in by removing redundant configuration.
+- Improves code organization with better error handling, structured logging, and clearer command-line arguments.
+
+#### `wpmusic`
+
+- Fixes Polykit formatter import from `print_color` to `color` to resolve Inquirer menu failures in the fallback track selection menu.
+- Adds robust error handling in the metadata fetcher to prevent crashes when JSON is invalid or metadata services are unavailable.
+- Adds a small delay before processing files to ensure Walking Man finishes before more output is displayed.
+
 ## [0.8.5] (2025-05-08)
 
 ### Added
@@ -454,7 +474,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.5...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.6...HEAD
+[0.8.6]: https://github.com/dannystewart/dsbin/compare/v0.8.5...v0.8.6
 [0.8.5]: https://github.com/dannystewart/dsbin/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/dannystewart/dsbin/compare/v0.8.3...v0.8.4
 [0.8.3]: https://github.com/dannystewart/dsbin/compare/v0.8.2...v0.8.3

@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import inquirer
-from polykit.formatters import print_color as colored
+from polykit.formatters import color as colored
 from polykit.log import PolyLog
 
 from dsbin.wpmusic.audio_track import AudioTrack

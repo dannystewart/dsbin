@@ -32,9 +32,9 @@ dependencies = [
     "tomli-w (>=1.2.0)",
     "tomlkit (>=0.13.2)",
     "tqdm (>=4.67.1)",
-    "types-paramiko (>=3.5.0.20240928)",
+    "types-paramiko (>=3.5.0.20250516)",
     "types-pillow (>=10.2.0.20240822)",
-    "types-requests (>=2.32.0.20250328)",
+    "types-requests (>=2.32.0.20250515)",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -63,7 +63,7 @@ mypy = ">=1.15.0"
 pdoc = ">=15.0.3"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.2.0"
-ruff = ">=0.11.9"
+ruff = ">=0.11.10"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

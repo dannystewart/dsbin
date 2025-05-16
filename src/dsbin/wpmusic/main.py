@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -88,8 +89,11 @@ class WPMusic:
             ):
                 return
 
-            # Process files
-            self.process()
+        # Ensure Walking Man stops before proceeding (we thank him for his service)
+        time.sleep(0.1)
+
+        # Process files
+        self.process()
 
     @handle_interrupt()
     def process(self) -> None:

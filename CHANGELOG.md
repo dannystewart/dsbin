@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.8] (2025-05-19)
+
+### `changelogs`
+
+#### Fixed
+
+- Fixes an issue where using the `--update` flag would incorrectly create a new entry in the changelog.
+
 ## [0.8.7] (2025-05-19)
 
 ### `changelogs`
@@ -501,7 +509,8 @@ Also updates dependencies, including `numpy` from 2.2.5 → 2.2.6 and `cryptogra
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.7...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.8...HEAD
+[0.8.8]: https://github.com/dannystewart/dsbin/compare/v0.8.7...v0.8.8
 [0.8.7]: https://github.com/dannystewart/dsbin/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/dannystewart/dsbin/compare/v0.8.5...v0.8.6
 [0.8.5]: https://github.com/dannystewart/dsbin/compare/v0.8.4...v0.8.5

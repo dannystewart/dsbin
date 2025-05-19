@@ -6,6 +6,33 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.7] (2025-05-19)
+
+### `changelogs`
+
+#### Changed
+
+- Renames `--repo` to `--repo-name` to clarify that it refers to GitHub repository name.
+- Renames `--auto` to `--from-commit-history` for better clarity about generating entries from Git commit messages.
+- Renames `--github-release` to `--update` to clarify that it will update notes for a single version.
+- Renames `--sync-releases` to `--update-all` to better align with the `--update` flag.
+- Simplifies CLI interface by focusing on core functionality.
+- Made the help text for all command-line options more descriptive.
+
+#### Removed
+
+- Browser integration (automatic opening of GitHub release URLs).
+- `--open` flag for opening URLs in browser.
+- `--no-edit` flag (editing is now the default behavior).
+
+#### Fixed
+
+- Eliminated redundant GitHub CLI verification checks.
+- Improved logical flow of main function for better readability and maintenance.
+- Clarified function names to better reflect their purpose.
+
+Also updates dependencies, including `numpy` from 2.2.5 → 2.2.6 and `cryptography` from 44.0.3 → 45.0.2.
+
 ## [0.8.6] (2025-05-16)
 
 ### Changed
@@ -474,7 +501,8 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.6...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.7...HEAD
+[0.8.7]: https://github.com/dannystewart/dsbin/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/dannystewart/dsbin/compare/v0.8.5...v0.8.6
 [0.8.5]: https://github.com/dannystewart/dsbin/compare/v0.8.4...v0.8.5
 [0.8.4]: https://github.com/dannystewart/dsbin/compare/v0.8.3...v0.8.4

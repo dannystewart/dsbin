@@ -5,7 +5,6 @@ from __future__ import annotations
 import re
 import subprocess
 import time
-import webbrowser
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -26,7 +25,7 @@ def get_repo_url(repo_override: str | None = None) -> str:
     if repo_override:
         return f"https://github.com/dannystewart/{repo_override}"
 
-    # Try to get repo name from git remote
+    # Try to get repo name from Git remote
     try:
         result = subprocess.run(
             ["git", "config", "--get", "remote.origin.url"],
@@ -50,7 +49,7 @@ def get_repo_url(repo_override: str | None = None) -> str:
 
             return f"https://github.com/dannystewart/{repo_name}"
     except subprocess.CalledProcessError:
-        logger.warning("Failed to get git remote URL, falling back to directory name.")
+        logger.warning("Failed to get Git remote URL, falling back to directory name.")
 
     # Fallback to directory name
     repo_name = Path.cwd().name
@@ -306,7 +305,7 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
 
 
 def get_git_range(prev_version: str) -> str:
-    """Determine the git range to examine based on previous version tag."""
+    """Determine the Git range to examine based on previous version tag."""
     try:
         tag_prefix = "v"
         tag = f"{tag_prefix}{prev_version}"
@@ -326,7 +325,7 @@ def get_git_range(prev_version: str) -> str:
 
 
 def fetch_commit_messages(git_range: str) -> list[str]:
-    """Fetch commit messages for the specified git range."""
+    """Fetch commit messages for the specified Git range."""
     try:
         result = subprocess.run(
             ["git", "log", "--pretty=format:%s", git_range],
@@ -374,7 +373,7 @@ def categorize_commits(commit_messages: list[str]) -> dict[str, list[str]]:
 
 
 def get_git_changes(prev_version: str) -> dict[str, list[str]]:
-    """Get changes from git commits since the previous version."""
+    """Get changes from Git commits since the previous version."""
     try:
         git_range = get_git_range(prev_version)
         commit_messages = fetch_commit_messages(git_range)
@@ -580,9 +579,7 @@ def get_release_notes(tag: str) -> str | None:
         return None
 
 
-def update_single_release(
-    version: str, content: str, repo_url: str, dry_run: bool = False, open_url: bool = False
-) -> bool:
+def update_single_release(version: str, content: str, repo_url: str, dry_run: bool = False) -> bool:
     """Check and update a single GitHub release.
 
     Args:
@@ -590,7 +587,6 @@ def update_single_release(
         content: The changelog content for this version.
         repo_url: The repository URL.
         dry_run: If True, only report issues without making changes.
-        open_url: If True, open the release URL in the browser after updating.
 
     Returns:
         True if the release was updated or is up to date, False on error.
@@ -623,9 +619,6 @@ def update_single_release(
         cmd = ["gh", "release", "edit", tag, "--notes", formatted_content]
         if execute_gh_command(cmd):
             logger.info("Successfully updated GitHub release %s.", tag)
-
-            if open_url:
-                open_release_url(repo_url, version)
             return True
         logger.error("Failed to update GitHub release %s.", tag)
         return False
@@ -633,9 +626,7 @@ def update_single_release(
     return True
 
 
-def check_and_update_release(
-    version: str, content: str, repo_url: str, dry_run: bool, open_url: bool
-) -> tuple[bool, bool]:
+def verify_release(version: str, content: str, repo_url: str, dry_run: bool) -> tuple[bool, bool]:
     """Check if a release needs updating and update it if needed.
 
     Args:
@@ -643,7 +634,6 @@ def check_and_update_release(
         content: The changelog content.
         repo_url: The repository URL.
         dry_run: If True, don't actually update.
-        open_url: If True, open the URL after updating.
 
     Returns:
         Tuple of (needs_update, was_updated).
@@ -678,9 +668,6 @@ def check_and_update_release(
             if execute_gh_command(cmd):
                 was_updated = True
                 logger.info("Successfully updated GitHub release %s.", tag)
-
-                if open_url:
-                    open_release_url(repo_url, version)
             else:
                 logger.error("Failed to update GitHub release %s.", tag)
     else:
@@ -689,13 +676,12 @@ def check_and_update_release(
     return needs_update, was_updated
 
 
-def sync_github_releases(repo_url: str, dry_run: bool = False, open_url: bool = False) -> int:
-    """Verify and sync all GitHub releases with changelog content.
+def match_releases_to_changelog(repo_url: str, dry_run: bool = False) -> int:
+    """Verify and match all GitHub release text with changelog content.
 
     Args:
         repo_url: The repository URL.
         dry_run: If True, only report issues without making changes.
-        open_url: If True, open updated release URLs in the browser.
 
     Returns:
         Number of releases that were updated.
@@ -711,9 +697,7 @@ def sync_github_releases(repo_url: str, dry_run: bool = False, open_url: bool = 
 
     # Process each version
     for version, content in versions:
-        needs_update, was_updated = check_and_update_release(
-            version, content, repo_url, dry_run, open_url
-        )
+        needs_update, was_updated = verify_release(version, content, repo_url, dry_run)
 
         if needs_update:
             updates_needed += 1
@@ -735,8 +719,8 @@ def sync_github_releases(repo_url: str, dry_run: bool = False, open_url: bool = 
     return updates_made
 
 
-def update_github_release(
-    version: str, content: str, repo_url: str, dry_run: bool = False, open_url: bool = True
+def update_release_content(
+    version: str, content: str, repo_url: str, dry_run: bool = False
 ) -> bool:
     """Update a GitHub release with content from the changelog.
 
@@ -745,7 +729,6 @@ def update_github_release(
         content: The content for the release notes.
         repo_url: The GitHub repository URL.
         dry_run: If True, print what would be done without executing.
-        open_url: If True, open the release URL in a browser after updating.
 
     Returns:
         True if successful, False otherwise.
@@ -781,15 +764,11 @@ def update_github_release(
     if success:
         logger.info("Successfully updated GitHub release %s.", tag)
 
-        # Open the release URL in the browser if requested
-        if open_url:
-            open_release_url(repo_url, version)
-
     return success
 
 
-def check_gh_cli() -> bool:
-    """Check if GitHub CLI is installed and authenticated."""
+def verify_gh_cli() -> bool:
+    """Verify that GitHub CLI is installed and authenticated."""
     try:
         # Check if gh is installed
         subprocess.run(["gh", "--version"], check=True, capture_output=True)
@@ -807,62 +786,41 @@ def check_gh_cli() -> bool:
         return False
 
 
-def open_release_url(repo_url: str, version: str) -> None:
-    """Open the GitHub release URL in the default browser.
-
-    Args:
-        repo_url: The repository URL.
-        version: The version number.
-    """
-    release_url = f"{repo_url}/releases/tag/v{version}"
-    try:
-        logger.info("Opening release URL: %s", release_url)
-        webbrowser.open(release_url)
-    except Exception as e:
-        logger.error("Failed to open release URL: %s", str(e))
-
-
 def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
-    parser = PolyArgs(description=__doc__)
+    parser = PolyArgs(description=__doc__, add_version=False)
     parser.add_argument(
-        "--version", "-v", help="version to add (defaults to version from pyproject.toml)"
+        "--version",
+        "-v",
+        help="version to add (defaults to version from pyproject.toml)",
     )
     parser.add_argument(
-        "--auto",
-        "-a",
+        "--from-commit-history",
         action="store_true",
-        help="automatically generate changelog entries from git commits",
+        help="automatically generate changelog entries from Git commit messages",
     )
     parser.add_argument(
-        "--no-edit",
+        "--repo-name",
+        "-r",
+        help="GitHub repo name to use for links (defaults to auto-detect)",
+    )
+    parser.add_argument(
+        "--update",
+        "-u",
+        nargs="?",
+        const=True,
+        metavar="VERSION",
+        help="update a single release with changelog content (defaults to current version)",
+    )
+    parser.add_argument(
+        "--update-all",
         action="store_true",
-        help="don't open the changelog in an editor after updating",
-    )
-    parser.add_argument(
-        "--repo", "-r", help="repository name to use for links (defaults to auto-detection)"
-    )
-    parser.add_argument(
-        "--github-release",
-        "-g",
-        action="store_true",
-        help="update an existing GitHub release with the changelog content",
-    )
-    parser.add_argument(
-        "--sync-releases",
-        "-s",
-        action="store_true",
-        help="check all GitHub releases against changelog entries and update if needed",
+        help="update all existing releases based on changelog content",
     )
     parser.add_argument(
         "--dry-run",
         action="store_true",
         help="print what would be done without making any changes",
-    )
-    parser.add_argument(
-        "--open",
-        action="store_true",
-        help="open the GitHub release URL after updating",
     )
     return parser.parse_args(args)
 
@@ -873,18 +831,19 @@ def main() -> int:
 
     try:
         # Get repo URL
-        repo_url = get_repo_url(args.repo)
+        repo_url = get_repo_url(args.repo_name)
 
-        # Check if we're in sync mode
-        if args.sync_releases:
-            if not check_gh_cli():
-                logger.error(
-                    "GitHub CLI (gh) not found or not authenticated. "
-                    "Please install and authenticate with 'gh auth login'."
-                )
-                return 1
+        # Check if GitHub CLI is needed and available
+        if (args.update_all or args.update) and not verify_gh_cli():
+            logger.error(
+                "GitHub CLI (gh) not found or not authenticated. "
+                "Please install and authenticate with 'gh auth login'."
+            )
+            return 1
 
-            sync_github_releases(repo_url, dry_run=args.dry_run, open_url=args.open)
+        # Handle updating all GitHub releases
+        if args.update_all:
+            match_releases_to_changelog(repo_url, dry_run=args.dry_run)
             return 0
 
         # Get the version to add
@@ -894,36 +853,31 @@ def main() -> int:
         prev_version = get_previous_version()
 
         # Get changes
-        if args.auto:
+        if args.from_commit_history:
             sections = get_git_changes(prev_version)
             if not sections:
-                logger.warning("No changes found in git history, adding empty sections.")
+                logger.warning("No changes found in Git history, adding empty sections.")
                 sections = {"Added": [], "Changed": [], "Fixed": []}
         else:
             # Empty sections for manual editing
             sections = {"Added": [], "Changed": [], "Fixed": []}
 
-        # Update the changelog
-        requires_edit = update_changelog(version, sections, repo_url)
-
-        # Open in editor if requested
-        if not args.no_edit and requires_edit:
+        # Update the changelog and open in editor if needed
+        if update_changelog(version, sections, repo_url):
             edit_changelog()
 
         # Update GitHub release if requested
-        if args.github_release:
-            if not check_gh_cli():
-                logger.error(
-                    "GitHub CLI (gh) not found or not authenticated. "
-                    "Please install and authenticate with 'gh auth login'."
-                )
-                return 1
+        if args.update:
+            update_version = args.update if isinstance(args.update, str) else get_latest_version()
 
             # Extract the content for this version from the updated changelog
-            if version_content := extract_version_content(version):
-                update_github_release(
-                    version, version_content, repo_url, dry_run=args.dry_run, open_url=args.open
+            if version_content := extract_version_content(update_version):
+                update_release_content(
+                    update_version, version_content, repo_url, dry_run=args.dry_run
                 )
+            else:
+                logger.error("Could not find version %s in the changelog.", update_version)
+                return 1
 
         return 0
     except Exception as e:

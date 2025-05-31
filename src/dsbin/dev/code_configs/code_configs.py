@@ -53,12 +53,10 @@ class ConfigManager:
     CONFIGS: ClassVar[list[ConfigFile]] = [
         ConfigFile("ruff.toml"),
         ConfigFile("mypy.ini"),
-        ConfigFile(".github/copilot-instructions.md"),
         ConfigFile(".github/workflows/docs.yml"),
         ConfigFile(".github/workflows/python-publish.yml"),
         ConfigFile(".pdoc/tokyo-night/syntax-highlighting.css"),
         ConfigFile(".pdoc/tokyo-night/theme.css"),
-        ConfigFile("code-style.md"),
         ConfigFile(
             ".pre-commit-config.yaml",
             post_update_command=["pre-commit", "uninstall", "&&", "pre-commit", "install"],

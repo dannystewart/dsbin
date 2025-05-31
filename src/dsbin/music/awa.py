@@ -120,12 +120,12 @@ def main() -> None:
         print_color("Error: Version number must use format 10.x, 10.x.x, 11.x, or 11.x.x", "red")
         sys.exit(1)
 
-    audio_format = AudioFormat.AIFF if args.to != "aif" else AudioFormat.WAV
+    audio_format = AudioFormat.AIFF if args.to == "aif" else AudioFormat.WAV
 
     if args.logic and audio_format == AudioFormat.WAV:
         print_color("Warning: Logic version is only applicable when converting to AIFF.", "yellow")
 
-    convert_audio(args.path, audio_format, version=args.logic, recursive=args.recursive)
+    convert_audio(Path(args.path), audio_format, version=args.logic, recursive=args.recursive)
 
 
 if __name__ == "__main__":

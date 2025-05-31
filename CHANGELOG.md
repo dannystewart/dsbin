@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.9] (2025-05-31)
+
+### Fixed
+
+- Fixes audio format logic and path handling in the `aif2wav` and `wav2aif` commands:
+  - Corrects the condition for format selection to properly set AIFF when needed.
+  - Ensures path arguments are properly handled as Path objects.
+
+### Removed
+
+- Removes leftover files for the beta version of `pybumper`. This version added monorepo support but significantly increased complexity, made existing functionality less reliable, and reduced maintainability.
+
 ## [0.8.8] (2025-05-19)
 
 ### `changelogs`
@@ -509,7 +521,8 @@ Also updates dependencies, including `numpy` from 2.2.5 → 2.2.6 and `cryptogra
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.8...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.9...HEAD
+[0.8.9]: https://github.com/dannystewart/dsbin/compare/v0.8.8...v0.8.9
 [0.8.8]: https://github.com/dannystewart/dsbin/compare/v0.8.7...v0.8.8
 [0.8.7]: https://github.com/dannystewart/dsbin/compare/v0.8.6...v0.8.7
 [0.8.6]: https://github.com/dannystewart/dsbin/compare/v0.8.5...v0.8.6

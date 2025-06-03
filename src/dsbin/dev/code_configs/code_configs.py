@@ -37,6 +37,7 @@ class ConfigFile:
     FOLDER: ClassVar[str] = "configs"
 
     name: str
+    always_include: bool = False  # Include even when using --force outside Git repo
     url: str = field(init=False)
     local_path: Path = field(init=False)
     post_update_command: str | list[str] | None = None
@@ -51,8 +52,8 @@ class ConfigManager:
     """Manages downloading and updating config files from a remote repository."""
 
     CONFIGS: ClassVar[list[ConfigFile]] = [
-        ConfigFile("ruff.toml"),
-        ConfigFile("mypy.ini"),
+        ConfigFile("ruff.toml", always_include=True),
+        ConfigFile("mypy.ini", always_include=True),
         ConfigFile(".github/workflows/docs.yml"),
         ConfigFile(".github/workflows/python-publish.yml"),
         ConfigFile(".pdoc/tokyo-night/syntax-highlighting.css"),
@@ -69,6 +70,13 @@ class ConfigManager:
         self.changes_made = set()
         self.skipped_dirs = set()  # Track rejected parent directories
 
+        # Filter configs based on conditions
+        self.configs = [
+            config
+            for config in self.CONFIGS
+            if not is_git_repository() and not no_confirm and not config.always_include
+        ]
+
         # Determine if all configs should be created by checking if any exist locally
         self.should_create_all = not any(config.local_path.exists() for config in self.CONFIGS)
 
@@ -81,7 +89,7 @@ class ConfigManager:
         """Pull down latest configs from repository, updating local copies."""
         skipped_configs = []
 
-        for config in self.CONFIGS:
+        for config in self.configs:
             remote_content = self.fetch_remote_content(config)
             if not remote_content:
                 self.logger.error(
@@ -100,7 +108,7 @@ class ConfigManager:
         # Report unchanged configs (those that exist and are up to date)
         unchanged = [
             c.name
-            for c in self.CONFIGS
+            for c in self.configs
             if c.name not in self.changes_made and c.name not in skipped_configs
         ]
         if unchanged:

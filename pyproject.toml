@@ -10,6 +10,7 @@ license-files = ["LICENSE"]
 requires-python = ">=3.12,<4.0"
 dependencies = [
     "blessed (>=1.21.0)",
+    "chardet (>=5.2.0)",
     "halo (>=0.0.31)",
     "inquirer (>=3.4.0)",
     "mutagen (>=1.47.0)",
@@ -95,6 +96,7 @@ rsyncer = "dsbin.files.rsyncer:main"
 workcalc = "dsbin.workcalc.main:main"
 
 # Text Processing
+csvfix = "dsbin.text.csvfix:main"
 pycompare = "dsbin.text.pycompare:main"
 w11renamer = "dsbin.text.w11renamer:main"
 

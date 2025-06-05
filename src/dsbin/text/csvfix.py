@@ -1,0 +1,245 @@
+# ruff: noqa: RUF003
+
+"""CSV Encoding Fixer.
+
+A utility to fix encoding issues in CSV files with UTF-8 BOM issues.
+
+Usage:
+    python csvfix.py input.csv [output.csv]
+
+If no output file is specified, the input file will be backed up and replaced.
+"""
+
+from __future__ import annotations
+
+import argparse
+import csv
+import shutil
+import sys
+from pathlib import Path
+from typing import ClassVar
+
+import chardet
+
+
+class CSVEncodingFixer:
+    """Fixes encoding issues in CSV files."""
+
+    # Common problematic encodings and their fixes
+    ENCODING_FIXES: ClassVar[dict[str, str]] = {
+        "utf-8-sig": "utf-8",  # Remove BOM
+        "cp1252": "utf-8",  # Windows-1252 to UTF-8
+        "iso-8859-1": "utf-8",  # Latin-1 to UTF-8
+        "macroman": "utf-8",  # Mac Roman to UTF-8
+    }
+
+    # Character replacements for common mangled characters
+    CHARACTER_FIXES: ClassVar[dict[str, str]] = {
+        # Common UTF-8 encoding issues when viewed as Windows-1252
+        "\xe2\x80\x99": "'",  # Right single quotation mark (â€™)
+        "\xe2\x80\x9c": '"',  # Left double quotation mark (â€œ)
+        "\xe2\x80\x9d": '"',  # Right double quotation mark (â€)
+        "\xe2\x80\x93": "–",  # En dash (â€")
+        "\xe2\x80\x94": "—",  # Em dash (â€")
+        "\xc2\xa0": " ",  # Non-breaking space (Â )
+        "\xc2": "",  # Standalone combining character artifacts
+        "\xe2\x80\xa6": "...",  # Horizontal ellipsis (â€¦)
+        "\xc3\xa1": "á",  # á with combining characters (Ã¡)
+        "\xc3\xa9": "é",  # é with combining characters (Ã©)
+        "\xc3\xad": "í",  # í with combining characters (Ã­)
+        "\xc3\xb3": "ó",  # ó with combining characters (Ã³)
+        "\xc3\xba": "ú",  # ú with combining characters (Ãº)
+        "\xc3\xb1": "ñ",  # ñ with combining characters (Ã±)
+        "\xc3\xbc": "ü",  # ü with combining characters (Ã¼)
+        "\xe2\x82\xac": "€",  # Euro symbol (â‚¬)
+        "\xc2\xa3": "£",  # Pound symbol (Â£)
+        "\xc2\xa5": "¥",  # Yen symbol (Â¥)
+        "\xe2\x80\x98": "'",  # Left single quotation mark (â€˜)
+        "\xe2\x80\xa2": "•",  # Bullet point (â€¢)
+        "\xe2\x80\xb0": "‰",  # Per mille sign (â€°)
+    }
+
+    def detect_encoding(self, file_path: str) -> tuple[str, float]:
+        """Detect the encoding of a file."""
+        file_path_obj = Path(file_path)
+        raw_data = file_path_obj.read_bytes()
+        result = chardet.detect(raw_data)
+        encoding = result["encoding"]
+        confidence = result["confidence"]
+
+        print(f"Detected encoding: {encoding} (confidence: {confidence:.2f})")
+        return encoding or "utf-8", confidence
+
+    def has_bom(self, file_path: str) -> bool:
+        """Check if file has UTF-8 BOM."""
+        file_path_obj = Path(file_path)
+        return file_path_obj.read_bytes()[:3] == b"\xef\xbb\xbf"
+
+    def read_file_content(self, file_path: str, encoding: str) -> str:
+        """Read file content with specified encoding."""
+        file_path_obj = Path(file_path)
+        try:
+            return file_path_obj.read_text(encoding=encoding)
+        except UnicodeDecodeError as e:
+            print(f"Error reading with {encoding}: {e}")
+            content = file_path_obj.read_text(encoding=encoding, errors="replace")
+            print("Warning: Some characters were replaced due to encoding errors")
+            return content
+
+    def fix_characters(self, content: str) -> str:
+        """Fix common character encoding issues."""
+        fixed_content = content
+        fixes_applied = []
+
+        for bad_char, good_char in self.CHARACTER_FIXES.items():
+            if bad_char in fixed_content:
+                fixed_content = fixed_content.replace(bad_char, good_char)
+                fixes_applied.append(f"'{bad_char}' → '{good_char}'")
+
+        if fixes_applied:
+            print(f"Applied character fixes: {', '.join(fixes_applied)}")
+
+        return fixed_content
+
+    def validate_csv(self, content: str) -> bool:
+        """Validate that the content is valid CSV."""
+        try:
+            # Try to parse a sample of the CSV
+            lines = content.split("\n")[:10]  # Check first 10 lines
+            sample = "\n".join(lines)
+
+            # Try different dialects
+            for dialect in [csv.excel, csv.excel_tab, csv.unix_dialect]:
+                try:
+                    reader = csv.reader(sample.splitlines(), dialect=dialect)
+                    list(reader)  # Try to read all rows
+                    return True
+                except csv.Error:
+                    continue
+
+            return False
+        except Exception:
+            return False
+
+    def fix_file(self, input_path: str, output_path: str | None = None) -> bool:
+        """Fix encoding issues in a CSV file."""
+        input_file = Path(input_path)
+
+        if not input_file.exists():
+            print(f"Error: File '{input_path}' does not exist")
+            return False
+
+        # Create backup if replacing original file
+        if output_path is None:
+            backup_path = str(input_file.with_suffix(input_file.suffix + ".backup"))
+            shutil.copy2(input_path, backup_path)
+            print(f"Created backup: {backup_path}")
+            output_path = input_path
+
+        print(f"Processing: {input_path}")
+
+        # Detect current encoding
+        detected_encoding, confidence = self.detect_encoding(input_path)
+
+        if confidence < 0.7:
+            print(f"Warning: Low confidence in encoding detection ({confidence:.2f})")
+
+        # Check for BOM
+        has_bom = self.has_bom(input_path)
+        if has_bom:
+            print("UTF-8 BOM detected - will be removed")
+
+        # Determine the encoding to use for reading
+        read_encoding = detected_encoding
+        if detected_encoding in self.ENCODING_FIXES:
+            print(
+                f"Will convert from {detected_encoding} to {self.ENCODING_FIXES[detected_encoding]}"
+            )
+
+        # Handle UTF-8 with BOM
+        if has_bom or detected_encoding == "utf-8-sig":
+            read_encoding = "utf-8-sig"
+
+        try:
+            # Read the file content
+            content = self.read_file_content(input_path, read_encoding)
+
+            # Fix character encoding issues
+            fixed_content = self.fix_characters(content)
+
+            # Validate the result
+            if not self.validate_csv(fixed_content):
+                print("Warning: The fixed content may not be valid CSV")
+
+            # Write the fixed content
+            output_file = Path(output_path)
+            output_file.write_text(fixed_content, encoding="utf-8", newline="")
+
+            print(f"Fixed file saved to: {output_path}")
+
+            # Show file size comparison
+            original_size = input_file.stat().st_size
+            fixed_size = output_file.stat().st_size
+            print(f"File size: {original_size} → {fixed_size} bytes")
+
+            return True
+
+        except Exception as e:
+            print(f"Error processing file: {e}")
+            return False
+
+
+def main() -> int:
+    """Main entry point for the CSV encoding fixer."""
+    parser = argparse.ArgumentParser(
+        description="Fix encoding issues in CSV files mangled by Excel",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python csvfix.py data.csv                    # Fix in place (creates backup)
+  python csvfix.py data.csv fixed_data.csv     # Save to new file
+  python csvfix.py *.csv                       # Fix multiple files
+        """,
+    )
+
+    parser.add_argument("input_files", nargs="+", help="Input CSV file(s) to fix")
+    parser.add_argument("-o", "--output", help="Output file (only for single input file)")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+
+    args = parser.parse_args()
+
+    # Handle the case where output file is specified as second positional argument
+    if len(args.input_files) == 2 and not args.output:
+        # Assume second argument is output file
+        input_file = args.input_files[0]
+        output_file = args.input_files[1]
+        args.input_files = [input_file]
+        args.output = output_file
+    elif len(args.input_files) > 1 and args.output:
+        print("Error: Cannot specify output file when processing multiple input files")
+        return 1
+
+    fixer = CSVEncodingFixer()
+    success_count = 0
+
+    for input_file in args.input_files:
+        print(f"\n{'=' * 50}")
+        try:
+            if fixer.fix_file(input_file, args.output):
+                success_count += 1
+            else:
+                print(f"Failed to fix: {input_file}")
+        except KeyboardInterrupt:
+            print("\nOperation cancelled by user")
+            return 1
+        except Exception as e:
+            print(f"Unexpected error processing {input_file}: {e}")
+
+    print(f"\n{'=' * 50}")
+    print(f"Successfully processed {success_count} of {len(args.input_files)} files")
+
+    return 0 if success_count == len(args.input_files) else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

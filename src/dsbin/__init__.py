@@ -30,6 +30,7 @@
 
 ### Text Processing
 
+- [**csvfix**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/text/csvfix.py): CSV Encoding Fixer.
 - [**pycompare**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/text/pycompare.py): Compare two lists and output common/unique elements.
 - [**w11renamer**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/text/w11renamer.py): Generates non-stupid filenames for Windows 11 ISO files from stupid ones.
 

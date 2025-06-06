@@ -12,9 +12,8 @@ from typing import ClassVar
 import chardet
 from polykit import PolyLog
 from polykit.cli import handle_interrupt
-from polykit.formatters import color
 
-logger = PolyLog.get_logger("csvfix", simple=True, color=False)
+logger = PolyLog.get_logger("csvfix")
 
 
 class CSVEncodingFixer:
@@ -132,7 +131,7 @@ class CSVEncodingFixer:
         if output_path is None:
             backup_path = str(input_file.stem + "_backup" + input_file.suffix)
             shutil.copy2(input_path, backup_path)
-            logger.info("Saved backup copy as %s", color(backup_path, "yellow"))
+            logger.info("Created backup file: %s", backup_path)
             output_path = input_path
 
         # Detect current encoding
@@ -176,7 +175,7 @@ class CSVEncodingFixer:
             output_file = Path(output_path)
             output_file.write_text(fixed_content, encoding="utf-8", newline="")
 
-            logger.info("Fixed %s", color(output_path, "green"))
+            logger.info("%s fixed successfully!", output_path)
 
             # Show file size comparison
             original_size = input_file.stat().st_size
@@ -233,11 +232,13 @@ Examples:
         except Exception as e:
             logger.error("Unexpected error processing %s: %s", input_file, str(e))
 
-    success_text = color(
-        f"Successfully processed {success_count} of {len(args.input_files)} file{'' if success_count == 1 else 's'}!",
-        "green",
-    )
-    logger.info("\n%s", success_text)
+    if len(args.input_files) > 1:
+        logger.info(
+            "Successfully processed %s of %s file%s!",
+            success_count,
+            len(args.input_files),
+            "s" if success_count != 1 else "",
+        )
 
     return 0 if success_count == len(args.input_files) else 1
 

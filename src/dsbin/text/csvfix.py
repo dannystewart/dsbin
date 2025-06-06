@@ -1,15 +1,5 @@
 # ruff: noqa: RUF003
 
-"""CSV Encoding Fixer.
-
-A utility to fix encoding issues in CSV files with UTF-8 BOM issues.
-
-Usage:
-    python csvfix.py input.csv [output.csv]
-
-If no output file is specified, the input file will be backed up and replaced.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -20,6 +10,11 @@ from pathlib import Path
 from typing import ClassVar
 
 import chardet
+from polykit import PolyLog
+from polykit.cli import handle_interrupt
+from polykit.formatters import color
+
+logger = PolyLog.get_logger("csvfix", simple=True, color=False)
 
 
 class CSVEncodingFixer:
@@ -68,7 +63,8 @@ class CSVEncodingFixer:
         encoding = result["encoding"]
         confidence = result["confidence"]
 
-        print(f"Detected encoding: {encoding} (confidence: {confidence:.2f})")
+        if confidence < 0.99:
+            logger.info("Detected encoding: %s (%d%% confidence)", encoding, int(confidence * 100))
         return encoding or "utf-8", confidence
 
     def has_bom(self, file_path: str) -> bool:
@@ -82,9 +78,9 @@ class CSVEncodingFixer:
         try:
             return file_path_obj.read_text(encoding=encoding)
         except UnicodeDecodeError as e:
-            print(f"Error reading with {encoding}: {e}")
+            logger.error("Error reading with %s: %s", encoding, e)
             content = file_path_obj.read_text(encoding=encoding, errors="replace")
-            print("Warning: Some characters were replaced due to encoding errors")
+            logger.warning("Some characters were replaced due to encoding errors")
             return content
 
     def fix_characters(self, content: str) -> str:
@@ -98,7 +94,7 @@ class CSVEncodingFixer:
                 fixes_applied.append(f"'{bad_char}' → '{good_char}'")
 
         if fixes_applied:
-            print(f"Applied character fixes: {', '.join(fixes_applied)}")
+            logger.info("Applied character fixes: %s", ", ".join(fixes_applied))
 
         return fixed_content
 
@@ -127,34 +123,38 @@ class CSVEncodingFixer:
         input_file = Path(input_path)
 
         if not input_file.exists():
-            print(f"Error: File '{input_path}' does not exist")
+            logger.error("Error: File '%s' does not exist", input_path)
             return False
+
+        logger.debug("Fixing %s...", input_path)
 
         # Create backup if replacing original file
         if output_path is None:
-            backup_path = str(input_file.with_suffix(input_file.suffix + ".backup"))
+            backup_path = str(input_file.stem + "_backup" + input_file.suffix)
             shutil.copy2(input_path, backup_path)
-            print(f"Created backup: {backup_path}")
+            logger.info("Saved backup copy as %s", color(backup_path, "yellow"))
             output_path = input_path
-
-        print(f"Processing: {input_path}")
 
         # Detect current encoding
         detected_encoding, confidence = self.detect_encoding(input_path)
 
         if confidence < 0.7:
-            print(f"Warning: Low confidence in encoding detection ({confidence:.2f})")
+            logger.warning(
+                "Warning: Low confidence in encoding detection (%d%%)", int(confidence * 100)
+            )
 
         # Check for BOM
         has_bom = self.has_bom(input_path)
         if has_bom:
-            print("UTF-8 BOM detected - will be removed")
+            logger.info("UTF-8 BOM detected and will be removed.")
 
         # Determine the encoding to use for reading
         read_encoding = detected_encoding
         if detected_encoding in self.ENCODING_FIXES:
-            print(
-                f"Will convert from {detected_encoding} to {self.ENCODING_FIXES[detected_encoding]}"
+            logger.info(
+                "Will convert from %s to %s.",
+                detected_encoding,
+                self.ENCODING_FIXES[detected_encoding],
             )
 
         # Handle UTF-8 with BOM
@@ -170,42 +170,43 @@ class CSVEncodingFixer:
 
             # Validate the result
             if not self.validate_csv(fixed_content):
-                print("Warning: The fixed content may not be valid CSV")
+                logger.warning("Warning: The fixed content may not be valid CSV")
 
             # Write the fixed content
             output_file = Path(output_path)
             output_file.write_text(fixed_content, encoding="utf-8", newline="")
 
-            print(f"Fixed file saved to: {output_path}")
+            logger.info("Fixed %s", color(output_path, "green"))
 
             # Show file size comparison
             original_size = input_file.stat().st_size
             fixed_size = output_file.stat().st_size
-            print(f"File size: {original_size} → {fixed_size} bytes")
+            logger.debug("File size: %d → %d bytes", original_size, fixed_size)
 
             return True
 
         except Exception as e:
-            print(f"Error processing file: {e}")
+            logger.error("Error processing file: %s", str(e))
             return False
 
 
+@handle_interrupt()
 def main() -> int:
     """Main entry point for the CSV encoding fixer."""
     parser = argparse.ArgumentParser(
-        description="Fix encoding issues in CSV files mangled by Excel",
+        description="Fix encoding issues in CSV files mangled by Excel or PowerShell",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python csvfix.py data.csv                    # Fix in place (creates backup)
-  python csvfix.py data.csv fixed_data.csv     # Save to new file
-  python csvfix.py *.csv                       # Fix multiple files
+  csvfix data.csv                    # Fix in place (creates backup)
+  csvfix data.csv fixed_data.csv     # Save to new file
+  csvfix *.csv                       # Fix multiple files
         """,
     )
 
-    parser.add_argument("input_files", nargs="+", help="Input CSV file(s) to fix")
-    parser.add_argument("-o", "--output", help="Output file (only for single input file)")
-    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
+    parser.add_argument("input_files", nargs="+", help="input CSV file(s) to fix")
+    parser.add_argument("-o", "--output", help="output file (only for single input file)")
+    parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
 
     args = parser.parse_args()
 
@@ -224,20 +225,19 @@ Examples:
     success_count = 0
 
     for input_file in args.input_files:
-        print(f"\n{'=' * 50}")
         try:
             if fixer.fix_file(input_file, args.output):
                 success_count += 1
             else:
-                print(f"Failed to fix: {input_file}")
-        except KeyboardInterrupt:
-            print("\nOperation cancelled by user")
-            return 1
+                logger.error("Failed to fix: %s", input_file)
         except Exception as e:
-            print(f"Unexpected error processing {input_file}: {e}")
+            logger.error("Unexpected error processing %s: %s", input_file, str(e))
 
-    print(f"\n{'=' * 50}")
-    print(f"Successfully processed {success_count} of {len(args.input_files)} files")
+    success_text = color(
+        f"Successfully processed {success_count} of {len(args.input_files)} file{'' if success_count == 1 else 's'}!",
+        "green",
+    )
+    logger.info("\n%s", success_text)
 
     return 0 if success_count == len(args.input_files) else 1
 

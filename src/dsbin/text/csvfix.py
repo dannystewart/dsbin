@@ -57,6 +57,7 @@ class CSVEncodingFixer:
         "\xe2\x80\x98": "'",  # Left single quotation mark (â€˜)
         "\xe2\x80\xa2": "•",  # Bullet point (â€¢)
         "\xe2\x80\xb0": "‰",  # Per mille sign (â€°)
+        "\u202f": " ",  # Narrow no-break space (common in time formats)
     }
 
     def detect_encoding(self, file_path: str) -> tuple[str, float]:

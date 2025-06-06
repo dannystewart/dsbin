@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import importlib
 import pkgutil
-import sys
 from typing import TYPE_CHECKING
 
 from polykit.cli import PolyArgs
@@ -96,4 +95,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

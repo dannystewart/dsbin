@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import ast
-import sys
 from collections import defaultdict
 from pathlib import Path
 
@@ -475,4 +474,4 @@ def main() -> int:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

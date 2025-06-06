@@ -5,7 +5,6 @@ from __future__ import annotations
 import argparse
 import csv
 import shutil
-import sys
 from pathlib import Path
 from typing import ClassVar
 
@@ -244,4 +243,4 @@ Examples:
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

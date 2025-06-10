@@ -51,7 +51,7 @@ class TelegramUploader:
         # Set up session file and client
         self.paths = PolyPath("pybounce")
         self.session_file = self.paths.from_config(f"{env.phone}.session")
-        self.client = TelegramClient(str(self.session_file), env.api_id, env.api_hash)
+        self.client = TelegramClient(str(self.session_file), env.api_id, env.api_hash)  # type: ignore[reportArgumentType]
 
     async def get_channel_entity(self) -> Channel | Chat:
         """Get the Telegram channel entity for the given URL.
@@ -115,7 +115,7 @@ class TelegramUploader:
                 caption=f"{title}\n{timestamp_text}\n{comment}",
                 attributes=[DocumentAttributeAudio(duration=duration)],
                 progress_callback=update_progress,
-            )
+            )  # type: ignore[reportArgumentType]
         except (KeyboardInterrupt, asyncio.CancelledError):
             pbar.reset()
             pbar.close()

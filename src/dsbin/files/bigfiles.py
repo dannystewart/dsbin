@@ -54,7 +54,7 @@ def get_top_file_types(
     exclude = ["." + ext.lstrip(".") for ext in exclude]
 
     # Dictionary to store cumulative size of files for each extension
-    file_sizes: defaultdict = defaultdict(int)
+    file_sizes: defaultdict[str, int] = defaultdict(int)
 
     # Traverse the directory recursively and update file_sizes
     for file_path in Path(directory).rglob("*"):

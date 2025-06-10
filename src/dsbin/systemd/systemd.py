@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from dataclasses import dataclass, field
+from dataclasses import Field, dataclass, field
 from typing import TYPE_CHECKING, TypeVar
 
 if TYPE_CHECKING:
@@ -69,7 +69,7 @@ class ServiceConfigBase:
         return [
             getattr(self, name)
             for name, value in vars(self.__class__).items()
-            if isinstance(value, field)
+            if isinstance(value, Field)
             and value.default is not None
             and isinstance(value.default, SystemdServiceTemplate)
         ]

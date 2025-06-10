@@ -1,3 +1,5 @@
+"""Fixes encoding issues in CSV files."""
+
 # ruff: noqa: RUF003
 
 from __future__ import annotations

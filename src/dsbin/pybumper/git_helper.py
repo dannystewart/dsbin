@@ -99,16 +99,24 @@ class GitHelper:
             self.logger.error("Tag %s already exists.", tag_name)
             sys.exit(1)
 
-        # Create a new commit with the current version number
-        has_other_changes = self.commit_version_change(current_version)
-        if has_other_changes:
-            self.logger.warning(
-                "Committed pyproject.toml without version change. "
-                "Other changes in the working directory will be preserved."
-            )
-            if not confirm_action("Commit and push anyway?", prompt_color="yellow"):
-                self.logger.warning("Bump aborted.")
-                sys.exit(1)
+        # Check for changes and create a new commit with the current version number
+        result = subprocess.run(
+            ["git", "status", "--porcelain"], capture_output=True, text=True, check=True
+        )
+        has_changes = bool(result.stdout.strip())
+
+        if has_changes:
+            has_other_changes = self.commit_version_change(current_version)
+            if has_other_changes:
+                self.logger.warning(
+                    "Committed pyproject.toml without version change. "
+                    "Other changes in the working directory will be preserved."
+                )
+                if not confirm_action("Commit and push anyway?", prompt_color="yellow"):
+                    self.logger.warning("Bump aborted.")
+                    sys.exit(1)
+        else:
+            self.logger.debug("No changes to commit for --no-increment.")
 
         # Create tag
         subprocess.run(["git", "tag", tag_name], check=True)

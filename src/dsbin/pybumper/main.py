@@ -35,7 +35,7 @@ from polykit.log import PolyLog
 
 from dsbin.pybumper.bump_type import BumpType
 from dsbin.pybumper.git_helper import GitHelper
-from dsbin.pybumper.version_helper import VersionHelper
+from dsbin.pybumper.version_helper import Version, VersionHelper
 
 if TYPE_CHECKING:
     import argparse
@@ -89,49 +89,85 @@ class PyBumper:
                 self.git.tag_current_version()
                 return
 
-            # Default to patch if no types specified
-            type_args = self.type or [BumpType.PATCH.value]
-            bump_type = self.version_helper.parse_bump_types(type_args)
-
             # Calculate new version
-            new_version_obj = self.current_version
-
-            # If we have multiple bump types, sort them in a consistent order
-            if isinstance(bump_type, list):
-                # Sort and apply bumps in logical order
-                sorted_bumps = self._sort_bump_types(bump_type)
-                for bt in sorted_bumps:
-                    new_version_obj = self.version_helper.bump_version(bt, new_version_obj)
-            else:
-                new_version_obj = self.version_helper.bump_version(bump_type, self.current_version)
+            new_version_obj = self._calculate_new_version()
+            if new_version_obj is None:
+                return
 
             new_version_str = str(new_version_obj)
 
-            # Show version info
-            self.logger.info("Current version: %s", self.current_ver_str)
-            self.logger.info("Will bump to:    %s", new_version_str)
-
-            # Prompt for confirmation unless --force is used
-            if not self.force and not confirm_action("Proceed with version bump?"):
-                self.logger.info("Version bump canceled.")
+            # Show version info and get confirmation
+            if not self._confirm_version_bump(new_version_str):
                 return
 
-            # Calculate the next dev version (for local use after the release)
-            next_dev_version = None
-            if self.push_to_remote and not new_version_obj.pre_type:
-                # Only for final releases that are being pushed
-                next_dev_version_obj = self.version_helper.bump_version(
-                    BumpType.PATCH, new_version_obj
-                )
-                next_dev_version_obj = self.version_helper.bump_version(
-                    BumpType.DEV, next_dev_version_obj
-                )
-                next_dev_version = str(next_dev_version_obj)
+            # Calculate next dev version if needed
+            next_dev_version = self._calculate_next_dev_version(new_version_obj)
+
+            # Default to patch if no types specified
+            type_args = self.type or [BumpType.PATCH.value]
+            bump_type = self.version_helper.parse_bump_types(type_args)
 
             self.update_version(bump_type, new_version_str, next_dev_version)
         except Exception as e:
             self.logger.error(str(e))
             sys.exit(1)
+
+    def _calculate_new_version(self) -> Version | None:
+        """Calculate the new version based on bump types."""
+        # Default to patch if no types specified
+        type_args = self.type or [BumpType.PATCH.value]
+        bump_type = self.version_helper.parse_bump_types(type_args)
+
+        new_version_obj = self.current_version
+
+        # If we have multiple bump types, sort them in a consistent order
+        if isinstance(bump_type, list):
+            # Sort and apply bumps in logical order
+            sorted_bumps = self._sort_bump_types(bump_type)
+            for bt in sorted_bumps:
+                bumped_version = self.version_helper.bump_version(bt, new_version_obj)
+                if bumped_version is None:
+                    self.logger.error("Failed to bump version with type %s", bt)
+                    return None
+                new_version_obj = bumped_version
+        else:
+            new_version_obj = self.version_helper.bump_version(bump_type, self.current_version)
+
+        return new_version_obj
+
+    def _confirm_version_bump(self, new_version_str: str) -> bool:
+        """Show version info and get user confirmation."""
+        self.logger.info("Current version: %s", self.current_ver_str)
+        self.logger.info("Will bump to:    %s", new_version_str)
+
+        # Prompt for confirmation unless --force is used
+        if not self.force and not confirm_action("Proceed with version bump?"):
+            self.logger.info("Version bump canceled.")
+            return False
+        return True
+
+    def _calculate_next_dev_version(self, new_version_obj: Version) -> str | None:
+        """Calculate the next dev version for local use after release.
+
+        Returns:
+            str: The next dev version string if needed and successful.
+            None: No dev version is needed, or an error occurred.
+        """
+        if not self.push_to_remote or new_version_obj.pre_type:
+            return None
+
+        # Only for final releases that are being pushed
+        next_dev_version_obj = self.version_helper.bump_version(BumpType.PATCH, new_version_obj)
+        if next_dev_version_obj is None:
+            self.logger.error("Failed to bump version for next dev version")
+            return None
+
+        next_dev_version_obj = self.version_helper.bump_version(BumpType.DEV, next_dev_version_obj)
+        if next_dev_version_obj is None:
+            self.logger.error("Failed to bump dev version")
+            return None
+
+        return str(next_dev_version_obj)
 
     def _sort_bump_types(self, bump_types: list[BumpType]) -> list[BumpType]:
         """Sort bump types in logical order: major/minor/patch, then pre-release, then post."""
@@ -175,7 +211,7 @@ class PyBumper:
             self.git.handle_git_operations(new_version, bump_type)
 
             # After successful push, update local version to next dev version
-            if next_dev_version:
+            if next_dev_version is not None:
                 self.logger.debug("Setting local version to dev version %s.", next_dev_version)
                 self._update_version_in_pyproject(self.pyproject_path, next_dev_version)
 
@@ -192,7 +228,7 @@ class PyBumper:
             action = "tagged" if bump_type is None else "updated to"
             push_status = "" if self.push_to_remote else " (not pushed)"
             release_msg = f"v{new_version}"
-            dev_msg = f"\nNext version: {next_dev_version}" if next_dev_version else ""
+            dev_msg = f"\nNext version: {next_dev_version}" if next_dev_version is not None else ""
             self.logger.info("\nSuccessfully %s %s!%s", action, release_msg, push_status + dev_msg)
 
         except Exception as e:
@@ -268,12 +304,12 @@ def parse_args() -> argparse.Namespace:
     push_group.add_argument(
         "--no-increment",
         action="store_true",
-        help="do NOT increment version; just commit, tag, and push",
+        help="do not increment version; just commit, tag, and push",
     )
     push_group.add_argument(
         "--no-push",
         action="store_true",
-        help="increment version, commit, and tag - but do NOT push",
+        help="increment version, commit, and tag; do not push",
     )
 
     return parser.parse_args()

@@ -37,7 +37,7 @@ class ConfigFile:
     FOLDER: ClassVar[str] = "configs"
 
     name: str
-    always_include: bool = False  # Include even when using --force outside Git repo
+    extra: bool = False  # Extras are not included by default
     url: str = field(init=False)
     local_path: Path = field(init=False)
     post_update_command: str | list[str] | None = None
@@ -52,33 +52,33 @@ class ConfigManager:
     """Manages downloading and updating config files from a remote repository."""
 
     CONFIGS: ClassVar[list[ConfigFile]] = [
-        ConfigFile("ruff.toml", always_include=True),
-        ConfigFile("mypy.ini", always_include=True),
-        ConfigFile(".github/workflows/docs.yml"),
-        ConfigFile(".github/workflows/python-publish.yml"),
-        ConfigFile(".pdoc/tokyo-night/syntax-highlighting.css"),
-        ConfigFile(".pdoc/tokyo-night/theme.css"),
+        ConfigFile("ruff.toml"),
+        ConfigFile("mypy.ini"),
+        ConfigFile(".github/workflows/docs.yml", extra=True),
+        ConfigFile(".github/workflows/python-publish.yml", extra=True),
+        ConfigFile(".pdoc/tokyo-night/syntax-highlighting.css", extra=True),
+        ConfigFile(".pdoc/tokyo-night/theme.css", extra=True),
         ConfigFile(
             ".pre-commit-config.yaml",
+            extra=True,
             post_update_command=["pre-commit", "uninstall", "&&", "pre-commit", "install"],
         ),
     ]
 
-    def __init__(self, no_confirm: bool = False):
+    def __init__(self, include_extras: bool = False, no_confirm: bool = False):
         self.logger = PolyLog.get_logger()
         self.no_confirm = no_confirm
         self.changes_made = set()
         self.skipped_dirs = set()  # Track rejected parent directories
 
-        # Filter configs based on conditions
-        self.configs = [
-            config
-            for config in self.CONFIGS
-            if not is_git_repository() and not no_confirm and not config.always_include
-        ]
+        # Filter configs: always include standard files, include extras only if requested
+        if include_extras:
+            self.configs = self.CONFIGS  # Include all files
+        else:
+            self.configs = [config for config in self.CONFIGS if not config.extra]
 
         # Determine if all configs should be created by checking if any exist locally
-        self.should_create_all = not any(config.local_path.exists() for config in self.CONFIGS)
+        self.should_create_all = not any(config.local_path.exists() for config in self.configs)
 
         if self.should_create_all:
             self.logger.debug(
@@ -213,13 +213,6 @@ class ConfigManager:
             cmd = config.post_update_command
             self.logger.info("Running post-update command for %s.", config.name)
 
-            # Special handling for pre-commit
-            if config.name == ".pre-commit-config.yaml" and not is_git_repository():
-                self.logger.warning(
-                    "Skipping pre-commit hook installation as this is not a Git repository."
-                )
-                return
-
             # Convert list to string if needed and run the command
             cmd_str = " ".join(cmd) if isinstance(cmd, list) else cmd
             self.logger.debug("Executing: %s", cmd_str)
@@ -235,26 +228,11 @@ class ConfigManager:
             self.logger.error("Failed to run post-update command for %s: %s", config.name, str(e))
 
 
-def is_git_repository() -> bool:
-    """Check if the current directory is in a Git repository."""
-    try:
-        subprocess.run(
-            ["git", "rev-parse", "--is-inside-work-tree"],
-            check=True,
-            capture_output=True,
-        )
-        return True
-    except (subprocess.CalledProcessError, FileNotFoundError):
-        return False
-
-
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = PolyArgs(description="Update config files from central repository")
     parser.add_argument("-y", action="store_true", help="update files without confirmation")
-    parser.add_argument(
-        "-f", "--force", action="store_true", help="force update even if not in a Git repository"
-    )
+    parser.add_argument("--include-extras", action="store_true", help="include extra config files")
     return parser.parse_args()
 
 
@@ -262,13 +240,7 @@ def main() -> None:
     """Fetch and update the config files."""
     args = parse_args()
 
-    # Check if we're in a Git repository
-    if not is_git_repository() and not args.force:
-        logger = PolyLog.get_logger()
-        logger.error("This is intended to run inside of a Git repository. Use --force to override.")
-        return
-
-    manager = ConfigManager(no_confirm=args.y)
+    manager = ConfigManager(include_extras=args.include_extras, no_confirm=args.y)
     manager.update_configs()
 
 

@@ -262,7 +262,7 @@ def update_version_links(content: str, version: str, repo_url: str) -> str:
     return content
 
 
-def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str) -> bool:
+def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str) -> None:
     """Update the changelog with a new version entry and update all links."""
     try:
         new_entry = create_version_entry(version, sections)
@@ -272,7 +272,6 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
             content = create_new_changelog(version, new_entry, repo_url)
             CHANGELOG_PATH.write_text(content)
             logger.info("Created new changelog with version %s.", version)
-            return True
 
         # Update existing changelog
         content = CHANGELOG_PATH.read_text()
@@ -296,8 +295,6 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
 
         if not section_exists:
             logger.info("Updated changelog with version %s.", version)
-
-        return not section_exists  # Indicate whether the editor should be opened
 
     except Exception as e:
         logger.error("Failed to update changelog: %s", str(e))
@@ -381,23 +378,6 @@ def get_git_changes(prev_version: str) -> dict[str, list[str]]:
     except Exception as e:
         logger.error("Failed to get Git changes: %s", str(e))
         return {}
-
-
-def edit_changelog() -> None:
-    """Open the changelog in the default editor. Tries VS Code first, then nano."""
-    try:
-        import os
-        import shutil
-
-        if shutil.which("code"):  # Check if VS Code is available
-            logger.debug("Opening changelog with VS Code.")
-            subprocess.run(["code", CHANGELOG_PATH], check=True)
-        else:  # Fall back to $EDITOR or nano
-            editor = os.environ.get("EDITOR", "nano")
-            logger.debug("VS Code not found, opening changelog with %s.", editor)
-            subprocess.run([editor, CHANGELOG_PATH], check=True)
-    except Exception as e:
-        logger.warning("Couldn't open editor: %s", str(e))
 
 
 def find_previous_version(version: str) -> str:
@@ -883,9 +863,8 @@ def main() -> int:
             # Empty sections for manual editing
             sections = {"Added": [], "Changed": [], "Fixed": []}
 
-        # Update the changelog and open in editor if needed
-        if update_changelog(version, sections, repo_url):
-            edit_changelog()
+        # Update the changelog
+        update_changelog(version, sections, repo_url)
 
         # Update GitHub release for current version if requested
         if args.update and not update_release_on_github(version, repo_url, args.dry_run):

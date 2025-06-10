@@ -1,45 +1,10 @@
 from __future__ import annotations
 
-from collections import defaultdict
-from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
+from dataclasses import dataclass
 
 from polykit.formatters import Text
 
-from dsbin.workcalc.data import FormattedTime
-
-if TYPE_CHECKING:
-    from datetime import date, datetime
-
-
-@dataclass
-class WorkStats:
-    """Statistics about work patterns across any data source."""
-
-    source_type: str
-    total_items: int = 0
-    total_time: int = 0
-    earliest_timestamp: datetime | None = None
-    latest_timestamp: datetime | None = None
-    session_count: int = 0
-    items_by_day: defaultdict[date, int] = field(default_factory=lambda: defaultdict(int))
-    items_by_hour: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
-    items_by_weekday: defaultdict[int, int] = field(default_factory=lambda: defaultdict(int))
-    time_by_day: defaultdict[date, int] = field(default_factory=lambda: defaultdict(int))
-    longest_session: tuple[datetime | None, int] = field(default_factory=lambda: (None, 0))
-    longest_streak: tuple[date | None, int] = field(default_factory=lambda: (None, 0))
-    source_metadata: dict[str, Any] = field(default_factory=dict)
-
-    def update_timestamp_stats(self, timestamp: datetime) -> None:
-        """Update statistics based on a new timestamp."""
-        if self.earliest_timestamp is None or timestamp < self.earliest_timestamp:
-            self.earliest_timestamp = timestamp
-        if self.latest_timestamp is None or timestamp > self.latest_timestamp:
-            self.latest_timestamp = timestamp
-
-        self.items_by_day[timestamp.date()] += 1
-        self.items_by_hour[timestamp.hour] += 1
-        self.items_by_weekday[timestamp.weekday()] += 1
+from dsbin.workcalc.data import FormattedTime, WorkStats
 
 
 @dataclass

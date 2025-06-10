@@ -14,7 +14,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ### Changed
 
-- Changes `aif2wav` tool to accept multiple paths instead of a single path for batch processing.
+- Changes `aif2wav` tool to accept multiple paths for batch processing instead of a single path.
 - Changes `codeconfigs` argument from `--force` to `--include-extras` and removes Git repo check.
 - Updates various dependencies.
 
@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 ### Fixed
 
 - Fixes incorrect source format determination in `aif2wav`.
+- Removes redundant duplicate `WorkStats` class from `summary.py`.
 
 ## [0.8.9] (2025-05-31)
 

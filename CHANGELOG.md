@@ -6,6 +6,27 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.10] (2025-06-10)
+
+### Added
+
+- Adds new `csvfix` utility for detecting and fixing encoding issues in CSV files, with features for automatic encoding detection, BOM removal, character conversion, and CSV validation.
+
+### Changed
+
+- Changes `aif2wav` tool to accept multiple paths instead of a single path for batch processing.
+- Changes `codeconfigs` argument from `--force` to `--include-extras` and removes Git repo check.
+- Updates various dependencies.
+
+### Removed
+
+- Removes open in editor from `changelogs` script to avoid cross-platform compatibility issues.
+- Removes code style guide and Copilot instructions documentation.
+
+### Fixed
+
+- Fixes incorrect source format determination in `aif2wav`.
+
 ## [0.8.9] (2025-05-31)
 
 ### Fixed
@@ -521,7 +542,8 @@ Also updates dependencies, including `numpy` from 2.2.5 → 2.2.6 and `cryptogra
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.9...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.10...HEAD
+[0.8.10]: https://github.com/dannystewart/dsbin/compare/v0.8.9...v0.8.10
 [0.8.9]: https://github.com/dannystewart/dsbin/compare/v0.8.8...v0.8.9
 [0.8.8]: https://github.com/dannystewart/dsbin/compare/v0.8.7...v0.8.8
 [0.8.7]: https://github.com/dannystewart/dsbin/compare/v0.8.6...v0.8.7

@@ -16,7 +16,7 @@ dependencies = [
     "mutagen (>=1.47.0)",
     "mysql-connector-python (>=9.3.0)",
     "natsort (>=8.4.0)",
-    "numpy (>=2.2.6)",
+    "numpy (>=2.3.0)",
     "packaging (>=25.0)",
     "paramiko (>=3.5.1)",
     "pexpect (>=4.9.0)",
@@ -24,7 +24,7 @@ dependencies = [
     "polykit (>=0.11.1)",
     "prompt-toolkit (>=3.0.51)",
     "pyperclip (>=1.9.0)",
-    "requests (>=2.32.3)",
+    "requests (>=2.32.4)",
     "rich (>=14.0.0)",
     "rsa (>=4.9.1)",
     "scipy (>=1.15.3)",
@@ -64,7 +64,7 @@ mypy = ">=1.16.0"
 pdoc = ">=15.0.4"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.2.0"
-ruff = ">=0.11.12"
+ruff = ">=0.11.13"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

@@ -45,8 +45,8 @@ def convert_audio(
         version: Logic Pro version number (only for WAV to AIFF conversion).
         recursive: Search for files recursively.
     """
-    source_format = AudioFormat.AIFF if target_format == AudioFormat.AIFF else AudioFormat.WAV
-    source_extensions = ["aif", "aiff"] if source_format == AudioFormat.AIFF else ["wav"]
+    source_format = AudioFormat.WAV if target_format == AudioFormat.AIFF else AudioFormat.AIFF
+    source_extensions = ["wav"] if source_format == AudioFormat.WAV else ["aif", "aiff"]
 
     if not (file_path.is_dir() or file_path.is_file()):
         print(f"The path specified does not exist: {file_path}")
@@ -98,9 +98,9 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Convert between WAV and AIFF audio formats.")
     parser.add_argument(
         "path",
-        nargs="?",
-        default=".",
-        help="path to file, wildcard, or directory containing files to convert",
+        nargs="*",
+        default=["."],
+        help="path to file(s), or directory containing files to convert",
     )
     parser.add_argument(
         "--to", choices=["wav", "aif"], required=True, help="target format to convert to"
@@ -125,7 +125,8 @@ def main() -> None:
     if args.logic and audio_format == AudioFormat.WAV:
         print_color("Warning: Logic version is only applicable when converting to AIFF.", "yellow")
 
-    convert_audio(Path(args.path), audio_format, version=args.logic, recursive=args.recursive)
+    for path_str in args.path:
+        convert_audio(Path(path_str), audio_format, version=args.logic, recursive=args.recursive)
 
 
 if __name__ == "__main__":

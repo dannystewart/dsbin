@@ -114,6 +114,7 @@ dmg-encrypt = "dsbin.mac.dmg_encrypt:main"
 dmgify = "dsbin.mac.dmgify:main"
 netreset = "dsbin.mac.netreset:main"
 setmag = "dsbin.mac.setmag:main"
+spacepurger = "dsbin.tools.spacepurger:main"
 timestamps = "dsbin.mac.timestamps:main"
 
 # Music Scripts

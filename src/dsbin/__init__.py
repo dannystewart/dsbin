@@ -42,6 +42,7 @@
 - [**dsupdater**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/updater/updater.py): Comprehensive update installer for Linux and macOS.
 - [**dsupdater-install**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/updater/install.py): Entry point for installer.
 - [**envsync**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/envsync.py): Synchronize two .env files by merging their content.
+- [**spacepurger**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/spacepurger.py): *(No description available)*
 - [**ssh-tunnel**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/ssh_tunnel.py): Create or kill an SSH tunnel on the specified port.
 
 ### macOS-Specific Scripts

@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.11] (2025-06-16)
+
+### Added
+
+- Adds `spacepurger` utility for macOS cache purging, with configurable targets, real-time monitoring, and automatic cleanup. _**NOTE:** This utility is potentially unsafe and should only be used if you know what you're doing and supervise while it runs._
+- Increases default `uploads_per_song` in `wpmusic` from 3 to 4 for better visual grouping and history.
+
+### Changed
+
+- Improves display of truncated upload history with better formatting and visual separation in `wpmusic`.
+- Updates `polykit` dependency to >=0.11.2 and adjusts other dependencies
+
+### Fixed
+
+- Adds descriptive module-level docstring to `csvfix` module so that it appears correctly in documentation.
+
 ## [0.8.10] (2025-06-10)
 
 ### Added
@@ -119,7 +135,7 @@ Also updates dependencies, including `numpy` from 2.2.5 → 2.2.6 and `cryptogra
 
 ### Changed
 
-- Updates numerous package dependencies to their latest versions, including blessed 1.21.0, numpy 2.2.5, packaging 25.0, and polykit to 0.11.1.
+- Updates numerous package dependencies to their latest versions, including `blessed` to 1.21.0, `numpy` to 2.2.5, `packaging` to 25.0, and `polykit` to 0.11.1.
 
 ### Fixed
 
@@ -543,7 +559,8 @@ Also updates dependencies, including `numpy` from 2.2.5 → 2.2.6 and `cryptogra
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.10...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.11...HEAD
+[0.8.11]: https://github.com/dannystewart/dsbin/compare/v0.8.10...v0.8.11
 [0.8.10]: https://github.com/dannystewart/dsbin/compare/v0.8.9...v0.8.10
 [0.8.9]: https://github.com/dannystewart/dsbin/compare/v0.8.8...v0.8.9
 [0.8.8]: https://github.com/dannystewart/dsbin/compare/v0.8.7...v0.8.8

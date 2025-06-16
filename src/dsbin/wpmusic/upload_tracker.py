@@ -90,17 +90,12 @@ class UploadTracker:
                 inst_text = "[bold]✓[/bold]" if has_inst else ""
                 table.add_row(filename, inst_text, formatted_date)
 
-            console.print(table)
-
             if num_uploads and len(processed_uploads) > num_uploads:
                 more_count = len(processed_uploads) - num_uploads
-                console.print(
-                    Text(
-                        f' ...and {more_count} more. Use --history "{entry["track_name"]}" to see all.',
-                        style="dim italic",
-                    ),
-                    width=80,
-                )
+                table.add_row(Text(f"(...and {more_count} older)", style="dim italic"), "", "")
+
+            print()
+            console.print(table)
 
     def _prepare_rows_for_display(
         self, data: list[dict[str, Any]]

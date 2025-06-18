@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from urllib.parse import ParseResult
 
-logger = PolyLog.get_logger()
+logger = PolyLog.get_logger(level="debug")
 
 GITHUB_USERNAME = "dannystewart"
 CHANGELOG_PATH = Path("CHANGELOG.md")
@@ -24,16 +24,23 @@ CHANGELOG_PATH = Path("CHANGELOG.md")
 
 def _extract_repo_from_ssh_url(url: str) -> str | None:
     """Extract repository name from SSH format Git URL."""
+    logger.debug("Parsing SSH URL: %s", url)
     path_parts = url.split(":", maxsplit=1)[-1].split("/")
+    logger.debug("Path parts after split: %s", path_parts)
+
     if len(path_parts) >= 2:
         username = path_parts[-2]
         repo_name = path_parts[-1].rstrip(".git")
+        logger.debug("Extracted username: %s, repo_name: %s", username, repo_name)
 
         # Verify this is actually your repo
         if username != GITHUB_USERNAME:
             logger.warning("Git remote points to %s/%s, not your repo.", username, repo_name)
             return None
+        logger.debug("Username matches, returning repo_name: %s", repo_name)
         return repo_name
+
+    logger.debug("Not enough path parts, returning None.")
     return None
 
 
@@ -84,18 +91,27 @@ def get_repo_url(repo_override: str | None = None) -> str:
             check=True,
         )
         url = result.stdout.strip()
+        logger.debug("Got Git remote URL: %s", url)
 
         # Extract repo name from URL
         from urllib.parse import urlparse
 
         repo_name = None
         parsed_url = urlparse(url)
+        logger.debug("Parsed URL hostname: %s", parsed_url.hostname)
 
         if parsed_url.hostname == "github.com":
+            logger.debug("Hostname matches github.com.")
             if url.startswith("git@github.com:"):
+                logger.debug("Using SSH URL parser.")
                 repo_name = _extract_repo_from_ssh_url(url)
             else:
+                logger.debug("Using HTTPS URL parser.")
                 repo_name = _extract_repo_from_https_url(parsed_url)
+        else:
+            logger.debug("Hostname does not match github.com.")
+
+        logger.debug("Final repo_name result: %s", repo_name)
 
         if repo_name:
             constructed_url = f"https://github.com/{GITHUB_USERNAME}/{repo_name}"

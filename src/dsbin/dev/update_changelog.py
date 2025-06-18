@@ -14,16 +14,66 @@ from polykit.log import PolyLog
 if TYPE_CHECKING:
     import argparse
     from collections.abc import Sequence
+    from urllib.parse import ParseResult
 
 logger = PolyLog.get_logger()
 
+GITHUB_USERNAME = "dannystewart"
 CHANGELOG_PATH = Path("CHANGELOG.md")
 
 
+def _extract_repo_from_ssh_url(url: str) -> str | None:
+    """Extract repository name from SSH format Git URL."""
+    path_parts = url.split(":", maxsplit=1)[-1].split("/")
+    if len(path_parts) >= 2:
+        username = path_parts[-2]
+        repo_name = path_parts[-1].rstrip(".git")
+
+        # Verify this is actually your repo
+        if username != GITHUB_USERNAME:
+            logger.warning("Git remote points to %s/%s, not your repo.", username, repo_name)
+            return None
+        return repo_name
+    return None
+
+
+def _extract_repo_from_https_url(parsed_url: ParseResult) -> str | None:
+    """Extract repository name from HTTPS format Git URL."""
+    path_parts = parsed_url.path.strip("/").split("/")
+    if len(path_parts) >= 2:
+        username = path_parts[0]
+        repo_name = path_parts[1].rstrip(".git")
+
+        # Verify this is actually your repo
+        if username != GITHUB_USERNAME:
+            logger.warning("Git remote points to %s/%s, not your repo.", username, repo_name)
+            return None
+        return repo_name
+    return None
+
+
+def _verify_repo_exists(repo_name: str) -> bool:
+    """Verify the repository exists by checking with gh CLI."""
+    try:
+        subprocess.run(
+            ["gh", "repo", "view", f"{GITHUB_USERNAME}/{repo_name}", "--json", "name"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return True
+    except subprocess.CalledProcessError:
+        return False
+
+
 def get_repo_url(repo_override: str | None = None) -> str:
-    """Get the GitHub repository URL."""
+    """Get the GitHub repository URL.
+
+    Raises:
+        ValueError: If repository auto-detection fails and no override is provided.
+    """
     if repo_override:
-        return f"https://github.com/dannystewart/{repo_override}"
+        return f"https://github.com/{GITHUB_USERNAME}/{repo_override}"
 
     # Try to get repo name from Git remote
     try:
@@ -38,22 +88,33 @@ def get_repo_url(repo_override: str | None = None) -> str:
         # Extract repo name from URL
         from urllib.parse import urlparse
 
+        repo_name = None
         parsed_url = urlparse(url)
+
         if parsed_url.hostname == "github.com":
             if url.startswith("git@github.com:"):
-                # SSH format: git@github.com:username/repo.git
-                repo_name = url.split(":")[-1].split("/")[-1].rstrip(".git")
+                repo_name = _extract_repo_from_ssh_url(url)
             else:
-                # HTTPS format: https://github.com/username/repo.git
-                repo_name = url.split("/")[-1].rstrip(".git")
+                repo_name = _extract_repo_from_https_url(parsed_url)
 
-            return f"https://github.com/dannystewart/{repo_name}"
+        if repo_name:
+            constructed_url = f"https://github.com/{GITHUB_USERNAME}/{repo_name}"
+
+            # Verify the repository exists
+            if _verify_repo_exists(repo_name):
+                logger.info("Verified repository: %s", constructed_url)
+                return constructed_url
+            logger.warning("Could not verify repository exists: %s", constructed_url)
+
+        logger.warning("Could not extract valid repository name from Git remote.")
+
     except subprocess.CalledProcessError:
-        logger.warning("Failed to get Git remote URL, falling back to directory name.")
+        logger.warning("Failed to get Git remote URL.")
 
-    # Fallback to directory name
-    repo_name = Path.cwd().name
-    return f"https://github.com/dannystewart/{repo_name}"
+    # If we get here, auto-detection failed
+    error_msg = "Repository auto-detection failed. Please specify --repo manually."
+
+    raise ValueError(error_msg)
 
 
 def get_latest_version() -> str:
@@ -708,7 +769,7 @@ def update_release_content(
         version: The version for the release (e.g., '1.2.3')
         content: The content for the release notes.
         repo_url: The GitHub repository URL.
-        dry_run: If True, print what would be done without executing.
+        dry_run: If True, print what would be done without making any changes.
 
     Returns:
         True if successful, False otherwise.

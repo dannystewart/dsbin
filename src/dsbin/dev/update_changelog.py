@@ -118,7 +118,7 @@ def get_repo_url(repo_override: str | None = None) -> str:
 
             # Verify the repository exists
             if _verify_repo_exists(repo_name):
-                logger.info("Verified repository: %s", constructed_url)
+                logger.debug("Verified repository: %s", constructed_url)
                 return constructed_url
             logger.warning("Could not verify repository exists: %s", constructed_url)
 

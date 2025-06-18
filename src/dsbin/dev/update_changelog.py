@@ -16,7 +16,7 @@ if TYPE_CHECKING:
     from collections.abc import Sequence
     from urllib.parse import ParseResult
 
-logger = PolyLog.get_logger(level="debug")
+logger = PolyLog.get_logger()
 
 GITHUB_USERNAME = "dannystewart"
 CHANGELOG_PATH = Path("CHANGELOG.md")

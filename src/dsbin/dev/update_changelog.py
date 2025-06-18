@@ -100,14 +100,14 @@ def get_repo_url(repo_override: str | None = None) -> str:
         parsed_url = urlparse(url)
         logger.debug("Parsed URL hostname: %s", parsed_url.hostname)
 
-        if parsed_url.hostname == "github.com":
+        # Check for SSH URLs first (urlparse doesn't handle them properly)
+        if url.startswith("git@github.com:"):
+            logger.debug("Using SSH URL parser.")
+            repo_name = _extract_repo_from_ssh_url(url)
+        elif parsed_url.hostname == "github.com":
             logger.debug("Hostname matches github.com.")
-            if url.startswith("git@github.com:"):
-                logger.debug("Using SSH URL parser.")
-                repo_name = _extract_repo_from_ssh_url(url)
-            else:
-                logger.debug("Using HTTPS URL parser.")
-                repo_name = _extract_repo_from_https_url(parsed_url)
+            logger.debug("Using HTTPS URL parser.")
+            repo_name = _extract_repo_from_https_url(parsed_url)
         else:
             logger.debug("Hostname does not match github.com.")
 

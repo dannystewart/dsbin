@@ -10,8 +10,9 @@ from typing import TYPE_CHECKING
 
 from polykit.cli import walking_man
 from polykit.core import polykit_setup
-from polykit.formatters import Text
 from polykit.log import PolyLog
+from polykit.text import TextNumbers
+from polykit.time import TZ
 
 from dsbin.workcalc.data import (
     SessionAnalyzer,
@@ -30,19 +31,6 @@ if TYPE_CHECKING:
     from dsbin.workcalc.data import WorkItem
 
 polykit_setup()
-
-
-def parse_date(date_str: str) -> datetime.date:
-    """Parse the date string provided as an argument.
-
-    Raises:
-        ValueError: If the date can't be parsed.
-    """
-    try:
-        return datetime.datetime.strptime(date_str, "%m/%d/%Y").date()  # noqa: DTZ007
-    except ValueError as e:
-        msg = f"Invalid date format: {date_str}. Please use MM/DD/YYYY."
-        raise ValueError(msg) from e
 
 
 @dataclass
@@ -77,8 +65,8 @@ class WorkCalculator:
         # Log configuration details
         self.logger.debug(
             "Considering %s to be a session break with a minimum of %s per %s.",
-            Text.plural("minute", self.config.break_time, with_count=True),
-            Text.plural("minute", self.config.min_work_per_item, with_count=True),
+            TextNumbers.plural("minute", self.config.break_time),
+            TextNumbers.plural("minute", self.config.min_work_per_item),
             self.item_name,
         )
 
@@ -198,33 +186,132 @@ class WorkCalculator:
         self.stats.total_time = int(total_time)
 
 
+def parse_date(date_str: str) -> datetime.date:
+    """Parse the date string provided as an argument.
+
+    Raises:
+        ValueError: If the date can't be parsed.
+    """
+    try:
+        return datetime.datetime.strptime(date_str, "%m/%d/%Y").date()  # noqa: DTZ007
+    except ValueError as e:
+        msg = f"Invalid date format: {date_str}. Please use MM/DD/YYYY."
+        raise ValueError(msg) from e
+
+
+def parse_relative_date(date_str: str) -> datetime.date:
+    """Parse relative date expressions like '30d', '1w', '1m'.
+
+    Raises:
+        ValueError: If the relative date can't be parsed.
+    """
+    today = datetime.datetime.now(tz=TZ).date()
+
+    if not date_str.endswith(("d", "w", "m")):
+        msg = f"Invalid relative date format: {date_str}. Use format like '30d', '1w', or '1m'"
+        raise ValueError(msg)
+
+    try:
+        number = int(date_str[:-1])
+        unit = date_str[-1]
+
+        if unit == "d":
+            return today - datetime.timedelta(days=number)
+        if unit == "w":
+            return today - datetime.timedelta(weeks=number)
+        if unit == "m":
+            # Approximate months as 30 days
+            return today - datetime.timedelta(days=number * 30)
+        msg = f"Invalid time unit: {unit}. Use 'd' (days), 'w' (weeks), or 'm' (months)"
+        raise ValueError(msg)
+    except ValueError as e:
+        msg = f"Invalid relative date format: {date_str}. Use format like '30d', '1w', or '1m'"
+        raise ValueError(msg) from e
+
+
 def main() -> None:
     """Calculate work patterns from various data sources."""
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(dest="source_type", required=True)
+    parser = argparse.ArgumentParser(
+        description="Calculate work patterns from Git commits or Logic bounce files",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Analyze Git commits in the past 30 days
+  workcalc git /path/to/repo --since 30d
+
+  # Analyze Logic bounce files for 2024
+  workcalc logic /path/to/bounces --start 01/01/2024 --end 12/31/2024
+
+  # Analyze Git commits with custom date range
+  workcalc git /path/to/repo --start 01/01/2024 --end 12/31/2024
+
+  # Analyze Logic bounce files with custom break time
+  workcalc logic /path/to/bounces --break-time 90 --min-work 20
+        """,
+    )
+
+    subparsers = parser.add_subparsers(dest="source_type", required=True, help="Data source type")
 
     # Git repository parser
-    git_parser = subparsers.add_parser("git")
-    git_parser.add_argument("repo_path", type=Path)
+    git_parser = subparsers.add_parser(
+        "git",
+        help="Analyze Git commit history",
+        description="Analyze work patterns from Git commit history in a repository",
+    )
+    git_parser.add_argument("repo_path", type=Path, help="Path to Git repository")
 
     # Logic bounce parser
-    bounce_parser = subparsers.add_parser("logic")
-    bounce_parser.add_argument("directory", type=Path)
+    bounce_parser = subparsers.add_parser(
+        "logic",
+        help="Analyze Logic bounce files",
+        description="Analyze work patterns from Logic bounce files in a directory",
+    )
+    bounce_parser.add_argument(
+        "directory", type=Path, help="Directory containing Logic bounce files"
+    )
 
     # Common arguments
     for p in [git_parser, bounce_parser]:
-        p.add_argument("-b", "--break-time", type=int, default=60)
-        p.add_argument("-m", "--min-work", type=int, default=15)
-        p.add_argument("--start", help="Start date (MM/DD/YYYY)")
-        p.add_argument("--end", help="End date (MM/DD/YYYY)")
+        p.add_argument(
+            "-b",
+            "--break-time",
+            type=int,
+            default=60,
+            help="Minutes of inactivity to consider a session break (default: 60)",
+        )
+        p.add_argument(
+            "-m",
+            "--min-work",
+            type=int,
+            default=15,
+            help="Minimum minutes to count per work item (default: 15)",
+        )
+
+        # Time range arguments
+        time_group = p.add_mutually_exclusive_group()
+        time_group.add_argument("--since", help="Start date: MM/DD/YYYY or relative (30d, 1w, 1m)")
+        time_group.add_argument("--start", help="Start date in MM/DD/YYYY format")
+        time_group.add_argument("--end", help="End date in MM/DD/YYYY format")
 
     args = parser.parse_args()
+
+    # Parse date arguments
+    start_date = None
+    end_date = None
+
+    if args.since:
+        start_date = parse_relative_date(args.since)
+    elif args.start:
+        start_date = parse_date(args.start)
+
+    if args.end:
+        end_date = parse_date(args.end)
 
     config = WorkAnalysisConfig(
         break_time=args.break_time,
         min_work_per_item=args.min_work,
-        start_date=parse_date(args.start) if args.start else None,
-        end_date=parse_date(args.end) if args.end else None,
+        start_date=start_date,
+        end_date=end_date,
     )
 
     data_source: DataSourcePlugin

@@ -8,11 +8,10 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from polykit import TZ, PolyLog
 from polykit.cli import walking_man
 from polykit.core import polykit_setup
-from polykit.log import PolyLog
-from polykit.text import TextNumbers
-from polykit.time import TZ
+from polykit.text import plural
 
 from dsbin.workcalc.data import (
     SessionAnalyzer,
@@ -65,8 +64,8 @@ class WorkCalculator:
         # Log configuration details
         self.logger.debug(
             "Considering %s to be a session break with a minimum of %s per %s.",
-            TextNumbers.plural("minute", self.config.break_time),
-            TextNumbers.plural("minute", self.config.min_work_per_item),
+            plural("minute", self.config.break_time),
+            plural("minute", self.config.min_work_per_item),
             self.item_name,
         )
 

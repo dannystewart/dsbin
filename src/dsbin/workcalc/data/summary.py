@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from polykit.formatters import Text
+from polykit.text import plural
 
 from dsbin.workcalc.data import FormattedTime, WorkStats
 
@@ -44,8 +44,8 @@ class SummaryAnalyzer:
         """Format summary statistics for display."""
         formatted_time = FormattedTime.from_minutes(stats.total_time)
         return [
-            f"Total {Text.plural(item_name, stats.total_items, with_count=True)}",
-            f"Active {Text.plural('day', stats.active_days, with_count=True)}",
-            f"Average {Text.plural(item_name, stats.total_items)} per active day: {stats.avg_items_per_day:.1f}",
+            f"Total {plural(item_name, stats.total_items, with_count=True)}",
+            f"Active {plural('day', stats.active_days, with_count=True)}",
+            f"Average {plural(item_name, stats.total_items)} per active day: {stats.avg_items_per_day:.1f}",
             f"\nTotal work time: {formatted_time}",
         ]

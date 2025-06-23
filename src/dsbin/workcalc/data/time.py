@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from polykit.formatters import Text
+from polykit.text import plural
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -74,8 +74,8 @@ class TimeAnalyzer:
         return [
             f"First {item_name}: {TimeAnalyzer.format_date(span.first_item)}",
             f"Last {item_name}: {TimeAnalyzer.format_date(span.last_item)}",
-            f"Time between first and last: {Text.plural('day', span.span_days, with_count=True)}, "
-            f"{Text.plural('hour', span.span_hours, with_count=True)}",
+            f"Time between first and last: {plural('day', span.span_days, with_count=True)}, "
+            f"{plural('hour', span.span_hours, with_count=True)}",
         ]
 
     @staticmethod
@@ -114,14 +114,14 @@ class TimeAnalyzer:
         # Weekday distribution
         for day, (items, percentage) in dist.by_weekday.items():
             messages.append(
-                f"{day.name.capitalize()}: {Text.plural(item_name, items, with_count=True)} ({percentage:.1f}%)"
+                f"{day.name.capitalize()}: {plural(item_name, items, with_count=True)} ({percentage:.1f}%)"
             )
 
         # Most active hours
         messages.append("\nMost active hours:")
         for hour, items, percentage in dist.most_active_hours:
             messages.append(
-                f"  {TimeAnalyzer.format_hour(hour)}: {Text.plural(item_name, items, with_count=True)} ({percentage:.1f}%)"
+                f"  {TimeAnalyzer.format_hour(hour)}: {plural(item_name, items, with_count=True)} ({percentage:.1f}%)"
             )
 
         return messages

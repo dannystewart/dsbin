@@ -12,8 +12,9 @@ from typing import TYPE_CHECKING
 
 from polykit.cli import PolyArgs, handle_interrupt
 from polykit.core import polykit_setup
-from polykit.formatters import Text, color, print_color
 from polykit.log import PolyLog
+from polykit.text import color, print_color
+from polykit.time import PolyTime
 
 from .privilege_helper import PrivilegeHelper
 from .update_manager import UpdateManager
@@ -216,7 +217,7 @@ class Updater:
     def _get_elapsed_time(self) -> str:
         elapsed_time = time.time() - self.start_time
         minutes, seconds = divmod(int(elapsed_time), 60)
-        return Text.format_duration(0, minutes, seconds)
+        return PolyTime.format_duration(0, minutes, seconds)
 
     def _log_completion_status(self) -> None:
         if not self.anything_updated:

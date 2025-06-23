@@ -40,12 +40,12 @@ from typing import TYPE_CHECKING
 from polykit.cli import PolyArgs
 from polykit.core import polykit_setup
 from polykit.files import PolyFile
-from polykit.formatters import color
+from polykit.text import color
 
 if TYPE_CHECKING:
     import argparse
 
-    from polykit.formatters.types import TextColor
+    from polykit.text.types import TextColor
 
 polykit_setup()
 

@@ -4,7 +4,7 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
-from polykit.formatters import Text
+from polykit.text import plural
 
 if TYPE_CHECKING:
     from datetime import date, datetime
@@ -29,10 +29,10 @@ class FormattedTime:
 
     def __str__(self) -> str:
         """Format the time as a string."""
-        days_str = f"{Text.plural('day', self.days, with_count=True)}, " if self.days else ""
+        days_str = f"{plural('day', self.days, with_count=True)}, " if self.days else ""
         return (
-            f"{days_str}{Text.plural('hour', self.hours, with_count=True)}, "
-            f"{Text.plural('minute', self.minutes, with_count=True)} "
+            f"{days_str}{plural('hour', self.hours, with_count=True)}, "
+            f"{plural('minute', self.minutes, with_count=True)} "
             f"({self.total_hours} hours)"
         )
 

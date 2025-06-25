@@ -5,7 +5,8 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from polykit.formatters import TZ, Text
+from polykit.text import plural
+from polykit.time import TZ
 
 if TYPE_CHECKING:
     from datetime import date
@@ -85,14 +86,14 @@ class StreakAnalyzer:
         if stats.longest_start:
             streak_end = stats.longest_start + timedelta(days=stats.longest_length - 1)
             messages.append(
-                f"Longest {item_name} streak: {Text.plural('day', stats.longest_length, with_count=True)} "
+                f"Longest {item_name} streak: {plural('day', stats.longest_length, with_count=True)} "
                 f"({stats.longest_start:%B %-d, %Y} to {streak_end:%B %-d, %Y})"
             )
 
         if stats.current_length > 0:
             post_status = "including today" if stats.today_completed else "• not completed today"
             messages.append(
-                f"Current {item_name} streak: {Text.plural('day', stats.current_length, with_count=True)} "
+                f"Current {item_name} streak: {plural('day', stats.current_length, with_count=True)} "
                 f"(since {stats.current_start:%B %-d, %Y}) {post_status}"
             )
 

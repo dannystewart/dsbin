@@ -6,6 +6,30 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.8.12] (2025-06-24)
+
+### Added
+
+- Adds relative date parsing to `workcalc`, supporting inputs like `30d`, `1w`, and `1m`.
+
+### Changed
+
+- Improves `workcalc` interface with better help text, command examples, and more descriptive argument help.
+- Migrates from `polykit.formatters` to dedicated `polykit.text` and `polykit.time` modules.
+- Updates import statements to use more specific modules from the `polykit` library.
+- Updates several dependencies:
+  - `mypy` from 1.16.0 to 1.16.1
+  - `numpy` from 2.3.0 to 2.3.1
+  - `pygments` from 2.19.1 to 2.19.2
+  - `python-dotenv` from 1.1.0 to 1.1.1
+  - `ruff` from 0.11.13 to 0.12.0
+  - `urllib3` from 2.4.0 to 2.5.0
+  - `polykit` development version from 0.11.3.dev to 0.12.0.dev4
+
+### Fixed
+
+- Fixes compatibility issues by downgrading `rich` dependency from 14.0.0 to 13.9.4.
+
 ## [0.8.11] (2025-06-16)
 
 ### Added
@@ -179,7 +203,7 @@ Also updates dependencies, including `numpy` from 2.2.5 → 2.2.6 and `cryptogra
 
 ## [0.8.0] (2025-04-14)
 
-*v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this seemed like a good opportunity.*
+_v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this seemed like a good opportunity._
 
 ### Changed
 
@@ -280,7 +304,7 @@ Also updates dependencies, including `numpy` from 2.2.5 → 2.2.6 and `cryptogra
 - **Dependencies** (boring but important)
   - Updates `polykit` imports from `polykit.platform` to `polykit.core` for compatibility with changes in 0.8.0.
   - Removes upper bound constraint from `mysql-connector-python`. Freedom for databases!
-  - Pins `rich` dependency to stay below v14.0, not because *my* code is incompatible, but because too many *other* people's code is incompatible, and managing dependency conflicts is annoying.
+  - Pins `rich` dependency to stay below v14.0, not because _my_ code is incompatible, but because too many _other_ people's code is incompatible, and managing dependency conflicts is annoying.
 
 ## [0.7.10] (2025-04-07)
 
@@ -559,7 +583,8 @@ Also updates dependencies, including `numpy` from 2.2.5 → 2.2.6 and `cryptogra
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.11...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.12...HEAD
+[0.8.12]: https://github.com/dannystewart/dsbin/compare/v0.8.11...v0.8.12
 [0.8.11]: https://github.com/dannystewart/dsbin/compare/v0.8.10...v0.8.11
 [0.8.10]: https://github.com/dannystewart/dsbin/compare/v0.8.9...v0.8.10
 [0.8.9]: https://github.com/dannystewart/dsbin/compare/v0.8.8...v0.8.9

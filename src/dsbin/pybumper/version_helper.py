@@ -105,11 +105,11 @@ class VersionHelper:
         version_part = parts[0]
 
         # Handle .dev without a number (implicit 0)
-        if len(parts) == 1 or not parts[1]:
+        if len(parts) == 1 or not parts[1].strip():
             dev_num = 0
         else:
             try:
-                dev_num = int(parts[1])
+                dev_num = int(parts[1].strip())
             except ValueError:
                 self.logger.error("Invalid dev number: %s", parts[1])
                 sys.exit(1)

@@ -7,10 +7,10 @@ from typing import TYPE_CHECKING
 import inquirer
 import paramiko  # type: ignore
 import pyperclip
+from polykit import PolyLog
 from polykit.cli import handle_interrupt
 from polykit.files import PolyFile
-from polykit.formatters import color as colored
-from polykit.log import PolyLog
+from polykit.text import color as colored
 from scp import SCPClient
 
 if TYPE_CHECKING:

@@ -9,7 +9,7 @@ from mutagen.mp3 import MP3
 from mutagen.mp4 import MP4, MP4Cover
 
 # ruff: noqa: PLC2701
-from polykit.log import PolyLog
+from polykit import PolyLog
 
 if TYPE_CHECKING:
     from pathlib import Path

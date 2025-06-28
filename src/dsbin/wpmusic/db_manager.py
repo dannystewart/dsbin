@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import mysql.connector
-from polykit.log import PolyLog
+from polykit import PolyLog
 
 from dsbin.util.db import MySQLHelper, SQLiteHelper
 

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Any
 
 import requests
 from PIL import Image
-from polykit.log import PolyLog
+from polykit import PolyLog
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.configs import WPConfig

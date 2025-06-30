@@ -231,6 +231,23 @@ def process_all_scripts() -> None:
     print("💡 Restart your Fish shell or run 'fish_config' to reload completions")
 
 
+def _derive_script_name(script_path: str) -> str:
+    """Derive a script name from the file path with fallbacks."""
+    path = Path(script_path)
+
+    # Try parent directory name if it's not generic
+    if path.parent.name not in {"dsbin", "src", "scripts", "bin", "tools"}:
+        return path.parent.name
+
+    # Use the filename without extension
+    stem = path.stem
+    if stem and stem != "main":
+        return stem
+
+    # Last resort: use the full filename
+    return path.name.replace(".py", "") if path.name.endswith(".py") else path.name
+
+
 def main() -> None:
     """Test the completion generator on a script."""
     import sys
@@ -246,17 +263,24 @@ def main() -> None:
         return
 
     if len(sys.argv) < 2:
-        print("Usage: python fish_completions.py [<script_path> [command_name]] | [--all]")
+        print("Usage: python dsfish.py [<script_path> [command_name]] | [--all]")
         sys.exit(1)
 
     script_path = sys.argv[1]
+
+    # Validate script path exists
+    if not Path(script_path).exists():
+        print(f"❌ Error: Script not found - {script_path}")
+        sys.exit(1)
+
     # Use provided command name or derive from script path
-    if len(sys.argv) > 2:
-        script_name = sys.argv[2]
-    else:
-        # Try to get a better name from the parent directory + filename
-        path = Path(script_path)
-        script_name = path.parent.name if path.parent.name not in {"dsbin", "src"} else path.stem
+    script_name = sys.argv[2] if len(sys.argv) > 2 else _derive_script_name(script_path)
+
+    # Validate script name
+    if not script_name or not script_name.strip():
+        print(f"❌ Error: Could not determine script name for {script_path}")
+        print("💡 Please provide a script name: dsfish <script_path> <command_name>")
+        sys.exit(1)
 
     print(f"Analyzing {script_path}...")
     args_info = extract_argparse_info(script_path)

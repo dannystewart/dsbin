@@ -143,12 +143,20 @@ def process_all_scripts() -> None:
         print("No scripts found in pyproject.toml")
         return
 
-    # Set up Fish completions directory
+    # Set up both output directories
     fish_completions_dir = Path.home() / ".config" / "fish" / "completions"
     fish_completions_dir.mkdir(parents=True, exist_ok=True)
 
+    # Also write to repo completions directory
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent.parent.parent
+    repo_completions_dir = project_root / "completions"
+    repo_completions_dir.mkdir(exist_ok=True)
+
     print(f"Found {len(scripts)} scripts in pyproject.toml")
-    print(f"Writing completions to: {fish_completions_dir}")
+    print("Writing completions to:")
+    print(f"  🐟 Fish: {fish_completions_dir}")
+    print(f"  📁 Repo: {repo_completions_dir}")
     print("=" * 50)
 
     successful = 0
@@ -171,15 +179,20 @@ def process_all_scripts() -> None:
         completion = generate_fish_completion(script_name, args_info)
         print(f"✅ {script_name}: {len(args_info)} arguments")
 
-        # Write directly to Fish completions directory
-        completion_file = fish_completions_dir / f"{script_name}.fish"
-        completion_file.write_text(completion + "\n", encoding="utf-8")
+        # Write to both locations
+        fish_completion_file = fish_completions_dir / f"{script_name}.fish"
+        repo_completion_file = repo_completions_dir / f"{script_name}.fish"
+
+        completion_content = completion + "\n"
+        fish_completion_file.write_text(completion_content, encoding="utf-8")
+        repo_completion_file.write_text(completion_content, encoding="utf-8")
 
         successful += 1
 
     print("=" * 50)
     print(f"Processed: {successful} successful, {failed} failed")
     print(f"✨ Fish completions installed to: {fish_completions_dir}")
+    print(f"📦 Repo completions saved to: {repo_completions_dir}")
     print("💡 Restart your Fish shell or run 'fish_config' to reload completions")
 
 

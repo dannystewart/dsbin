@@ -39,6 +39,16 @@ def _extract_argument_details(node: ast.Call) -> dict[str, str | list[str]]:
     arg_info = {}
 
     # Get option names from positional args
+    _extract_option_names(node, arg_info)
+
+    # Get keyword arguments
+    _extract_keyword_args(node, arg_info)
+
+    return arg_info
+
+
+def _extract_option_names(node: ast.Call, arg_info: dict[str, str | list[str]]) -> None:
+    """Extract short and long option names from positional arguments."""
     for arg in node.args:
         if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
             option = arg.value
@@ -47,7 +57,9 @@ def _extract_argument_details(node: ast.Call) -> dict[str, str | list[str]]:
             elif option.startswith("-"):
                 arg_info["short"] = option[1:]
 
-    # Get help and choices from keyword args
+
+def _extract_keyword_args(node: ast.Call, arg_info: dict[str, str | list[str]]) -> None:
+    """Extract keyword arguments like help, choices, action, required."""
     for keyword in node.keywords:
         if keyword.arg == "help" and isinstance(keyword.value, ast.Constant):
             help_text = str(keyword.value.value)
@@ -56,8 +68,12 @@ def _extract_argument_details(node: ast.Call) -> dict[str, str | list[str]]:
             choices = _extract_choices(keyword.value)
             if choices:
                 arg_info["choices"] = choices
-
-    return arg_info
+        elif keyword.arg == "action" and isinstance(keyword.value, ast.Constant):
+            if keyword.value.value in {"store_true", "store_false"}:
+                arg_info["no_arg"] = "true"
+        elif keyword.arg == "required" and isinstance(keyword.value, ast.Constant):
+            if keyword.value.value:
+                arg_info["required"] = "true"
 
 
 def _clean_help_text(help_text: str) -> str:
@@ -97,9 +113,26 @@ def generate_fish_completion(script_name: str, args_info: list[dict[str, str | l
         if arg_info.get("long"):
             line += f" -l {arg_info['long']}"
         if arg_info.get("choices"):
-            line += f' -a "{" ".join(arg_info["choices"])}"'
+            choices = arg_info["choices"]
+            if isinstance(choices, list):
+                line += f' -a "{" ".join(choices)}"'
         if arg_info.get("help"):
             line += f' -d "{arg_info["help"]}"'
+
+        # Handle file completion intelligently
+        if not arg_info.get("choices") and not arg_info.get("no_arg"):
+            # Check if this looks like a file argument
+            help_text = str(arg_info.get("help", "")).lower()
+            if not any(
+                word in help_text
+                for word in ["file", "path", "input", "output", "directory", "dir"]
+            ):
+                line += " -f"  # No file completion for non-file args
+
+        # Handle arguments that don't take values (store_true/store_false)
+        if arg_info.get("no_arg"):
+            line += " -f"  # No file completion for flags
+
         lines.append(line)
 
     return "\n".join(lines)

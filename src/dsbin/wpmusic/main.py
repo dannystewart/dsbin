@@ -168,6 +168,7 @@ class WPMusic:
                     track_metadata=track_metadata,
                 )
 
+            print()
             self.logger.info(
                 "%s %s%s...",
                 "Converting" if self.config.skip_upload else "Converting and uploading",

@@ -214,15 +214,23 @@ def process_all_scripts() -> None:
         completion = generate_fish_completion(script_name, args_info)
         print(f"✅ {script_name}: {len(args_info)} arguments")
 
-        # Write to both locations
+        # Write to both locations safely
         fish_completion_file = fish_completions_dir / f"{script_name}.fish"
         repo_completion_file = repo_completions_dir / f"{script_name}.fish"
 
         completion_content = completion + "\n"
-        fish_completion_file.write_text(completion_content, encoding="utf-8")
-        repo_completion_file.write_text(completion_content, encoding="utf-8")
 
-        successful += 1
+        fish_written = _write_completion_safely(
+            fish_completion_file, completion_content, script_name
+        )
+        repo_written = _write_completion_safely(
+            repo_completion_file, completion_content, script_name
+        )
+
+        if fish_written or repo_written:
+            successful += 1
+        else:
+            print("   Both files appear to be manually modified")
 
     print("=" * 50)
     print(f"Processed: {successful} successful, {failed} failed")
@@ -246,6 +254,31 @@ def _derive_script_name(script_path: str) -> str:
 
     # Last resort: use the full filename
     return path.name.replace(".py", "") if path.name.endswith(".py") else path.name
+
+
+def _is_safe_to_overwrite(completion_file: Path) -> bool:
+    """Check if a completion file is safe to overwrite (auto-generated)."""
+    if not completion_file.exists():
+        return True
+
+    try:
+        first_line = completion_file.read_text(encoding="utf-8").split("\n")[0]
+        return first_line.startswith("# Auto-generated completions")
+    except Exception:
+        # If we can't read the file, err on the side of caution
+        return False
+
+
+def _write_completion_safely(
+    completion_file: Path, completion_content: str, script_name: str
+) -> bool:
+    """Write completion file only if it's safe to overwrite."""
+    if _is_safe_to_overwrite(completion_file):
+        completion_file.write_text(completion_content, encoding="utf-8")
+        return True
+    print(f"⚠️  Skipping {script_name}: Completion file exists and appears to be manually modified")
+    print(f"   To regenerate, remove the first line or delete: {completion_file}")
+    return False
 
 
 def main() -> None:
@@ -296,15 +329,22 @@ def main() -> None:
 
         completion = generate_fish_completion(script_name, args_info)
         completion_file = fish_completions_dir / f"{script_name}.fish"
-        completion_file.write_text(completion + "\n", encoding="utf-8")
+        completion_content = completion + "\n"
 
-        print(f"\n✅ Fish completion installed for '{script_name}'")
-        print(f"📁 Location: {completion_file}")
+        if _write_completion_safely(completion_file, completion_content, script_name):
+            print(f"\n✅ Fish completion installed for '{script_name}'")
+            print(f"📁 Location: {completion_file}")
+        else:
+            print(f"\n⚠️  Fish completion NOT updated for '{script_name}'")
+    else:
+        print(f"\n⚠️  No arguments found in {script_path} - no completion generated")
 
-    print(f"\nGenerated Fish completion for '{script_name}':")
-    print("=" * 50)
-    completion = generate_fish_completion(script_name, args_info)
-    print(completion)
+    # Always show the generated completion for reference
+    if args_info:
+        print(f"\nGenerated Fish completion for '{script_name}':")
+        print("=" * 50)
+        completion = generate_fish_completion(script_name, args_info)
+        print(completion)
 
 
 if __name__ == "__main__":

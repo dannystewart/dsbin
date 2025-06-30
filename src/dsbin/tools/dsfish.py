@@ -7,7 +7,7 @@ from typing import TypeGuard
 import tomlkit
 
 
-def extract_argparse_info(script_path: str) -> list[dict[str, str]]:
+def extract_argparse_info(script_path: str) -> list[dict[str, str | list[str]]]:
     """Extract argparse info from a Python script."""
     try:
         with Path(script_path).open(encoding="utf-8") as f:
@@ -34,7 +34,7 @@ def _is_add_argument_call(node: ast.AST) -> TypeGuard[ast.Call]:
     )
 
 
-def _extract_argument_details(node: ast.Call) -> dict[str, str]:
+def _extract_argument_details(node: ast.Call) -> dict[str, str | list[str]]:
     """Extract argument details from an add_argument call."""
     arg_info = {}
 
@@ -86,7 +86,7 @@ def _extract_choices(value_node: ast.expr) -> list[str]:
     return [str(choice.value) for choice in value_node.elts if isinstance(choice, ast.Constant)]
 
 
-def generate_fish_completion(script_name: str, args_info: list[dict[str, str]]) -> str:
+def generate_fish_completion(script_name: str, args_info: list[dict[str, str | list[str]]]) -> str:
     """Generate Fish completion file content."""
     lines = [f"# Auto-generated completions for {script_name}"]
 

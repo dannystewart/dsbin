@@ -230,6 +230,18 @@ def main() -> None:
     for arg in args_info:
         print(f"  {arg}")
 
+    if args_info:
+        # For single script testing, only write to Fish config directory
+        fish_completions_dir = Path.home() / ".config" / "fish" / "completions"
+        fish_completions_dir.mkdir(parents=True, exist_ok=True)
+
+        completion = generate_fish_completion(script_name, args_info)
+        completion_file = fish_completions_dir / f"{script_name}.fish"
+        completion_file.write_text(completion + "\n", encoding="utf-8")
+
+        print(f"\n✅ Fish completion installed for '{script_name}'")
+        print(f"📁 Location: {completion_file}")
+
     print(f"\nGenerated Fish completion for '{script_name}':")
     print("=" * 50)
     completion = generate_fish_completion(script_name, args_info)

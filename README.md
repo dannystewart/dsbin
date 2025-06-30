@@ -45,7 +45,7 @@ This is my personal collection of Python scripts, built up over many years of so
 
 - [**changehostname**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/changehostname.py): Changes the system hostname in all the relevant places.
 - [**dockermounter**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/dockermounter.py): Checks to see if mount points are mounted, and act accordingly.
-- [**dsfish**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/dsfish.py): Test the completion generator on a script.
+- [**dsfish**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/dsfish.py): Generate Fish completions for all scripts in the project.
 - [**dsservice**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/tools/dsservice.py): Main function for managing systemd services.
 - [**dsupdater**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/updater/updater.py): Comprehensive update installer for Linux and macOS.
 - [**dsupdater-install**](https://github.com/dannystewart/dsbin/blob/main/src/dsbin/updater/install.py): Entry point for installer.

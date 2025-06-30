@@ -1,3 +1,5 @@
+"""Generate Fish completions for all scripts in the project."""
+
 from __future__ import annotations
 
 import ast

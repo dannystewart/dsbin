@@ -15,7 +15,7 @@ from pathlib import Path
 
 from polykit.core import polykit_setup
 from polykit.files import PolyFile
-from polykit.formatters import print_color
+from polykit.text import print_color
 
 from dsbin.media import MediaManager
 

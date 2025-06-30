@@ -20,8 +20,8 @@ from natsort import natsorted
 from polykit.cli import PolyArgs, confirm_action
 from polykit.core import polykit_setup
 from polykit.files import PolyFile
-from polykit.formatters import color
 from polykit.log import PolyLog
+from polykit.text import color
 
 from dsbin.media import MediaManager
 

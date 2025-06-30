@@ -14,7 +14,7 @@ import time
 from pathlib import Path
 
 from polykit.cli import PolyArgs, handle_interrupt
-from polykit.formatters import print_color
+from polykit.text import print_color
 
 
 class SpacePurger:

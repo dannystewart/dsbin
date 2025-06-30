@@ -8,8 +8,8 @@ from typing import TYPE_CHECKING, Any
 
 from packaging import version
 from polykit.cli import PolyArgs, walking_man
-from polykit.formatters import color
 from polykit.packages import PackageSource, VersionChecker, VersionInfo
+from polykit.text import color
 
 if TYPE_CHECKING:
     import argparse

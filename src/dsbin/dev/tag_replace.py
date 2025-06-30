@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 from polykit.cli import confirm_action, handle_interrupt
-from polykit.formatters import print_color
+from polykit.text import print_color
 
 
 def run_git_command(command: str | list[str]) -> str:

@@ -11,8 +11,8 @@ from typing import TYPE_CHECKING
 from polykit.cli import PolyArgs, WalkingMan, walking_man
 from polykit.env import PolyEnv
 from polykit.files import PolyDiff
-from polykit.formatters import print_color
 from polykit.log import PolyLog
+from polykit.text import print_color
 
 if TYPE_CHECKING:
     import argparse

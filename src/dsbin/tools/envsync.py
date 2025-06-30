@@ -8,7 +8,7 @@ import filecmp
 from collections import OrderedDict
 from pathlib import Path
 
-from polykit.formatters import print_color
+from polykit.text import print_color
 
 CHEZMOI_ENV = Path.home() / ".local" / "share" / "chezmoi" / "dot_local" / "bin" / ".env"
 CHEZMOI_NAME = "Chezmoi .env"

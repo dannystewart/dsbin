@@ -23,8 +23,8 @@ from typing import TYPE_CHECKING
 import tomlkit
 from polykit.cli import PolyArgs
 from polykit.core import polykit_setup
-from polykit.formatters import color, print_color
 from polykit.log import PolyLog
+from polykit.text import color, print_color
 
 if TYPE_CHECKING:
     import argparse

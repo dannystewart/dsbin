@@ -12,7 +12,7 @@ import inquirer
 import pyperclip
 from polykit.cli import handle_interrupt
 from polykit.core import polykit_setup
-from polykit.formatters import print_color
+from polykit.text import print_color
 
 polykit_setup()
 

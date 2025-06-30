@@ -7,7 +7,7 @@ import ast
 from collections import defaultdict
 from pathlib import Path
 
-from polykit.formatters import color, print_color
+from polykit.text import color, print_color
 
 # Default packages to analyze
 DEFAULT_PACKAGES: list[str] = [

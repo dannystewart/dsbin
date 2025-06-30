@@ -14,7 +14,7 @@ from pathlib import Path
 import inquirer
 from polykit.cli import handle_interrupt
 from polykit.core import polykit_setup
-from polykit.formatters import color, print_color
+from polykit.text import color, print_color
 
 polykit_setup()
 

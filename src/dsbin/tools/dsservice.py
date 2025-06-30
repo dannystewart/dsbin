@@ -5,7 +5,7 @@ import subprocess
 from pathlib import Path
 
 from polykit.cli import is_root_user
-from polykit.formatters import color, print_color
+from polykit.text import color, print_color
 
 from dsbin.systemd.service_list import ServiceConfigs
 from dsbin.systemd.systemd import SystemdServiceTemplate

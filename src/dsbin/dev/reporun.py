@@ -7,7 +7,7 @@ import argparse
 import subprocess
 from pathlib import Path
 
-from polykit.formatters import print_color
+from polykit.text import print_color
 
 # List of all your package directories
 PACKAGES = [

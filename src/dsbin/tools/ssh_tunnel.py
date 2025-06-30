@@ -10,8 +10,8 @@ import sys
 from typing import TYPE_CHECKING
 
 from polykit.cli import PolyArgs
-from polykit.formatters import print_color
 from polykit.log import PolyLog
+from polykit.text import print_color
 
 if TYPE_CHECKING:
     import argparse

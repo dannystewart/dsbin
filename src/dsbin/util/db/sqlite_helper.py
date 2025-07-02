@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import sqlite3
 from contextlib import contextmanager
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from polykit.log import PolyLog
@@ -21,8 +21,6 @@ class SQLiteHelper:
 
     database: str | Path
     _connection: sqlite3.Connection | None = None
-
-    logger: Logger = field(init=False)
 
     def __post_init__(self):
         self.logger: Logger = PolyLog.get_logger()

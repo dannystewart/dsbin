@@ -39,6 +39,9 @@
         "file": "code-style.md"
       }
     ],
-    "mypy-type-checker.args": ["--config-file=mypy.ini"]
+    "mypy-type-checker.args": ["--config-file=mypy.ini"],
+    "search.exclude": {
+      "completions/*.fish": true,
+    }
   }
 }

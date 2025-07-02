@@ -19,7 +19,12 @@ Usage:
     # Post-release version
     pybumper post           # 1.2.4    -> 1.2.4.post1
 
-All operations include git tagging and pushing changes to remote repository.
+    # File-only operations
+    pybumper -i             # 1.2.3    -> 1.2.4 (pyproject.toml only)
+    pybumper -i minor       # 1.2.3    -> 1.3.0 (pyproject.toml only)
+
+All operations include git tagging and pushing changes to remote repository, except when using
+--increment-only which only updates pyproject.toml.
 """
 
 from __future__ import annotations
@@ -58,6 +63,7 @@ class PyBumper:
 
         # Parse command-line arguments into instance variables
         self.no_increment = args.no_increment
+        self.increment_only = args.increment_only
         self.force = args.force
         self.type = args.type
 
@@ -81,6 +87,14 @@ class PyBumper:
     def perform_bump(self) -> None:
         """Perform version bump."""
         try:
+            # Handle --increment-only flag (increment version in pyproject.toml only)
+            if self.increment_only:
+                if self.no_increment:
+                    self.logger.error("--increment-only cannot be used with --no-increment")
+                    sys.exit(1)
+                self.perform_increment_only()
+                return
+
             # Handle --no-increment flag (tag current version without incrementing)
             if self.no_increment:
                 if self.type and self.type != [BumpType.PATCH.value]:
@@ -111,6 +125,30 @@ class PyBumper:
         except Exception as e:
             self.logger.error(str(e))
             sys.exit(1)
+
+    def perform_increment_only(self) -> None:
+        """Increment version in pyproject.toml only, no git operations."""
+        # Calculate new version
+        new_version_obj = self._calculate_new_version()
+        if new_version_obj is None:
+            return
+
+        new_version_str = str(new_version_obj)
+
+        # Show version info and get confirmation
+        self.logger.info("Current version: %s", self.current_ver_str)
+        self.logger.info("Will bump to:    %s", new_version_str)
+
+        # Prompt for confirmation unless --force is used
+        if not self.force and not confirm_action("Proceed with version increment?"):
+            self.logger.info("Version increment canceled.")
+            return
+
+        # Update version in pyproject.toml only
+        self._update_version_in_pyproject(self.pyproject_path, new_version_str)
+
+        # Log success
+        self.logger.info("\nSuccessfully incremented version to %s!", new_version_str)
 
     def _calculate_new_version(self) -> Version | None:
         """Calculate the new version based on bump types."""
@@ -310,6 +348,12 @@ def parse_args() -> argparse.Namespace:
         "--no-push",
         action="store_true",
         help="increment version, commit, and tag; do not push",
+    )
+    push_group.add_argument(
+        "-i",
+        "--increment-only",
+        action="store_true",
+        help="increment version in pyproject.toml only; no git operations",
     )
 
     return parser.parse_args()

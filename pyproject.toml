@@ -1,6 +1,6 @@
 [project]
 name = "dsbin"
-version = "0.8.13.dev1"
+version = "0.8.13.dev2"
 description = "Personal script library solving problems you didn't know you cared about"
 authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
 urls = { repository = "https://github.com/dannystewart/dsbin" }
@@ -16,7 +16,7 @@ dependencies = [
     "mutagen (>=1.47.0)",
     "mysql-connector-python (>=9.3.0)",
     "natsort (>=8.4.0)",
-    "numpy (>=2.3.1)",
+    "numpy (>=2.2.6)",
     "packaging (>=25.0)",
     "paramiko (>=3.5.1)",
     "pexpect (>=4.9.0)",

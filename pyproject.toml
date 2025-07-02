@@ -62,7 +62,7 @@ classifiers = [
 [tool.poetry.group.dev.dependencies]
 mypy = ">=1.16.1"
 pdoc = ">=15.0.4"
-polykit = { path = "../polykit", develop = true }
+polykit = { git = "https://github.com/dannystewart/polykit.git", develop = true }
 pre-commit = ">=4.2.0"
 ruff = ">=0.12.1"
 

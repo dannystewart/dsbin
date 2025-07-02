@@ -93,7 +93,6 @@ class WPConfig:
         self.ssh_host = "dannystewart.com"
         self.ssh_passphrase = self.env.ssh_passphrase
         self.private_key_path = self.paths.get_ssh_key("id_ed25519")
-        self._private_key: paramiko.Ed25519Key | None = None
 
         # Load environment variables into class attributes
         self.debug = self.env.debug

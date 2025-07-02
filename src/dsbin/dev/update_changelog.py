@@ -378,85 +378,6 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
         raise
 
 
-def get_git_range(prev_version: str) -> str:
-    """Determine the Git range to examine based on previous version tag."""
-    try:
-        tag_prefix = "v"
-        tag = f"{tag_prefix}{prev_version}"
-
-        # Check if the tag exists
-        result = subprocess.run(
-            ["git", "tag", "-l", tag], capture_output=True, text=True, check=True
-        )
-
-        if tag not in result.stdout:
-            logger.warning("Previous version tag %s not found, using all commits.", tag)
-            return ""
-        return f"{tag}..HEAD"
-    except subprocess.CalledProcessError as e:
-        logger.error("Git command failed while determining range: %s", str(e))
-        return ""
-
-
-def fetch_commit_messages(git_range: str) -> list[str]:
-    """Fetch commit messages for the specified Git range."""
-    try:
-        result = subprocess.run(
-            ["git", "log", "--pretty=format:%s", git_range],
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        return [line.strip() for line in result.stdout.splitlines() if line.strip()]
-    except subprocess.CalledProcessError as e:
-        logger.error("Git command failed while fetching commits: %s", str(e))
-        return []
-
-
-def categorize_commits(commit_messages: list[str]) -> dict[str, list[str]]:
-    """Categorize commit messages into changelog sections based on conventional commits."""
-    changes = {
-        "Added": [],
-        "Changed": [],
-        "Fixed": [],
-        "Removed": [],
-        "Security": [],
-        "Deprecated": [],
-        "Updated": [],
-    }
-
-    type_to_section = {
-        "feat": "Added",
-        "fix": "Fixed",
-        "perf": "Changed",
-        "refactor": "Changed",
-        "docs": "Updated",
-    }
-
-    for message in commit_messages:
-        match = re.match(r"^(\w+)(?:\(([^)]+)\))?: (.+)$", message)
-        if match:
-            type_, scope, desc = match.groups()
-            section = type_to_section.get(type_, "Changed")
-            prefix = f"**{scope}**: " if scope else ""
-            changes[section].append(f"{prefix}{desc}")
-        else:
-            changes["Changed"].append(message)
-
-    return {k: v for k, v in changes.items() if v}
-
-
-def get_git_changes(prev_version: str) -> dict[str, list[str]]:
-    """Get changes from Git commits since the previous version."""
-    try:
-        git_range = get_git_range(prev_version)
-        commit_messages = fetch_commit_messages(git_range)
-        return categorize_commits(commit_messages)
-    except Exception as e:
-        logger.error("Failed to get Git changes: %s", str(e))
-        return {}
-
-
 def find_previous_version(version: str) -> str:
     """Find the previous version in the changelog.
 
@@ -869,11 +790,6 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         help="version to add (defaults to version from pyproject.toml)",
     )
     parser.add_argument(
-        "--from-commit-history",
-        action="store_true",
-        help="automatically generate changelog entries from Git commit messages",
-    )
-    parser.add_argument(
         "--repo-name",
         "-r",
         help="GitHub repo name to use for links (defaults to auto-detect)",
@@ -927,18 +843,8 @@ def main() -> int:
         # Get the version to add to changelog
         version = args.version or get_latest_version()
 
-        # Get previous version
-        prev_version = get_previous_version()
-
-        # Get changes
-        if args.from_commit_history:
-            sections = get_git_changes(prev_version)
-            if not sections:
-                logger.warning("No changes found in Git history, adding empty sections.")
-                sections = {"Added": [], "Changed": [], "Fixed": []}
-        else:
-            # Empty sections for manual editing
-            sections = {"Added": [], "Changed": [], "Fixed": []}
+        # Empty sections for manual editing
+        sections = {"Added": [], "Changed": [], "Fixed": []}
 
         # Update the changelog
         update_changelog(version, sections, repo_url)

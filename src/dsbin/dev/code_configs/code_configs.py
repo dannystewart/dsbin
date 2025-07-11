@@ -19,9 +19,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import requests
-from polykit.cli import PolyArgs, confirm_action
+from polykit import PolyArgs, PolyLog
+from polykit.cli import confirm_action
 from polykit.files import PolyDiff
-from polykit.log import PolyLog
 from polykit.text import color
 
 if TYPE_CHECKING:

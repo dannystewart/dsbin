@@ -8,8 +8,7 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import PolyArgs
-from polykit.log import PolyLog
+from polykit import PolyArgs, PolyLog
 
 if TYPE_CHECKING:
     import argparse

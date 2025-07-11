@@ -36,9 +36,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
 
-from polykit.files import PolyFile
-from polykit.formatters import TZ
-from polykit.log import PolyLog
+from polykit import TZ, PolyFile, PolyLog
 
 
 @dataclass

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import requests
-from polykit.log import PolyLog
+from polykit import PolyLog
 
 from .telegram_api import TelegramAPIHelper
 

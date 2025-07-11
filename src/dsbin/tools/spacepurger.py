@@ -13,7 +13,8 @@ import tempfile
 import time
 from pathlib import Path
 
-from polykit.cli import PolyArgs, handle_interrupt
+from polykit import PolyArgs
+from polykit.cli import handle_interrupt
 from polykit.text import print_color
 
 

@@ -10,9 +10,9 @@ import shutil
 import time
 from typing import TYPE_CHECKING
 
-from polykit.cli import PolyArgs, handle_interrupt
+from polykit import PolyArgs, PolyLog
+from polykit.cli import handle_interrupt
 from polykit.core import polykit_setup
-from polykit.log import PolyLog
 from polykit.text import color, print_color
 from polykit.time import PolyTime
 

@@ -18,9 +18,9 @@ import tempfile
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import PolyArgs, halo_progress
+from polykit import PolyArgs, PolyLog
+from polykit.cli import halo_progress
 from polykit.core import polykit_setup
-from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     import argparse

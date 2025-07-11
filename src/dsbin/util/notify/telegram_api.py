@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import requests
-from polykit.log import PolyLog
+from polykit import PolyLog
 
 if TYPE_CHECKING:
     from logging import Logger

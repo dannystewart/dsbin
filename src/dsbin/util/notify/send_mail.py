@@ -5,7 +5,7 @@ from __future__ import annotations
 import smtplib
 from email.mime.text import MIMEText
 
-from polykit.log import PolyLog
+from polykit import PolyLog
 
 
 class MailSender:

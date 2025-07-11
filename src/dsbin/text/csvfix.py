@@ -128,20 +128,20 @@ class CSVEncodingFixer:
 
         logger.debug("Fixing %s...", input_path)
 
-        # Create backup if replacing original file
-        if output_path is None:
-            backup_path = str(input_file.stem + "_backup" + input_file.suffix)
-            shutil.copy2(input_path, backup_path)
-            logger.info("Created backup file: %s", backup_path)
-            output_path = input_path
-
         # Detect current encoding
         detected_encoding, confidence = self.detect_encoding(input_path)
 
         if confidence < 0.7:
             logger.warning(
-                "Warning: Low confidence in encoding detection (%d%%)", int(confidence * 100)
+                "Warning: Low confidence in encoding detection (%d%%). Creating backup first.",
+                int(confidence * 100),
             )
+            # Create backup if low confidence
+            backup_path = str(input_file.stem + "_backup" + input_file.suffix)
+            shutil.copy2(input_path, backup_path)
+            logger.info("Created backup file: %s", backup_path)
+
+        output_path = output_path or input_path
 
         # Check for BOM
         has_bom = self.has_bom(input_path)

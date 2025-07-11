@@ -6,7 +6,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.log import PolyLog
+from polykit import PolyLog
 
 from dsbin.workcalc import DataSourcePlugin
 from dsbin.workcalc.data import WorkItem

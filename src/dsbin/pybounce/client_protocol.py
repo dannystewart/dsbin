@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, Protocol
 
+from polykit import PolyLog
 from polykit.core import polykit_setup
-from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     from collections.abc import Callable

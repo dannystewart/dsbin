@@ -14,9 +14,9 @@ import re
 import sys
 from pathlib import Path
 
+from polykit import PolyLog
 from polykit.cli import confirm_action
 from polykit.core import polykit_setup
-from polykit.log import PolyLog
 from polykit.text import color
 
 polykit_setup()

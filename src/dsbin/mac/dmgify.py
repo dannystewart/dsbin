@@ -33,10 +33,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from polykit.cli import PolyArgs, halo_progress, handle_interrupt
+from polykit import PolyArgs, PolyFile, PolyLog
+from polykit.cli import halo_progress, handle_interrupt
 from polykit.core import polykit_setup, with_retries
-from polykit.files import PolyFile
-from polykit.log import PolyLog
 
 if TYPE_CHECKING:
     import argparse

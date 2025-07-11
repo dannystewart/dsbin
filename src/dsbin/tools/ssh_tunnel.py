@@ -9,8 +9,7 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from polykit.cli import PolyArgs
-from polykit.log import PolyLog
+from polykit import PolyArgs, PolyLog
 from polykit.text import print_color
 
 if TYPE_CHECKING:

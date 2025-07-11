@@ -7,9 +7,9 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+from polykit import PolyFile
 from polykit.cli import confirm_action
 from polykit.core import polykit_setup
-from polykit.files import PolyFile
 from polykit.text import print_color as colored
 
 polykit_setup()

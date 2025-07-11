@@ -5,8 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from polykit import PolyLog
-from polykit.formatters import TZ
+from polykit import TZ, PolyLog
 from rich import box
 from rich.console import Console
 from rich.table import Table

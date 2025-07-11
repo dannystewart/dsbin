@@ -5,8 +5,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
-from polykit.files import PolyFile
-from polykit.log import PolyLog
+from polykit import PolyFile, PolyLog
 
 from dsbin.workcalc.data import WorkItem
 from dsbin.workcalc.plugin import DataSourcePlugin

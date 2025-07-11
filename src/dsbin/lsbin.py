@@ -21,9 +21,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import tomlkit
-from polykit.cli import PolyArgs
+from polykit import PolyArgs, PolyLog
 from polykit.core import polykit_setup
-from polykit.log import PolyLog
 from polykit.text import color, print_color
 
 if TYPE_CHECKING:

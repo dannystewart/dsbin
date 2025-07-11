@@ -37,9 +37,8 @@ import sys
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import PolyArgs
+from polykit import PolyArgs, PolyFile
 from polykit.core import polykit_setup
-from polykit.files import PolyFile
 from polykit.text import color
 
 if TYPE_CHECKING:

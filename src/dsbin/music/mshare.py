@@ -17,9 +17,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar
 
 import inquirer
-from polykit.cli import PolyArgs, halo_progress, handle_interrupt, walking_man
+from polykit import PolyArgs, PolyLog
+from polykit.cli import halo_progress, handle_interrupt, walking_man
 from polykit.core import polykit_setup
-from polykit.log import PolyLog
 from polykit.text import color as colored
 
 from dsbin.media import MediaManager

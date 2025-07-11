@@ -9,8 +9,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from polykit import PolyLog
 from polykit.core import polykit_setup
-from polykit.log import PolyLog
 
 polykit_setup()
 

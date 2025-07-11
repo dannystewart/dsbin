@@ -24,9 +24,9 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 from halo import Halo
+from polykit import PolyLog
 from polykit.cli import handle_interrupt, walking_man
 from polykit.core import polykit_setup
-from polykit.log import PolyLog
 from polykit.text import color
 
 from dsbin.media import MediaManager

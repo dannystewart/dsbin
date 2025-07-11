@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
-from polykit.log import PolyLog
+from polykit import PolyLog
 
 from dsbin.util.db import DatabaseError, QueryResult
 

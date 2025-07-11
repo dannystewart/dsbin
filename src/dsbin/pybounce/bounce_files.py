@@ -9,8 +9,7 @@ from typing import TYPE_CHECKING
 import inquirer
 from mutagen import File as MutagenFile  # type: ignore
 from natsort import natsorted
-from polykit.files import PolyFile
-from polykit.formatters import TZ
+from polykit import TZ, PolyFile
 
 if TYPE_CHECKING:
     from logging import Logger

@@ -8,7 +8,7 @@ import subprocess
 import sys
 from typing import TYPE_CHECKING
 
-from polykit.cli import PolyArgs
+from polykit import PolyArgs
 from polykit.core import polykit_setup
 
 if TYPE_CHECKING:

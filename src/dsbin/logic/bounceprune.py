@@ -29,9 +29,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import TYPE_CHECKING
 
+from polykit import PolyFile
 from polykit.cli import confirm_action, walking_man
 from polykit.core import polykit_setup
-from polykit.files import PolyFile
 from polykit.text import color, print_color
 
 from dsbin.logic.bounce_parser import Bounce, BounceParser

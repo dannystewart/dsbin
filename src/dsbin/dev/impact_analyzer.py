@@ -8,10 +8,10 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit.cli import PolyArgs, WalkingMan, walking_man
+from polykit import PolyArgs, PolyLog
+from polykit.cli import WalkingMan, walking_man
 from polykit.env import PolyEnv
 from polykit.files import PolyDiff
-from polykit.log import PolyLog
 from polykit.text import print_color
 
 if TYPE_CHECKING:

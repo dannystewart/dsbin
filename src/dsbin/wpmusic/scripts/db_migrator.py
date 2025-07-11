@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import TYPE_CHECKING
 
 import mysql.connector
-from polykit.log import PolyLog
+from polykit import PolyLog
 
 from dsbin.wpmusic.configs import WPConfig
 

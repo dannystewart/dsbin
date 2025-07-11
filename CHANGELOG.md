@@ -6,6 +6,35 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.0] (2025-07-11)
+
+### Added
+
+- Adds `--increment-only` flag to `pybumper` for updating version in `pyproject.toml` without performing Git operations.
+- Adds Fish shell completions for 35 CLI tools to improve the command-line experience for you awesome Fish users out there.
+
+### Changed
+
+- Relaxes `numpy` requirement from 2.3.1 to 2.2.6 for better compatibility
+- Relaxes `rich` dependency from 14.0.0 to 13.9.4 for better compatibility.
+- Updates dependencies:
+  - Pillow 11.2.1 → 11.3.0
+  - Ruff 0.12.0 → 0.12.3
+  - Poetry 2.1.1 → 2.1.3
+  - Cryptography 45.0.4 → 45.0.5
+  - Various other minor dependency updates
+
+### Removed
+
+- Removes commit history feature from `changelogs` tool.
+
+### Fixed
+
+- Fixes duplicate private key declaration in `WPConfig` class.
+- Strips whitespace from dev version numbers in `pybumper` to prevent parsing errors.
+- Adds newline before fetching metadata in `wpmusic` for improved log readability.
+- Fixes import paths for `polykit` modules to reflect library restructuring.
+
 ## [0.8.12] (2025-06-24)
 
 ### Added
@@ -583,7 +612,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.8.12...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.0...HEAD
+[0.9.0]: https://github.com/dannystewart/dsbin/compare/v0.8.12...v0.9.0
 [0.8.12]: https://github.com/dannystewart/dsbin/compare/v0.8.11...v0.8.12
 [0.8.11]: https://github.com/dannystewart/dsbin/compare/v0.8.10...v0.8.11
 [0.8.10]: https://github.com/dannystewart/dsbin/compare/v0.8.9...v0.8.10

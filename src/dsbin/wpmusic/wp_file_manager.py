@@ -11,6 +11,7 @@ from polykit import PolyFile, PolyLog
 from polykit.cli import handle_interrupt
 from polykit.text import color as colored
 from scp import SCPClient
+from tqdm import tqdm
 
 if TYPE_CHECKING:
     from dsbin.wpmusic.audio_track import AudioTrack
@@ -105,6 +106,22 @@ class WPFileManager:
     def upload_file_to_web_server(self, file_path: Path, audio_track: AudioTrack) -> None:
         """Upload a file to my web server."""
         final_filename = file_path.name
+        file_size = file_path.stat().st_size
+
+        # Create progress bar
+        progress_bar = tqdm(
+            total=file_size,
+            unit="B",
+            unit_scale=True,
+            desc=f"Uploading {final_filename}",
+            bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]",
+        )
+
+        def progress_callback(_filename: bytes, _size: int, sent: int) -> None:
+            """Update progress bar during upload."""
+            progress_bar.n = sent
+            progress_bar.refresh()
+
         try:
             with paramiko.SSHClient() as ssh:
                 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -117,8 +134,11 @@ class WPFileManager:
                 temp_filename = f"tmp-{final_filename}"
                 self.logger.debug("Uploading file '%s' as '%s'...", file_path, temp_filename)
 
-                with SCPClient(ssh.get_transport()) as scp:  # type: ignore
+                with SCPClient(ssh.get_transport(), progress=progress_callback) as scp:  # type: ignore
                     scp.put(str(file_path), f"{self.config.upload_path_prefix}{temp_filename}")
+
+                # Close progress bar
+                progress_bar.close()
 
                 # Rename the temporary file to the final filename on the remote server
                 self.logger.debug("Renaming '%s' to '%s'...", temp_filename, final_filename)
@@ -139,6 +159,7 @@ class WPFileManager:
                 )
 
         except Exception as e:
+            progress_bar.close()
             self.logger.error("SSH error: %s", str(e))
 
     def print_and_copy_urls(self, base_filename: str, is_pair: bool = False) -> None:

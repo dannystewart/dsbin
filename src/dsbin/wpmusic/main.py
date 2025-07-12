@@ -244,7 +244,8 @@ class WPMusic:
             # Upload the file if it's in the list of formats to upload
             if format_name in self.config.formats_to_upload and not self.config.skip_upload:
                 self.logger.debug("Uploading %s file...", format_name.upper())
-                self.spinner.start(color(f"Uploading {format_name.upper()} file...", "cyan"))
+                # Stop spinner before upload to avoid interfering with progress bar
+                self.spinner.stop()
                 self.file_manager.upload_file_to_web_server(processed_file, audio_track)
 
             self.spinner.succeed(color(f"{format_name.upper()} processing complete!", "green"))

@@ -113,8 +113,9 @@ class WPFileManager:
             total=file_size,
             unit="B",
             unit_scale=True,
-            desc=f"Uploading {final_filename}",
-            bar_format="{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]",
+            desc=colored(f"Uploading {final_filename}:", "cyan"),
+            bar_format="{desc} {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}",
+            ncols=70,
         )
 
         def progress_callback(_filename: bytes, _size: int, sent: int) -> None:

@@ -1,4 +1,5 @@
 # Auto-generated completions for wpmusic
+complete -c wpmusic -d "the filename of the track to upload"
 complete -c wpmusic -l skip-upload -d "convert only, skip uploading (implies --keep-files)" -f
 complete -c wpmusic -l keep-files -d "keep converted files after upload" -f
 complete -c wpmusic -l append -d "append text to the song title" -f

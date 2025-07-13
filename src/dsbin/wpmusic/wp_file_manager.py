@@ -103,6 +103,21 @@ class WPFileManager:
         else:  # Otherwise, delete the files
             PolyFile.delete(files_to_process)
 
+    def check_ssh_connectivity(self) -> bool:
+        """Pre-flight check for SSH connectivity."""
+        try:
+            with paramiko.SSHClient() as ssh:
+                ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+                ssh.connect(
+                    self.config.ssh_host,
+                    username=self.config.ssh_user,
+                    pkey=self.config.private_key,
+                    timeout=10,
+                )
+                return True
+        except Exception:
+            return False
+
     def upload_file_to_web_server(self, file_path: Path, audio_track: AudioTrack) -> None:
         """Upload a file to my web server."""
         final_filename = file_path.name

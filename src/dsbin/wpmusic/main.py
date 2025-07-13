@@ -71,6 +71,11 @@ class WPMusic:
             self.logger.error("No input files specified and no --history argument. Nothing to do.")
             sys.exit(1)
 
+        # Check SSH connectivity before proceeding
+        if not self.config.skip_upload and not self.file_manager.check_ssh_connectivity():
+            self.logger.error("SSH check failed. You may need to authenticate your SSH key.")
+            sys.exit(1)
+
         with walking_man(color="cyan"):
             # Initialize components
             self.track_identifier = TrackIdentifier(self.config)

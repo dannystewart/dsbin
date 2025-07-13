@@ -1,9 +1,10 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 if TYPE_CHECKING:
+    import argparse
     from collections.abc import Iterator
 
     from dsbin.workcalc.data import WorkItem
@@ -11,6 +12,12 @@ if TYPE_CHECKING:
 
 class DataSourcePlugin(ABC):
     """Abstract base class for work data source plugins."""
+
+    # Class attributes that must be defined by subclasses
+    source_name: ClassVar[str]
+    item_name: ClassVar[str]
+    help_text: ClassVar[str]
+    description: ClassVar[str]
 
     @abstractmethod
     def validate_source(self) -> bool:
@@ -24,9 +31,16 @@ class DataSourcePlugin(ABC):
         msg = "Subclasses must implement get_work_items"
         raise NotImplementedError(msg)
 
-    @property
+    @classmethod
     @abstractmethod
-    def source_name(self) -> str:
-        """Name of this data source type."""
-        msg = "Subclasses must implement source_name"
+    def add_arguments(cls, parser: argparse.ArgumentParser) -> None:
+        """Add source-specific arguments to the argument parser."""
+        msg = "Subclasses must implement add_arguments"
+        raise NotImplementedError(msg)
+
+    @classmethod
+    @abstractmethod
+    def from_args(cls, args: argparse.Namespace) -> DataSourcePlugin:
+        """Create an instance from parsed arguments."""
+        msg = "Subclasses must implement from_args"
         raise NotImplementedError(msg)

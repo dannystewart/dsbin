@@ -4,7 +4,7 @@ import subprocess
 from dataclasses import dataclass, field
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, ClassVar
 
 from polykit import PolyLog
 
@@ -12,6 +12,7 @@ from dsbin.workcalc import DataSourcePlugin
 from dsbin.workcalc.data import WorkItem
 
 if TYPE_CHECKING:
+    import argparse
     from collections.abc import Iterator
     from logging import Logger
 
@@ -20,6 +21,11 @@ if TYPE_CHECKING:
 class GitDataSource(DataSourcePlugin):
     """Git repository data source."""
 
+    source_name: ClassVar[str] = "git"
+    item_name: ClassVar[str] = "commit"
+    help_text: ClassVar[str] = "Analyze Git commit history"
+    description: ClassVar[str] = "Analyze work patterns from Git commit history in a repository"
+
     repo_dir: str | Path
     logger: Logger = field(init=False)
 
@@ -27,10 +33,15 @@ class GitDataSource(DataSourcePlugin):
         self.repo_path = Path(self.repo_dir)
         self.logger = PolyLog.get_logger()
 
-    @property
-    def source_name(self) -> str:
-        """Name of this data source type."""
-        return "git"
+    @classmethod
+    def add_arguments(cls, parser: argparse.ArgumentParser) -> None:
+        """Add Git-specific arguments to the argument parser."""
+        parser.add_argument("repo_path", type=Path, help="path to Git repository")
+
+    @classmethod
+    def from_args(cls, args: argparse.Namespace) -> GitDataSource:
+        """Create an instance from parsed arguments."""
+        return cls(repo_dir=args.repo_path)
 
     def validate_source(self) -> bool:
         """Verify that the path is a git repository."""

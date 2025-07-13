@@ -11,6 +11,7 @@ from dsbin.workcalc.data import WorkItem
 from dsbin.workcalc.plugin import DataSourcePlugin
 
 if TYPE_CHECKING:
+    import argparse
     from collections.abc import Iterator
     from logging import Logger
 
@@ -18,6 +19,11 @@ if TYPE_CHECKING:
 @dataclass
 class BounceDataSource(DataSourcePlugin):
     """Logic Pro bounce file data source."""
+
+    source_name: ClassVar[str] = "logic"
+    item_name: ClassVar[str] = "bounce"
+    help_text: ClassVar[str] = "Analyze Logic bounce files"
+    description: ClassVar[str] = "Analyze work patterns from Logic bounce files in a directory"
 
     BOUNCE_EXTENSIONS: ClassVar[list[str]] = ["wav", "m4a"]
 
@@ -28,10 +34,15 @@ class BounceDataSource(DataSourcePlugin):
         self.directory = Path(self.bounce_dir)
         self.logger = PolyLog.get_logger()
 
-    @property
-    def source_name(self) -> str:
-        """Name of this data source type."""
-        return "logic"
+    @classmethod
+    def add_arguments(cls, parser: argparse.ArgumentParser) -> None:
+        """Add Logic-specific arguments to the argument parser."""
+        parser.add_argument("directory", type=Path, help="directory containing Logic bounce files")
+
+    @classmethod
+    def from_args(cls, args: argparse.Namespace) -> BounceDataSource:
+        """Create an instance from parsed arguments."""
+        return cls(bounce_dir=args.directory)
 
     def validate_source(self) -> bool:
         """Verify the directory exists and contains audio files."""

@@ -5,14 +5,14 @@ from __future__ import annotations
 import argparse
 import datetime
 from dataclasses import dataclass
-from pathlib import Path
 from typing import TYPE_CHECKING
 
-from polykit import TZ, PolyLog
+from polykit import TZ
 from polykit.cli import walking_man
 from polykit.core import polykit_setup
-from polykit.text import plural
+from polykit.text import plural, print_color
 
+from dsbin.workcalc import PluginRegistry
 from dsbin.workcalc.data import (
     SessionAnalyzer,
     StreakAnalyzer,
@@ -21,7 +21,7 @@ from dsbin.workcalc.data import (
     TimeSpan,
     WorkStats,
 )
-from dsbin.workcalc.plugins import BounceDataSource, GitDataSource
+from dsbin.workcalc.plugins import initialize_plugins
 
 if TYPE_CHECKING:
     from datetime import date
@@ -53,20 +53,16 @@ class WorkCalculator:
         """
         self.data_source = data_source
         self.config = config
-        self.item_name = self._get_item_name()
-
-        self.logger = PolyLog.get_logger("workcalc", level="debug", simple=True, time_aware=True)
 
         if not self.data_source.validate_source():
             msg = f"Invalid {self.data_source.source_name} data source"
             raise ValueError(msg)
 
         # Log configuration details
-        self.logger.debug(
-            "Considering %s to be a session break with a minimum of %s per %s.",
-            plural("minute", self.config.break_time),
-            plural("minute", self.config.min_work_per_item),
-            self.item_name,
+        print_color(
+            f"Considering {plural('minute', self.config.break_time)} to be a session break with a minimum of "
+            f"{plural('minute', self.config.min_work_per_item)} per {self.data_source.item_name}.",
+            "blue",
         )
 
         self.stats = WorkStats(source_type=self.data_source.source_name)
@@ -78,51 +74,54 @@ class WorkCalculator:
         self.time_analyzer = TimeAnalyzer()
 
         with walking_man(
-            f"\nAnalyzing {self.data_source.source_name.capitalize()} data...", "cyan"
+            f"\nAnalyzing {self.data_source.source_name.capitalize()} data...", "blue"
         ):
             self.work_items = self.collect_work_items()
             self.analyze_work_patterns()
 
-    def _get_item_name(self) -> str:
-        """Get the appropriate name for work items based on source type."""
-        return {
-            "git": "commit",
-            "logic": "bounce",
-        }.get(self.data_source.source_name, "item")
-
     def analyze(self) -> None:
         """Run analysis and display results."""
-        self.logger.info("Processed %d %ss", self.stats.total_items, self.item_name)
+        print_color(f"Processed {self.stats.total_items} {self.data_source.item_name}s", "green")
 
         # Display time span information
         if time_span := TimeSpan.from_stats(self.stats):
-            for message in self.time_analyzer.format_time_span(time_span, self.item_name):
-                self.logger.debug("%s", message)
+            for message in self.time_analyzer.format_time_span(
+                time_span, self.data_source.item_name
+            ):
+                print_color(message, "white")
 
         # Display session statistics
-        self.logger.info("\nWork patterns:")
+        print_color("\nWork patterns:", "green")
         session_stats = self.session_analyzer.calculate_session_stats(self.stats)
-        for message in self.session_analyzer.format_session_stats(session_stats, self.item_name):
-            self.logger.debug("%s", message)
+        for message in self.session_analyzer.format_session_stats(
+            session_stats, self.data_source.item_name
+        ):
+            print_color(message, "white")
 
         # Display time distribution
         time_dist = self.time_analyzer.calculate_time_distribution(self.stats)
 
-        self.logger.info("\nDay of week patterns:")
-        for message in self.time_analyzer.format_distribution(time_dist, self.item_name):
-            self.logger.debug("%s", message)
+        print_color("\nDay of week patterns:", "green")
+        for message in self.time_analyzer.format_distribution(
+            time_dist, self.data_source.item_name
+        ):
+            print_color(message, "white")
 
         # Display streak information
         print()  # Add spacing
         streak_stats = self.streak_analyzer.calculate_streaks(self.stats)
-        for message in self.streak_analyzer.format_streak_stats(streak_stats, self.item_name):
-            self.logger.info("%s", message)
+        for message in self.streak_analyzer.format_streak_stats(
+            streak_stats, self.data_source.item_name
+        ):
+            print_color(message, "green")
 
         # Display summary statistics
         print()  # Add spacing
         summary_stats = self.summary_analyzer.calculate_summary_stats(self.stats)
-        for message in self.summary_analyzer.format_summary_stats(summary_stats, self.item_name):
-            self.logger.info("%s", message)
+        for message in self.summary_analyzer.format_summary_stats(
+            summary_stats, self.data_source.item_name
+        ):
+            print_color(message, "cyan")
 
     def collect_work_items(self) -> list[WorkItem]:
         """Collect and filter work items from the data source."""
@@ -228,57 +227,65 @@ def parse_relative_date(date_str: str) -> datetime.date:
         raise ValueError(msg) from e
 
 
-def main() -> None:
-    """Calculate work patterns from various data sources."""
+def create_dynamic_parser() -> argparse.ArgumentParser:
+    """Create argument parser with dynamic subparsers based on registered plugins.
+
+    Raises:
+        RuntimeError: If no data source plugins are registered.
+    """
+    # Get all available plugins
+    all_plugins = list(PluginRegistry.get_all_plugins())
+
+    if not all_plugins:
+        msg = "No data source plugins are registered"
+        raise RuntimeError(msg)
+
+    # Create examples dynamically
+    examples = []
+    for plugin_class in all_plugins:
+        examples.extend([
+            f"  # {plugin_class.help_text} in the past 30 days",
+            f"  workcalc {plugin_class.source_name} /path/to/source --since 30d",
+            "",
+            f"  # {plugin_class.help_text} for 2024",
+            f"  workcalc {plugin_class.source_name} /path/to/source --start 01/01/2024 --end 12/31/2024",
+            "",
+            f"  # {plugin_class.help_text} with custom break time",
+            f"  workcalc {plugin_class.source_name} /path/to/source --break-time 90 --min-work 20",
+            "",
+        ])
+
     parser = argparse.ArgumentParser(
-        description="Calculate work patterns from Git commits or Logic bounce files",
+        description="Calculate work patterns from various data sources",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
+        epilog=f"""
 Examples:
-  # Analyze Git commits in the past 30 days
-  workcalc git /path/to/repo --since 30d
-
-  # Analyze Logic bounce files for 2024
-  workcalc logic /path/to/bounces --start 01/01/2024 --end 12/31/2024
-
-  # Analyze Git commits with custom date range
-  workcalc git /path/to/repo --start 01/01/2024 --end 12/31/2024
-
-  # Analyze Logic bounce files with custom break time
-  workcalc logic /path/to/bounces --break-time 90 --min-work 20
+{chr(10).join(examples)}
         """,
     )
 
     subparsers = parser.add_subparsers(dest="source_type", required=True, help="Data source type")
 
-    # Git repository parser
-    git_parser = subparsers.add_parser(
-        "git",
-        help="Analyze Git commit history",
-        description="Analyze work patterns from Git commit history in a repository",
-    )
-    git_parser.add_argument("repo_path", type=Path, help="Path to Git repository")
+    # Create subparsers dynamically based on registered plugins
+    for plugin_class in all_plugins:
+        subparser = subparsers.add_parser(
+            plugin_class.source_name,
+            help=plugin_class.help_text,
+            description=plugin_class.description,
+        )
 
-    # Logic bounce parser
-    bounce_parser = subparsers.add_parser(
-        "logic",
-        help="Analyze Logic bounce files",
-        description="Analyze work patterns from Logic bounce files in a directory",
-    )
-    bounce_parser.add_argument(
-        "directory", type=Path, help="Directory containing Logic bounce files"
-    )
+        # Add plugin-specific arguments
+        plugin_class.add_arguments(subparser)
 
-    # Common arguments
-    for p in [git_parser, bounce_parser]:
-        p.add_argument(
+        # Add common arguments
+        subparser.add_argument(
             "-b",
             "--break-time",
             type=int,
             default=60,
             help="Minutes of inactivity to consider a session break (default: 60)",
         )
-        p.add_argument(
+        subparser.add_argument(
             "-m",
             "--min-work",
             type=int,
@@ -287,11 +294,24 @@ Examples:
         )
 
         # Time range arguments
-        time_group = p.add_mutually_exclusive_group()
+        time_group = subparser.add_mutually_exclusive_group()
         time_group.add_argument("--since", help="Start date: MM/DD/YYYY or relative (30d, 1w, 1m)")
         time_group.add_argument("--start", help="Start date in MM/DD/YYYY format")
         time_group.add_argument("--end", help="End date in MM/DD/YYYY format")
 
+    return parser
+
+
+def main() -> None:
+    """Calculate work patterns from various data sources.
+
+    Raises:
+        ValueError: If the data source is invalid.
+    """
+    # Initialize plugins
+    initialize_plugins()
+
+    parser = create_dynamic_parser()
     args = parser.parse_args()
 
     # Parse date arguments
@@ -313,11 +333,13 @@ Examples:
         end_date=end_date,
     )
 
-    data_source: DataSourcePlugin
-    if args.source_type == "git":
-        data_source = GitDataSource(args.repo_path)
-    elif args.source_type == "logic":
-        data_source = BounceDataSource(args.directory)
+    # Get plugin class and create data source instance
+    plugin_class = PluginRegistry.get_plugin(args.source_type)
+    if not plugin_class:
+        msg = f"Unknown data source type: {args.source_type}"
+        raise ValueError(msg)
+
+    data_source = plugin_class.from_args(args)
 
     calculator = WorkCalculator(data_source, config)
     calculator.analyze()

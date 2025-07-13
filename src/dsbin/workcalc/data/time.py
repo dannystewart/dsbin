@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import TYPE_CHECKING
 
-from polykit.text import plural
+from polykit.text import color, plural
 
 if TYPE_CHECKING:
     from datetime import datetime
@@ -118,10 +118,10 @@ class TimeAnalyzer:
             )
 
         # Most active hours
-        messages.append("\nMost active hours:")
+        messages.append(color("\nMost active hours:", "green"))
         for hour, items, percentage in dist.most_active_hours:
             messages.append(
-                f"  {TimeAnalyzer.format_hour(hour)}: {plural(item_name, items, with_count=True)} ({percentage:.1f}%)"
+                f"{TimeAnalyzer.format_hour(hour)}: {plural(item_name, items, with_count=True)} ({percentage:.1f}%)"
             )
 
         return messages

@@ -31,9 +31,9 @@ class FormattedTime:
         """Format the time as a string."""
         days_str = f"{plural('day', self.days, with_count=True)}, " if self.days else ""
         return (
-            f"{days_str}{plural('hour', self.hours, with_count=True)}, "
-            f"{plural('minute', self.minutes, with_count=True)} "
-            f"({self.total_hours} hours)"
+            f"{self.total_hours} hours "
+            f"({days_str}{plural('hour', self.hours, with_count=True)}, "
+            f"{plural('minute', self.minutes, with_count=True)})"
         )
 
 

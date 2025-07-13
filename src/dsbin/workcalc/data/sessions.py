@@ -42,7 +42,7 @@ class SessionAnalyzer:
     def format_session_stats(stats: SessionStats, item_name: str = "item") -> list[str]:
         """Format session statistics for display."""
         messages = [
-            f"Number of work sessions: {stats.count}",
+            f"Number of sessions: {stats.count}",
             f"Most active day by {item_name}: {stats.most_active_day_items[0]:%B %-d, %Y} "
             f"({plural(item_name, stats.most_active_day_items[1], with_count=True)})",
         ]

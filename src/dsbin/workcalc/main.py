@@ -88,7 +88,7 @@ class WorkCalculator:
             for message in self.time_analyzer.format_time_span(
                 time_span, self.data_source.item_name
             ):
-                print_color(message, "white")
+                print_color(" " + message, "white")
 
         # Display session statistics
         print_color("\nWork patterns:", "green")
@@ -96,7 +96,7 @@ class WorkCalculator:
         for message in self.session_analyzer.format_session_stats(
             session_stats, self.data_source.item_name
         ):
-            print_color(message, "white")
+            print_color(" " + message, "white")
 
         # Display time distribution
         time_dist = self.time_analyzer.calculate_time_distribution(self.stats)
@@ -105,23 +105,31 @@ class WorkCalculator:
         for message in self.time_analyzer.format_distribution(
             time_dist, self.data_source.item_name
         ):
-            print_color(message, "white")
+            print_color(" " + message, "white")
+
+        print_color("\nMost active hours:", "green")
+        for message in self.time_analyzer.format_most_active_hours(
+            time_dist, self.data_source.item_name
+        ):
+            print_color(" " + message, "white")
 
         # Display streak information
-        print()  # Add spacing
+        print_color("\nStreaks:", "green")
         streak_stats = self.streak_analyzer.calculate_streaks(self.stats)
-        for message in self.streak_analyzer.format_streak_stats(
-            streak_stats, self.data_source.item_name
-        ):
-            print_color(message, "green")
+        for message in self.streak_analyzer.format_streak_stats(streak_stats):
+            print_color(" " + message, "white")
 
         # Display summary statistics
-        print()  # Add spacing
+        print_color("\nTotals:", "green")
         summary_stats = self.summary_analyzer.calculate_summary_stats(self.stats)
         for message in self.summary_analyzer.format_summary_stats(
             summary_stats, self.data_source.item_name
         ):
-            print_color(message, "cyan")
+            print_color(" " + message, "white")
+
+        # Display total work time
+        print_color("\nTotal work time:", "green")
+        print_color(" " + self.summary_analyzer.format_total_work_time(summary_stats), "white")
 
     def collect_work_items(self) -> list[WorkItem]:
         """Collect and filter work items from the data source."""

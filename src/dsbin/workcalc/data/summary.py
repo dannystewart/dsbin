@@ -42,10 +42,13 @@ class SummaryAnalyzer:
     @staticmethod
     def format_summary_stats(stats: SummaryStats, item_name: str = "item") -> list[str]:
         """Format summary statistics for display."""
-        formatted_time = FormattedTime.from_minutes(stats.total_time)
         return [
-            f"Total {plural(item_name, stats.total_items)}",
-            f"Active {plural('day', stats.active_days)}",
-            f"Average {plural(item_name, stats.total_items, with_count=False)} per active day: {stats.avg_items_per_day:.1f}",
-            f"\nTotal work time: {formatted_time}",
+            f"{plural(item_name, stats.total_items)}",
+            f"{plural('active day', stats.active_days)}",
+            f"Average of {stats.avg_items_per_day:.1f} {plural(item_name, stats.total_items, with_count=False)} per active day",
         ]
+
+    @staticmethod
+    def format_total_work_time(stats: SummaryStats) -> str:
+        """Format total work time for display."""
+        return str(FormattedTime.from_minutes(stats.total_time))

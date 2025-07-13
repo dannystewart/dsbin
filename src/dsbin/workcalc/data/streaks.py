@@ -86,15 +86,19 @@ class StreakAnalyzer:
         if stats.longest_start:
             streak_end = stats.longest_start + timedelta(days=stats.longest_length - 1)
             messages.append(
-                f"Longest streak: {plural('day', stats.longest_length, with_count=True)} "
-                f"({stats.longest_start:%B %-d, %Y} to {streak_end:%B %-d, %Y})"
+                f"[bold cyan]Longest streak:[/bold cyan] {stats.longest_length:,} {plural('day', stats.longest_length, with_count=False)} "
+                f"[dim]({stats.longest_start:%B %-d, %Y} to {streak_end:%B %-d, %Y})[/dim]"
             )
 
         if stats.current_length > 0:
-            post_status = "including today" if stats.today_completed else "• not completed today"
+            post_status = (
+                " including today"
+                if stats.today_completed
+                else "[dim italic]- not completed today[/dim italic]"
+            )
             messages.append(
-                f"Current streak: {plural('day', stats.current_length, with_count=True)} "
-                f"(since {stats.current_start:%B %-d, %Y}) {post_status}"
+                f"[bold cyan]Current streak:[/bold cyan] {stats.current_length:,} {plural('day', stats.current_length, with_count=False)} "
+                f"[dim](since {stats.current_start:%B %-d, %Y}) {post_status}[/dim]"
             )
 
         return messages

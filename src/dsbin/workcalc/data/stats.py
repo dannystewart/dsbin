@@ -29,11 +29,15 @@ class FormattedTime:
 
     def __str__(self) -> str:
         """Format the time as a string."""
-        days_str = f"{plural('day', self.days, with_count=True)}, " if self.days else ""
+        days_str = (
+            f"[bold]{self.days}[/bold] {plural('day', self.days, with_count=False)}, "
+            if self.days
+            else ""
+        )
         return (
-            f"{self.total_hours} hours "
-            f"({days_str}{plural('hour', self.hours, with_count=True)}, "
-            f"{plural('minute', self.minutes, with_count=True)})"
+            f"[green][bold]{self.total_hours}[/bold] hours "
+            f"[dim]({days_str}[bold]{self.hours}[/bold] {plural('hour', self.hours, with_count=False)}, "
+            f"[bold]{self.minutes}[/bold] {plural('minute', self.minutes, with_count=False)})[/dim][/green]"
         )
 
 

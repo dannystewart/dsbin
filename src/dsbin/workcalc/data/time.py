@@ -66,16 +66,20 @@ class TimeAnalyzer:
     @staticmethod
     def format_date(dt: datetime) -> str:
         """Format the date without leading zero in the day."""
-        return dt.strftime("%B %-d, %Y at %-I:%M %p").replace(" 0", " ")
+        return dt.strftime("%B %-d, %Y, at %-I:%M %p").replace(" 0", " ")
 
     @staticmethod
     def format_time_span(span: TimeSpan, item_name: str = "item") -> list[str]:
         """Format time span information for display."""
         return [
-            f"First {item_name}: {TimeAnalyzer.format_date(span.first_item)}",
-            f"Last {item_name}: {TimeAnalyzer.format_date(span.last_item)}",
-            f"Time between first and last: {plural('day', span.span_days, with_count=True)}, "
-            f"{plural('hour', span.span_hours, with_count=True)}",
+            f"[bold cyan]First {item_name}:[/bold cyan] {TimeAnalyzer.format_date(span.first_item)}",
+            f"[bold cyan]Last {item_name}:[/bold cyan] {TimeAnalyzer.format_date(span.last_item)}",
+            f"[bold cyan]Time between first and last:[/bold cyan] [bold]{span.span_days:,}[/bold] {plural('day', span.span_days, with_count=False)}"
+            + (
+                f", [bold]{span.span_hours:,}[/bold] {plural('hour', span.span_hours, with_count=False)}"
+                if span.span_hours
+                else ""
+            ),
         ]
 
     @staticmethod
@@ -114,7 +118,7 @@ class TimeAnalyzer:
         # Weekday distribution
         for day, (items, percentage) in dist.by_weekday.items():
             messages.append(
-                f"{day.name.capitalize()}: {plural(item_name, items, with_count=True)} ({percentage:.1f}%)"
+                f"[bold cyan]{day.name.capitalize()}:[/bold cyan] {items:,} {plural(item_name, items, with_count=False)} [dim]({percentage:.1f}%)[/dim]"
             )
 
         return messages
@@ -125,7 +129,7 @@ class TimeAnalyzer:
         messages = []
         for hour, items, percentage in dist.most_active_hours:
             messages.append(
-                f"{TimeAnalyzer.format_hour(hour)}: {plural(item_name, items, with_count=True)} ({percentage:.1f}%)"
+                f"[bold cyan]{TimeAnalyzer.format_hour(hour)}:[/bold cyan] {items:,} {plural(item_name, items, with_count=False)} [dim]({percentage:.1f}%)[/dim]"
             )
         return messages
 

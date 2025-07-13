@@ -10,7 +10,8 @@ from typing import TYPE_CHECKING
 from polykit import TZ
 from polykit.cli import walking_man
 from polykit.core import polykit_setup
-from polykit.text import plural, print_color
+from polykit.text import plural
+from rich.console import Console
 
 from dsbin.workcalc import PluginRegistry
 from dsbin.workcalc.data import (
@@ -30,6 +31,7 @@ if TYPE_CHECKING:
     from dsbin.workcalc.data import WorkItem
 
 polykit_setup()
+console = Console(highlight=False)
 
 
 @dataclass
@@ -59,10 +61,10 @@ class WorkCalculator:
             raise ValueError(msg)
 
         # Log configuration details
-        print_color(
-            f"Considering {plural('minute', self.config.break_time)} to be a session break with a minimum of "
-            f"{plural('minute', self.config.min_work_per_item)} per {self.data_source.item_name}.",
-            "blue",
+        console.print(
+            f"Considering [bold]{plural('minute', self.config.break_time)}[/bold] to be a session break with a minimum of "
+            f"[bold]{plural('minute', self.config.min_work_per_item)}[/bold] per {self.data_source.item_name}.",
+            style="dim",
         )
 
         self.stats = WorkStats(source_type=self.data_source.source_name)
@@ -81,55 +83,58 @@ class WorkCalculator:
 
     def analyze(self) -> None:
         """Run analysis and display results."""
-        print_color(f"Processed {self.stats.total_items} {self.data_source.item_name}s", "green")
+        count_word = plural(self.data_source.item_name, self.stats.total_items, with_count=False)
+        console.print(f"[bold green]{self.stats.total_items:,} {count_word}:[/bold green]")
 
         # Display time span information
         if time_span := TimeSpan.from_stats(self.stats):
             for message in self.time_analyzer.format_time_span(
                 time_span, self.data_source.item_name
             ):
-                print_color(" " + message, "white")
+                console.print(f" {message}")
 
         # Display session statistics
-        print_color("\nWork patterns:", "green")
         session_stats = self.session_analyzer.calculate_session_stats(self.stats)
+        console.print(
+            f"\n[bold green]{session_stats.count:,} {plural('working session', session_stats.count, with_count=False)}:[/bold green]"
+        )
         for message in self.session_analyzer.format_session_stats(
             session_stats, self.data_source.item_name
         ):
-            print_color(" " + message, "white")
+            console.print(f" {message}")
 
         # Display time distribution
         time_dist = self.time_analyzer.calculate_time_distribution(self.stats)
 
-        print_color("\nDay of week patterns:", "green")
+        console.print(f"\n[bold green]{count_word.capitalize()} by day of week:[/bold green]")
         for message in self.time_analyzer.format_distribution(
             time_dist, self.data_source.item_name
         ):
-            print_color(" " + message, "white")
+            console.print(f" {message}")
 
-        print_color("\nMost active hours:", "green")
+        console.print("\n[bold green]Most active hours:[/bold green]")
         for message in self.time_analyzer.format_most_active_hours(
             time_dist, self.data_source.item_name
         ):
-            print_color(" " + message, "white")
+            console.print(f" {message}")
 
         # Display streak information
-        print_color("\nStreaks:", "green")
+        console.print("\n[bold green]Streaks:[/bold green]")
         streak_stats = self.streak_analyzer.calculate_streaks(self.stats)
         for message in self.streak_analyzer.format_streak_stats(streak_stats):
-            print_color(" " + message, "white")
+            console.print(f" {message}")
 
-        # Display summary statistics
-        print_color("\nTotals:", "green")
+        # Display summary statistics and total work time
+        console.print("\n[bold green]Totals:[/bold green]")
         summary_stats = self.summary_analyzer.calculate_summary_stats(self.stats)
         for message in self.summary_analyzer.format_summary_stats(
             summary_stats, self.data_source.item_name
         ):
-            print_color(" " + message, "white")
+            console.print(f" {message}")
 
         # Display total work time
-        print_color("\nTotal work time:", "green")
-        print_color(" " + self.summary_analyzer.format_total_work_time(summary_stats), "white")
+        console.print("\n[bold green]Total work time:[/bold green]", end="")
+        console.print(f" {self.summary_analyzer.format_total_work_time(summary_stats)}")
 
     def collect_work_items(self) -> list[WorkItem]:
         """Collect and filter work items from the data source."""

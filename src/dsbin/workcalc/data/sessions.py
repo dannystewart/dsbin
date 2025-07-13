@@ -43,8 +43,7 @@ class SessionAnalyzer:
         """Format session statistics for display."""
         messages = [
             f"Number of work sessions: {stats.count}",
-            f"Most active day by {plural(item_name, stats.most_active_day_items[1])}: "
-            f"{stats.most_active_day_items[0]:%B %-d, %Y} "
+            f"Most active day by {item_name}: {stats.most_active_day_items[0]:%B %-d, %Y} "
             f"({plural(item_name, stats.most_active_day_items[1], with_count=True)})",
         ]
 

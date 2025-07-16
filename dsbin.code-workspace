@@ -8,7 +8,7 @@
     "conventionalCommits.scopes": [
       "pre-commit-config",
       "update_changelog",
-      "workspace",
+      "workspace"
     ],
     "files.exclude": {
       "**/*.egg-info": true,
@@ -39,9 +39,20 @@
         "file": "code-style.md"
       }
     ],
-    "mypy-type-checker.args": ["--config-file=mypy.ini"],
+    "mypy-type-checker.args": [
+      "--config-file=mypy.ini"
+    ],
+    "peacock.color": "#18636d",
     "search.exclude": {
-      "completions/*.fish": true,
+      "completions/*.fish": true
+    },
+    "workbench.colorCustomizations": {
+      "sash.hoverBorder": "#218997",
+      "statusBar.background": "#18636d",
+      "statusBar.foreground": "#e7e7e7",
+      "statusBarItem.hoverBackground": "#218997",
+      "statusBarItem.remoteBackground": "#18636d",
+      "statusBarItem.remoteForeground": "#e7e7e7"
     }
   }
 }

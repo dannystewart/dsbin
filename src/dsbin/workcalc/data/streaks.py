@@ -92,7 +92,7 @@ class StreakAnalyzer:
 
         if stats.current_length > 0:
             post_status = (
-                " including today"
+                "including today"
                 if stats.today_completed
                 else "[dim italic]- not completed today[/dim italic]"
             )

@@ -43,22 +43,22 @@ class SessionAnalyzer:
         """Format session statistics for display."""
         messages = [
             f"[bold cyan]Most active day by {item_name}:[/bold cyan] {stats.most_active_day_items[0]:%B %-d, %Y} "
-            f"[dim italic]({stats.most_active_day_items[1]:,} {plural(item_name, stats.most_active_day_items[1], with_count=False)})[/dim italic]",
+            f"[dim italic]({stats.most_active_day_items[1]:,} {plural(item_name, stats.most_active_day_items[1], show_num=False)})[/dim italic]",
         ]
 
         day_hours, day_minutes = divmod(round(stats.most_active_day_time[1]), 60)
         messages.append(
             f"[bold cyan]Most active day by time:[/bold cyan] {stats.most_active_day_time[0]:%B %-d, %Y} "
-            f"[dim italic]({day_hours:,} {plural('hour', day_hours, with_count=False)}, "
-            f"{day_minutes:,} {plural('minute', day_minutes, with_count=False)})[/dim italic]"
+            f"[dim italic]({day_hours:,} {plural('hour', day_hours, show_num=False)}, "
+            f"{day_minutes:,} {plural('minute', day_minutes, show_num=False)})[/dim italic]"
         )
 
         if stats.longest_session[0]:
             session_hours, session_minutes = divmod(round(stats.longest_session[1]), 60)
             messages.append(
                 f"[bold cyan]Longest work session:[/bold cyan] {stats.longest_session[0]:%B %-d, %Y} "
-                f"[dim italic]({session_hours:,} {plural('hour', session_hours, with_count=False)}, "
-                f"{session_minutes:,} {plural('minute', session_minutes, with_count=False)})[/dim italic]"
+                f"[dim italic]({session_hours:,} {plural('hour', session_hours, show_num=False)}, "
+                f"{session_minutes:,} {plural('minute', session_minutes, show_num=False)})[/dim italic]"
             )
 
         return messages

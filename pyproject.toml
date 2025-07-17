@@ -16,7 +16,7 @@ dependencies = [
     "mutagen (>=1.47.0)",
     "mysql-connector-python (>=9.3.0)",
     "natsort (>=8.4.0)",
-    "numpy (>=2.2.6)",
+    "numpy (>=2.3.1)",
     "packaging (>=25.0)",
     "paramiko (>=3.5.1)",
     "pexpect (>=4.9.0)",
@@ -25,7 +25,7 @@ dependencies = [
     "prompt-toolkit (>=3.0.51)",
     "pyperclip (>=1.9.0)",
     "requests (>=2.32.4)",
-    "rich (>=13.9.4)",
+    "rich (>=14.0.0)",
     "rsa (>=4.9.1)",
     "scipy (>=1.16.0)",
     "scp (>=0.15.0)",
@@ -60,7 +60,7 @@ classifiers = [
 ]
 
 [tool.poetry.group.dev.dependencies]
-mypy = ">=1.16.1"
+mypy = ">=1.17.0"
 pdoc = ">=15.0.4"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.2.0"

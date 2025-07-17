@@ -83,7 +83,7 @@ class WorkCalculator:
 
     def analyze(self) -> None:
         """Run analysis and display results."""
-        count_word = plural(self.data_source.item_name, self.stats.total_items, with_count=False)
+        count_word = plural(self.data_source.item_name, self.stats.total_items, show_num=False)
         console.print(f"[bold green]{self.stats.total_items:,} {count_word}:[/bold green]")
 
         # Display time span information
@@ -96,7 +96,7 @@ class WorkCalculator:
         # Display session statistics
         session_stats = self.session_analyzer.calculate_session_stats(self.stats)
         console.print(
-            f"\n[bold green]{session_stats.count:,} {plural('working session', session_stats.count, with_count=False)}:[/bold green]"
+            f"\n[bold green]{session_stats.count:,} {plural('working session', session_stats.count, show_num=False)}:[/bold green]"
         )
         for message in self.session_analyzer.format_session_stats(
             session_stats, self.data_source.item_name

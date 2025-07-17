@@ -74,9 +74,9 @@ class TimeAnalyzer:
         return [
             f"[bold cyan]First {item_name}:[/bold cyan] {TimeAnalyzer.format_date(span.first_item)}",
             f"[bold cyan]Last {item_name}:[/bold cyan] {TimeAnalyzer.format_date(span.last_item)}",
-            f"[bold cyan]Time between first and last:[/bold cyan] [bold]{span.span_days:,}[/bold] {plural('day', span.span_days, with_count=False)}"
+            f"[bold cyan]Time between first and last:[/bold cyan] [bold]{span.span_days:,}[/bold] {plural('day', span.span_days, show_num=False)}"
             + (
-                f", [bold]{span.span_hours:,}[/bold] {plural('hour', span.span_hours, with_count=False)}"
+                f", [bold]{span.span_hours:,}[/bold] {plural('hour', span.span_hours, show_num=False)}"
                 if span.span_hours
                 else ""
             ),
@@ -118,7 +118,7 @@ class TimeAnalyzer:
         # Weekday distribution
         for day, (items, percentage) in dist.by_weekday.items():
             messages.append(
-                f"[bold cyan]{day.name.capitalize()}:[/bold cyan] {items:,} {plural(item_name, items, with_count=False)} [dim]({percentage:.1f}%)[/dim]"
+                f"[bold cyan]{day.name.capitalize()}:[/bold cyan] {items:,} {plural(item_name, items, show_num=False)} [dim]({percentage:.1f}%)[/dim]"
             )
 
         return messages
@@ -129,7 +129,7 @@ class TimeAnalyzer:
         messages = []
         for hour, items, percentage in dist.most_active_hours:
             messages.append(
-                f"[bold cyan]{TimeAnalyzer.format_hour(hour)}:[/bold cyan] {items:,} {plural(item_name, items, with_count=False)} [dim]({percentage:.1f}%)[/dim]"
+                f"[bold cyan]{TimeAnalyzer.format_hour(hour)}:[/bold cyan] {items:,} {plural(item_name, items, show_num=False)} [dim]({percentage:.1f}%)[/dim]"
             )
         return messages
 

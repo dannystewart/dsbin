@@ -43,9 +43,9 @@ class SummaryAnalyzer:
     def format_summary_stats(stats: SummaryStats, item_name: str = "item") -> list[str]:
         """Format summary statistics for display."""
         return [
-            f"[bold cyan]Total:[/bold cyan] {stats.total_items:,} [dim]{plural(item_name, stats.total_items, with_count=False)}[/dim]",
-            f"[bold cyan]Active:[/bold cyan] {stats.active_days:,} [dim]{plural('active day', stats.active_days, with_count=False)}[/dim]",
-            f"[bold cyan]Average:[/bold cyan] {stats.avg_items_per_day:,.1f} [dim]{plural(item_name, stats.total_items, with_count=False)} per active day[/dim]",
+            f"[bold cyan]Total:[/bold cyan] {stats.total_items:,} [dim]{plural(item_name, stats.total_items, show_num=False)}[/dim]",
+            f"[bold cyan]Active:[/bold cyan] {stats.active_days:,} [dim]{plural('active day', stats.active_days, show_num=False)}[/dim]",
+            f"[bold cyan]Average:[/bold cyan] {stats.avg_items_per_day:,.1f} [dim]{plural(item_name, stats.total_items, show_num=False)} per active day[/dim]",
         ]
 
     @staticmethod

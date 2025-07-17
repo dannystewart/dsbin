@@ -320,7 +320,7 @@ class VersionHelper:
             )
         else:
             # Start new dev series
-            new_version_str = f"{version.major}.{version.minor}.{version.patch}.dev"
+            new_version_str = f"{version.major}.{version.minor}.{version.patch}.dev0"
 
         return self.parse_version(new_version_str)
 

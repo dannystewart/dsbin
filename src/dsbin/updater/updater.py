@@ -14,7 +14,7 @@ from polykit import PolyArgs, PolyLog
 from polykit.cli import handle_interrupt
 from polykit.core import polykit_setup
 from polykit.text import color, print_color
-from polykit.time import PolyTime
+from polykit.time import Time
 
 from .privilege_helper import PrivilegeHelper
 from .update_manager import UpdateManager
@@ -217,7 +217,7 @@ class Updater:
     def _get_elapsed_time(self) -> str:
         elapsed_time = time.time() - self.start_time
         minutes, seconds = divmod(int(elapsed_time), 60)
-        return PolyTime.format_duration(0, minutes, seconds)
+        return Time.format_duration(0, minutes, seconds)
 
     def _log_completion_status(self) -> None:
         if not self.anything_updated:

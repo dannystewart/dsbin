@@ -784,8 +784,8 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
     """Parse command line arguments."""
     parser = PolyArgs(description=__doc__, add_version=False)
     parser.add_argument(
-        "--version",
-        "-v",
+        "--add",
+        "-a",
         help="version to add (defaults to version from pyproject.toml)",
     )
     parser.add_argument(

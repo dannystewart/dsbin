@@ -1,5 +1,5 @@
-complete -c changelogs -s v -l version -d "version to add (defaults to version from pyproject.toml)"
-complete -c changelogs -s r -l repo-name -d "GitHub repo name to use for links (defaults to auto-detect)" -f
-complete -c changelogs -s u -l update -d "update a single release with changelog content (defaults to current version)"
-complete -c changelogs -l update-all -d "update all existing releases based on changelog content" -f
-complete -c changelogs -l dry-run -d "print what would be done without making any changes" -f
+complete -c changelogs -s a -l add -d "version to add"
+complete -c changelogs -s r -l repo-name -d "repo name for links" -f
+complete -c changelogs -s u -l update -d "update release from changelog"
+complete -c changelogs -l update-all -d "update all releases" -f
+complete -c changelogs -l dry-run -d "dry run" -f

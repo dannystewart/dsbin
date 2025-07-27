@@ -46,6 +46,10 @@ def _extract_argument_details(node: ast.Call) -> dict[str, str | list[str]]:
     # Get keyword arguments
     _extract_keyword_args(node, arg_info)
 
+    # Filter out incomplete argument definitions
+    if not any(key in arg_info for key in ["long", "short", "positional"]):
+        return {}
+
     return arg_info
 
 
@@ -58,6 +62,8 @@ def _extract_option_names(node: ast.Call, arg_info: dict[str, str | list[str]]) 
                 arg_info["long"] = option[2:]
             elif option.startswith("-"):
                 arg_info["short"] = option[1:]
+            else:  # This is a positional argument
+                arg_info["positional"] = option
 
 
 def _extract_keyword_args(node: ast.Call, arg_info: dict[str, str | list[str]]) -> None:
@@ -76,6 +82,9 @@ def _extract_keyword_args(node: ast.Call, arg_info: dict[str, str | list[str]]) 
         elif keyword.arg == "required" and isinstance(keyword.value, ast.Constant):
             if keyword.value.value:
                 arg_info["required"] = "true"
+        elif keyword.arg == "nargs" and isinstance(keyword.value, ast.Constant):
+            # Capture nargs for better understanding of positional args
+            arg_info["nargs"] = str(keyword.value.value)
 
 
 def _clean_help_text(help_text: str) -> str:
@@ -121,23 +130,95 @@ def generate_fish_completion(script_name: str, args_info: list[dict[str, str | l
         if arg_info.get("help"):
             line += f' -d "{arg_info["help"]}"'
 
-        # Handle file completion intelligently
-        if not arg_info.get("choices") and not arg_info.get("no_arg"):
-            # Check if this looks like a file argument
-            help_text = str(arg_info.get("help", "")).lower()
-            if not any(
-                word in help_text
-                for word in ["file", "path", "input", "output", "directory", "dir"]
-            ):
-                line += " -f"  # No file completion for non-file args
-
-        # Handle arguments that don't take values (store_true/store_false)
-        if arg_info.get("no_arg"):
-            line += " -f"  # No file completion for flags
+        # Determine if this argument should have file completion
+        if _should_disable_file_completion(arg_info):
+            line += " -f"  # No file completion
 
         lines.append(line)
 
     return "\n".join(lines)
+
+
+def _should_disable_file_completion(arg_info: dict[str, str | list[str]]) -> bool:
+    """Determine if file completion should be disabled for this argument."""
+    # Always disable for flags (store_true/store_false)
+    if arg_info.get("no_arg"):
+        return True
+
+    # Don't disable if there are explicit choices (let the choices handle it)
+    if arg_info.get("choices"):
+        return False
+
+    # Check if this is clearly not a file argument
+    help_text = str(arg_info.get("help", "")).lower()
+    arg_name = ""
+
+    # Get argument name for analysis
+    if arg_info.get("long"):
+        arg_name = str(arg_info["long"]).lower()
+    elif arg_info.get("short"):
+        arg_name = str(arg_info["short"]).lower()
+    elif arg_info.get("positional"):
+        arg_name = str(arg_info["positional"]).lower()
+
+    # Only disable file completion for arguments we're confident are not files
+    obvious_non_file_patterns = [
+        # Numeric values
+        "amount",
+        "count",
+        "delay",
+        "depth",
+        "distance",
+        "duration",
+        "height",
+        "interval",
+        "length",
+        "level",
+        "limit",
+        "max",
+        "min",
+        "number",
+        "percentage",
+        "port",
+        "rate",
+        "size",
+        "timeout",
+        "width",
+        # Time/date values (when not clearly file-related)
+        "days",
+        "hours",
+        "minutes",
+        "months",
+        "seconds",
+        "weeks",
+        "years",
+        # Network/auth
+        "email",
+        "host",
+        "hostname",
+        "key",
+        "password",
+        "token",
+        "url",
+        "username",
+        # Text values
+        "description",
+        "label",
+        "message",
+        "name",
+        "tag",
+        "text",
+        "title",
+        # Filters/formats (when clearly not about files)
+        "format filter",
+        "suffix filter",
+        "type filter",
+    ]
+
+    text_to_check = f"{help_text} {arg_name}"
+
+    # Only disable if we find clear non-file patterns
+    return any(pattern in text_to_check for pattern in obvious_non_file_patterns)
 
 
 def get_all_scripts_from_pyproject() -> dict[str, str]:
@@ -236,7 +317,7 @@ def process_all_scripts() -> None:
     print(f"Processed: {successful} successful, {failed} failed")
     print(f"✨ Fish completions installed to: {fish_completions_dir}")
     print(f"📦 Repo completions saved to: {repo_completions_dir}")
-    print("💡 Restart your Fish shell or run 'fish_config' to reload completions")
+    print("💡 Restart your Fish shell to reload completions")
 
 
 def _derive_script_name(script_path: str) -> str:

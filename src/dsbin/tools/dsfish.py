@@ -95,6 +95,10 @@ def _clean_help_text(help_text: str) -> str:
     # Replace multiple whitespace (including newlines) with single spaces
     help_text = " ".join(help_text.split())
 
+    # Start with lowercase letter unless it looks like an acronym
+    if help_text and help_text[0].isupper() and (len(help_text) < 2 or not help_text[1].isupper()):
+        help_text = help_text[0].lower() + help_text[1:]
+
     # Escape quotes for Fish shell
     help_text = help_text.replace('"', '\\"')
 

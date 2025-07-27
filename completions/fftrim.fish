@@ -1,2 +1,2 @@
 # Auto-generated completions for fftrim
-complete -c fftrim -d "Input video file."
+complete -c fftrim -d "input video file."

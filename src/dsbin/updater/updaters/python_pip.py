@@ -22,7 +22,6 @@ class PythonPipUpdater(UpdateManager):
             command="pip install --upgrade pip",
             start_message="Ensuring pip is up to date...",
             error_message="Failed to update pip: %s",
-            filter_output=True,
         ),
         "list-packages": UpdateStage(
             command="pip freeze",
@@ -34,7 +33,6 @@ class PythonPipUpdater(UpdateManager):
             start_message="Updating locally installed Python packages...",
             end_message="Python packages updated successfully.",
             error_message="Failed to update Python packages: %s",
-            filter_output=True,
         ),
     }
 

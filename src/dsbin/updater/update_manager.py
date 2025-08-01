@@ -27,7 +27,6 @@ class UpdateStage:
         error_message: The message to display if this stage fails. If None, skip it.
         requires_sudo: Whether this stage requires sudo to run.
         capture_output: If True, capture command output for processing, which will skip logging.
-        filter_output: If true, filter output for specific phrases. NOTE: Loses color output.
         raise_error: If True, raise errors to allow for special handling. NOTE: Captures output.
     """
 
@@ -37,7 +36,6 @@ class UpdateStage:
     error_message: str | None = None
     requires_sudo: bool = False
     capture_output: bool = False
-    filter_output: bool = False
     raise_error: bool = False
 
     def __post_init__(self):
@@ -45,7 +43,6 @@ class UpdateStage:
         if platform.system() == "Windows":
             self.requires_sudo = False
             self.capture_output = False
-            self.filter_output = False
 
         # Output must be captured to raise errors
         if self.raise_error:
@@ -130,20 +127,16 @@ class UpdateManager(ABC):
         self,
         stage_name: str,
         capture_output: bool = False,
-        filter_output: bool | None = None,
         raise_error: bool | None = None,
     ) -> tuple[bool, str | None]:
-        """Run a package update stage. Supports capturing and filtering output, as well as raising
-        errors as an UpdateStageFailedError if specified. Configuration for capture_output,
-        filter_output, and raise_error are generally set at the UpdateStage level, but can be
-        overridden for individual calls to run_stage.
+        """Run a package update stage. Supports capturing output and raising errors as an
+        UpdateStageFailedError if specified. Configuration is generally set at the UpdateStage
+        level, but can be overridden for individual calls to run_stage.
 
         Args:
             stage_name: The name of the stage to run, as defined in the update_stages dictionary.
             capture_output: If True, captures the command output and returns it. Otherwise, prints
                 the output to the console. If None, uses the value set in the UpdateStage.
-            filter_output: If True, filters the command output to remove any lines that contain
-                phrases defined in FILTER_PHRASES. If None, uses the value set in the UpdateStage.
             raise_error: If True, raises an exception if the command returns a non-zero exit code.
                 If None, uses the value set in the UpdateStage.
 
@@ -158,7 +151,6 @@ class UpdateManager(ABC):
         # Disable output processing on Windows
         if platform.system() == "Windows":
             capture_output = False
-            filter_output = False
 
         # Identify the appropriate stage to be run and ensure it exists
         stage = self.update_stages.get(stage_name)
@@ -178,7 +170,6 @@ class UpdateManager(ABC):
             stage.command,
             sudo=stage.requires_sudo,
             capture_output=capture_output or stage.capture_output,
-            filter_output=filter_output or stage.filter_output,
             raise_error=raise_error or stage.raise_error,
         )
         self.logger.debug("Command output: %s", output)

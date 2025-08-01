@@ -23,7 +23,6 @@ class DSPackageUpdater(UpdateManager):
             start_message="Installing dsbin...",
             end_message="dsbin installed successfully!",
             capture_output=True,
-            filter_output=True,
         ),
     }
 

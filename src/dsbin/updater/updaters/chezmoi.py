@@ -27,7 +27,6 @@ class ChezmoiPackageManager(UpdateManager):
         "status": UpdateStage(
             command="chezmoi status",
             capture_output=True,
-            filter_output=True,
         ),
         "update": UpdateStage(
             command="chezmoi update",

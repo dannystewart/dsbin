@@ -27,13 +27,13 @@ dependencies = [
     "requests (>=2.32.4)",
     "rich (>=13.9.4)",
     "rsa (>=4.9.1)",
-    "scipy (>=1.16.0)",
+    "scipy (>=1.16.1)",
     "scp (>=0.15.0)",
     "telethon (>=1.40.0)",
     "tomli-w (>=1.2.0)",
     "tomlkit (>=0.13.3)",
     "tqdm (>=4.67.1)",
-    "types-paramiko (>=3.5.0.20250708)",
+    "types-paramiko (>=3.5.0.20250801)",
     "types-pillow (>=10.2.0.20240822)",
     "types-requests (>=2.32.4.20250611)",
 ]
@@ -60,11 +60,11 @@ classifiers = [
 ]
 
 [tool.poetry.group.dev.dependencies]
-mypy = ">=1.17.0"
+mypy = ">=1.17.1"
 pdoc = ">=15.0.4"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.2.0"
-ruff = ">=0.12.5"
+ruff = ">=0.12.7"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

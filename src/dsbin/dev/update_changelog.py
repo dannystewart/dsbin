@@ -153,7 +153,7 @@ def get_latest_version() -> str:
 def get_previous_version() -> str:
     """Get the previous version from the changelog."""
     try:
-        content = CHANGELOG_PATH.read_text()
+        content = CHANGELOG_PATH.read_text(encoding="utf-8")
         # Look for all version headers
         versions = re.findall(r"## \[(\d+\.\d+\.\d+)\]", content)
 
@@ -346,11 +346,11 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
         if not CHANGELOG_PATH.exists():
             # Create a new changelog if it doesn't exist
             content = create_new_changelog(version, new_entry, repo_url)
-            CHANGELOG_PATH.write_text(content)
+            CHANGELOG_PATH.write_text(content, encoding="utf-8")
             logger.info("Created new changelog with version %s.", version)
 
         # Update existing changelog
-        content = CHANGELOG_PATH.read_text()
+        content = CHANGELOG_PATH.read_text(encoding="utf-8")
 
         # Check if version already exists
         if re.search(rf"## \[{re.escape(version)}\]", content):
@@ -367,7 +367,7 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
         # Ensure exactly one blank line at the end of the file
         content = content.rstrip("\n") + "\n"
 
-        CHANGELOG_PATH.write_text(content)
+        CHANGELOG_PATH.write_text(content, encoding="utf-8")
 
         if not section_exists:
             logger.info("Updated changelog with version %s.", version)
@@ -387,7 +387,7 @@ def find_previous_version(version: str) -> str:
         The previous version, or "0.0.0" if none found.
     """
     try:
-        changelog_content = CHANGELOG_PATH.read_text()
+        changelog_content = CHANGELOG_PATH.read_text(encoding="utf-8")
         versions = re.findall(r"## \[(\d+\.\d+\.\d+)\]", changelog_content)
 
         if len(versions) > 1:
@@ -415,7 +415,7 @@ def extract_version_content(version: str) -> str | None:
         The extracted content, or None if not found.
     """
     try:
-        content = CHANGELOG_PATH.read_text()
+        content = CHANGELOG_PATH.read_text(encoding="utf-8")
         version_pattern = rf"## \[{re.escape(version)}\].*?\n\n(.*?)(?=\n## |\Z)"
         match = re.search(version_pattern, content, re.DOTALL)
 
@@ -512,7 +512,7 @@ def get_changelog_versions() -> list[tuple[str, str]]:
         return []
 
     try:
-        changelog_content = CHANGELOG_PATH.read_text()
+        changelog_content = CHANGELOG_PATH.read_text(encoding="utf-8")
 
         # Extract all versions from the changelog
         version_pattern = r"## \[(\d+\.\d+\.\d+)\].*?\n\n(.*?)(?=\n## |\Z)"
@@ -840,7 +840,7 @@ def main() -> int:
             return 0 if update_release_on_github(args.update, repo_url, args.dry_run) else 1
 
         # Get the version to add to changelog
-        version = args.version or get_latest_version()
+        version = args.add or get_latest_version()
 
         # Empty sections for manual editing
         sections = {"Added": [], "Changed": [], "Fixed": []}

@@ -99,12 +99,20 @@ class MusicShare:
 
     def get_available_options(self) -> list[str]:
         """Return the available conversion options based on the bit depth."""
+        input_ext = self.input_file.suffix.lower()
+        is_wav = input_ext == ".wav"
+
         available_options = [
-            "Copy original as WAV",
             "Convert to 16-bit WAV",
             "Convert to 16-bit FLAC",
             "Convert to MP3",
         ]
+
+        # Add WAV options based on input type and bit depth
+        if is_wav:
+            available_options.insert(0, "Copy original as WAV")
+        elif self.bit_depth == 24:
+            available_options.insert(0, "Convert to 24-bit WAV")
 
         if self.bit_depth == 24:
             available_options.insert(3, "Convert to 24-bit FLAC")
@@ -138,19 +146,33 @@ class MusicShare:
         is_wav = input_ext == ".wav"
 
         # Determine if we need bit depth suffixes
-        add_wav = "Convert to 16-bit WAV" in settings and "Copy original as WAV" in settings
+        has_wav_copy = "Copy original as WAV" in settings
+        has_wav_24bit = "Convert to 24-bit WAV" in settings
+        has_wav_16bit = "Convert to 16-bit WAV" in settings
+        add_wav = (has_wav_copy or has_wav_24bit) and has_wav_16bit
         add_flac = "Convert to 16-bit FLAC" in settings and "Convert to 24-bit FLAC" in settings
 
         # Generate filenames
         filenames = self.get_filenames(base_name, add_wav, add_flac)
 
-        return {
-            "Copy original as WAV": self._get_wav_settings(filenames["wav"], is_wav),
+        conversion_settings = {
             "Convert to 16-bit WAV": self._get_wav_16bit_settings(filenames["wav_16"]),
             "Convert to 16-bit FLAC": self._get_flac_16bit_settings(filenames["flac_16"]),
             "Convert to 24-bit FLAC": self._get_flac_24bit_settings(filenames["flac_24"]),
             "Convert to MP3": self._get_mp3_settings(filenames["mp3"]),
         }
+
+        # Add WAV options based on input type and bit depth
+        if is_wav:
+            conversion_settings["Copy original as WAV"] = self._get_wav_settings(
+                filenames["wav"], is_wav
+            )
+        elif self.bit_depth == 24:
+            conversion_settings["Convert to 24-bit WAV"] = self._get_wav_24bit_settings(
+                filenames["wav"]
+            )
+
+        return conversion_settings
 
     def convert_file(self, settings: ConversionSettings) -> tuple[bool, str]:
         """Perform an individual file conversion. Returns success status and message."""
@@ -221,6 +243,16 @@ class MusicShare:
             message="Converting to 16-bit WAV",
             completion_message="Converted to 16-bit WAV:",
             available_bit_depths=[16],
+        )
+
+    def _get_wav_24bit_settings(self, filename: Path) -> ConversionSettings:
+        """Create settings for 24-bit WAV conversion."""
+        return ConversionSettings(
+            filename=filename,
+            command=f'ffmpeg -i "{self.input_file}" -y -acodec pcm_s24le "{filename}"',
+            message="Converting to 24-bit WAV",
+            completion_message="Converted to 24-bit WAV:",
+            available_bit_depths=[24],
         )
 
     def _get_flac_16bit_settings(self, filename: Path) -> ConversionSettings:

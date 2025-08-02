@@ -54,11 +54,11 @@ class MusicShare:
 
     OUTPUT_PATH: ClassVar[Path] = Path.home() / "Downloads"
 
-    def __init__(self, input_file: Path, bit_depth: int, upload: bool = False):
+    def __init__(self, input_file: Path, bit_depth: int, web: bool = False):
         self.logger = PolyLog.get_logger(simple=True)
         self.input_file = input_file
         self.bit_depth = bit_depth
-        self.upload = upload
+        self.web = web
 
     def perform_conversions(self) -> None:
         """Perform the conversions selected by the user based on conversion options."""
@@ -141,7 +141,7 @@ class MusicShare:
 
     def get_conversion_settings(self, settings: list[str]) -> dict[str, ConversionSettings]:
         """Construct the conversion options dictionary."""
-        base_name = self.OUTPUT_PATH / self.clean_name("upload" if self.upload else "local")
+        base_name = self.OUTPUT_PATH / self.clean_name(self.web)
         input_ext = self.input_file.suffix.lower()
         is_wav = input_ext == ".wav"
 
@@ -208,7 +208,7 @@ class MusicShare:
             "mp3": self._get_name(base_name, "mp3"),
         }
 
-    def clean_name(self, naming_format: str) -> Path:
+    def clean_name(self, web: bool) -> Path:
         """Generate formatted names for the output files. Removes versions and parentheticals."""
         filename_no_ext = self.input_file.stem
         clean_name_pattern = re.compile(
@@ -216,7 +216,7 @@ class MusicShare:
         )
         clean_name = clean_name_pattern.sub("", filename_no_ext)
 
-        if naming_format == "upload":
+        if web:
             clean_name = clean_name.replace(" ", "-").replace("'", "")
 
         return Path(clean_name)
@@ -292,7 +292,9 @@ def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
     parser = PolyArgs(description=__doc__)
     parser.add_argument("input_file", help="the file to convert")
-    parser.add_argument("--upload", action="store_true", help="use URL-safe filename for uploading")
+    parser.add_argument(
+        "-w", "--web", action="store_true", help="use web-safe filename (no spaces)"
+    )
     return parser.parse_args()
 
 
@@ -309,7 +311,7 @@ def main() -> None:
     with walking_man():  # Determine the bit depth so we know what options to show
         bit_depth = MediaManager().find_bit_depth(input_file)
 
-    mshare = MusicShare(input_file, bit_depth, args.upload)
+    mshare = MusicShare(input_file, bit_depth, args.web)
     mshare.perform_conversions()
 
 

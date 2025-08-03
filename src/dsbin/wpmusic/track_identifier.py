@@ -171,7 +171,7 @@ class TrackIdentifier:
         filename_question = [
             inquirer.Text(
                 "confirmed_filename",
-                message=colored("Confirm or edit the filename", "yellow"),
+                message=colored("Confirm or edit the filename (without extension)", "yellow"),
                 default=audio_track.filename,
             )
         ]
@@ -183,4 +183,4 @@ class TrackIdentifier:
         confirmed_filename = filename_answer["confirmed_filename"]
 
         self.logger.debug("Confirmed filename: %s", confirmed_filename)
-        return {"file_name": confirmed_filename}
+        return {"track_name": confirmed_filename}

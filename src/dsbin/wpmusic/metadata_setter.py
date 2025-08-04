@@ -35,6 +35,10 @@ class MetadataSetter:
         Raises:
             ValueError: If the file format is not supported.
         """
+        if self._should_skip_metadata(audio_track):
+            self.logger.debug("Metadata skipped, so not saving anything to the file.")
+            return path
+
         self.logger.debug("Preparing %s file '%s'...", audio_format.upper(), path)
 
         audio: FLAC | MP4 | MP3
@@ -54,6 +58,16 @@ class MetadataSetter:
 
         audio.save()
         return path
+
+    def _should_skip_metadata(self, audio_track: AudioTrack) -> bool:
+        """Determine whether to skip writing metadata based on whether anything is already given."""
+        return bool(
+            audio_track.track_metadata
+            and len(audio_track.track_metadata) == 1
+            and "track_name" in audio_track.track_metadata
+            and not audio_track.album_name
+            and not audio_track.artist_name
+        )
 
     @staticmethod
     def apply_flac_metadata(file_path: Path, audio_track: AudioTrack) -> FLAC:

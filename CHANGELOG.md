@@ -6,6 +6,36 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.1] (2025-08-18)
+
+### `changelogs`
+
+- Changes version flag command to `-a/--add` to better reflect its purpose.
+- Fixes `version` argument and adds explicit UTF-8 encoding for file operations.
+
+### `mshare`
+
+- Adds support for 24-bit WAV conversion, providing appropriate conversion options based on input file type and bit depth.
+- Changes the `upload` parameter and flag to `web` for clarity, with improved help text and short form `-w`.
+
+### `workcalc`
+
+- Adds proper plugin architecture for data sources, making it easier to extend with custom data sources.
+- Improves output with Rich styling, color coding, and better visual organization.
+- Enhances Fish shell completions with better formatting, file path completion, and more consistent descriptions.
+- Fixes display format for "most active day" message.
+- Adds thousand separators to work time output for improved readability.
+
+### `wpmusic`
+
+- Adds progress bar for file uploads showing file size, percentage complete, transfer rate, and estimated time remaining.
+- Adds pre-flight SSH connectivity check to prevent workflow failures due to authentication issues.
+- Reorders SSH connectivity check and component initialization for better logical flow.
+- Adds file description to command completion for better user guidance.
+- Fixes return dictionary key from `file_name` to `track_name` to match `AudioTrack` expectations.
+
+Also changes version string format for dev releases in `pybumper` to match PEP 440 (dev → dev0) and removes default values from `dsfish` help text for cleaner display.
+
 ## [0.9.0] (2025-07-11)
 
 ### Added
@@ -612,7 +642,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.0...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.1...HEAD
+[0.9.1]: https://github.com/dannystewart/dsbin/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/dannystewart/dsbin/compare/v0.8.12...v0.9.0
 [0.8.12]: https://github.com/dannystewart/dsbin/compare/v0.8.11...v0.8.12
 [0.8.11]: https://github.com/dannystewart/dsbin/compare/v0.8.10...v0.8.11

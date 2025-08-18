@@ -55,6 +55,9 @@ class ShellHandler:
         self.logger.debug("Running shell command: %s", command)
         self.logger.debug("capture_output: %s", capture_output)
 
+        # Set capture_output for this command
+        self.capture_output = capture_output
+
         if platform.system() != "Windows" and sudo and os.geteuid() != 0:  # type: ignore
             self.updater.privileges.acquire_sudo_if_needed()
             command_parts = command.split("&&")

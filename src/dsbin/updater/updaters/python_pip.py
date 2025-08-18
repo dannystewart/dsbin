@@ -51,8 +51,13 @@ class PythonPipUpdater(UpdateManager):
 
         # Get list of installed packages
         success, output = self.run_stage("list-packages")
-        if not success or not output:
+        if not success:
             self.logger.error("[%s] Failed to get list of installed packages.", self.display_name)
+            return
+
+        # If we got no output, we can't update anything
+        if not output:
+            self.logger.info("[%s] No packages to update.", self.display_name)
             return
 
         # Process the package list

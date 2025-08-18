@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.2] (2025-08-18)
+
+### Fixed
+
+- Fixes `dsupdater` error handling by properly storing the `capture_output` flag per stage.
+- Differentiates between command execution failures and empty output conditions in the `PythonPipUpdater`.
+- Fixes dependency compatibility by downgrading minimum required `numpy` version from 2.3.2 to 2.2.6.
+
 ## [0.9.1] (2025-08-18)
 
 ### `changelogs`
@@ -642,7 +650,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.1...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.2...HEAD
+[0.9.2]: https://github.com/dannystewart/dsbin/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/dannystewart/dsbin/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/dannystewart/dsbin/compare/v0.8.12...v0.9.0
 [0.8.12]: https://github.com/dannystewart/dsbin/compare/v0.8.11...v0.8.12

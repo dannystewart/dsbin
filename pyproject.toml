@@ -12,16 +12,16 @@ dependencies = [
     "blessed (>=1.21.0)",
     "chardet (>=5.2.0)",
     "halo (>=0.0.31)",
-    "inquirer (>=3.4.0)",
+    "inquirer (>=3.4.1)",
     "mutagen (>=1.47.0)",
     "mysql-connector-python (>=9.4.0)",
     "natsort (>=8.4.0)",
     "numpy (>=2.3.2)",
     "packaging (>=25.0)",
-    "paramiko (>=3.5.1)",
+    "paramiko (>=4.0.0)",
     "pexpect (>=4.9.0)",
     "pillow (>=11.3.0)",
-    "polykit (>=0.13.0)",
+    "polykit (>=0.14.0)",
     "prompt-toolkit (>=3.0.51)",
     "pyperclip (>=1.9.0)",
     "requests (>=2.32.4)",
@@ -33,9 +33,9 @@ dependencies = [
     "tomli-w (>=1.2.0)",
     "tomlkit (>=0.13.3)",
     "tqdm (>=4.67.1)",
-    "types-paramiko (>=3.5.0.20250801)",
+    "types-paramiko (>=4.0.0.20250809)",
     "types-pillow (>=10.2.0.20240822)",
-    "types-requests (>=2.32.4.20250611)",
+    "types-requests (>=2.32.4.20250809)",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -63,8 +63,8 @@ classifiers = [
 mypy = ">=1.17.1"
 pdoc = ">=15.0.4"
 polykit = { path = "../polykit", develop = true }
-pre-commit = ">=4.2.0"
-ruff = ">=0.12.7"
+pre-commit = ">=4.3.0"
+ruff = ">=0.12.9"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

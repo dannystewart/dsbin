@@ -48,12 +48,12 @@ class AudioTrack:
         self.file_extension = self.file_path.suffix[1:].lower()
         self.file_format = "alac" if self.file_extension == "m4a" else self.file_extension
 
-        # Apply metadata if provided
+        # Apply metadata to the track if provided
         if self.track_metadata:
-            self._apply_metadata(self.track_metadata)
+            self._apply_track_metadata(self.track_metadata)
+            self._prepare_track_title()
 
-    def _apply_metadata(self, track_metadata: dict[str, Any]) -> None:
-        """Apply metadata to the track attributes."""
+    def _apply_track_metadata(self, track_metadata: dict[str, Any]) -> None:
         self.track_metadata = track_metadata
 
         # Extract track attributes
@@ -74,9 +74,26 @@ class AudioTrack:
         # Set cover data
         self.cover_data = track_metadata.get("cover_data")
 
-        # Prepare track title
+    def _prepare_track_title(self) -> None:
         self.track_title = self.track_name
         if self.append_text:
             self.track_title += f" {self.append_text}"
         if self.is_instrumental:
             self.track_title += " (Instrumental)"
+
+    @property
+    def is_recognized(self) -> bool:
+        """Return True if this track is recognized as a known track, otherwise return False."""
+        return bool(
+            self.track_metadata
+            and not (
+                len(self.track_metadata) == 3  # track_name, album_metadata, cover_data
+                and "track_name" in self.track_metadata
+                and "album_metadata" in self.track_metadata
+                and "cover_data" in self.track_metadata
+                and not self.album_name
+                and not self.artist_name
+                and self.track_number == 0
+                and not self.file_url
+            )
+        )

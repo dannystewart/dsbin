@@ -255,8 +255,15 @@ class WPMusic:
 
             self.spinner.succeed(color(f"{format_name.upper()} processing complete!", "green"))
 
-        # After all formats are uploaded
-        self.upload_tracker.log_upload_set()
+        # Only record to the database this is a recognized track with proper metadata
+        if audio_track.is_recognized:
+            self.upload_tracker.log_upload_set()
+        else:  # Otherwise, clear the current upload set without logging it
+            self.logger.debug(
+                "Not recording '%s' to the database as it was not matched with a known track.",
+                audio_track.track_name,
+            )
+            self.upload_tracker.current_upload_set.clear()
 
         if not self.config.skip_upload:
             self.spinner.succeed(color("Upload complete!", "green"))

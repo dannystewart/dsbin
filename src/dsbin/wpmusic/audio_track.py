@@ -13,6 +13,7 @@ class AudioTrack:
     append_text: str = ""
     track_metadata: dict[str, Any] | None = None
     instrumental: bool | None = None
+    metadata_skipped: bool = False
 
     # Automatically extracted attributes
     is_instrumental: bool = field(init=False)
@@ -51,6 +52,11 @@ class AudioTrack:
         # Apply metadata to the track if provided
         if self.track_metadata:
             self._apply_track_metadata(self.track_metadata)
+
+            # If metadata was skipped, clean up to only keep artist name
+            if self.metadata_skipped:
+                self._apply_minimal_metadata()
+
             self._prepare_track_title()
 
     def _apply_track_metadata(self, track_metadata: dict[str, Any]) -> None:
@@ -81,19 +87,14 @@ class AudioTrack:
         if self.is_instrumental:
             self.track_title += " (Instrumental)"
 
-    @property
-    def is_recognized(self) -> bool:
-        """Return True if this track is recognized as a known track, otherwise return False."""
-        return bool(
-            self.track_metadata
-            and not (
-                len(self.track_metadata) == 3  # track_name, album_metadata, cover_data
-                and "track_name" in self.track_metadata
-                and "album_metadata" in self.track_metadata
-                and "cover_data" in self.track_metadata
-                and not self.album_name
-                and not self.artist_name
-                and self.track_number == 0
-                and not self.file_url
-            )
-        )
+    def _apply_minimal_metadata(self) -> None:
+        """Apply minimal metadata for skipped tracks (artist name only)."""
+        self.track_number = 0
+        self.album_name = ""
+        self.album_artist = ""
+        self.genre = ""
+        self.year = ""
+        self.file_url = ""
+        self.inst_url = ""
+        self.url = ""
+        self.cover_data = None

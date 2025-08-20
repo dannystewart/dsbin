@@ -46,15 +46,26 @@ class TrackIdentifier:
             temp_track = AudioTrack(str(file_path), append_text=append_text)
             track_metadata = self.identify_track(temp_track, spinner)
 
-        return AudioTrack(
-            filename=str(file_path),
-            append_text=append_text,
-            track_metadata={
+        # Add metadata and cover art if metadata was not skipped, otherwise just basic metadata
+        if metadata_skipped := len(track_metadata) == 1 and "track_name" in track_metadata:
+            basic_album_metadata = self.all_metadata.get("metadata", {})
+            final_metadata = {
+                **track_metadata,
+                "album_metadata": {"artist_name": basic_album_metadata.get("artist_name", "")},
+            }
+        else:
+            final_metadata = {
                 **track_metadata,
                 "album_metadata": self.all_metadata.get("metadata", {}),
                 "cover_data": self.metadata_fetcher.cover_data,
-            },
+            }
+
+        return AudioTrack(
+            filename=str(file_path),
+            append_text=append_text,
+            track_metadata=final_metadata,
             instrumental=is_instrumental,
+            metadata_skipped=metadata_skipped,
         )
 
     def identify_track(

@@ -5,31 +5,28 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import inquirer
-from polykit import PolyLog
 from polykit.text import color as colored
 
 from dsbin.wpmusic.audio_track import AudioTrack
-from dsbin.wpmusic.metadata_fetcher import MetadataFetcher
 
 if TYPE_CHECKING:
+    from logging import Logger
+
     from halo import Halo
 
     from dsbin.wpmusic.configs import WPConfig
+    from dsbin.wpmusic.metadata_handler import MetadataHandler
 
 
 class TrackIdentifier:
     """Identify a track based on input file and metadata."""
 
-    def __init__(self, config: WPConfig):
+    def __init__(self, config: WPConfig, metadata_handler: MetadataHandler, logger: Logger):
         self.config = config
-        self.logger = PolyLog.get_logger(
-            self.__class__.__name__,
-            level=self.config.log_level,
-            simple=self.config.log_simple,
-        )
-        self.metadata_fetcher = MetadataFetcher(config)
-        self.all_metadata = self.metadata_fetcher.all_metadata
-        self.tracks = self.all_metadata.get("tracks", [])
+        self.metadata_handler = metadata_handler
+        self.logger = logger
+        self.full_metadata = self.metadata_handler.full_metadata
+        self.tracks = self.full_metadata.get("tracks", [])
 
         self.logger.debug("Loaded metadata with %s tracks.", len(self.tracks))
 
@@ -48,16 +45,16 @@ class TrackIdentifier:
 
         # Add metadata and cover art if metadata was not skipped, otherwise just basic metadata
         if metadata_skipped := len(track_metadata) == 1 and "track_name" in track_metadata:
-            basic_album_metadata = self.all_metadata.get("metadata", {})
+            basic_metadata = self.full_metadata.get("metadata", {})
             final_metadata = {
                 **track_metadata,
-                "album_metadata": {"artist_name": basic_album_metadata.get("artist_name", "")},
+                "album_metadata": {"artist_name": basic_metadata.get("artist_name", "")},
             }
         else:
             final_metadata = {
                 **track_metadata,
-                "album_metadata": self.all_metadata.get("metadata", {}),
-                "cover_data": self.metadata_fetcher.cover_data,
+                "album_metadata": self.full_metadata.get("metadata", {}),
+                "cover_data": self.metadata_handler.cover_data,
             }
 
         return AudioTrack(

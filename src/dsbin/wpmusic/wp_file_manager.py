@@ -7,13 +7,15 @@ from typing import TYPE_CHECKING
 import inquirer
 import paramiko  # type: ignore
 import pyperclip
-from polykit import PolyFile, PolyLog
+from polykit import PolyFile
 from polykit.cli import handle_interrupt
 from polykit.text import color as colored
 from scp import SCPClient
 from tqdm import tqdm
 
 if TYPE_CHECKING:
+    from logging import Logger
+
     from dsbin.wpmusic.audio_track import AudioTrack
     from dsbin.wpmusic.configs import WPConfig
     from dsbin.wpmusic.upload_tracker import UploadTracker
@@ -22,14 +24,10 @@ if TYPE_CHECKING:
 class WPFileManager:
     """Manage file operations."""
 
-    def __init__(self, config: WPConfig, upload_tracker: UploadTracker):
+    def __init__(self, config: WPConfig, upload_tracker: UploadTracker, logger: Logger):
         self.config = config
         self.upload_tracker = upload_tracker
-        self.logger = PolyLog.get_logger(
-            self.__class__.__name__,
-            level=self.config.log_level,
-            simple=self.config.log_simple,
-        )
+        self.logger = logger
         self.file_save_path = Path(self.config.file_save_path)
 
     def format_filename(self, audio_track: AudioTrack) -> str:

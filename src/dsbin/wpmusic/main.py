@@ -31,7 +31,7 @@ from polykit.text import color
 
 from dsbin.media import MediaManager
 from dsbin.wpmusic.configs import WPConfig
-from dsbin.wpmusic.metadata_setter import MetadataSetter
+from dsbin.wpmusic.metadata_handler import MetadataHandler
 from dsbin.wpmusic.track_identifier import TrackIdentifier
 from dsbin.wpmusic.upload_tracker import UploadTracker
 from dsbin.wpmusic.wp_file_manager import WPFileManager
@@ -58,11 +58,7 @@ class WPMusic:
             keep_files=should_keep,
             no_cache=args.no_cache,
         )
-        self.logger = PolyLog.get_logger(
-            self.__class__.__name__,
-            level=self.config.log_level,
-            simple=self.config.log_simple,
-        )
+        self.logger = PolyLog.get_logger(level=self.config.log_level, simple=self.config.log_simple)
         self.args = args  # Store args for later processing
         self.spinner = Halo(text="Initializing", spinner="dots", color="cyan")
 
@@ -77,10 +73,10 @@ class WPMusic:
             sys.exit(1)
 
         # Initialize components
-        self.track_identifier = TrackIdentifier(self.config)
-        self.metadata_setter = MetadataSetter(self.config)
+        self.metadata_handler = MetadataHandler(self.config, self.logger)
+        self.track_identifier = TrackIdentifier(self.config, self.metadata_handler, self.logger)
         self.upload_tracker = UploadTracker(self.config)
-        self.file_manager = WPFileManager(self.config, self.upload_tracker)
+        self.file_manager = WPFileManager(self.config, self.upload_tracker, self.logger)
 
         with walking_man(color="cyan"):
             # Check SSH connectivity before proceeding
@@ -245,7 +241,7 @@ class WPMusic:
 
             # Add metadata to the converted file
             self.spinner.start(color(f"Adding metadata to {format_name.upper()} file...", "cyan"))
-            processed_file = self.metadata_setter.apply_metadata(
+            processed_file = self.metadata_handler.apply_metadata(
                 audio_track, format_name, output_path
             )
 

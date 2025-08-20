@@ -67,7 +67,12 @@ class WPMusic:
         self.spinner = Halo(text="Initializing", spinner="dots", color="cyan")
 
         # Only check for files if we're not doing history or DB operations
-        if not args.files and args.history is None and not args.check_db and not args.force_refresh:
+        if (
+            not args.files
+            and args.history is None
+            and not args.test_db_connection
+            and not args.refresh_cache
+        ):
             self.logger.error("No input files specified and no --history argument. Nothing to do.")
             sys.exit(1)
 
@@ -84,12 +89,12 @@ class WPMusic:
                 sys.exit(1)
 
             # Check database connection if requested
-            if self.args.check_db:
+            if self.args.test_db_connection:
                 self.upload_tracker.db.check_database()
 
             # Force refresh of local cache if requested
             if self.upload_tracker.db.force_db_refresh(
-                force_refresh=self.args.force_refresh,
+                force_refresh=self.args.refresh_cache,
                 refresh_only=not (self.args.history is not None or self.args.files),
             ):
                 return
@@ -103,7 +108,7 @@ class WPMusic:
     @handle_interrupt()
     def process(self) -> None:
         """Process and upload multiple audio files or display history."""
-        if self.args.force_refresh:
+        if self.args.refresh_cache:
             self.logger.info("Forcing cache refresh from MySQL server...")
             self.upload_tracker.db.force_refresh()
             self.logger.info("Cache refresh complete!")
@@ -341,9 +346,9 @@ def parse_arguments() -> argparse.Namespace:
     )
 
     # Database-related arguments
-    db_args = parser.add_argument_group("Database options")
+    db_args = parser.add_argument_group("database options")
     db_args.add_argument(
-        "--force-refresh",
+        "--refresh-cache",
         action="store_true",
         help="force refresh of local cache from MySQL server",
     )
@@ -353,7 +358,7 @@ def parse_arguments() -> argparse.Namespace:
         help="bypass local cache, always use MySQL server directly",
     )
     db_args.add_argument(
-        "--check-db",
+        "--test-db-connection",
         action="store_true",
         help="test database connection and exit",
     )

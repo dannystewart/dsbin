@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.3] (2025-08-20)
+
+### `wpmusic`
+
+- Explicitly tracks when metadata entry is skipped instead of relying on inconsistent state checks.
+- Ensures that only tracks with proper metadata are logged to the database.
+- Consolidates metadata handling into a unified `MetadataHandler` class for both fetching and setting.
+- Improves metadata handling in the `AudioTrack` class with smaller dedicated helper methods.
+- Renames database CLI arguments for clarity: `--force-refresh` → `--refresh-cache` and `--check-db` → `--test-db-connection`
+- Adjusts progress bar width from 60 to 64 columns to look better for longer filenames.
+- Updates `requests` dependency to 2.32.5 and adjusts minimum Python version to 3.9.
+
 ## [0.9.2] (2025-08-18)
 
 ### Fixed
@@ -650,7 +662,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.2...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.3...HEAD
+[0.9.3]: https://github.com/dannystewart/dsbin/compare/v0.9.2...v0.9.3
 [0.9.2]: https://github.com/dannystewart/dsbin/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/dannystewart/dsbin/compare/v0.9.0...v0.9.1
 [0.9.0]: https://github.com/dannystewart/dsbin/compare/v0.8.12...v0.9.0

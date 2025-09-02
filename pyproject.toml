@@ -1,6 +1,6 @@
 [project]
 name = "dsbin"
-version = "0.9.4.dev0"
+version = "0.9.4.dev1"
 description = "Personal script library solving problems you didn't know you cared about"
 authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
 urls = { repository = "https://github.com/dannystewart/dsbin" }
@@ -22,18 +22,18 @@ dependencies = [
     "pexpect (>=4.9.0)",
     "pillow (>=11.3.0)",
     "polykit (>=0.14.0)",
-    "prompt-toolkit (>=3.0.51)",
+    "prompt-toolkit (>=3.0.52)",
     "pyperclip (>=1.9.0)",
     "requests (>=2.32.5)",
     "rich (>=13.9.4)",
     "rsa (>=4.9.1)",
     "scipy (>=1.16.1)",
     "scp (>=0.15.0)",
-    "telethon (>=1.40.0)",
+    "telethon (>=1.41.0)",
     "tomli-w (>=1.2.0)",
     "tomlkit (>=0.13.3)",
     "tqdm (>=4.67.1)",
-    "types-paramiko (>=4.0.0.20250809)",
+    "types-paramiko (>=4.0.0.20250822)",
     "types-pillow (>=10.2.0.20240822)",
     "types-requests (>=2.32.4.20250809)",
 ]
@@ -64,7 +64,7 @@ mypy = ">=1.17.1"
 pdoc = ">=15.0.4"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.3.0"
-ruff = ">=0.12.9"
+ruff = ">=0.12.11"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

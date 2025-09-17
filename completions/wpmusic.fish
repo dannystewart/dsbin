@@ -1,15 +1,15 @@
 # Subcommands
-complete --command wpmusic --exclusive --condition __fish_use_subcommand --arguments "upload" --description "convert files for upload"
-complete --command wpmusic --exclusive --condition __fish_use_subcommand --arguments "convert" --description "convert files without uploading"
-complete --command wpmusic --exclusive --condition __fish_use_subcommand --arguments "history" --description "show upload history by track"
+complete --command wpmusic -x -n __fish_use_subcommand -a "upload" -d "convert files for upload"
+complete --command wpmusic -x -n __fish_use_subcommand -a "convert" -d "convert files without uploading"
+complete --command wpmusic -x -n __fish_use_subcommand -a "history" -d "show upload history by track"
 
 # Upload subcommand
-complete -c wpmusic -n "__fish_seen_subcommand_from upload" -d "audio files to upload" -xa "(__fish_complete_suffix .wav .mp3 .flac .m4a .aac .ogg)"
+complete -c wpmusic -n "__fish_seen_subcommand_from upload" -d "audio files to upload" -x -a "(__fish_complete_suffix .wav .mp3 .flac .m4a .aac .ogg)"
 complete -c wpmusic -n "__fish_seen_subcommand_from upload" -l keep-files -d "keep converted files after upload" -f
 complete -c wpmusic -n "__fish_seen_subcommand_from upload" -l append -d "append text to the song title" -f
 
 # Convert subcommand
-complete -c wpmusic -n "__fish_seen_subcommand_from convert" -d "audio files to convert" -xa "(__fish_complete_suffix .wav .mp3 .flac .m4a .aac .ogg)"
+complete -c wpmusic -n "__fish_seen_subcommand_from convert" -d "audio files to convert" -x -a "(__fish_complete_suffix .wav .mp3 .flac .m4a .aac .ogg)"
 complete -c wpmusic -n "__fish_seen_subcommand_from convert" -l append -d "append text to the song title" -f
 
 # History subcommand

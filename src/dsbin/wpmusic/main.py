@@ -17,14 +17,13 @@ script also supports a `--skip-upload` argument that will convert but not upload
 
 from __future__ import annotations
 
-import argparse
 import sys
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING
 
 from halo import Halo
-from polykit import PolyLog
+from polykit import PolyArgs, PolyLog
 from polykit.cli import handle_interrupt, walking_man
 from polykit.core import polykit_setup
 from polykit.text import color
@@ -37,6 +36,8 @@ from dsbin.wpmusic.upload_tracker import UploadTracker
 from dsbin.wpmusic.wp_file_manager import WPFileManager
 
 if TYPE_CHECKING:
+    import argparse
+
     from dsbin.wpmusic.audio_track import AudioTrack
 
 polykit_setup()
@@ -46,15 +47,15 @@ class WPMusic:
     """Upload and replace song remixes on WordPress."""
 
     def __init__(self, args: argparse.Namespace):
-        if args.doc:
-            self.show_help_and_exit()
+        # Determine if we're skipping upload based on subcommand
+        skip_upload = args.command == "convert"
 
-        # Keep files based on argument or if skipping upload
-        should_keep = args.keep_files or args.skip_upload
+        # Keep files based on argument or if converting (convert always keeps files)
+        should_keep = getattr(args, "keep_files", False) or skip_upload
 
         # Initialize configuration and logger
         self.config = WPConfig(
-            skip_upload=args.skip_upload,
+            skip_upload=skip_upload,
             keep_files=should_keep,
             no_cache=args.no_cache,
         )
@@ -62,14 +63,21 @@ class WPMusic:
         self.args = args  # Store args for later processing
         self.spinner = Halo(text="Initializing", spinner="dots", color="cyan")
 
+        # Check if we have a valid command
+        if not args.command:
+            self.logger.error(
+                "No command specified. Use 'wpmusic --help' to see available commands."
+            )
+            sys.exit(1)
+
         # Only check for files if we're not doing history or DB operations
         if (
-            not args.files
-            and args.history is None
+            args.command in {"upload", "convert"}
+            and not getattr(args, "files", [])
             and not args.test_db_connection
             and not args.refresh_cache
         ):
-            self.logger.error("No input files specified and no --history argument. Nothing to do.")
+            self.logger.error("No input files specified. Nothing to do.")
             sys.exit(1)
 
         # Initialize components
@@ -108,25 +116,27 @@ class WPMusic:
             self.logger.info("Forcing cache refresh from MySQL server...")
             self.upload_tracker.db.force_refresh()
             self.logger.info("Cache refresh complete!")
-            if not (self.args.history is not None or self.args.files):
+            if self.args.command != "history" and not getattr(self.args, "files", []):
                 return
 
-        if self.args.history is not None:
+        if self.args.command == "history":
             self.display_history()
-        elif self.args.files:
+        elif self.args.command in {"upload", "convert"}:
             for file_path in self.args.files:
                 try:
                     self.process_file(file_path)
                 except Exception as e:
                     self.logger.error("An error occurred processing %s: %s", file_path, str(e))
         else:
-            self.logger.error("No input files specified and no --history argument. Nothing to do.")
+            self.logger.error("Unknown command: %s", self.args.command)
             sys.exit(1)
 
     def display_history(self) -> None:
         """Display upload history."""
-        track_name = self.args.history or None
-        self.upload_tracker.pretty_print_history(track_name, uploads_per_song=self.args.list)
+        track_name = getattr(self.args, "track_name", None)
+        self.upload_tracker.pretty_print_history(
+            track_name, uploads_per_song=getattr(self.args, "uploads_per_track", None)
+        )
 
     def process_file(self, file_path: Path) -> None:
         """Process a single audio file and its potential instrumental pair."""
@@ -161,15 +171,16 @@ class WPMusic:
             ValueError: If processing fails for any reason.
         """
         try:
+            append_text = getattr(self.args, "append", "") or ""
             if not track_metadata:  # Identify the original track
                 audio_track = self.track_identifier.create_audio_track(
-                    file_path, append_text=self.args.append, spinner=self.spinner
+                    file_path, append_text=append_text, spinner=self.spinner
                 )
                 track_metadata = audio_track.track_metadata
             else:  # If we already have metadata, it's the instrumental for the original track
                 audio_track = self.track_identifier.create_audio_track(
                     file_path,
-                    append_text=self.args.append,
+                    append_text=append_text,
                     is_instrumental=True,
                     track_metadata=track_metadata,
                 )
@@ -305,64 +316,41 @@ class WPMusic:
 
 def parse_arguments() -> argparse.Namespace:
     """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(description="Convert and upload audio files to WordPress.")
-    parser.add_argument(
-        "--skip-upload",
-        action="store_true",
-        help="convert only, skip uploading (implies --keep-files)",
-        default=False,
-    )
-    parser.add_argument(
-        "--keep-files",
-        action="store_true",
-        help="keep converted files after upload",
-        default=False,
-    )
-    parser.add_argument(
-        "--append",
-        help="append text to the song title",
-        default="",
-    )
-    parser.add_argument(
-        "--doc",
-        action="store_true",
-        help="show the full documentation and exit",
-    )
-    parser.add_argument(
-        "--history",
-        nargs="?",
-        const="",
-        help="display upload history, optionally filtered by track name",
-    )
-    parser.add_argument(
-        "-l",
-        "--list",
-        type=int,
-        help="number of uploads to list per track (default: 3)",
-    )
+    description = "Convert and upload audio files to WordPress, or display upload history."
+    parser = PolyArgs(description=description, arg_width=28)
+    subparsers = parser.add_subparsers(dest="command", help="available commands")
 
-    # Database-related arguments
-    db_args = parser.add_argument_group("database options")
-    db_args.add_argument(
-        "--refresh-cache",
-        action="store_true",
-        help="force refresh of local cache from MySQL server",
+    # Upload subcommand
+    upload_parser = subparsers.add_parser("upload", help="convert and upload files")
+    upload_parser.add_argument("files", nargs="+", help="audio files to upload")
+    upload_parser.add_argument(
+        "--keep-files", action="store_true", help="keep converted files after upload", default=False
     )
-    db_args.add_argument(
-        "--no-cache",
-        action="store_true",
-        help="bypass local cache, always use MySQL server directly",
-    )
-    db_args.add_argument(
-        "--test-db-connection",
-        action="store_true",
-        help="test database connection and exit",
-    )
+    upload_parser.add_argument("--append", help="append text to the song title", default="")
 
-    # Parse known args first, treat all remaining as files
-    args, remaining = parser.parse_known_args()
-    args.files = remaining or []
-    return args
+    # Convert subcommand
+    convert_parser = subparsers.add_parser("convert", help="convert files without uploading")
+    convert_parser.add_argument("files", nargs="+", help="audio files to convert")
+    convert_parser.add_argument("--append", help="append text to the song title", default="")
+
+    # History subcommand
+    history_parser = subparsers.add_parser("history", help="show upload history by track")
+    history_parser.add_argument(
+        "track_name", nargs="?", help="optional track name to filter history"
+    )
+    history_parser.add_argument(
+        "-u", "--uploads-per-track", type=int, help="uploads to show per track (default: 3)"
+    )
+    history_parser.add_argument(
+        "--no-cache", action="store_true", help="bypass local cache and use MySQL server directly"
+    )
+    history_parser.add_argument(
+        "--refresh-cache", action="store_true", help="refresh local cache from MySQL server"
+    )
+    history_parser.add_argument(
+        "--test-db-connection", action="store_true", help="test database connection and exit"
+    )
+    return parser.parse_args()
 
 
 def main() -> None:

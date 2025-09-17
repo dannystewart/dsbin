@@ -6,6 +6,24 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.4] (2025-09-17)
+
+### Added
+
+- Adds `azmusic` Azure Blob Storage audio uploader with automated file processing, format conversion, CDN management, and clipboard URL copying (deprecated but kept as reference for uploading media to Azure).
+
+### Changed
+
+- Restructures `wpmusic` interface to use `upload`, `convert`, and `history` subcommands instead of flat arguments for better organization and clearer user intent.
+- Improves `wpmusic` argument validation with explicit commands and contextual file requirements.
+- Updates shell completion for `wpmusic` to support subcommand-aware suggestions with proper audio file filtering.
+- Adds `azure-storage-blob` and `pydub` as new dependencies for cloud storage and audio processing capabilities.
+- Updates project dependencies including `cryptography`, `platformdirs`, `prompt-toolkit`, `ruff`, `telethon`, `types-paramiko`, and `typing-extensions` to latest versions.
+
+### Fixed
+
+- Fixes `w11renamer` filename completion by removing `-f` flag from fish shell completion.
+
 ## [0.9.3] (2025-08-20)
 
 ### `wpmusic`
@@ -662,7 +680,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.3...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.4...HEAD
+[0.9.4]: https://github.com/dannystewart/dsbin/compare/v0.9.3...v0.9.4
 [0.9.3]: https://github.com/dannystewart/dsbin/compare/v0.9.2...v0.9.3
 [0.9.2]: https://github.com/dannystewart/dsbin/compare/v0.9.1...v0.9.2
 [0.9.1]: https://github.com/dannystewart/dsbin/compare/v0.9.0...v0.9.1

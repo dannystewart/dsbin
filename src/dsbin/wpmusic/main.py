@@ -99,7 +99,9 @@ class WPMusic:
             # Force refresh of local cache if requested
             if self.upload_tracker.db.force_db_refresh(
                 force_refresh=self.args.refresh_cache,
-                refresh_only=not (self.args.history is not None or self.args.files),
+                refresh_only=not (
+                    self.args.command == "history" or getattr(self.args, "files", [])
+                ),
             ):
                 return
 

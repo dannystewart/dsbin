@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.5] (2025-09-19)
+
+### Fixed
+
+- Replaces direct attribute access with the new command check and `getattr` to prevent AttributeError exceptions when optional arguments are not present.
+
 ## [0.9.4] (2025-09-17)
 
 ### Added
@@ -680,7 +686,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.4...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.5...HEAD
+[0.9.5]: https://github.com/dannystewart/dsbin/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/dannystewart/dsbin/compare/v0.9.3...v0.9.4
 [0.9.3]: https://github.com/dannystewart/dsbin/compare/v0.9.2...v0.9.3
 [0.9.2]: https://github.com/dannystewart/dsbin/compare/v0.9.1...v0.9.2

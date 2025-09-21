@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.6] (2025-09-21)
+
+### Changed
+
+- Changes `dmgify` to require explicit folder arguments instead of defaulting to current directory and showing help message when no folders are provided.
+
 ## [0.9.5] (2025-09-19)
 
 ### Fixed
@@ -686,7 +692,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.5...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.6...HEAD
+[0.9.6]: https://github.com/dannystewart/dsbin/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/dannystewart/dsbin/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/dannystewart/dsbin/compare/v0.9.3...v0.9.4
 [0.9.3]: https://github.com/dannystewart/dsbin/compare/v0.9.2...v0.9.3

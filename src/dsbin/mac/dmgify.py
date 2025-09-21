@@ -27,6 +27,7 @@ Examples:
 from __future__ import annotations
 
 import subprocess
+import sys
 import tempfile
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -216,14 +217,15 @@ class DMGCreator:
         """Process multiple folders for DMG creation."""
         for folder in folders:
             try:
-                folder_path = Path(folder).resolve()
-
-                if folder_path == Path.cwd():
+                if folder == "*":
                     # Process all subdirectories in current directory
-                    for subfolder in folder_path.iterdir():
+                    current_dir = Path.cwd()
+                    self.logger.info("Processing all folders in current directory...")
+                    for subfolder in current_dir.iterdir():
                         if not subfolder.name.startswith("."):
                             self.process_folder(subfolder)
                 else:  # Process single folder
+                    folder_path = Path(folder).resolve()
                     self.process_folder(folder_path)
 
             except Exception as e:
@@ -261,8 +263,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "folders",
         nargs="*",
-        default=["."],
-        help="folders to process (defaults to current directory)",
+        help="folders to process (use '*' for all in current dir)",
     )
     parser.add_argument(
         "-o",
@@ -282,7 +283,14 @@ def parse_arguments() -> argparse.Namespace:
     )
     parser.add_argument("-e", "--exclude", help="comma-separated list of folders to exclude")
     parser.add_argument("-f", "--force", action="store_true", help="overwrite existing files")
-    return parser.parse_args()
+    args = parser.parse_args()
+
+    # If no folders provided, show help and exit
+    if not args.folders:
+        parser.print_help()
+        sys.exit(0)
+
+    return args
 
 
 @handle_interrupt()

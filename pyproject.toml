@@ -79,7 +79,7 @@ dsver = "dsbin.dsver:main"
 dsfish = "dsbin.tools.dsfish:main"
 
 # Development Scripts
-changelogs = "dsbin.dev.update_changelog:main"
+changelogs = "dsbin.dev.changelogs:main"
 checkdeps = "dsbin.dev.check_dependencies:main"
 checkimports = "dsbin.dev.check_imports:main"
 codeconfigs = "dsbin.dev.code_configs.code_configs:main"

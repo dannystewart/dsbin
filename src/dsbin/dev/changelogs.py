@@ -797,14 +797,9 @@ def parse_args(args: Sequence[str] | None = None) -> argparse.Namespace:
         "--update",
         "-u",
         nargs="?",
-        const=True,
+        const="all",
         metavar="VERSION",
-        help="update a single release with changelog content (defaults to current version)",
-    )
-    parser.add_argument(
-        "--update-all",
-        action="store_true",
-        help="update all existing releases based on changelog content",
+        help="update release(s) with changelog content (defaults to all releases, or specify a version)",
     )
     parser.add_argument(
         "--dry-run",
@@ -823,20 +818,20 @@ def main() -> int:
         repo_url = get_repo_url(args.repo_name)
 
         # Check if GitHub CLI is needed and available
-        if (args.update_all or args.update) and not verify_gh_cli():
+        if args.update and not verify_gh_cli():
             logger.error(
                 "GitHub CLI (gh) not found or not authenticated. "
                 "Please install and authenticate with 'gh auth login'."
             )
             return 1
 
-        # Handle updating all GitHub releases
-        if args.update_all:
-            match_releases_to_changelog(repo_url, dry_run=args.dry_run)
-            return 0
-
-        # Handle updating a single GitHub release without modifying the changelog
-        if args.update and isinstance(args.update, str):
+        # Handle updating GitHub releases
+        if args.update:
+            if args.update == "all":
+                # Update all releases
+                match_releases_to_changelog(repo_url, dry_run=args.dry_run)
+                return 0
+            # Update a single release without modifying the changelog
             return 0 if update_release_on_github(args.update, repo_url, args.dry_run) else 1
 
         # Get the version to add to changelog
@@ -847,10 +842,6 @@ def main() -> int:
 
         # Update the changelog
         update_changelog(version, sections, repo_url)
-
-        # Update GitHub release for current version if requested
-        if args.update and not update_release_on_github(version, repo_url, args.dry_run):
-            return 1
 
         return 0
     except Exception as e:

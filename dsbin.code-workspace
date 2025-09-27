@@ -33,8 +33,13 @@
       "**/dist": true,
       "**/node_modules": true,
       "**/Thumbs.db": true,
+      ".cursor": true,
+      ".cursorindexingignore": true,
+      ".github": true,
       ".history": true,
       ".idea": true,
+      ".pdoc": true,
+      ".specstory": true,
       "venv": true
     },
     "github.copilot.chat.codeGeneration.instructions": [

@@ -140,5 +140,7 @@ cython_debug/
 .pypirc
 
 # Other files
+.specstory
+.cursorindexingignore
 .sync.ffs_db
 .DS_Store

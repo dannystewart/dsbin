@@ -1276,10 +1276,10 @@ type = ["mypy (>=1.18.2)"]
 
 [[package]]
 name = "polykit"
-version = "0.14.5.dev0"
+version = "0.14.6.dev0"
 description = "Delightful Python toolkit with power and personality "
 optional = false
-python-versions = ">=3.12,<4.0.0"
+python-versions = ">=3.12,<4.0"
 groups = ["main", "dev"]
 files = []
 develop = true

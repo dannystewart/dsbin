@@ -328,7 +328,7 @@ class ALACrity:
                 )
                 return output_path, ConversionResult.CONVERTED
             except Exception as e:
-                self.logger.error("Failed to convert %s: %s", input_path.name, str(e))
+                self.logger.error("Failed to convert %s: %s", input_path.name, e)
                 return input_path, ConversionResult.FAILED
 
 
@@ -367,6 +367,6 @@ def parse_arguments() -> argparse.Namespace:
 
 
 def main() -> None:
-    """Main entry point for the script."""
+    """Run the script."""
     args = parse_arguments()
     ALACrity(args)

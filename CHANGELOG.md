@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.7] (2025-11-09)
+
+### Changed
+
+- Updates dependency versions including `azure-storage-blob`, `blessed`, `mysql-connector-python`, `numpy`, `pillow`, `polykit`, `pyperclip`, `rich`, `scipy`, and `telethon` to incorporate latest bug fixes, security patches, and feature improvements.
+- Updates development tooling dependencies including `mypy`, `pdoc`, `pre-commit`, and `ruff` for compatibility with latest linting rules and documentation generation features.
+- Simplifies changelog update command interface by consolidating `--update` and `--update-all` flags into a single `--update` option that accepts "all" as default or a specific version string.
+
 ## [0.9.6] (2025-09-21)
 
 ### Changed
@@ -692,7 +700,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.6...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.7...HEAD
+[0.9.7]: https://github.com/dannystewart/dsbin/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/dannystewart/dsbin/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/dannystewart/dsbin/compare/v0.9.4...v0.9.5
 [0.9.4]: https://github.com/dannystewart/dsbin/compare/v0.9.3...v0.9.4

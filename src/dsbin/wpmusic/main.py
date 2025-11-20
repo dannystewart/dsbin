@@ -57,7 +57,7 @@ class WPMusic:
         self.config = WPConfig(
             skip_upload=skip_upload,
             keep_files=should_keep,
-            no_cache=args.no_cache,
+            no_cache=getattr(args, "no_cache", False),
         )
         self.logger = PolyLog.get_logger(level=self.config.log_level, simple=self.config.log_simple)
         self.args = args  # Store args for later processing
@@ -74,8 +74,8 @@ class WPMusic:
         if (
             args.command in {"upload", "convert"}
             and not getattr(args, "files", [])
-            and not args.test_db_connection
-            and not args.refresh_cache
+            and not getattr(args, "test_db_connection", False)
+            and not getattr(args, "refresh_cache", False)
         ):
             self.logger.error("No input files specified. Nothing to do.")
             sys.exit(1)
@@ -93,12 +93,12 @@ class WPMusic:
                 sys.exit(1)
 
             # Check database connection if requested
-            if self.args.test_db_connection:
+            if getattr(self.args, "test_db_connection", False):
                 self.upload_tracker.db.check_database()
 
             # Force refresh of local cache if requested
             if self.upload_tracker.db.force_db_refresh(
-                force_refresh=self.args.refresh_cache,
+                force_refresh=getattr(self.args, "refresh_cache", False),
                 refresh_only=not (
                     self.args.command == "history" or getattr(self.args, "files", [])
                 ),
@@ -114,7 +114,7 @@ class WPMusic:
     @handle_interrupt()
     def process(self) -> None:
         """Process and upload multiple audio files or display history."""
-        if self.args.refresh_cache:
+        if getattr(self.args, "refresh_cache", False):
             self.logger.info("Forcing cache refresh from MySQL server...")
             self.upload_tracker.db.force_refresh()
             self.logger.info("Cache refresh complete!")
@@ -128,7 +128,7 @@ class WPMusic:
                 try:
                     self.process_file(file_path)
                 except Exception as e:
-                    self.logger.error("An error occurred processing %s: %s", file_path, str(e))
+                    self.logger.error("An error occurred processing %s: %s", file_path, e)
         else:
             self.logger.error("Unknown command: %s", self.args.command)
             sys.exit(1)
@@ -220,10 +220,10 @@ class WPMusic:
             return track_metadata
 
         except TypeError as e:
-            self.logger.error("Process aborted by user: %s", str(e))
+            self.logger.error("Process aborted by user: %s", e)
             raise
         except ValueError as e:
-            self.logger.error("Processing failed: %s", str(e))
+            self.logger.error("Processing failed: %s", e)
             raise
 
     def _find_instrumental_pair(self, file_path: Path) -> Path | None:

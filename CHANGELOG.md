@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.8] (2025-11-20)
+
+### Changed
+
+- Updates dependencies to latest versions including `blessed`, `certifi`, `cfgv`, `numpy`, `pynacl`, and `ruff`.
+
+### Fixed
+
+- Fixes `AttributeError` exceptions in `wpmusic` when optional command-line arguments are missing.
+
 ## [0.9.7] (2025-11-09)
 
 ### Changed
@@ -700,7 +710,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.7...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.8...HEAD
+[0.9.8]: https://github.com/dannystewart/dsbin/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/dannystewart/dsbin/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/dannystewart/dsbin/compare/v0.9.5...v0.9.6
 [0.9.5]: https://github.com/dannystewart/dsbin/compare/v0.9.4...v0.9.5

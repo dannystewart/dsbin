@@ -10,19 +10,19 @@ license-files = ["LICENSE"]
 requires-python = ">=3.12,<4.0"
 dependencies = [
     "azure-storage-blob (>=12.27.1)",
-    "blessed (>=1.23.0)",
+    "blessed (>=1.25.0)",
     "chardet (>=5.2.0)",
     "halo (>=0.0.31)",
     "inquirer (>=3.4.1)",
     "mutagen (>=1.47.0)",
     "mysql-connector-python (>=9.5.0)",
     "natsort (>=8.4.0)",
-    "numpy (>=2.3.4)",
+    "numpy (>=2.3.5)",
     "packaging (>=25.0)",
     "paramiko (>=4.0.0)",
     "pexpect (>=4.9.0)",
     "pillow (>=12.0.0)",
-    "polykit (>=0.14.4)",
+    "polykit (>=0.14.5)",
     "prompt-toolkit (>=3.0.52)",
     "pydub (>=0.25.1)",
     "pyperclip (>=1.11.0)",
@@ -66,7 +66,7 @@ mypy = ">=1.18.2"
 pdoc = ">=16.0.0"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.4.0"
-ruff = ">=0.14.4"
+ruff = ">=0.14.5"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

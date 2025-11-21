@@ -6,7 +6,6 @@ import sqlite3
 from typing import TYPE_CHECKING
 
 from polykit import PolyLog
-from polykit.cli import walking_man
 from polykit.core import async_retry_on_exception, polykit_setup
 
 if TYPE_CHECKING:
@@ -32,8 +31,7 @@ class SQLiteManager:
     )
     async def start_client(self) -> None:
         """Start the client safely, retrying if a sqlite3.OperationalError occurs."""
-        with walking_man(color="cyan"):
-            await self.client.start()
+        await self.client.start()
 
     @async_retry_on_exception(
         sqlite3.OperationalError, tries=RETRY_TRIES, delay=RETRY_DELAY, logger=logger

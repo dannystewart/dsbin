@@ -290,7 +290,7 @@ class DatabaseManager:
                 return is_stale
 
         except Exception as e:
-            self.logger.warning("Failed to check cache staleness: %s", str(e))
+            self.logger.warning("Failed to check cache staleness: %s", e)
             return True
 
     @staticmethod

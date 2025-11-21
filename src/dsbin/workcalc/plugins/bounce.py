@@ -78,7 +78,7 @@ class BounceDataSource(DataSourcePlugin):
                     },
                 )
             except (ValueError, OSError) as e:  # Log error but continue
-                self.logger.error("Error processing %s: %s", file_path, str(e))
+                self.logger.error("Error processing %s: %s", file_path, e)
                 continue
 
     def _find_audio_files(self) -> Iterator[Path]:

@@ -123,7 +123,7 @@ class PyBumper:
 
             self.update_version(bump_type, new_version_str, next_dev_version)
         except Exception as e:
-            self.logger.error(str(e))
+            self.logger.error(e)
             sys.exit(1)
 
     def perform_increment_only(self) -> None:
@@ -270,12 +270,12 @@ class PyBumper:
             self.logger.info("\nSuccessfully %s %s!%s", action, release_msg, push_status + dev_msg)
 
         except Exception as e:
-            self.logger.error("\nVersion update failed: %s", str(e))
+            self.logger.error("\nVersion update failed: %s", e)
             raise
 
     def _update_version_in_pyproject(self, pyproject: Path, new_version: str) -> None:
         """Update version in pyproject.toml while preserving formatting."""
-        content = pyproject.read_text()
+        content = pyproject.read_text(encoding="utf-8")
         lines = content.splitlines()
 
         # Find the version line
@@ -315,7 +315,7 @@ class PyBumper:
             sys.exit(1)
 
         # Write back the file
-        pyproject.write_text(new_content)
+        pyproject.write_text(new_content, encoding="utf-8")
 
         # Verify the changes
         if self.version_helper.get_version() != new_version:

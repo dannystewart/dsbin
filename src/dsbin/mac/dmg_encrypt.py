@@ -203,7 +203,7 @@ def main() -> None:
     except KeyboardInterrupt:
         logger.error("Process interrupted by user.")
     except Exception as e:
-        logger.error("An error occurred: %s", str(e))
+        logger.error("An error occurred: %s", e)
 
 
 if __name__ == "__main__":

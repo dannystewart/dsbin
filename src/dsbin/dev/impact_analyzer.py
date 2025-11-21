@@ -278,7 +278,7 @@ class ImpactAnalyzer:
             with Path(file_path).open(encoding="utf-8") as f:
                 content = f.read()
         except (UnicodeDecodeError, PermissionError) as e:
-            self.logger.warning("Couldn't read %s: %s", file_path, str(e))
+            self.logger.warning("Couldn't read %s: %s", file_path, e)
             return set()
 
         imports = set()
@@ -368,11 +368,11 @@ class ImpactAnalyzer:
             return latest_tag
 
         except subprocess.CalledProcessError as e:
-            self.logger.debug("Git error for %s: %s", repo_path, str(e))
+            self.logger.debug("Git error for %s: %s", repo_path, e)
             return None
 
         except Exception as e:
-            self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
+            self.logger.debug("Unexpected error for %s: %s", repo_path, e)
             return None
 
     def get_changes_since_tag(self, repo_path: Path, tag: str) -> list[str]:
@@ -400,11 +400,11 @@ class ImpactAnalyzer:
             return included_files
 
         except subprocess.CalledProcessError as e:
-            self.logger.debug("Error checking changes for %s since %s: %s", repo_path, tag, str(e))
+            self.logger.debug("Error checking changes for %s since %s: %s", repo_path, tag, e)
             return []
 
         except Exception as e:
-            self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
+            self.logger.debug("Unexpected error for %s: %s", repo_path, e)
             return []
 
     def analyze_repo_changes(self) -> None:
@@ -481,11 +481,11 @@ class ImpactAnalyzer:
             return filtered
 
         except subprocess.CalledProcessError as e:
-            self.logger.debug("Git error for %s: %s", repo_path, str(e))
+            self.logger.debug("Git error for %s: %s", repo_path, e)
             return []
 
         except Exception as e:
-            self.logger.debug("Unexpected error for %s: %s", repo_path, str(e))
+            self.logger.debug("Unexpected error for %s: %s", repo_path, e)
             return []
 
     def get_changed_modules(self, changed_files: list[str], repo_path: Path) -> set[str]:
@@ -631,7 +631,7 @@ class ImpactAnalyzer:
 
             return False
         except Exception as e:
-            self.logger.error("Error showing diff for %s: %s", file_path, str(e))
+            self.logger.error("Error showing diff for %s: %s", file_path, e)
             return False
 
 

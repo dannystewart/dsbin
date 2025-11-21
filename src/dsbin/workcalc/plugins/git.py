@@ -99,5 +99,5 @@ class GitDataSource(DataSourcePlugin):
                     },
                 )
             except ValueError as e:  # Log error but continue
-                self.logger.error("Error parsing commit: %s", str(e))
+                self.logger.error("Error parsing commit: %s", e)
                 continue

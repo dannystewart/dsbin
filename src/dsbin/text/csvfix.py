@@ -186,7 +186,7 @@ class CSVEncodingFixer:
             return True
 
         except Exception as e:
-            logger.error("Error processing file: %s", str(e))
+            logger.error("Error processing file: %s", e)
             return False
 
 
@@ -231,7 +231,7 @@ Examples:
             else:
                 logger.error("Failed to fix: %s", input_file)
         except Exception as e:
-            logger.error("Unexpected error processing %s: %s", input_file, str(e))
+            logger.error("Unexpected error processing %s: %s", input_file, e)
 
     if len(args.input_files) > 1:
         logger.info(

@@ -34,7 +34,7 @@ def check_imports(package_name: str) -> bool:
         package = importlib.import_module(package_name)
         logger.debug("Successfully imported %s.", package_name)
     except ImportError as e:
-        logger.error("Could not import %s: %s", package_name, str(e))
+        logger.error("Could not import %s: %s", package_name, e)
         return False
 
     all_modules = []
@@ -46,8 +46,8 @@ def check_imports(package_name: str) -> bool:
             importlib.import_module(name)
             all_modules.append(name)
         except ImportError as e:
-            logger.error("Could not import %s: %s", name, str(e))
-            failed_modules.append((name, str(e)))
+            logger.error("Could not import %s: %s", name, e)
+            failed_modules.append((name, e))
 
     if failed_modules:
         logger.error("Failed to import %s modules in %s.", len(failed_modules), package_name)

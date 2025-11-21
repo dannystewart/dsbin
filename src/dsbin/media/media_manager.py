@@ -55,12 +55,12 @@ class MediaManager:
 
             except subprocess.CalledProcessError as e:
                 spinner.fail()
-                self.logger.error("Error running command '%s': %s", command, str(e.stderr))
+                self.logger.error("Error running command '%s': %s", command, e.stderr)
                 raise RuntimeError from e
 
             except Exception as e:
                 spinner.fail()
-                self.logger.error("Unexpected error converting file '%s': %s", input_file, str(e))
+                self.logger.error("Unexpected error converting file '%s': %s", input_file, e)
                 raise
 
     def ffmpeg_audio(

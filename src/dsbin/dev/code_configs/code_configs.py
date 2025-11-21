@@ -225,7 +225,7 @@ class ConfigManager:
                 "Post-update command for %s failed. Exit code: %d.", config.name, e.returncode
             )
         except Exception as e:
-            self.logger.error("Failed to run post-update command for %s: %s", config.name, str(e))
+            self.logger.error("Failed to run post-update command for %s: %s", config.name, e)
 
 
 def parse_args() -> argparse.Namespace:

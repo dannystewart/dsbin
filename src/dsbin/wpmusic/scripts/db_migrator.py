@@ -84,7 +84,7 @@ def test_mysql_credentials(config: WPConfig) -> bool:
         logger.debug("MySQL direct connection test result:\n%s", result.stdout)
         return result.returncode == 0
     except Exception as e:
-        logger.error("Failed to test MySQL credentials: %s", str(e))
+        logger.error("Failed to test MySQL credentials: %s", e)
         return False
 
 
@@ -205,7 +205,7 @@ def main() -> None:
         logger.info("Operation canceled by user")
         sys.exit(1)
     except Exception as e:
-        logger.error("Operation failed: %s", str(e))
+        logger.error("Operation failed: %s", e)
         sys.exit(1)
 
 

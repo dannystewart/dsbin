@@ -54,6 +54,6 @@ class ChezmoiPackageManager(UpdateManager):
                     "[%s] Chezmoi encountered an error and is not fully supported on Windows.",
                     self.display_name,
                 )
-                self.updater.logger.warning("[%s] %s", self.display_name, str(e))
+                self.updater.logger.warning("[%s] %s", self.display_name, e)
             else:
-                self.updater.logger.error("[%s] %s", self.display_name, str(e))
+                self.updater.logger.error("[%s] %s", self.display_name, e)

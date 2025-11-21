@@ -140,7 +140,7 @@ def main() -> None:
                 "\nRenamed %s → %s", color(original_name, "yellow"), color(new_name, "green")
             )
         except OSError as e:
-            logger.error("Could not rename file: %s", str(e))
+            logger.error("Could not rename file: %s", e)
             sys.exit(1)
 
 

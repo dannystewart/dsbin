@@ -113,7 +113,7 @@ class UpdateManager(ABC):
 
         except Exception as e:
             if self.error_message:
-                self.logger.error("[%s] %s", self.display_name, self.error_message % str(e))
+                self.logger.error("[%s] %s", self.display_name, self.error_message % e)
             self.update_successful = False
 
     @handle_interrupt()

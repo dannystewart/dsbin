@@ -146,7 +146,7 @@ class TelegramUploader:
             await self.post_file_to_channel(file, comment, channel_entity)
 
         except Exception as e:
-            self.logger.error("Error processing '%s': %s", file, str(e))
+            self.logger.error("Error processing '%s': %s", file, e)
             self.logger.warning("Skipping '%s'.", file)
 
 

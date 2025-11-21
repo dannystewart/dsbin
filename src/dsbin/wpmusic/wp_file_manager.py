@@ -174,7 +174,7 @@ class WPFileManager:
 
         except Exception as e:
             progress_bar.close()
-            self.logger.error("SSH error: %s", str(e))
+            self.logger.error("SSH error: %s", e)
 
     def print_and_copy_urls(self, base_filename: str, is_pair: bool = False) -> None:
         """Print the URLs of uploaded files and copy the FLAC URL to the clipboard."""

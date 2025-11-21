@@ -86,9 +86,9 @@ class MailSender:
         try:
             return self._connect_and_send(server, recipients, msg)
         except smtplib.SMTPException as e:
-            self.logger.error("SMTP error occurred: %s", str(e))
+            self.logger.error("SMTP error occurred: %s", e)
         except Exception as e:
-            self.logger.exception("Failed to send email: %s", str(e))
+            self.logger.exception("Failed to send email: %s", e)
         return False
 
     def _connect_and_send(self, server: smtplib.SMTP, recipients: list[str], msg: MIMEText) -> bool:

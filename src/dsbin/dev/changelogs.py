@@ -146,7 +146,7 @@ def get_latest_version() -> str:
         msg = "Version not found in pyproject.toml"
         raise ValueError(msg)
     except Exception as e:
-        logger.error("Failed to get version from pyproject.toml: %s", str(e))
+        logger.error("Failed to get version from pyproject.toml: %s", e)
         raise
 
 
@@ -164,7 +164,7 @@ def get_previous_version() -> str:
         logger.debug("Found versions in changelog: %s", versions)
         return versions[0]  # Return the most recent version
     except Exception as e:
-        logger.debug("Error reading changelog: %s", str(e))
+        logger.debug("Error reading changelog: %s", e)
         return "0.0.0"
 
 
@@ -373,7 +373,7 @@ def update_changelog(version: str, sections: dict[str, list[str]], repo_url: str
             logger.info("Updated changelog with version %s.", version)
 
     except Exception as e:
-        logger.error("Failed to update changelog: %s", str(e))
+        logger.error("Failed to update changelog: %s", e)
         raise
 
 
@@ -401,7 +401,7 @@ def find_previous_version(version: str) -> str:
         logger.debug("No previous version found for %s.", version)
         return "0.0.0"
     except Exception as e:
-        logger.error("Error finding previous version: %s", str(e))
+        logger.error("Error finding previous version: %s", e)
         return "0.0.0"
 
 
@@ -425,7 +425,7 @@ def extract_version_content(version: str) -> str | None:
 
         return match.group(1).strip()
     except Exception as e:
-        logger.error("Failed to extract version content: %s", str(e))
+        logger.error("Failed to extract version content: %s", e)
         return None
 
 
@@ -527,7 +527,7 @@ def get_changelog_versions() -> list[tuple[str, str]]:
         logger.info("Found %d versions in changelog.", len(versions))
         return versions
     except Exception as e:
-        logger.error("Failed to extract versions from changelog: %s", str(e))
+        logger.error("Failed to extract versions from changelog: %s", e)
         return []
 
 
@@ -552,7 +552,7 @@ def get_release_notes(tag: str) -> str | None:
         release_data = json.loads(result.stdout)
         return release_data.get("body", "")
     except (subprocess.CalledProcessError, json.JSONDecodeError) as e:
-        logger.error("Failed to get release notes for %s: %s", tag, str(e))
+        logger.error("Failed to get release notes for %s: %s", tag, e)
         return None
 
 
@@ -845,7 +845,7 @@ def main() -> int:
 
         return 0
     except Exception as e:
-        logger.error("Failed to update changelog: %s", str(e))
+        logger.error("Failed to update changelog: %s", e)
         return 1
 
 

@@ -126,7 +126,7 @@ def get_module_or_function_docstring(module_path: str, function_name: str) -> st
 
         return None
     except Exception as e:
-        logger.error("Error reading docstring for %s: %s", module_path, str(e))
+        logger.error("Error reading docstring for %s: %s", module_path, e)
         return None
 
 
@@ -448,7 +448,7 @@ def update_readme_and_init() -> bool:
 
         return readme_updated or init_updated
     except Exception as e:
-        logger.error("Failed to update files: %s", str(e))
+        logger.error("Failed to update files: %s", e)
         return False
 
 
@@ -483,7 +483,7 @@ def main() -> int:
             scripts = filter_results(scripts, args.search_term)
         display_script_list(scripts, args.search_term)
     except Exception as e:
-        logger.error("Error: %s", str(e))
+        logger.error("Error: %s", e)
         return 1
 
     return 0

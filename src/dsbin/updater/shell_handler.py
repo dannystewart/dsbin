@@ -71,7 +71,7 @@ class ShellHandler:
 
         except Exception as e:
             if not raise_error:
-                self.logger.error("Command failed: %s", str(e))
+                self.logger.error("Command failed: %s", e)
             return str(e), False
 
     def _run_simple_command(self, command: str) -> tuple[None, bool]:
@@ -92,7 +92,7 @@ class ShellHandler:
             success = self._process_output(child)
             return self._get_command_result(success)
         except Exception as e:
-            self.logger.debug("Command error: %s", str(e))
+            self.logger.debug("Command error: %s", e)
             return str(e), False
 
     def _spawn_process(self, command: str) -> pexpect.spawn[Any]:
@@ -123,7 +123,7 @@ class ShellHandler:
                     break
 
             except Exception as e:
-                self.logger.debug("pexpect error: %s", str(e))
+                self.logger.debug("pexpect error: %s", e)
                 break
 
         child.close(force=True)
@@ -166,7 +166,7 @@ class ShellHandler:
             except pexpect.EOF:
                 break
             except Exception as e:
-                self.logger.debug("Interactive mode error: %s", str(e))
+                self.logger.debug("Interactive mode error: %s", e)
                 break
 
     def _read_interactive_output(self, child: pexpect.spawn[Any]) -> str | None:

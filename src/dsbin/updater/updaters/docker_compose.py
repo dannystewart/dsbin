@@ -55,7 +55,7 @@ class DockerComposeUpdater(UpdateManager):
                 )
 
             if self.debug:
-                self.logger.debug("[%s] Full output:\n%s", self.display_name, str(e))
+                self.logger.debug("[%s] Full output:\n%s", self.display_name, e)
             return
 
         self.logger.info("[%s] Docker images updated successfully.", self.display_name)

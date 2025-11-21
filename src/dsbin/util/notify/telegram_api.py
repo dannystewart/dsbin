@@ -81,6 +81,6 @@ class TelegramAPIHelper:
                 raise Exception(msg)
             return response_data
         except requests.RequestException as e:
-            self.logger.warning("Request to Telegram API failed: %s", str(e))
+            self.logger.warning("Request to Telegram API failed: %s", e)
             msg = f"Request to Telegram API failed: {e}"
             raise Exception(msg) from e

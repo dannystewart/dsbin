@@ -71,7 +71,7 @@ class MySQLHelper:
                     collation=self.collation,
                 )
             except MySQLError as e:
-                self.logger.critical("Failed to initialize database pool: %s", str(e))
+                self.logger.critical("Failed to initialize database pool: %s", e)
                 msg = "Failed to initialize database connection. Check MySQL connection."
                 raise DatabaseError(msg) from e
         return self._pool

@@ -229,7 +229,7 @@ class DMGCreator:
                     self.process_folder(folder_path)
 
             except Exception as e:
-                self.logger.error("Error processing '%s': %s", folder, str(e))
+                self.logger.error("Error processing '%s': %s", folder, e)
                 continue
 
         self.logger.info("Processing complete!")

@@ -42,7 +42,7 @@ class SQLiteHelper:
             return self._connection
 
         except sqlite3.Error as e:
-            self.logger.critical("Failed to initialize database connection: %s", str(e))
+            self.logger.critical("Failed to initialize database connection: %s", e)
             msg = "Failed to initialize SQLite connection."
             raise DatabaseError(msg) from e
 

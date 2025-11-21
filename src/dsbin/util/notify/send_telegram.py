@@ -60,7 +60,7 @@ class TelegramSender:
                 self.logger.info("Telegram message sent successfully.")
             return True
         except requests.exceptions.RequestException as e:
-            self.logger.error("Failed to send message to Telegram: %s", str(e))
+            self.logger.error("Failed to send message to Telegram: %s", e)
             return False
 
     def send_audio_file(
@@ -98,5 +98,5 @@ class TelegramSender:
                 self.api.call_api("sendAudio", payload, files={"audio": audio_file})
             return True
         except Exception as e:
-            self.logger.error("Failed to send audio file: %s", str(e))
+            self.logger.error("Failed to send audio file: %s", e)
             return False

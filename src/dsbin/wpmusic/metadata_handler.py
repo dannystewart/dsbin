@@ -48,10 +48,10 @@ class MetadataHandler:
             all_metadata = json.loads(response.text)
 
         except requests.RequestException as e:
-            self.logger.error("Failed to fetch metadata: %s", str(e))
+            self.logger.error("Failed to fetch metadata: %s", e)
             return {}, None
         except json.JSONDecodeError as e:
-            self.logger.error("Failed to parse metadata JSON: %s", str(e))
+            self.logger.error("Failed to parse metadata JSON: %s", e)
             self.logger.debug(
                 "Response content: %s",
                 response.text[:100] + "..." if len(response.text) > 100 else response.text,
@@ -65,7 +65,7 @@ class MetadataHandler:
             try:
                 cover_data = self.download_cover_art(cover_art_url)
             except Exception as e:
-                self.logger.error("Failed to download cover art: %s", str(e))
+                self.logger.error("Failed to download cover art: %s", e)
 
         return all_metadata, cover_data
 

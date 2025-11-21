@@ -90,7 +90,7 @@ def load_pyproject(file_path: Path) -> PyProjectConfig | None:
         return None
 
     try:
-        data = tomllib.loads(file_path.read_text())
+        data = tomllib.loads(file_path.read_text(encoding="utf-8"))
 
         poetry_data = data.get("tool", {}).get("poetry", {})
         if not poetry_data:
@@ -122,7 +122,7 @@ def load_pyproject(file_path: Path) -> PyProjectConfig | None:
             dev_dependencies=dev_dependencies,
         )
     except Exception as e:
-        logger.error("Error loading pyproject.toml: %s", str(e))
+        logger.error("Error loading pyproject.toml: %s", e)
         return None
 
 
@@ -217,7 +217,7 @@ def save_pyproject(config: PyProjectConfig, file_path: Path) -> None:
         file_path.write_bytes(toml_bytes)
         logger.info("Successfully saved configuration to %s", file_path)
     except Exception as e:
-        logger.error("Error saving pyproject.toml: %s", str(e))
+        logger.error("Error saving pyproject.toml: %s", e)
 
 
 @handle_interrupt()

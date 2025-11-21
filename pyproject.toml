@@ -22,7 +22,7 @@ dependencies = [
     "paramiko (>=4.0.0)",
     "pexpect (>=4.9.0)",
     "pillow (>=12.0.0)",
-    "polykit (>=0.14.5)",
+    "polykit (>=0.14.6)",
     "prompt-toolkit (>=3.0.52)",
     "pydub (>=0.25.1)",
     "pyperclip (>=1.11.0)",
@@ -66,7 +66,7 @@ mypy = ">=1.18.2"
 pdoc = ">=16.0.0"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.4.0"
-ruff = ">=0.14.5"
+ruff = ">=0.14.6"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

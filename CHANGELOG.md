@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.9] (2025-12-06)
+
+### Fixed
+
+- Updates dependencies including `urllib3` to address security vulnerability.
+
 ## [0.9.8] (2025-11-20)
 
 ### Changed
@@ -710,7 +716,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.8...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.9...HEAD
+[0.9.9]: https://github.com/dannystewart/dsbin/compare/v0.9.8...v0.9.9
 [0.9.8]: https://github.com/dannystewart/dsbin/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/dannystewart/dsbin/compare/v0.9.6...v0.9.7
 [0.9.6]: https://github.com/dannystewart/dsbin/compare/v0.9.5...v0.9.6

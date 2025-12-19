@@ -62,11 +62,11 @@ classifiers = [
 ]
 
 [tool.poetry.group.dev.dependencies]
-mypy = ">=1.19.0"
+mypy = ">=1.19.1"
 pdoc = ">=16.0.0"
 polykit = { path = "../polykit", develop = true }
-pre-commit = ">=4.5.0"
-ruff = ">=0.14.8"
+pre-commit = ">=4.5.1"
+ruff = ">=0.14.10"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

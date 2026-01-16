@@ -55,12 +55,17 @@
       "completions/*.fish": true
     },
     "workbench.colorCustomizations": {
+      "commandCenter.border": "#e7e7e799",
       "sash.hoverBorder": "#218997",
       "statusBar.background": "#18636d",
       "statusBar.foreground": "#e7e7e7",
       "statusBarItem.hoverBackground": "#218997",
       "statusBarItem.remoteBackground": "#18636d",
-      "statusBarItem.remoteForeground": "#e7e7e7"
+      "statusBarItem.remoteForeground": "#e7e7e7",
+      "titleBar.activeBackground": "#18636d",
+      "titleBar.activeForeground": "#e7e7e7",
+      "titleBar.inactiveBackground": "#18636d99",
+      "titleBar.inactiveForeground": "#e7e7e799"
     }
   }
 }

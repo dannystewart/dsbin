@@ -16,6 +16,7 @@ from polykit import PolyLog
 from polykit.cli import async_with_handle_interrupt
 from polykit.core import polykit_setup
 from polykit.env import PolyEnv
+from polykit.files import PolyFile
 from polykit.paths import PolyPath
 from telethon import TelegramClient
 from telethon.tl.types import Channel, Chat, DocumentAttributeAudio
@@ -28,6 +29,23 @@ if TYPE_CHECKING:
     from logging import Logger
 
 polykit_setup()
+
+POLYPLAYER_DIR = Path(
+    "/Users/danny/Library/Mobile Documents/iCloud~com~dannystewart~PolyPlayer/Documents/Bounces"
+)
+
+
+def _copy_to_polyplayer(file_path: Path, logger: Logger) -> None:
+    try:
+        POLYPLAYER_DIR.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        logger.error("Failed to create the iCloud Bounces folder '%s': %s", POLYPLAYER_DIR, e)
+        return
+
+    destination = POLYPLAYER_DIR / file_path.name
+    copied = PolyFile.copy(file_path, destination, overwrite=True)
+    if not copied:
+        logger.error("Failed to copy '%s' to iCloud Bounces.", file_path)
 
 
 class TelegramUploader:
@@ -89,6 +107,8 @@ class TelegramUploader:
         minutes, seconds = divmod(duration, 60)
         formatted_duration = f"{minutes}m{seconds:02d}s"
         timestamp_text = f"{timestamp} • {formatted_duration}"
+
+        _copy_to_polyplayer(file_path, self.logger)
 
         self.logger.info("Uploading '%s' created %s.", filename, timestamp)
         self.logger.debug(

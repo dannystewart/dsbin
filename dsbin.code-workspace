@@ -67,6 +67,7 @@
       "statusBar.debuggingBorder": "#6d2218",
       "statusBar.debuggingForeground": "#e7e7e7",
       "tab.activeBorder": "#218997"
-    }
+    },
+    "specstory.cloudSync.enabled": "never"
   }
 }

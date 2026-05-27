@@ -31,6 +31,7 @@ class TimeSpan:
 
     first_item: datetime
     last_item: datetime
+    calendar_days: int
     span_days: int
     span_hours: int
 
@@ -43,10 +44,12 @@ class TimeSpan:
         time_span = stats.latest_timestamp - stats.earliest_timestamp
         span_days, remainder = divmod(time_span.total_seconds(), 86400)
         span_hours, _ = divmod(remainder, 3600)
+        calendar_days = (stats.latest_timestamp.date() - stats.earliest_timestamp.date()).days + 1
 
         return cls(
             first_item=stats.earliest_timestamp,
             last_item=stats.latest_timestamp,
+            calendar_days=calendar_days,
             span_days=int(span_days),
             span_hours=int(span_hours),
         )
@@ -74,7 +77,7 @@ class TimeAnalyzer:
         return [
             f"[bold cyan]First {item_name}:[/bold cyan] {TimeAnalyzer.format_date(span.first_item)}",
             f"[bold cyan]Last {item_name}:[/bold cyan] {TimeAnalyzer.format_date(span.last_item)}",
-            f"[bold cyan]Time between first and last:[/bold cyan] [bold]{span.span_days:,}[/bold] {plural('day', span.span_days, show_num=False)}"
+            f"[bold cyan]Time between first and last:[/bold cyan] [bold]{span.calendar_days:,}[/bold] {plural('day', span.calendar_days, show_num=False)}"
             + (
                 f", [bold]{span.span_hours:,}[/bold] {plural('hour', span.span_hours, show_num=False)}"
                 if span.span_hours

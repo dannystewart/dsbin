@@ -118,7 +118,13 @@ class CSVEncodingFixer:
         except Exception:
             return False
 
-    def fix_file(self, input_path: str, output_path: str | None = None) -> bool:
+    def fix_file(
+        self,
+        input_path: str,
+        output_path: str | None = None,
+        *,
+        add_bom: bool = False,
+    ) -> bool:
         """Fix encoding issues in a CSV file."""
         input_file = Path(input_path)
 
@@ -145,8 +151,10 @@ class CSVEncodingFixer:
 
         # Check for BOM
         has_bom = self.has_bom(input_path)
-        if has_bom:
+        if has_bom and not add_bom:
             logger.info("UTF-8 BOM detected and will be removed.")
+        elif has_bom:
+            logger.info("UTF-8 BOM detected and will be preserved.")
 
         # Determine the encoding to use for reading
         read_encoding = detected_encoding
@@ -174,7 +182,8 @@ class CSVEncodingFixer:
 
             # Write the fixed content
             output_file = Path(output_path)
-            output_file.write_text(fixed_content, encoding="utf-8", newline="")
+            output_encoding = "utf-8-sig" if add_bom else "utf-8"
+            output_file.write_text(fixed_content, encoding=output_encoding, newline="")
 
             logger.info("%s fixed successfully!", output_path)
 
@@ -200,12 +209,18 @@ def main() -> int:
 Examples:
   csvfix data.csv                    # Fix in place (creates backup)
   csvfix data.csv fixed_data.csv     # Save to new file
+  csvfix --bom data.csv              # Write UTF-8 with BOM for Excel
   csvfix *.csv                       # Fix multiple files
         """,
     )
 
     parser.add_argument("input_files", nargs="+", help="input CSV file(s) to fix")
     parser.add_argument("-o", "--output", help="output file (only for single input file)")
+    parser.add_argument(
+        "--bom",
+        action="store_true",
+        help="write UTF-8 with BOM for spreadsheet apps that misdetect plain UTF-8",
+    )
     parser.add_argument("-v", "--verbose", action="store_true", help="verbose output")
 
     args = parser.parse_args()
@@ -226,7 +241,7 @@ Examples:
 
     for input_file in args.input_files:
         try:
-            if fixer.fix_file(input_file, args.output):
+            if fixer.fix_file(input_file, args.output, add_bom=args.bom):
                 success_count += 1
             else:
                 logger.error("Failed to fix: %s", input_file)

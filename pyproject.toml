@@ -9,19 +9,19 @@ license = "LGPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.12,<4.0"
 dependencies = [
-    "azure-storage-blob (>=12.29.0)",
-    "blessed (>=1.44.0)",
+    "azure-storage-blob (>=12.30.0)",
+    "blessed (>=1.46.0)",
     "chardet (>=7.4.3)",
     "halo (>=0.0.31)",
     "inquirer (>=3.4.1)",
-    "mutagen (>=1.47.0)",
+    "mutagen (>=1.48.1)",
     "mysql-connector-python (>=9.7.0)",
     "natsort (>=8.4.0)",
-    "numpy (>=2.4.6)",
+    "numpy (>=2.5.1)",
     "packaging (>=26.2)",
     "paramiko (>=5.0.0)",
     "pexpect (>=4.9.0)",
-    "pillow (>=12.2.0)",
+    "pillow (>=12.3.0)",
     "polykit (>=0.15.0)",
     "prompt-toolkit (>=3.0.52)",
     "pydub (>=0.25.1)",
@@ -29,13 +29,13 @@ dependencies = [
     "requests (>=2.34.2)",
     "rich (>=15.0.0)",
     "rsa (>=4.9.1)",
-    "scipy (>=1.17.1)",
+    "scipy (>=1.18.0)",
     "scp (>=0.15.0)",
-    "telethon (>=1.43.2)",
+    "telethon (>=1.44.0)",
     "tomli-w (>=1.2.0)",
     "tomlkit (>=0.15.0)",
-    "tqdm (>=4.67.3)",
-    "types-paramiko (>=4.0.0.20260518)",
+    "tqdm (>=4.68.4)",
+    "types-paramiko (>=5.0.0.20260617)",
     "types-pillow (>=10.2.0.20240822)",
     "types-requests (>=2.33.0.20260518)",
 ]
@@ -62,11 +62,11 @@ classifiers = [
 ]
 
 [tool.poetry.group.dev.dependencies]
-mypy = ">=2.1.0"
+mypy = ">=2.2.0"
 pdoc = ">=16.0.0"
 polykit = { path = "../polykit", develop = true }
 pre-commit = ">=4.6.0"
-ruff = ">=0.15.14"
+ruff = ">=0.15.20"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

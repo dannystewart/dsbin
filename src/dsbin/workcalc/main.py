@@ -168,6 +168,7 @@ class WorkCalculator:
         last_timestamp = self.work_items[0].timestamp
         current_session_start = last_timestamp
         current_session_time = self.config.min_work_per_item
+        self.stats.time_by_day[last_timestamp.date()] += self.config.min_work_per_item
 
         for item in self.work_items[1:]:
             time_diff = (item.timestamp - last_timestamp).total_seconds() / 60
@@ -227,7 +228,7 @@ def parse_relative_date(date_str: str) -> datetime.date:
         unit = date_str[-1]
 
         if unit == "d":
-            return today - datetime.timedelta(days=number)
+            return today - datetime.timedelta(days=number - 1)
         if unit == "w":
             return today - datetime.timedelta(weeks=number)
         if unit == "m":

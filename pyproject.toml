@@ -1,6 +1,6 @@
 [project]
 name = "dsbin"
-version = "0.9.10.dev0"
+version = "0.9.11.dev0"
 description = "Personal script library solving problems you didn't know you cared about"
 authors = [{ name = "Danny Stewart", email = "danny@stewart.cc" }]
 urls = { repository = "https://github.com/dannystewart/dsbin" }
@@ -9,35 +9,35 @@ license = "LGPL-3.0-or-later"
 license-files = ["LICENSE"]
 requires-python = ">=3.12,<4.0"
 dependencies = [
-    "azure-storage-blob (>=12.27.1)",
-    "blessed (>=1.25.0)",
-    "chardet (>=5.2.0)",
+    "azure-storage-blob (>=12.30.0)",
+    "blessed (>=1.46.0)",
+    "chardet (>=7.4.3)",
     "halo (>=0.0.31)",
     "inquirer (>=3.4.1)",
-    "mutagen (>=1.47.0)",
-    "mysql-connector-python (>=9.5.0)",
+    "mutagen (>=1.48.1)",
+    "mysql-connector-python (>=9.7.0)",
     "natsort (>=8.4.0)",
-    "numpy (>=2.3.5)",
-    "packaging (>=25.0)",
-    "paramiko (>=4.0.0)",
+    "numpy (>=2.5.1)",
+    "packaging (>=26.2)",
+    "paramiko (>=5.0.0)",
     "pexpect (>=4.9.0)",
-    "pillow (>=12.0.0)",
-    "polykit (>=0.14.6)",
+    "pillow (>=12.3.0)",
+    "polykit (>=0.15.0)",
     "prompt-toolkit (>=3.0.52)",
     "pydub (>=0.25.1)",
     "pyperclip (>=1.11.0)",
-    "requests (>=2.32.5)",
-    "rich (>=14.2.0)",
+    "requests (>=2.34.2)",
+    "rich (>=15.0.0)",
     "rsa (>=4.9.1)",
-    "scipy (>=1.16.3)",
+    "scipy (>=1.18.0)",
     "scp (>=0.15.0)",
-    "telethon (>=1.42.0)",
+    "telethon (>=1.44.0)",
     "tomli-w (>=1.2.0)",
-    "tomlkit (>=0.13.3)",
-    "tqdm (>=4.67.1)",
-    "types-paramiko (>=4.0.0.20250822)",
+    "tomlkit (>=0.15.0)",
+    "tqdm (>=4.68.4)",
+    "types-paramiko (>=5.0.0.20260617)",
     "types-pillow (>=10.2.0.20240822)",
-    "types-requests (>=2.32.4.20250913)",
+    "types-requests (>=2.33.0.20260518)",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -62,11 +62,11 @@ classifiers = [
 ]
 
 [tool.poetry.group.dev.dependencies]
-mypy = ">=1.19.1"
+mypy = ">=2.2.0"
 pdoc = ">=16.0.0"
 polykit = { path = "../polykit", develop = true }
-pre-commit = ">=4.5.1"
-ruff = ">=0.14.10"
+pre-commit = ">=4.6.0"
+ruff = ">=0.15.20"
 
 [build-system]
 requires = ["poetry-core>=2.0"]

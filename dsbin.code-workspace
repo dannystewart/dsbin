@@ -60,7 +60,14 @@
       "statusBar.foreground": "#e7e7e7",
       "statusBarItem.hoverBackground": "#218997",
       "statusBarItem.remoteBackground": "#18636d",
-      "statusBarItem.remoteForeground": "#e7e7e7"
-    }
+      "statusBarItem.remoteForeground": "#e7e7e7",
+      "editorGroup.border": "#218997",
+      "statusBar.border": "#18636d",
+      "statusBar.debuggingBackground": "#6d2218",
+      "statusBar.debuggingBorder": "#6d2218",
+      "statusBar.debuggingForeground": "#e7e7e7",
+      "tab.activeBorder": "#218997"
+    },
+    "specstory.cloudSync.enabled": "never"
   }
 }

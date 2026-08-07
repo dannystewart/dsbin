@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog], and this project adheres to [Semantic
 
 ## [Unreleased]
 
+## [0.9.10] (2026-03-08)
+
+- Updates `blessed` from 1.30.0 to 1.33.0, `chardet` from 5.2.0 to 7.0.1, `rich` from 14.3.2 to 14.3.3, `scipy` from 1.17.0 to 1.17.1, and `ruff` from 0.15.1 to 0.15.5.
+
 ## [0.9.9] (2025-12-06)
 
 ### Fixed
@@ -716,7 +720,8 @@ _v0.7.17 was re-released as v0.8.0. With the cleanup and reorganization, this se
 [Semantic Versioning]: https://semver.org/spec/v2.0.0.html
 
 <!-- Versions -->
-[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.9...HEAD
+[unreleased]: https://github.com/dannystewart/dsbin/compare/v0.9.10...HEAD
+[0.9.10]: https://github.com/dannystewart/dsbin/compare/v0.9.9...v0.9.10
 [0.9.9]: https://github.com/dannystewart/dsbin/compare/v0.9.8...v0.9.9
 [0.9.8]: https://github.com/dannystewart/dsbin/compare/v0.9.7...v0.9.8
 [0.9.7]: https://github.com/dannystewart/dsbin/compare/v0.9.6...v0.9.7
